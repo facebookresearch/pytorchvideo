@@ -1,0 +1,240 @@
+import itertools
+import unittest
+
+import numpy as np
+import torch
+from pytorchvideo.models.resnet import (
+    BottleneckBlock,
+    create_default_bottleneck_block,
+)
+from torch import nn
+
+
+class TestBottleneckBlock(unittest.TestCase):
+    def setUp(self):
+        super().setUp()
+        torch.set_rng_state(torch.manual_seed(42).get_state())
+
+    def test_create_simple_bottleneck_block(self):
+        """
+        Test simple BottleneckBlock with different dimensions.
+        """
+        for dim_in, dim_inner, dim_out in itertools.product(
+            (4, 8, 16), (2, 4), (4, 8, 16)
+        ):
+            model = BottleneckBlock(
+                conv_a=nn.Conv3d(
+                    dim_in, dim_inner, kernel_size=1, stride=1, padding=0, bias=False
+                ),
+                norm_a=nn.BatchNorm3d(dim_inner),
+                act_a=nn.ReLU(),
+                conv_b=nn.Conv3d(
+                    dim_inner, dim_inner, kernel_size=3, stride=1, padding=1, bias=False
+                ),
+                norm_b=nn.BatchNorm3d(dim_inner),
+                act_b=nn.ReLU(),
+                conv_c=nn.Conv3d(
+                    dim_inner, dim_out, kernel_size=1, stride=1, padding=0, bias=False
+                ),
+                norm_c=nn.BatchNorm3d(dim_out),
+            )
+
+            # Test forwarding.
+            for input_tensor in TestBottleneckBlock._get_inputs(dim_in):
+                if input_tensor.shape[1] != dim_in:
+                    with self.assertRaises(RuntimeError):
+                        output_tensor = model(input_tensor)
+                    continue
+
+                output_tensor = model(input_tensor)
+                input_shape = input_tensor.shape
+                output_shape = output_tensor.shape
+
+                output_shape_gt = (
+                    input_shape[0],
+                    dim_out,
+                    input_shape[2],
+                    input_shape[3],
+                    input_shape[4],
+                )
+
+                self.assertEqual(
+                    output_shape,
+                    output_shape_gt,
+                    "Output shape {} is different from expected shape {}".format(
+                        output_shape, output_shape_gt
+                    ),
+                )
+
+    def test_create_complex_bottleneck_block(self):
+        """
+        Test complex BottleneckBlock with different dimensions.
+        """
+        for dim_in, dim_inner, dim_out in itertools.product(
+            (4, 8, 16), (2, 4), (4, 8, 16)
+        ):
+            model = BottleneckBlock(
+                conv_a=nn.Conv3d(
+                    dim_in,
+                    dim_inner,
+                    kernel_size=[3, 1, 1],
+                    stride=[2, 1, 1],
+                    padding=[1, 0, 0],
+                    bias=False,
+                ),
+                norm_a=nn.BatchNorm3d(dim_inner),
+                act_a=nn.ReLU(),
+                conv_b=nn.Conv3d(
+                    dim_inner,
+                    dim_inner,
+                    kernel_size=[1, 3, 3],
+                    stride=[1, 2, 2],
+                    padding=[0, 1, 1],
+                    groups=1,
+                    dilation=[1, 1, 1],
+                    bias=False,
+                ),
+                norm_b=nn.BatchNorm3d(dim_inner),
+                act_b=nn.ReLU(),
+                conv_c=nn.Conv3d(
+                    dim_inner,
+                    dim_out,
+                    kernel_size=[1, 1, 1],
+                    stride=[1, 1, 1],
+                    padding=[0, 0, 0],
+                    bias=False,
+                ),
+                norm_c=nn.BatchNorm3d(dim_out),
+            )
+
+            # Test forwarding.
+            for input_tensor in TestBottleneckBlock._get_inputs(dim_in):
+                if input_tensor.shape[1] != dim_in:
+                    with self.assertRaises(Exception):
+                        output_tensor = model(input_tensor)
+                    continue
+
+                output_tensor = model(input_tensor)
+                input_shape = input_tensor.shape
+                output_shape = output_tensor.shape
+
+                output_shape_gt = (
+                    input_shape[0],
+                    dim_out,
+                    (input_shape[2] - 1) // 2 + 1,
+                    (input_shape[3] - 1) // 2 + 1,
+                    (input_shape[4] - 1) // 2 + 1,
+                )
+
+                self.assertEqual(
+                    output_shape,
+                    output_shape_gt,
+                    "Output shape {} is different from expected shape {}".format(
+                        output_shape, output_shape_gt
+                    ),
+                )
+
+    def test_create_default_bottleneck_block_with_callable(self):
+        """
+        Test default builder `create_default_bottleneck_block` with callable inputs.
+        """
+        for (norm_model, act_model) in itertools.product(
+            (nn.BatchNorm3d,), (nn.ReLU, nn.Softmax, nn.Sigmoid)
+        ):
+            model = create_default_bottleneck_block(
+                dim_in=32,
+                dim_inner=16,
+                dim_out=64,
+                conv_a_kernel_size=(3, 1, 1),
+                conv_a_stride=(1, 1, 1),
+                conv_a_padding=(1, 0, 0),
+                conv_b_kernel_size=(1, 3, 3),
+                conv_b_stride=(1, 1, 1),
+                conv_b_padding=(0, 1, 1),
+                conv_b_num_groups=1,
+                conv_b_dilation=(1, 1, 1),
+                norm=norm_model,
+                activation=act_model,
+            )
+            model_gt = BottleneckBlock(
+                conv_a=nn.Conv3d(
+                    32,
+                    16,
+                    kernel_size=[3, 1, 1],
+                    stride=[1, 1, 1],
+                    padding=[1, 0, 0],
+                    bias=False,
+                ),
+                norm_a=norm_model(16),
+                act_a=act_model(),
+                conv_b=nn.Conv3d(
+                    16,
+                    16,
+                    kernel_size=[1, 3, 3],
+                    stride=[1, 1, 1],
+                    padding=[0, 1, 1],
+                    bias=False,
+                ),
+                norm_b=norm_model(16),
+                act_b=act_model(),
+                conv_c=nn.Conv3d(
+                    16,
+                    64,
+                    kernel_size=[1, 1, 1],
+                    stride=[1, 1, 1],
+                    padding=[0, 0, 0],
+                    bias=False,
+                ),
+                norm_c=norm_model(64),
+            )
+
+            model.load_state_dict(
+                model_gt.state_dict(), strict=True
+            )  # explicitly use strict mode.
+
+            # Test forwarding.
+            for input_tensor in TestBottleneckBlock._get_inputs(dim_in=32):
+                with torch.no_grad():
+                    if input_tensor.shape[1] != 32:
+                        with self.assertRaises(RuntimeError):
+                            output_tensor = model(input_tensor)
+                        continue
+
+                    output_tensor = model(input_tensor)
+                    output_tensor_gt = model_gt(input_tensor)
+
+                self.assertEqual(
+                    output_tensor.shape,
+                    output_tensor_gt.shape,
+                    "Output shape {} is different from expected shape {}".format(
+                        output_tensor.shape, output_tensor_gt.shape
+                    ),
+                )
+                self.assertTrue(np.allclose(output_tensor.numpy(), output_tensor_gt.numpy()))
+
+    @staticmethod
+    def _get_inputs(dim_in: int = 3) -> torch.tensor:
+        """
+        Provide different tensors as test cases.
+
+        Yield:
+            (torch.tensor): tensor as test case input.
+        """
+        # Prepare random segmentation as test cases.
+        shapes = (
+            # Forward succeed.
+            (1, dim_in, 3, 7, 7),
+            (1, dim_in, 5, 7, 7),
+            (1, dim_in, 7, 7, 7),
+            (2, dim_in, 3, 7, 7),
+            (4, dim_in, 3, 7, 7),
+            (8, dim_in, 3, 7, 7),
+            (2, dim_in, 3, 7, 14),
+            (2, dim_in, 3, 14, 7),
+            (2, dim_in, 3, 14, 14),
+            # Forward failed.
+            (8, dim_in * 2, 3, 7, 7),
+            (8, dim_in * 4, 5, 7, 7),
+        )
+        for shape in shapes:
+            yield torch.rand(shape)
