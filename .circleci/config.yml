@@ -1,0 +1,45 @@
+# -------------------------------------------------------------------------------------
+# CircleCI configuration file. Specifies how to setup the CUDA environment and runs
+# the tests.
+#
+# See https://circleci.com/docs/2.0/language-python/ for more details
+# -------------------------------------------------------------------------------------
+
+version: 2.1
+
+setupcuda: &setupcuda
+  run:
+    name: Setup CUDA
+    working_directory: ~/
+    command: |
+      # Download and install nvidia drivers, cuda, etc...
+      wget --no-verbose --no-clobber -P ~/nvidia-downloads 'https://s3.amazonaws.com/ossci-linux/nvidia_driver/NVIDIA-Linux-x86_64-430.40.run'
+      wget --no-verbose --no-clobber -P ~/nvidia-downloads http://developer.download.nvidia.com/compute/cuda/10.2/Prod/local_installers/cuda_10.2.89_440.33.01_linux.run
+      sudo /bin/bash ~/nvidia-downloads/NVIDIA-Linux-x86_64-430.40.run --no-drm -q --ui=none
+      sudo sh ~/nvidia-downloads/cuda_10.2.89_440.33.01_linux.run --silent
+      echo "Done installing CUDA."
+      pyenv versions
+      nvidia-smi
+      pyenv global 3.7.0
+
+jobs:
+  setup_and_test:
+    environment:
+      CUDA_VERSION: "10.2"
+    resource_class: gpu.medium # tesla m60
+    machine:
+      image: ubuntu-1604:201903-01
+    steps:
+      - checkout
+      - <<: *setupcuda
+      - run: conda create -p ~/conda_env python=3.7 --file environment.yml
+      - run: conda activate ~/conda_env
+      - run: LD_LIBRARY_PATH=$LD_LIBARY_PATH:/usr/local/cuda-10.2/lib64 python3 setup.py build_ext --inplace
+      - run: LD_LIBRARY_PATH=$LD_LIBARY_PATH:/usr/local/cuda-10.2/lib64 python -m unittest discover -v -s tests
+      - run: python3 setup.py bdist_wheel
+
+workflows:
+  version: 2
+  main:
+    jobs:
+      - setup_and_test

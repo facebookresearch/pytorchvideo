@@ -1,7 +1,7 @@
 #!/bin/bash -ev
 # Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
 
-# Run this script at project root by "./dev/linter.sh" before you commit.
+# Run this script at project root with "./dev/linter.sh" before you commit.
 
 {
   black --version | grep "19.3b0" > /dev/null
