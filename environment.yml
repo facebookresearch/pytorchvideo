@@ -4,8 +4,8 @@
 name: pytorchvideo
 
 channels:
-    - conda-forge
-    - pytorch-nightly
+  - conda-forge
+  - pytorch-nightly
 
 dependencies:
   - python=3.7

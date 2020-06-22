@@ -1,6 +1,6 @@
 # -------------------------------------------------------------------------------------
-# CircleCI configuration file. Specifies how to setup the CUDA environment and runs
-# the tests.
+# CircleCI configuration file.
+# Specifies automated environment setup and tests.
 #
 # See https://circleci.com/docs/2.0/language-python/ for more details
 # -------------------------------------------------------------------------------------
@@ -22,6 +22,13 @@ setupcuda: &setupcuda
       nvidia-smi
       pyenv global 3.7.0
 
+installconda: &installconda
+  run:
+    name: Setup Conda
+    command: |
+      curl --retry 3 -o conda.sh https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
+      sh conda.sh -b -p $HOME/miniconda3
+
 jobs:
   setup_and_test:
     environment:
@@ -32,11 +39,17 @@ jobs:
     steps:
       - checkout
       - <<: *setupcuda
-      - run: conda create -p ~/conda_env python=3.7 --file environment.yml
-      - run: conda activate ~/conda_env
-      - run: LD_LIBRARY_PATH=$LD_LIBARY_PATH:/usr/local/cuda-10.2/lib64 python3 setup.py build_ext --inplace
-      - run: LD_LIBRARY_PATH=$LD_LIBARY_PATH:/usr/local/cuda-10.2/lib64 python -m unittest discover -v -s tests
-      - run: python3 setup.py bdist_wheel
+      - <<: *installconda
+      - run:
+          name: Run Tests
+          command: |
+            export PATH="$HOME/miniconda3/bin:$PATH"
+            conda update -y conda
+            conda env create --file environment.yml
+            source activate pytorchvideo
+            LD_LIBRARY_PATH=$LD_LIBARY_PATH:/usr/local/cuda-10.2/lib64 python3 setup.py build_ext --inplace
+            LD_LIBRARY_PATH=$LD_LIBARY_PATH:/usr/local/cuda-10.2/lib64 python -m unittest discover -v -s tests
+            python3 setup.py bdist_wheel
 
 workflows:
   version: 2
