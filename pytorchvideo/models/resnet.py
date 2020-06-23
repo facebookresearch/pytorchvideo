@@ -1,4 +1,4 @@
-from typing import Callable, Tuple
+from typing import Callable, List, Tuple
 
 import numpy as np
 import torch
@@ -366,3 +366,149 @@ def create_default_res_block(
         ),
         activation=None if activation is None else activation(),
     )
+
+
+class ResStage(nn.Module):
+    """
+    ResStage composes sequential blocks that make up a ResNet. These blocks could be,
+    for example, Residual blocks, Non-Local layers, or Squeeze-Excitation layers.
+
+                                        Input
+                                           ↓
+                                       ResBlock
+                                           ↓
+                                      (Optional)
+                                      Plugin layer
+                                           ↓
+                                          ...
+                                           ↓
+                                       ResBlock
+                                           ↓
+                                      (Optional)
+                                      Plugin layer
+
+    The default builder can be found in `create_default_res_stage`.
+    """
+
+    def __init__(self, res_blocks: List[nn.Module] = None) -> nn.Module:
+        """
+        Args:
+            res_blocks (list of torch.nn.modules): a list of ResBlock module(s).
+        """
+        super().__init__()
+        self._construct_model(res_blocks)
+
+    def _construct_model(self, res_blocks: List[nn.Module] = None) -> None:
+        """
+        Constructs a nn.ModuleList model from `res_blocks`.
+            res_blocks (list of torch.nn.modules): a list of ResBlock module(s).
+        """
+        models = []
+        for ind in range(len(res_blocks)):
+            models.append(res_blocks[ind])
+        self.stage = torch.nn.ModuleList(models)
+
+    def forward(self, x) -> torch.Tensor:
+        for _, m in enumerate(self.stage):
+            x = m(x)
+        return x
+
+
+def create_default_res_stage(
+    *,
+    # Stage configs.
+    depth: int,
+    # Bottleneck Block configs.
+    dim_in: int,
+    dim_inner: int,
+    dim_out: int,
+    bottleneck: Callable,
+    # Conv configs.
+    conv_a_kernel_size: Tuple[int] = (3, 1, 1),
+    conv_a_stride: Tuple[int] = (2, 1, 1),
+    conv_a_padding: Tuple[int] = (1, 0, 0),
+    conv_b_kernel_size: Tuple[int] = (1, 3, 3),
+    conv_b_stride: Tuple[int] = (1, 2, 2),
+    conv_b_padding: Tuple[int] = (0, 1, 1),
+    conv_b_num_groups: int = 1,
+    conv_b_dilation: Tuple[int] = (1, 1, 1),
+    # Norm configs.
+    norm: Callable = nn.BatchNorm3d,
+    norm_eps: float = 1e-5,
+    norm_momentum: float = 0.1,
+    # Activation configs.
+    activation: Callable = nn.ReLU,
+) -> nn.Module:
+    """
+    Create default Residual Stage, which composes sequential blocks that make up a
+    ResNet. These blocks could be, for example, Residual blocks, Non-Local layers, or
+    Squeeze-Excitation layers.
+
+
+                                        Input
+                                           ↓
+                                       ResBlock
+                                           ↓
+                                          ...
+                                           ↓
+                                       ResBlock
+
+    Normalization examples include: BatchNorm3d and None (no normalization).
+    Activation examples include: ReLU, Softmax, Sigmoid, and None (no activation).
+    Bottleneck examples include: create_default_bottleneck_block.
+
+    Args:
+        Bottleneck block related configs:
+            dim_in (int): input channel size to the bottleneck block.
+            dim_inner (int): intermediate channel size of the bottleneck.
+            dim_out (int): output channel size of the bottleneck.
+            bottleneck (callable): a callable that constructs bottleneck block layer.
+                Examples include: create_default_bottleneck_block.
+
+        Convolution related configs:
+            conv_a_kernel_size (tuple): convolutional kernel size(s) for conv_a.
+            conv_a_stride (tuple): convolutional stride size(s) for conv_a.
+            conv_a_padding (tuple): convolutional padding(s) for conv_a.
+            conv_b_kernel_size (tuple): convolutional kernel size(s) for conv_b.
+            conv_b_stride (tuple): convolutional stride size(s) for conv_b.
+            conv_b_padding (tuple): convolutional padding(s) for conv_b.
+            conv_b_num_groups (int): number of groups for groupwise convolution for
+                conv_b.
+            conv_b_dilation (tuple): dilation for 3D convolution for conv_b.
+
+        BN related configs:
+            norm (callable): a callable that constructs normalization layer. Examples
+                include nn.BatchNorm3d, and None (not performing normalization).
+            norm_eps (float): normalization epsilon.
+            norm_momentum (float): normalization momentum.
+
+        Activation related configs:
+            activation (callable): a callable that constructs activation layer. Examples
+                include: nn.ReLU, nn.Softmax, nn.Sigmoid, and None (not performing
+                activation).
+
+    Returns:
+        (nn.Module): resnet basic stage layer.
+    """
+    res_blocks = []
+    for ind in range(depth):
+        block = create_default_res_block(
+            dim_in=dim_in if ind == 0 else dim_out,
+            dim_inner=dim_inner,
+            dim_out=dim_out,
+            bottleneck=bottleneck,
+            conv_a_kernel_size=conv_a_kernel_size,
+            conv_a_stride=conv_a_stride if ind == 0 else (1, 1, 1),
+            conv_a_padding=conv_a_padding,
+            conv_b_kernel_size=conv_b_kernel_size,
+            conv_b_stride=conv_b_stride if ind == 0 else (1, 1, 1),
+            conv_b_padding=conv_b_padding,
+            conv_b_num_groups=conv_b_num_groups,
+            conv_b_dilation=conv_b_dilation,
+            norm=norm,
+            norm_eps=norm_eps,
+            norm_momentum=norm_momentum,
+            activation=activation,
+        )
+        res_blocks.append(block)
+    return ResStage(res_blocks=res_blocks)
