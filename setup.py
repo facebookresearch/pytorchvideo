@@ -10,7 +10,14 @@ setup(
     url="unknown",  # https://github.com/facebookresearch/pytorchvideo
     description="",
     python_requires=">=3.6",
-    install_requires=["fvcore", "termcolor>=1.1", "simplejson", "tqdm", "psutil"],
+    install_requires=[
+        "fvcore",
+        "termcolor>=1.1",
+        "simplejson",
+        "tqdm",
+        "psutil",
+        "numpy",
+    ],
     extras_require={"all": ["shapely", "psutil"]},
     packages=find_packages(exclude=("configs", "tests")),
 )

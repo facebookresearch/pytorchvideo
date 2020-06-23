@@ -2,6 +2,7 @@ from typing import Callable, Tuple
 
 import torch
 import torch.nn as nn
+from pytorchvideo.models.utils import set_attributes
 
 
 class ResNetBasicHead(nn.Module):
@@ -38,19 +39,8 @@ class ResNetBasicHead(nn.Module):
             activation (torch.nn.modules): activation module.
         """
         super(ResNetBasicHead, self).__init__()
-        self.set_attributes(locals())
+        set_attributes(self, locals())
         assert self.proj is not None
-
-    def set_attributes(self, params: list = None) -> None:
-        """
-        Set attributes from the input list of parameters.
-        Args:
-            params (list): list of parameters.
-        """
-        if params:
-            for k, v in params.items():
-                if k != "self" and not k.startswith("_"):
-                    setattr(self, k, v)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         # Performs pooling.

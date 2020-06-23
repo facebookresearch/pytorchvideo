@@ -1,7 +1,9 @@
 from typing import Callable, Tuple
 
+import numpy as np
 import torch
 import torch.nn as nn
+from pytorchvideo.models.utils import set_attributes
 
 
 class BottleneckBlock(nn.Module):
@@ -9,21 +11,21 @@ class BottleneckBlock(nn.Module):
     Bottleneck block: a sequence of spatiotemporal Convolution, Normalization,
     and Activations repeated in the following order:
 
-                                      Conv3d (conv_a)
+                                    Conv3d (conv_a)
                                            ↓
-                                   Normalization (norm_a)
+                                 Normalization (norm_a)
                                            ↓
-                                     Activation (act_a)
+                                   Activation (act_a)
                                            ↓
-                                      Conv3d (conv_b)
+                                    Conv3d (conv_b)
                                            ↓
-                                   Normalization (norm_b)
+                                 Normalization (norm_b)
                                            ↓
-                                     Activation (act_b)
+                                   Activation (act_b)
                                            ↓
-                                      Conv3d (conv_c)
+                                    Conv3d (conv_c)
                                            ↓
-                                   Normalization (norm_c)
+                                 Normalization (norm_c)
 
     The default builder can be found in `create_default_bottleneck_block`.
     """
@@ -52,22 +54,11 @@ class BottleneckBlock(nn.Module):
             norm_c (torch.nn.modules): normalization module.
         """
         super().__init__()
-        self._set_attributes(locals())
+        set_attributes(self, locals())
         assert all(op is not None for op in (self.conv_a, self.conv_b, self.conv_c))
         if self.norm_c is not None:
             # This flag is used for weight initialization.
             self.norm_c.block_final_bn = True
-
-    def _set_attributes(self, params: list = None) -> None:
-        """
-        Set attributes from the input list of parameters.
-        Args:
-            params (list): list of parameters.
-        """
-        if params:
-            for k, v in params.items():
-                if k != "self" and not k.startswith("_"):
-                    setattr(self, k, v)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         # Explicitly forward every layer.
@@ -117,21 +108,21 @@ def create_default_bottleneck_block(
     Bottleneck block: a sequence of spatiotemporal Convolution, Normalization,
     and Activations repeated in the following order:
 
-                                      Conv3d (conv_a)
+                                    Conv3d (conv_a)
                                            ↓
-                                   Normalization (norm_a)
+                                 Normalization (norm_a)
                                            ↓
-                                     Activation (act_a)
+                                   Activation (act_a)
                                            ↓
-                                      Conv3d (conv_b)
+                                    Conv3d (conv_b)
                                            ↓
-                                   Normalization (norm_b)
+                                 Normalization (norm_b)
                                            ↓
-                                     Activation (act_b)
+                                   Activation (act_b)
                                            ↓
-                                      Conv3d (conv_c)
+                                    Conv3d (conv_c)
                                            ↓
-                                   Normalization (norm_c)
+                                 Normalization (norm_c)
 
     Normalization examples include: BatchNorm3d and None (no normalization).
     Activation examples include: ReLU, Softmax, Sigmoid, and None (no activation).
@@ -147,10 +138,11 @@ def create_default_bottleneck_block(
             conv_b_kernel_size (tuple): convolutional kernel size(s) for conv_b.
             conv_b_stride (tuple): convolutional stride size(s) for conv_b.
             conv_b_padding (tuple): convolutional padding(s) for conv_b.
-            conv_b_num_groups (int): number of groups for groupwise convolution for conv_b.
+            conv_b_num_groups (int): number of groups for groupwise convolution for
+                conv_b.
             conv_b_dilation (tuple): dilation for 3D convolution for conv_b.
 
-        BN related configs:
+        Normalization related configs:
             norm (callable): a callable that constructs normalization layer, examples
                 include nn.BatchNorm3d, None (not performing normalization).
             norm_eps (float): normalization epsilon.
@@ -194,13 +186,10 @@ def create_default_bottleneck_block(
         if norm is None
         else norm(num_features=dim_inner, eps=norm_eps, momentum=norm_momentum)
     )
-    act_b = (None if activation is None else activation())
+    act_b = None if activation is None else activation()
 
     conv_c = nn.Conv3d(
-        in_channels=dim_inner,
-        out_channels=dim_out,
-        kernel_size=(1, 1, 1),
-        bias=False,
+        in_channels=dim_inner, out_channels=dim_out, kernel_size=(1, 1, 1), bias=False
     )
     norm_c = (
         None
@@ -217,4 +206,163 @@ def create_default_bottleneck_block(
         act_b=act_b,
         conv_c=conv_c,
         norm_c=norm_c,
+    )
+
+
+class ResBlock(nn.Module):
+    """
+    Residual block. Performs a summation between an identity shortcut in branch1 and a
+    main block in branch2. When the input and output dimensions are different, a
+    convolution followed by a normalization will be performed.
+
+                                         Input
+                                           |-------+
+                                           ↓       |
+                                         Block     |
+                                           ↓       |
+                                       Summation ←-+
+                                           ↓
+                                       Activation
+
+    The default builder can be found in `create_default_res_block`.
+    """
+
+    def __init__(
+        self,
+        branch1_conv: nn.Module = None,
+        branch1_norm: nn.Module = None,
+        branch2: nn.Module = None,
+        activation: nn.Module = None,
+    ) -> nn.Module:
+        """
+        Args:
+            branch1_conv (torch.nn.modules): convolutional module in branch1.
+            branch1_norm (torch.nn.modules): normalization module in branch1.
+            branch2 (torch.nn.modules): bottleneck block module in branch2.
+            activation (torch.nn.modules): activation module.
+        """
+        super().__init__()
+        set_attributes(self, locals())
+        assert self.branch2 is not None
+
+    def forward(self, x) -> torch.Tensor:
+        if self.branch1_conv is None:
+            x = x + self.branch2(x)
+        else:
+            residual = self.branch1_conv(x)
+            if self.branch1_norm is not None:
+                residual = self.branch1_norm(residual)
+            x = residual + self.branch2(x)
+        if self.activation is not None:
+            x = self.activation(x)
+        return x
+
+
+def create_default_res_block(
+    *,
+    # Bottleneck Block configs.
+    dim_in: int,
+    dim_inner: int,
+    dim_out: int,
+    bottleneck: Callable,
+    use_shortcut: bool = True,
+    # Conv configs.
+    conv_a_kernel_size: Tuple[int] = (3, 1, 1),
+    conv_a_stride: Tuple[int] = (2, 1, 1),
+    conv_a_padding: Tuple[int] = (1, 0, 0),
+    conv_b_kernel_size: Tuple[int] = (1, 3, 3),
+    conv_b_stride: Tuple[int] = (1, 2, 2),
+    conv_b_padding: Tuple[int] = (0, 1, 1),
+    conv_b_num_groups: int = 1,
+    conv_b_dilation: Tuple[int] = (1, 1, 1),
+    # Norm configs.
+    norm: Callable = nn.BatchNorm3d,
+    norm_eps: float = 1e-5,
+    norm_momentum: float = 0.1,
+    # Activation configs.
+    activation: Callable = nn.ReLU,
+) -> nn.Module:
+    """
+    Residual block. Performs a summation between an identity shortcut in branch1 and a
+    main block in branch2. When the input and output dimensions are different, a
+    convolution followed by a normalization will be performed.
+
+                                         Input
+                                           |-------+
+                                           ↓       |
+                                         Block     |
+                                           ↓       |
+                                       Summation ←-+
+                                           ↓
+                                       Activation
+
+    Normalization examples include: BatchNorm3d and None (no normalization).
+    Activation examples include: ReLU, Softmax, Sigmoid, and None (no activation).
+    Transform examples include: BottleneckBlock.
+
+    Args:
+        Bottleneck block related configs:
+            dim_in (int): input channel size to the bottleneck block.
+            dim_inner (int): intermediate channel size of the bottleneck.
+            dim_out (int): output channel size of the bottleneck.
+            bottleneck (callable): a callable that constructs bottleneck block layer.
+                Examples include: create_default_bottleneck_block.
+
+        Convolution related configs:
+            conv_a_kernel_size (tuple): convolutional kernel size(s) for conv_a.
+            conv_a_stride (tuple): convolutional stride size(s) for conv_a.
+            conv_a_padding (tuple): convolutional padding(s) for conv_a.
+            conv_b_kernel_size (tuple): convolutional kernel size(s) for conv_b.
+            conv_b_stride (tuple): convolutional stride size(s) for conv_b.
+            conv_b_padding (tuple): convolutional padding(s) for conv_b.
+            conv_b_num_groups (int): number of groups for groupwise convolution for
+                conv_b.
+            conv_b_dilation (tuple): dilation for 3D convolution for conv_b.
+
+        Normalization related configs:
+            norm (callable): a callable that constructs normalization layer. Examples
+                include nn.BatchNorm3d, None (not performing normalization).
+            norm_eps (float): normalization epsilon.
+            norm_momentum (float): normalization momentum.
+
+        Activation related configs:
+            activation (callable): a callable that constructs activation layer. Examples
+                include: nn.ReLU, nn.Softmax, nn.Sigmoid, and None (not performing
+                activation).
+
+    Returns:
+        (nn.Module): resnet basic block layer.
+    """
+    norm_model = None
+    if norm is not None and dim_in != dim_out:
+        norm_model = norm(num_features=dim_out)
+
+    return ResBlock(
+        branch1_conv=nn.Conv3d(
+            dim_in,
+            dim_out,
+            kernel_size=(1, 1, 1),
+            stride=tuple(map(np.prod, zip(conv_a_stride, conv_b_stride))),
+        )
+        if dim_in != dim_out and use_shortcut
+        else None,
+        branch1_norm=norm_model if dim_in != dim_out and use_shortcut else None,
+        branch2=bottleneck(
+            dim_in=dim_in,
+            dim_inner=dim_inner,
+            dim_out=dim_out,
+            conv_a_kernel_size=conv_a_kernel_size,
+            conv_a_stride=conv_a_stride,
+            conv_a_padding=conv_a_padding,
+            conv_b_kernel_size=conv_b_kernel_size,
+            conv_b_stride=conv_b_stride,
+            conv_b_padding=conv_b_padding,
+            conv_b_num_groups=conv_b_num_groups,
+            conv_b_dilation=conv_b_dilation,
+            norm=norm,
+            norm_eps=norm_eps,
+            norm_momentum=norm_momentum,
+            activation=activation,
+        ),
+        activation=None if activation is None else activation(),
     )

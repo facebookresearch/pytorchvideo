@@ -2,6 +2,7 @@ from typing import Callable, Tuple
 
 import torch
 import torch.nn as nn
+from pytorchvideo.models.utils import set_attributes
 
 
 class ResNetBasicStem(nn.Module):
@@ -36,19 +37,8 @@ class ResNetBasicStem(nn.Module):
             pool (torch.nn.modules): pooling module.
         """
         super().__init__()
-        self._set_attributes(locals())
+        set_attributes(self, locals())
         assert self.conv is not None
-
-    def _set_attributes(self, params: list = None) -> None:
-        """
-        Set attributes from the input list of parameters.
-        Args:
-            params (list): list of parameters.
-        """
-        if params:
-            for k, v in params.items():
-                if k != "self" and not k.startswith("_"):
-                    setattr(self, k, v)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         x = self.conv(x)

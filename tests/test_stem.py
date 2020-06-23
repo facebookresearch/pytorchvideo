@@ -35,13 +35,13 @@ class TestResNetBasicStem(unittest.TestCase):
             for tensor in TestResNetBasicStem._get_inputs(input_dim):
                 if tensor.shape[1] != input_dim:
                     with self.assertRaises(RuntimeError):
-                        out = model(tensor)
+                        output_tensor = model(tensor)
                     continue
                 else:
-                    out = model(tensor)
+                    output_tensor = model(tensor)
 
                 input_shape = tensor.shape
-                output_shape = out.shape
+                output_shape = output_tensor.shape
                 output_shape_gt = (
                     input_shape[0],
                     output_dim,
@@ -80,16 +80,16 @@ class TestResNetBasicStem(unittest.TestCase):
             )
 
             # Test forwarding.
-            for tensor in TestResNetBasicStem._get_inputs(input_dim):
-                if tensor.shape[1] != input_dim:
+            for input_tensor in TestResNetBasicStem._get_inputs(input_dim):
+                if input_tensor.shape[1] != input_dim:
                     with self.assertRaises(Exception):
-                        out = model(tensor)
+                        output_tensor = model(input_tensor)
                     continue
                 else:
-                    out = model(tensor)
+                    output_tensor = model(input_tensor)
 
-                input_shape = tensor.shape
-                output_shape = out.shape
+                input_shape = input_tensor.shape
+                output_shape = output_tensor.shape
 
                 output_shape_gt = (
                     input_shape[0],
@@ -144,23 +144,25 @@ class TestResNetBasicStem(unittest.TestCase):
             )  # explicitly use strict mode.
 
             # Test forwarding.
-            for tensor in TestResNetBasicStem._get_inputs():
+            for input_tensor in TestResNetBasicStem._get_inputs():
                 with torch.no_grad():
-                    if tensor.shape[1] != 3:
+                    if input_tensor.shape[1] != 3:
                         with self.assertRaises(RuntimeError):
-                            out = model(tensor)
+                            output_tensor = model(input_tensor)
                         continue
                     else:
-                        out = model(tensor)
-                        out_gt = model(tensor)
+                        output_tensor = model(input_tensor)
+                        output_tensor_gt = model(input_tensor)
                 self.assertEqual(
-                    out.shape,
-                    out_gt.shape,
+                    output_tensor.shape,
+                    output_tensor_gt.shape,
                     "Output shape {} is different from expected shape {}".format(
-                        out.shape, out_gt.shape
+                        output_tensor.shape, output_tensor_gt.shape
                     ),
                 )
-                self.assertTrue(np.allclose(out.numpy(), out_gt.numpy()))
+                self.assertTrue(
+                    np.allclose(output_tensor.numpy(), output_tensor_gt.numpy())
+                )
 
     @staticmethod
     def _get_inputs(input_dim: int = 3) -> torch.tensor:
