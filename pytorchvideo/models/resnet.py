@@ -3,7 +3,9 @@ from typing import Callable, List, Tuple
 import numpy as np
 import torch
 import torch.nn as nn
-from pytorchvideo.models.utils import set_attributes
+from pytorchvideo.models.utils import set_attributes, _MODEL_STAGE_DEPTH
+from pytorchvideo.models.stem import create_default_res_basic_stem
+from pytorchvideo.models.head import create_res_basic_head
 
 
 class BottleneckBlock(nn.Module):
@@ -380,7 +382,9 @@ class ResStage(nn.Module):
                                       (Optional)
                                       Plugin layer
                                            ↓
-                                          ...
+                                           .
+                                           .
+                                           .
                                            ↓
                                        ResBlock
                                            ↓
@@ -449,7 +453,9 @@ def create_default_res_stage(
                                            ↓
                                        ResBlock
                                            ↓
-                                          ...
+                                           .
+                                           .
+                                           .
                                            ↓
                                        ResBlock
 
@@ -512,3 +518,229 @@ def create_default_res_stage(
         )
         res_blocks.append(block)
     return ResStage(res_blocks=res_blocks)
+
+
+class ResNet(nn.Module):
+    """
+    Build ResNet style models for video recognition. ResNet has three parts:
+    Stem, Stages and Head. Stem is the first Convolution layer (Conv1) with an
+    optional pooling layer. Stages are grouped residual blocks. There are usually
+    multiple stages and each stage may include multiple residual blocks. Head
+    may include pooling, dropout, a fully-connected layer and global spatial
+    temporal averaging. The three parts are assembled in the following order:
+
+                                         Input
+                                           ↓
+                                         Stem
+                                           ↓
+                                         Stage 1
+                                           ↓
+                                           .
+                                           .
+                                           .
+                                           ↓
+                                         Stage N
+                                           ↓
+                                         Head
+
+    The default ResNet can be found in `create_default_resnet`.
+    """
+
+    def __init__(
+        self,
+        *,
+        stem: nn.Module = None,
+        stages: List[nn.Module] = None,
+        head: nn.Module = None,
+    ) -> None:
+        """
+        Args:
+            stem (torch.nn.modules): the Stem module.
+            stages (list of torch.nn.modules): a list of Stage module(s).
+            head (torch.nn.modules): the Head module.
+        """
+        super().__init__()
+        set_attributes(self, locals())
+        assert self.stages is not None
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        if self.stem is not None:
+            x = self.stem(x)
+
+        for idx in range(len(self.stages)):
+            x = self.stages[idx](x)
+
+        if self.head is not None:
+            x = self.head(x)
+        return x
+
+
+def create_default_resnet(
+    *,
+    # Input clip configs.
+    input_channel: int = 3,
+    input_clip_length: int = 8,
+    input_crop_size: int = 224,
+    # Model configs.
+    model_depth: int = 50,
+    model_num_class: int = 400,
+    dropout_rate: float = 0.5,
+    # Normalization configs.
+    norm: Callable = nn.BatchNorm3d,
+    # Activation configs.
+    activation: Callable = nn.ReLU,
+    # Stem configs.
+    stem_dim_out: int = 64,
+    stem_conv_kernel_size: Tuple[int] = (3, 7, 7),
+    stem_conv_stride: Tuple[int] = (1, 2, 2),
+    stem_pool: Callable = nn.MaxPool3d,
+    stem_pool_kernel_size: Tuple[int] = (1, 3, 3),
+    stem_pool_stride: Tuple[int] = (1, 2, 2),
+    # Stage configs.
+    stage_conv_a_kernel_size: Tuple[int] = (3, 1, 1),
+    stage_conv_b_kernel_size: Tuple[int] = (1, 3, 3),
+    stage_conv_b_num_groups: int = 1,
+    stage_conv_b_dilation: Tuple[int] = (1, 1, 1),
+    stage_spatial_stride: Tuple[int] = (1, 2, 2, 2),
+    stage_temporal_stride: Tuple[int] = (1, 2, 2, 2),
+    bottleneck: Callable = create_default_bottleneck_block,
+    # Head configs.
+    head_pool: Callable = nn.AvgPool3d,
+    head_output_size: Tuple[int] = (1, 1, 1),
+    head_activation: Callable = nn.Softmax,
+) -> nn.Module:
+    """
+    Build ResNet style models for video recognition. ResNet has three parts:
+    Stem, Stages and Head. The three parts are assembled in the following order:
+
+                                         Input
+                                           ↓
+                                         Stem
+                                           ↓
+                                         Stage 1
+                                           ↓
+                                           .
+                                           .
+                                           .
+                                           ↓
+                                         Stage N
+                                           ↓
+                                         Head
+
+    Args:
+        Input clip configs:
+            input_channel (int): number of channels for the input video clip.
+            input_clip_length (int): length of the input video clip.
+            input_crop_size (int): spatial resolution of the input video clip.
+
+        Model configs:
+            model_depth (int): the depth of the resnet.
+            model_num_class (int): the number of classes for the video dataset.
+            dropout_rate (float): dropout rate.
+
+        Normalization configs:
+            norm (callable): a callable that constructs normalization layer.
+
+        Activation configs:
+            activation (callable): a callable that constructs activation layer.
+
+        Stem configs:
+            stem_dim_out (int): output channel size to stem.
+            stem_conv_kernel_size (tuple): convolutional kernel size(s) of stem.
+            stem_conv_stride (tuple): convolutional stride size(s) of stem.
+            stem_pool (callable): a callable that constructs resnet head pooling layer.
+            stem_pool_kernel_size (tuple): pooling kernel size(s).
+            stem_pool_stride (tuple): pooling stride size(s).
+
+        Stage configs:
+            stage_conv_a_kernel_size (tuple): convolutional kernel size(s) for conv_a.
+            stage_conv_b_kernel_size (tuple): convolutional kernel size(s) for conv_b.
+            stage_conv_b_num_groups (int): number of groups for groupwise convolution
+                for conv_b. 1 for ResNet, and larger than 1 for ResNeXt.
+            stage_conv_b_dilation (tuple): dilation for 3D convolution for conv_b.
+            stage_spatial_stride (tuple): the spatial stride for each stage.
+            stage_temporal_stride (tuple): the temporal stride for each stage.
+            bottleneck (callable): a callable that constructs bottleneck block layer.
+                Examples include: create_default_bottleneck_block.
+
+        Head configs:
+            head_pool (callable): a callable that constructs resnet head pooling layer.
+            head_output_size (tuple): the size of output tensor for head.
+            head_activation (callable): a callable that constructs activation layer.
+
+    Returns:
+        (nn.Module): basic resnet.
+    """
+    # Create stem for resnet.
+    stem = create_default_res_basic_stem(
+        in_channels=input_channel,
+        out_channels=stem_dim_out,
+        conv_kernel_size=stem_conv_kernel_size,
+        conv_stride=stem_conv_stride,
+        conv_padding=[size // 2 for size in stem_conv_kernel_size],
+        pool=stem_pool,
+        pool_kernel_size=stem_pool_kernel_size,
+        pool_stride=stem_pool_stride,
+        pool_padding=[size // 2 for size in stem_pool_kernel_size],
+        norm=norm,
+        activation=activation,
+    )
+
+    # Given a model depth, get the number of blocks for each stage.
+    assert model_depth in _MODEL_STAGE_DEPTH.keys()
+    stage_depths = _MODEL_STAGE_DEPTH[model_depth]
+
+    stage_dim_in = stem_dim_out
+    stage_dim_out = stage_dim_in * 4
+
+    stages = []
+    # Create each stage for resnet.
+    for idx in range(len(stage_depths)):
+        stage_dim_inner = stage_dim_out // 4
+        depth = stage_depths[idx]
+
+        stage_conv_a_stride = (stage_temporal_stride[idx], 1, 1)
+        stage_conv_b_stride = (1, stage_spatial_stride[idx], stage_spatial_stride[idx])
+
+        stage = create_default_res_stage(
+            depth=depth,
+            dim_in=stage_dim_in,
+            dim_inner=stage_dim_inner,
+            dim_out=stage_dim_out,
+            bottleneck=bottleneck,
+            conv_a_kernel_size=stage_conv_a_kernel_size,
+            conv_a_stride=stage_conv_a_stride,
+            conv_a_padding=[size // 2 for size in stage_conv_a_kernel_size],
+            conv_b_kernel_size=stage_conv_b_kernel_size,
+            conv_b_stride=stage_conv_b_stride,
+            conv_b_padding=[size // 2 for size in stage_conv_b_kernel_size],
+            conv_b_num_groups=stage_conv_b_num_groups,
+            conv_b_dilation=stage_conv_b_dilation,
+            norm=norm,
+            activation=activation,
+        )
+
+        stages.append(stage)
+        stage_dim_in = stage_dim_out
+        stage_dim_out = stage_dim_out * 2
+
+    # Create head for resnet.
+    total_spatial_stride = stem_conv_stride[1] * stem_pool_stride[1] * np.prod(stage_spatial_stride)
+    total_temporal_stride = stem_conv_stride[0] * stem_pool_stride[0] * np.prod(stage_temporal_stride)
+    head_pool_kernel_size = (
+        input_clip_length // total_temporal_stride,
+        input_crop_size // total_spatial_stride,
+        input_crop_size // total_spatial_stride
+    )
+
+    head = create_res_basic_head(
+        in_features=stage_dim_in,
+        out_features=model_num_class,
+        pool=head_pool,
+        output_size=head_output_size,
+        pool_kernel_size=head_pool_kernel_size,
+        dropout_rate=dropout_rate,
+        activation=head_activation,
+    )
+
+    return ResNet(stem=stem, stages=stages, head=head)

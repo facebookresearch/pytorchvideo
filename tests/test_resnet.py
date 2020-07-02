@@ -7,10 +7,15 @@ from pytorchvideo.models.resnet import (
     BottleneckBlock,
     ResBlock,
     ResStage,
+    ResNet,
     create_default_bottleneck_block,
     create_default_res_block,
     create_default_res_stage,
+    create_default_resnet,
 )
+from pytorchvideo.models.stem import ResNetBasicStem
+from pytorchvideo.models.head import ResNetBasicHead
+from pytorchvideo.models.utils import _MODEL_STAGE_DEPTH
 from torch import nn
 
 
@@ -719,6 +724,261 @@ class TestResStageTransform(unittest.TestCase):
             # Forward failed.
             (8, dim_in * 2, 3, 7, 7),
             (8, dim_in * 4, 5, 7, 7),
+        )
+        for shape in shapes:
+            yield torch.rand(shape)
+
+
+class TestResNet(unittest.TestCase):
+    def setUp(self):
+        super().setUp()
+        torch.set_rng_state(torch.manual_seed(42).get_state())
+
+    def _build_resnet(
+        input_channel,
+        input_clip_length,
+        input_crop_size,
+        model_depth,
+        norm,
+        activation,
+    ):
+        stem_dim_out = 64
+        model_num_class = 10
+        # create the Stem for ResNet
+        stem = ResNetBasicStem(
+            conv=nn.Conv3d(
+                input_channel,
+                stem_dim_out,
+                kernel_size=[3, 7, 7],
+                stride=[1, 2, 2],
+                padding=[1, 3, 3],
+                bias=False,
+            ),
+            norm=None if norm is None else norm(stem_dim_out),
+            activation=None if activation is None else activation(),
+            pool=nn.MaxPool3d(
+                kernel_size=[1, 3, 3], stride=[1, 2, 2], padding=[0, 1, 1]
+            ),
+        )
+
+        # get the number of Blocks for each Stage
+        stage_depths = _MODEL_STAGE_DEPTH[model_depth]
+
+        stage_dim_in = stem_dim_out
+        stage_dim_out = stage_dim_in * 4
+        stage_spatial_stride = (2, 1, 1, 1)
+        stage_temporal_stride = (2, 1, 1, 1)
+
+        stages = []
+        # create each Stage for ResNet
+        for i in range(len(stage_depths)):
+            stage_dim_inner = stage_dim_out // 4
+            depth = stage_depths[i]
+
+            block_dim_in = stage_dim_in
+            block_dim_inner = stage_dim_inner
+            block_dim_out = stage_dim_out
+
+            blocks = []
+            for j in range(depth):
+                spatial_stride = stage_spatial_stride[i] if j == 0 else 1
+                temporal_stride = stage_temporal_stride[i] if j == 0 else 1
+                # create each Block for the Stage
+                block = ResBlock(
+                    branch1_conv=nn.Conv3d(
+                        block_dim_in,
+                        block_dim_out,
+                        kernel_size=(1, 1, 1),
+                        stride=(temporal_stride, spatial_stride, spatial_stride)
+                    ) if block_dim_in != block_dim_out else None,
+                    branch1_norm=None if norm is None else norm(block_dim_out)
+                    if block_dim_in != block_dim_out else None,
+                    branch2=BottleneckBlock(
+                        conv_a=nn.Conv3d(
+                            block_dim_in,
+                            block_dim_inner,
+                            kernel_size=[3, 1, 1],
+                            stride=[temporal_stride, 1, 1],
+                            padding=[1, 0, 0],
+                            bias=False,
+                        ),
+                        norm_a=None if norm is None else norm(block_dim_inner),
+                        act_a=nn.ReLU(),
+                        conv_b=nn.Conv3d(
+                            block_dim_inner,
+                            block_dim_inner,
+                            kernel_size=[1, 3, 3],
+                            stride=[1, spatial_stride, spatial_stride],
+                            padding=[0, 1, 1],
+                            bias=False,
+                        ),
+                        norm_b=None if norm is None else norm(block_dim_inner),
+                        act_b=nn.ReLU(),
+                        conv_c=nn.Conv3d(
+                            block_dim_inner,
+                            block_dim_out,
+                            kernel_size=[1, 1, 1],
+                            stride=[1, 1, 1],
+                            padding=[0, 0, 0],
+                            bias=False,
+                        ),
+                        norm_c=None if norm is None else norm(block_dim_out),
+                    ),
+                    activation=None if activation is None else activation(),
+                )
+
+                block_dim_in = block_dim_out
+                blocks.append(block)
+
+            stage = ResStage(blocks)
+            stages.append(stage)
+
+            stage_dim_in = stage_dim_out
+            stage_dim_out = stage_dim_out * 2
+
+        # Create Head for ResNet
+        total_spatial_stride = 4 * np.prod(stage_spatial_stride)
+        total_temporal_stride = np.prod(stage_temporal_stride)
+        head_pool_kernel_size = (
+            input_clip_length // total_temporal_stride,
+            input_crop_size // total_spatial_stride,
+            input_crop_size // total_spatial_stride
+        )
+
+        head = ResNetBasicHead(
+            proj=nn.Linear(stage_dim_in, model_num_class),
+            activation=nn.Softmax(),
+            pool=nn.AvgPool3d(kernel_size=head_pool_kernel_size, stride=[1, 1, 1]),
+            dropout=None,
+        )
+
+        return ResNet(stem=stem, stages=stages, head=head), model_num_class
+
+    def test_create_resnet(self):
+        """
+        Test simple ResNet with different inputs.
+        """
+        for input_channel, input_clip_length, input_crop_size in itertools.product(
+            (3, 2), (2, 4), (56, 64)
+        ):
+            model_depth = 26
+            model, num_class = TestResNet._build_resnet(
+                input_channel,
+                input_clip_length,
+                input_crop_size,
+                model_depth,
+                nn.BatchNorm3d,
+                nn.ReLU
+            )
+
+            # Test forwarding.
+            for tensor in TestResNet._get_inputs(input_channel, input_clip_length, input_crop_size):
+                if tensor.shape[1] != input_channel:
+                    with self.assertRaises(RuntimeError):
+                        out = model(tensor)
+                    continue
+
+                out = model(tensor)
+
+                output_shape = out.shape
+                output_shape_gt = (
+                    tensor.shape[0],
+                    num_class,
+                )
+
+                self.assertEqual(
+                    output_shape,
+                    output_shape_gt,
+                    "Output shape {} is different from expected shape {}".format(
+                        output_shape, output_shape_gt
+                    ),
+                )
+
+    def test_create_default_resnet_with_callable(self):
+        """
+        Test default builder `create_default_resnet` with callable inputs.
+        """
+        for (norm, activation) in itertools.product(
+            (nn.BatchNorm3d, None), (nn.ReLU, nn.Sigmoid, None)
+        ):
+            input_channel = 3
+            input_clip_length = 4
+            input_crop_size = 56
+            model_depth = 26
+            model_gt, num_class = TestResNet._build_resnet(
+                input_channel,
+                input_clip_length,
+                input_crop_size,
+                model_depth,
+                norm,
+                activation,
+            )
+
+            model = create_default_resnet(
+                input_channel=input_channel,
+                input_clip_length=input_clip_length,
+                input_crop_size=input_crop_size,
+                model_depth=26,
+                model_num_class=num_class,
+                dropout_rate=0,
+                norm=norm,
+                activation=activation,
+                stem_dim_out=64,
+                stem_conv_kernel_size=(3, 7, 7),
+                stem_conv_stride=(1, 2, 2),
+                stem_pool=nn.MaxPool3d,
+                stem_pool_kernel_size=(1, 3, 3),
+                stem_pool_stride=(1, 2, 2),
+                stage_conv_a_kernel_size=(3, 1, 1),
+                stage_conv_b_kernel_size=(1, 3, 3),
+                stage_spatial_stride=(2, 1, 1, 1),
+                stage_temporal_stride=(2, 1, 1, 1),
+                bottleneck=create_default_bottleneck_block,
+                head_pool=nn.AvgPool3d,
+                head_output_size=(1, 1, 1),
+                head_activation=nn.Softmax,
+            )
+
+            model.load_state_dict(
+                model_gt.state_dict(), strict=True
+            )  # explicitly use strict mode.
+
+            # Test forwarding.
+            for tensor in TestResNet._get_inputs(input_channel, input_clip_length, input_crop_size):
+                with torch.no_grad():
+                    if tensor.shape[1] != input_channel:
+                        with self.assertRaises(RuntimeError):
+                            out = model(tensor)
+                        continue
+
+                    out = model(tensor)
+                    out_gt = model_gt(tensor)
+
+                self.assertEqual(
+                    out.shape,
+                    out_gt.shape,
+                    "Output shape {} is different from expected shape {}".format(
+                        out.shape, out_gt.shape
+                    ),
+                )
+                self.assertTrue(np.allclose(out.numpy(), out_gt.numpy(), rtol=1e-1, atol=1e-1))
+
+    @staticmethod
+    def _get_inputs(
+        channel: int = 3,
+        clip_length: int = 8,
+        crop_size: int = 224,
+    ) -> torch.tensor:
+        """
+        Provide different tensors as test cases.
+
+        Yield:
+            (torch.tensor): tensor as test case input.
+        """
+        # Prepare random inputs as test cases.
+        shapes = (
+            (1, channel, clip_length, crop_size, crop_size),
+            (2, channel, clip_length, crop_size, crop_size),
         )
         for shape in shapes:
             yield torch.rand(shape)
