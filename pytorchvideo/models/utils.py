@@ -1,7 +1,7 @@
 from typing import List
 
 # Number of blocks for different stages given the model depth.
-_MODEL_STAGE_DEPTH = {26: (2, 2, 2, 2), 50: (3, 4, 6, 3), 101: (3, 4, 23, 3), 152: (3, 8, 36, 3)}
+_MODEL_STAGE_DEPTH = {14: (1, 1, 1, 1), 26: (2, 2, 2, 2), 50: (3, 4, 6, 3), 101: (3, 4, 23, 3), 152: (3, 8, 36, 3)}
 
 
 def set_attributes(self, params: List[object] = None) -> None:

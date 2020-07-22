@@ -742,7 +742,7 @@ class TestResNet(unittest.TestCase):
         norm,
         activation,
     ):
-        stem_dim_out = 64
+        stem_dim_out = 8
         model_num_class = 10
         # create the Stem for ResNet
         stem = ResNetBasicStem(
@@ -861,7 +861,7 @@ class TestResNet(unittest.TestCase):
         for input_channel, input_clip_length, input_crop_size in itertools.product(
             (3, 2), (2, 4), (56, 64)
         ):
-            model_depth = 26
+            model_depth = 14
             model, num_class = TestResNet._build_resnet(
                 input_channel,
                 input_clip_length,
@@ -904,7 +904,7 @@ class TestResNet(unittest.TestCase):
             input_channel = 3
             input_clip_length = 4
             input_crop_size = 56
-            model_depth = 26
+            model_depth = 14
             model_gt, num_class = TestResNet._build_resnet(
                 input_channel,
                 input_clip_length,
@@ -923,7 +923,7 @@ class TestResNet(unittest.TestCase):
                 dropout_rate=0,
                 norm=norm,
                 activation=activation,
-                stem_dim_out=64,
+                stem_dim_out=8,
                 stem_conv_kernel_size=(3, 7, 7),
                 stem_conv_stride=(1, 2, 2),
                 stem_pool=nn.MaxPool3d,
