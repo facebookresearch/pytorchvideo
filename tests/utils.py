@@ -21,8 +21,8 @@ def create_video_frames(num_frames: int, height: int, width: int):
 def temp_video(
         num_frames: int,
         fps: int,
-        height=300,
-        width=300,
+        height=10,
+        width=10,
         lossless=False,
         prefix=None,
 ):
