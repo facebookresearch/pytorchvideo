@@ -12,3 +12,6 @@ dependencies:
   - pytorch
   - torchvision
   - cudatoolkit=10.2
+  - fvcore
+  - pytest
+  - av
