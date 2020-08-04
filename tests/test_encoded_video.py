@@ -1,8 +1,8 @@
-import unittest
 import tempfile
+import unittest
+
 import av
 import pytest
-
 from pytorchvideo.data.encoded_video import EncodedVideo
 from utils import temp_video
 

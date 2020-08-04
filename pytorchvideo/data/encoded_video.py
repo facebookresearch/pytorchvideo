@@ -2,9 +2,10 @@
 # Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved.
 
 import logging
-from typing import Tuple, List
-import av
 import math
+from typing import List, Tuple
+
+import av
 import numpy as np
 import torch
 

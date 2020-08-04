@@ -3,9 +3,9 @@ from typing import Callable, List, Tuple
 import numpy as np
 import torch
 import torch.nn as nn
-from pytorchvideo.models.utils import set_attributes, _MODEL_STAGE_DEPTH
-from pytorchvideo.models.stem import create_default_res_basic_stem
 from pytorchvideo.models.head import create_res_basic_head
+from pytorchvideo.models.stem import create_default_res_basic_stem
+from pytorchvideo.models.utils import _MODEL_STAGE_DEPTH, set_attributes
 
 
 class BottleneckBlock(nn.Module):
@@ -725,12 +725,16 @@ def create_default_resnet(
         stage_dim_out = stage_dim_out * 2
 
     # Create head for resnet.
-    total_spatial_stride = stem_conv_stride[1] * stem_pool_stride[1] * np.prod(stage_spatial_stride)
-    total_temporal_stride = stem_conv_stride[0] * stem_pool_stride[0] * np.prod(stage_temporal_stride)
+    total_spatial_stride = (
+        stem_conv_stride[1] * stem_pool_stride[1] * np.prod(stage_spatial_stride)
+    )
+    total_temporal_stride = (
+        stem_conv_stride[0] * stem_pool_stride[0] * np.prod(stage_temporal_stride)
+    )
     head_pool_kernel_size = (
         input_clip_length // total_temporal_stride,
         input_crop_size // total_spatial_stride,
-        input_crop_size // total_spatial_stride
+        input_crop_size // total_spatial_stride,
     )
 
     head = create_res_basic_head(

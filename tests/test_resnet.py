@@ -3,18 +3,18 @@ import unittest
 
 import numpy as np
 import torch
+from pytorchvideo.models.head import ResNetBasicHead
 from pytorchvideo.models.resnet import (
     BottleneckBlock,
     ResBlock,
-    ResStage,
     ResNet,
+    ResStage,
     create_default_bottleneck_block,
     create_default_res_block,
     create_default_res_stage,
     create_default_resnet,
 )
 from pytorchvideo.models.stem import ResNetBasicStem
-from pytorchvideo.models.head import ResNetBasicHead
 from pytorchvideo.models.utils import _MODEL_STAGE_DEPTH
 from torch import nn
 
@@ -789,10 +789,15 @@ class TestResNet(unittest.TestCase):
                         block_dim_in,
                         block_dim_out,
                         kernel_size=(1, 1, 1),
-                        stride=(temporal_stride, spatial_stride, spatial_stride)
-                    ) if block_dim_in != block_dim_out else None,
-                    branch1_norm=None if norm is None else norm(block_dim_out)
-                    if block_dim_in != block_dim_out else None,
+                        stride=(temporal_stride, spatial_stride, spatial_stride),
+                    )
+                    if block_dim_in != block_dim_out
+                    else None,
+                    branch1_norm=None
+                    if norm is None
+                    else norm(block_dim_out)
+                    if block_dim_in != block_dim_out
+                    else None,
                     branch2=BottleneckBlock(
                         conv_a=nn.Conv3d(
                             block_dim_in,
@@ -842,7 +847,7 @@ class TestResNet(unittest.TestCase):
         head_pool_kernel_size = (
             input_clip_length // total_temporal_stride,
             input_crop_size // total_spatial_stride,
-            input_crop_size // total_spatial_stride
+            input_crop_size // total_spatial_stride,
         )
 
         head = ResNetBasicHead(
@@ -868,11 +873,13 @@ class TestResNet(unittest.TestCase):
                 input_crop_size,
                 model_depth,
                 nn.BatchNorm3d,
-                nn.ReLU
+                nn.ReLU,
             )
 
             # Test forwarding.
-            for tensor in TestResNet._get_inputs(input_channel, input_clip_length, input_crop_size):
+            for tensor in TestResNet._get_inputs(
+                input_channel, input_clip_length, input_crop_size
+            ):
                 if tensor.shape[1] != input_channel:
                     with self.assertRaises(RuntimeError):
                         out = model(tensor)
@@ -881,10 +888,7 @@ class TestResNet(unittest.TestCase):
                 out = model(tensor)
 
                 output_shape = out.shape
-                output_shape_gt = (
-                    tensor.shape[0],
-                    num_class,
-                )
+                output_shape_gt = (tensor.shape[0], num_class)
 
                 self.assertEqual(
                     output_shape,
@@ -944,7 +948,9 @@ class TestResNet(unittest.TestCase):
             )  # explicitly use strict mode.
 
             # Test forwarding.
-            for tensor in TestResNet._get_inputs(input_channel, input_clip_length, input_crop_size):
+            for tensor in TestResNet._get_inputs(
+                input_channel, input_clip_length, input_crop_size
+            ):
                 with torch.no_grad():
                     if tensor.shape[1] != input_channel:
                         with self.assertRaises(RuntimeError):
@@ -961,13 +967,13 @@ class TestResNet(unittest.TestCase):
                         out.shape, out_gt.shape
                     ),
                 )
-                self.assertTrue(np.allclose(out.numpy(), out_gt.numpy(), rtol=1e-1, atol=1e-1))
+                self.assertTrue(
+                    np.allclose(out.numpy(), out_gt.numpy(), rtol=1e-1, atol=1e-1)
+                )
 
     @staticmethod
     def _get_inputs(
-        channel: int = 3,
-        clip_length: int = 8,
-        crop_size: int = 224,
+        channel: int = 3, clip_length: int = 8, crop_size: int = 224
     ) -> torch.tensor:
         """
         Provide different tensors as test cases.

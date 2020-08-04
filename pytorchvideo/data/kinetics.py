@@ -2,9 +2,11 @@
 # Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved.
 
 from __future__ import annotations
-from typing import List, Tuple
-import random
+
 import pathlib
+import random
+from typing import List, Tuple
+
 import torch.utils.data
 from fvcore.common.file_io import PathManager
 from torchvision.datasets.folder import make_dataset
@@ -16,6 +18,7 @@ class LabeledVideoPaths:
     """
     LabeledVideoPaths contains pairs of video path and integer index label.
     """
+
     @classmethod
     def from_path(cls, data_path: pathlib.Path) -> LabeledVideoPaths:
         """

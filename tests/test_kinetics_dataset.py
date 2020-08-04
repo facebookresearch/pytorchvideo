@@ -1,11 +1,11 @@
-import unittest
-import pathlib
 import os
+import pathlib
 import tempfile
-import torchvision.io as io
+import unittest
 
+import torchvision.io as io
 from pytorchvideo.data import Kinetics
-from utils import temp_video, create_video_frames
+from utils import create_video_frames, temp_video
 
 
 def _THWC_to_CTHW(data):
