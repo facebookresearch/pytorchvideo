@@ -735,6 +735,7 @@ class TestResNet(unittest.TestCase):
         torch.set_rng_state(torch.manual_seed(42).get_state())
 
     def _build_resnet(
+        self,
         input_channel,
         input_clip_length,
         input_crop_size,
@@ -867,7 +868,7 @@ class TestResNet(unittest.TestCase):
             (3, 2), (2, 4), (56, 64)
         ):
             model_depth = 14
-            model, num_class = TestResNet._build_resnet(
+            model, num_class = self._build_resnet(
                 input_channel,
                 input_clip_length,
                 input_crop_size,
@@ -909,7 +910,7 @@ class TestResNet(unittest.TestCase):
             input_clip_length = 4
             input_crop_size = 56
             model_depth = 14
-            model_gt, num_class = TestResNet._build_resnet(
+            model_gt, num_class = self._build_resnet(
                 input_channel,
                 input_clip_length,
                 input_crop_size,
