@@ -3,7 +3,7 @@ import pathlib
 import tempfile
 import unittest
 
-import torchvision.io as io
+import av  # This import has to be here for `buck test` to work
 from pytorchvideo.data import Kinetics
 from utils import create_video_frames, temp_video
 
@@ -91,6 +91,9 @@ class TestKineticsDataset(unittest.TestCase):
             os.unlink(f.name)
 
     def test_reading_from_directory_structure(self):
+        # For an unknown reason this import has to be here for `buck test` to work.
+        import torchvision.io as io
+
         with tempfile.TemporaryDirectory() as root_dir:
             root_dir_name = pathlib.Path(root_dir)
             test_class_1 = root_dir_name / "running"
