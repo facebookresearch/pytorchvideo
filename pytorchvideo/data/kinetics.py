@@ -5,7 +5,7 @@ from __future__ import annotations
 
 import pathlib
 import random
-from typing import List, Tuple
+from typing import Callable, List, Tuple
 
 import torch.utils.data
 from fvcore.common.file_io import PathManager
@@ -138,8 +138,8 @@ class Kinetics(torch.utils.data.Dataset):
         clip_sampling_type: str,
         clip_duration: float,
         clips_per_video: int,
-        transform=None,
-        num_retries=10,
+        transform: Callable = None,
+        num_retries: int = 10,
     ) -> None:
         """
         Args:

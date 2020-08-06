@@ -54,7 +54,9 @@ class EncodedVideo:
 
         self._end_pts = self._start_pts + duration
 
-    def _pyav_decode_video(self, start_pts=0, end_pts=math.inf) -> float:
+    def _pyav_decode_video(
+        self, start_pts: float = 0.0, end_pts: float = math.inf
+    ) -> float:
         try:
             pyav_frames, duration = _pyav_decode_stream(
                 self._video,
@@ -149,7 +151,7 @@ def _pyav_decode_stream(
     end_pts: float,
     stream: av.video.stream.VideoStream,
     stream_name: dict,
-    buffer_size=0,
+    buffer_size: int = 0,
 ) -> Tuple[List, float]:
     """
     Decode the video with PyAV decoder.
