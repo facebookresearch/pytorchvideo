@@ -15,7 +15,6 @@ from pytorchvideo.models.resnet import (
     create_default_resnet,
 )
 from pytorchvideo.models.stem import ResNetBasicStem
-from pytorchvideo.models.utils import _MODEL_STAGE_DEPTH
 from torch import nn
 
 
@@ -743,6 +742,11 @@ class TestResNet(unittest.TestCase):
         norm,
         activation,
     ):
+        _MODEL_STAGE_DEPTH = {
+            50: (3, 4, 6, 3),
+            101: (3, 4, 23, 3),
+            152: (3, 8, 36, 3),
+        }
         stem_dim_out = 8
         model_num_class = 10
         # create the Stem for ResNet
@@ -867,7 +871,7 @@ class TestResNet(unittest.TestCase):
         for input_channel, input_clip_length, input_crop_size in itertools.product(
             (3, 2), (2, 4), (56, 64)
         ):
-            model_depth = 14
+            model_depth = 50
             model, num_class = self._build_resnet(
                 input_channel,
                 input_clip_length,
@@ -909,7 +913,7 @@ class TestResNet(unittest.TestCase):
             input_channel = 3
             input_clip_length = 4
             input_crop_size = 56
-            model_depth = 14
+            model_depth = 50
             model_gt, num_class = self._build_resnet(
                 input_channel,
                 input_clip_length,
@@ -923,7 +927,7 @@ class TestResNet(unittest.TestCase):
                 input_channel=input_channel,
                 input_clip_length=input_clip_length,
                 input_crop_size=input_crop_size,
-                model_depth=26,
+                model_depth=50,
                 model_num_class=num_class,
                 dropout_rate=0,
                 norm=norm,
