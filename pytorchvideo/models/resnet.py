@@ -9,10 +9,7 @@ from pytorchvideo.models.stem import create_default_res_basic_stem
 from pytorchvideo.models.utils import set_attributes
 
 
-def init_resnet_weights(
-    model: nn.Module,
-    fc_init_std: float = 0.01,
-) -> None:
+def init_resnet_weights(model: nn.Module, fc_init_std: float = 0.01) -> None:
     """
     Performs ResNet style weight initialization.
     Performs ResNet style weight initialization. That is, recursively initialize the
@@ -716,11 +713,7 @@ def create_default_resnet(
         (nn.Module): basic resnet.
     """
     # Number of blocks for different stages given the model depth.
-    _MODEL_STAGE_DEPTH = {
-        50: (3, 4, 6, 3),
-        101: (3, 4, 23, 3),
-        152: (3, 8, 36, 3),
-    }
+    _MODEL_STAGE_DEPTH = {50: (3, 4, 6, 3), 101: (3, 4, 23, 3), 152: (3, 8, 36, 3)}
     # Create stem for resnet.
     stem = create_default_res_basic_stem(
         in_channels=input_channel,
@@ -737,8 +730,9 @@ def create_default_resnet(
     )
 
     # Given a model depth, get the number of blocks for each stage.
-    assert model_depth in _MODEL_STAGE_DEPTH.keys(), \
-        f"{model_depth} is not in {_MODEL_STAGE_DEPTH.keys()}"
+    assert (
+        model_depth in _MODEL_STAGE_DEPTH.keys()
+    ), f"{model_depth} is not in {_MODEL_STAGE_DEPTH.keys()}"
     stage_depths = _MODEL_STAGE_DEPTH[model_depth]
 
     stage_dim_in = stem_dim_out

@@ -742,11 +742,7 @@ class TestResNet(unittest.TestCase):
         norm,
         activation,
     ):
-        _MODEL_STAGE_DEPTH = {
-            50: (3, 4, 6, 3),
-            101: (3, 4, 23, 3),
-            152: (3, 8, 36, 3),
-        }
+        _MODEL_STAGE_DEPTH = {50: (3, 4, 6, 3), 101: (3, 4, 23, 3), 152: (3, 8, 36, 3)}
         stem_dim_out = 8
         model_num_class = 10
         # create the Stem for ResNet

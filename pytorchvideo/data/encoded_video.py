@@ -1,13 +1,14 @@
-#!/usr/bin/env python3
 # Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved.
 
 import logging
 import math
+import pathlib
 from typing import List, Tuple
 
 import av
-import numpy as np
 import torch
+
+from .utils import thwc_to_cthw
 
 
 logger = logging.getLogger(__name__)
@@ -15,85 +16,96 @@ logger = logging.getLogger(__name__)
 
 class EncodedVideo:
     """
-    EncodedVideo is an abstraction for accessing clips from an encoded video.
-    It supports selective decoding when header information is available. PyAV is
-    used as the decoding backend.
+    EncodedVideo is an abstraction for accessing clips from an encoded video using
+    selective decoding. It supports selective decoding when header information is
+    available PyAV is used as the decoding backend.
     """
 
     def __init__(self, file_path: str) -> None:
         """
-        If header information isn't available the whole video will be decoded to
-        retrieve metadata information.
         Args:
             file_path (str): a file a or file-like object (e.g. io.BytesIO or
                 io.StringIO) that contains the encoded video.
         """
         self._file_path = file_path
-        self._video_decoded = False
 
         try:
             self._video = av.open(self._file_path)
         except Exception as e:
-            logger.warning(f"Failed to open path {self._file_path}\n{e}")
+            logger.warning(f"Failed to open path {self._file_path}")
             raise e
 
-        # Try to fetch the decoding information from the video's header. Some
-        # videos do not include the decoding information, for that case we decode the
-        # whole video.
         self._time_base = self._video.streams.video[0].time_base
         self._start_pts = self._video.streams.video[0].start_time
-        duration = self._video.streams.video[0].duration
-        no_header_info = (
-            duration is None or self._time_base is None or self._start_pts is None
-        )
-        if no_header_info:
-            duration = self._pyav_decode_video()
-            self._time_base = 1
-            self._start_pts = 0
-            self._video_decoded = True
+        self._duration_pts = self._video.streams.video[0].duration
+        if self._start_pts is None:
+            self._start_pts = 0.0
 
-        self._end_pts = self._start_pts + duration
+        # If duration isn't found in video header the whole video is decoded to
+        # determine the duration.
+        self._frames = None
+        self._selective_decoding = True
+        if self._duration_pts is None:
+            self._frames, self._duration_pts = self._pyav_decode_video()
+            self._selective_decoding = False
 
-    def _pyav_decode_video(
-        self, start_pts: float = 0.0, end_pts: float = math.inf
-    ) -> float:
-        try:
-            pyav_frames, duration = _pyav_decode_stream(
-                self._video,
-                start_pts,
-                end_pts,
-                self._video.streams.video[0],
-                {"video": 0},
+    @property
+    def name(self) -> str:
+        """
+        Returns:
+            name: the name of the stored video extracted from the video path.
+        """
+        return pathlib.Path(self._file_path).name
+
+    @property
+    def duration(self) -> float:
+        """
+        Returns:
+            duration: the video's duration/end-time in seconds.
+        """
+        return (self._duration_pts - self._start_pts) * float(self._time_base)
+
+    def get_clip(self, start_sec: float, end_sec: float) -> torch.Tensor:
+        """
+        Retrieves frames from the encoded video at the specified start and end times
+        in seconds (the video always starts at 0 seconds).
+
+        Args:
+            start_sec (float): the clip start time in seconds
+            end_sec (float): the clip end time in seconds
+        Returns:
+            clip_frames: A tensor of the clip's RGB frames with shape:
+                (channel, time, height, width). The frames are of type torch.uint8 and
+                in the range [0 - 255]. Returns None if no frames are found.
+        """
+        start_pts = self._seconds_to_video_pts(start_sec)
+        end_pts = self._seconds_to_video_pts(end_sec)
+        if self._selective_decoding:
+            self._frames, _ = self._pyav_decode_video(start_pts, end_pts)
+
+        if self._frames is None:
+            logger.warning(
+                f"No frames found within {start_sec} and {end_sec}. Video starts "
+                f"at time 0 and ends at {self.duration}."
             )
-            self._decoded_pts = [frame.pts for frame in pyav_frames]
-            frames = [frame.to_rgb().to_ndarray() for frame in pyav_frames]
-            if len(frames) > 0:
-                self._decoded_frames = torch.as_tensor(np.stack(frames))
+            return None
 
-        except Exception as e:
-            logger.warning(f"Failed to decode video at path {self._file_path}\n{e}")
-            raise e
+        clip_frames = [
+            f for f, pts in self._frames if pts >= start_pts and pts <= end_pts
+        ]
+        if len(clip_frames) == 0:
+            return None
 
-        return duration
+        return thwc_to_cthw(torch.stack(clip_frames))
 
-    @property
-    def start_pts(self) -> float:
+    def close(self):
         """
-        Returns:
-            start_pts: the video's beginning presentation timestamp in the video's
-                timebase.
+        Closes the internal video container.
         """
-        return self._start_pts
+        if self._video is not None:
+            self._video.close()
 
-    @property
-    def end_pts(self) -> float:
-        """
-        Returns:
-            end_pts: the video's end presentation timestamp in the video's timebase.
-        """
-        return self._end_pts
-
-    def seconds_to_video_pts(self, time_in_seconds: float) -> float:
+    def _seconds_to_video_pts(self, time_in_seconds: float) -> float:
         """
         Converts a time in seconds to the video's time base and offset relative to
         the video's start_pts.
@@ -104,45 +116,34 @@ class EncodedVideo:
         time_base = float(self._time_base)
         return int(time_in_seconds / time_base) + self._start_pts
 
-    def get_clip(self, start_pts: float, end_pts: float) -> torch.Tensor:
+    def _pyav_decode_video(
+        self, start_pts: float = 0.0, end_pts: float = math.inf
+    ) -> float:
         """
-        Retrieves frames from the encoded video at the specified start and end times
-        in the videos presentation time base. Uses selective decoding between the time
-        points if header information was found in the video.
-
-        Args:
-            start_pts (float): the start time in the video's time base
-            end_pts (float): the end time in the video's time base
-        Returns:
-            clip_frames: A tensor of the clip's RGB frames with shape:
-                (time, height, width, channels). The frames are of type torch.uint8 and
-                in the range [0 - 255]. Returns an empty tensor if no frames found.
+        Selectively decodes a video between start_pts and end_pts in time units of the
+        self._video's timebase.
         """
-        if not self._video_decoded:
-            self._pyav_decode_video(start_pts, end_pts)
-
-        clip_frames = []
-        for frame, pts in zip(self._decoded_frames, self._decoded_pts):
-            if pts >= start_pts and pts <= end_pts:
-                clip_frames.append(frame)
-            else:
-                break
-
-        if len(clip_frames) == 0:
-            logger.warning(
-                f"No frames found within {start_pts} and {end_pts}. Video starts"
-                "at time {self._start_pts} and ends at {self._end_pts}."
+        frames_and_pts = None
+        duration = None
+        try:
+            pyav_frames, duration = _pyav_decode_stream(
+                self._video,
+                start_pts,
+                end_pts,
+                self._video.streams.video[0],
+                {"video": 0},
             )
-            return torch.tensor(0)
+            if len(pyav_frames) > 0:
+                frames_and_pts = [
+                    (torch.from_numpy(frame.to_rgb().to_ndarray()), frame.pts)
+                    for frame in pyav_frames
+                ]
 
-        return torch.stack(clip_frames)
+        except Exception as e:
+            logger.warning(f"Failed to decode video at path {self._file_path}. {e}")
+            raise e
 
-    def close(self):
-        """
-        Closes the internal video container.
-        """
-        if self._video is not None:
-            self._video.close()
+        return frames_and_pts, duration
 
 
 def _pyav_decode_stream(
