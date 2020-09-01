@@ -10,6 +10,9 @@
   exit 1
 }
 
+echo "Running autoflake..."
+python -m autoflake --remove-all-unused-imports -i .
+
 echo "Running isort..."
 isort -y -sp .
 
