@@ -13,9 +13,9 @@ import av  # noqa: F401
 import torch
 from pytorchvideo.data import Kinetics
 from pytorchvideo.data.clip_sampling import make_clip_sampler
+from pytorchvideo.data.encoded_video_dataset import EncodedVideoDataset
 from pytorchvideo.data.utils import MultiProcessSampler, thwc_to_cthw
 from torch.utils.data import DataLoader, SequentialSampler, TensorDataset
-from pytorchvideo.data.encoded_video_dataset import EncodedVideoDataset
 from utils import create_video_frames, temp_encoded_video
 
 
@@ -42,7 +42,6 @@ class TestEncodedVideoDataset(unittest.TestCase):
             )
 
             expected = [(0, data), (1, data)]
-
             for i, sample in enumerate(dataset):
                 self.assertTrue(sample["video"].equal(expected[i][1]))
                 self.assertEqual(sample["label"], expected[i][0])

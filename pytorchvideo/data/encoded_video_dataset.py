@@ -5,10 +5,10 @@ from __future__ import annotations
 
 import logging
 import os
-import av
 import pathlib
-from typing import Any, Type, Callable, List, Optional, Tuple
+from typing import Any, Callable, List, Optional, Tuple, Type
 
+import av
 import torch.utils.data
 from fvcore.common.file_io import PathManager
 from pytorchvideo.data.clip_sampling import ClipSampler
@@ -26,6 +26,7 @@ class EncodedVideoDataset(torch.utils.data.IterableDataset):
     EncodedVideoDataset handles the storage, loading, decoding and clip sampling for a
     video dataset. It assumes each video is stored as an encoded video (e.g. mp4, avi).
     """
+
     _MAX_CONSECUTIVE_FAILURES = 10
 
     def __init__(
@@ -34,6 +35,7 @@ class EncodedVideoDataset(torch.utils.data.IterableDataset):
         clip_sampler: ClipSampler,
         video_sampler: Type[torch.utils.data.Sampler] = torch.utils.data.RandomSampler,
         transform: Optional[Callable[[dict], Any]] = None,
+        video_path_prefix: str = "",
     ) -> None:
         """
         Args:
@@ -68,6 +70,7 @@ class EncodedVideoDataset(torch.utils.data.IterableDataset):
         self._transform = transform
         self._clip_sampler = clip_sampler
         self._labeled_videos = LabeledVideoPaths.from_path(data_path)
+        self._labeled_videos.path_prefix = video_path_prefix
         self._video_sampler = video_sampler(self._labeled_videos)
         self._video_sampler_iter = None  # Initialized on first call to self.__next__()
         self._num_consecutive_failures = 0
