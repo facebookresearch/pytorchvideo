@@ -32,7 +32,7 @@ class EncodedVideo:
         try:
             self._video = av.open(self._file_path)
         except Exception as e:
-            logger.warning(f"Failed to open path {self._file_path}")
+            logger.warning(f"Failed to open path {self._file_path}. {e}")
             raise e
 
         self._time_base = self._video.streams.video[0].time_base

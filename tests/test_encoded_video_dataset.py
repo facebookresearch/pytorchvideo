@@ -15,10 +15,11 @@ from pytorchvideo.data import Kinetics
 from pytorchvideo.data.clip_sampling import make_clip_sampler
 from pytorchvideo.data.utils import MultiProcessSampler, thwc_to_cthw
 from torch.utils.data import DataLoader, SequentialSampler, TensorDataset
+from pytorchvideo.data.encoded_video_dataset import EncodedVideoDataset
 from utils import create_video_frames, temp_encoded_video
 
 
-class TestKineticsDataset(unittest.TestCase):
+class TestEncodedVideoDataset(unittest.TestCase):
     # Clip sampling is start time inclusive so we need to subtract _EPS from
     # total_duration / 2 to sample half of the frames of a video.
     _EPS = 1e-9
@@ -36,7 +37,7 @@ class TestKineticsDataset(unittest.TestCase):
 
             total_duration = num_frames / fps
             clip_sampler = make_clip_sampler("uniform", total_duration)
-            dataset = Kinetics(
+            dataset = EncodedVideoDataset(
                 f.name, clip_sampler=clip_sampler, video_sampler=SequentialSampler
             )
 
@@ -60,7 +61,7 @@ class TestKineticsDataset(unittest.TestCase):
             total_duration = num_frames / fps
             half_duration = total_duration / 2 - self._EPS
             clip_sampler = make_clip_sampler("uniform", half_duration)
-            dataset = Kinetics(
+            dataset = EncodedVideoDataset(
                 f.name, clip_sampler=clip_sampler, video_sampler=SequentialSampler
             )
 
@@ -91,12 +92,11 @@ class TestKineticsDataset(unittest.TestCase):
 
             total_duration = num_frames / fps
             clip_sampler = make_clip_sampler("uniform", total_duration)
-            dataset = Kinetics(
+            dataset = EncodedVideoDataset(
                 f.name, clip_sampler=clip_sampler, video_sampler=SequentialSampler
             )
 
             expected = [(0, data), (1, data)]
-
             for i, sample in enumerate(dataset):
                 self.assertTrue(sample["video"].equal(expected[i][1]))
                 self.assertEqual(sample["label"], expected[i][0])
@@ -115,13 +115,12 @@ class TestKineticsDataset(unittest.TestCase):
             total_duration = num_frames / fps
             half_duration = total_duration / 2 - self._EPS
             clip_sampler = make_clip_sampler("random", half_duration)
-            dataset = Kinetics(
+            dataset = EncodedVideoDataset(
                 f.name, clip_sampler=clip_sampler, video_sampler=SequentialSampler
             )
 
             # [(expected_label, expected_t_shape), ...]
             expected = [(0, 5), (1, 5)]
-
             for i, sample in enumerate(dataset):
                 self.assertEqual(sample["video"].shape[1], expected[i][1])
                 self.assertEqual(sample["label"], expected[i][0])
@@ -165,7 +164,7 @@ class TestKineticsDataset(unittest.TestCase):
                 )
 
                 clip_sampler = make_clip_sampler("uniform", 3)
-                dataset = Kinetics(
+                dataset = EncodedVideoDataset(
                     root_dir, clip_sampler=clip_sampler, video_sampler=SequentialSampler
                 )
 
@@ -193,7 +192,7 @@ class TestKineticsDataset(unittest.TestCase):
             total_duration = num_frames / fps
             half_duration = total_duration / 2 - self._EPS
             clip_sampler = make_clip_sampler("uniform", half_duration)
-            dataset = Kinetics(
+            dataset = EncodedVideoDataset(
                 f.name, clip_sampler=clip_sampler, video_sampler=SequentialSampler
             )
 
