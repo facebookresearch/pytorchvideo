@@ -5,23 +5,6 @@ from abc import ABC, abstractmethod
 from typing import Tuple
 
 
-def make_clip_sampler(sampling_type: str, clip_duration: float):
-    """
-    Constructs the clip samplers found in this module from the given arguments.
-    Args:
-        sampling_type (str): choose clip sampler to return. It has two options:
-            - uniform: constructs and return UniformClipSampler
-            - random: construct and return RandomClipSampler
-        clip_duration (float): the duration of the video in seconds.
-    """
-    if sampling_type == "uniform":
-        return UniformClipSampler(clip_duration)
-    elif sampling_type == "random":
-        return RandomClipSampler(clip_duration)
-    else:
-        raise NotImplementedError(f"{sampling_type} not supported")
-
-
 class ClipSampler(ABC):
     """
     Interface for clip sampler's which take a video time, previous sampled clip time,
@@ -37,6 +20,23 @@ class ClipSampler(ABC):
         self, last_clip_time: float, video_duration: float
     ) -> Tuple[float, float, bool]:
         pass
+
+
+def make_clip_sampler(sampling_type: str, clip_duration: float) -> ClipSampler:
+    """
+    Constructs the clip samplers found in this module from the given arguments.
+    Args:
+        sampling_type (str): choose clip sampler to return. It has two options:
+            - uniform: constructs and return UniformClipSampler
+            - random: construct and return RandomClipSampler
+        clip_duration (float): the duration of the video in seconds.
+    """
+    if sampling_type == "uniform":
+        return UniformClipSampler(clip_duration)
+    elif sampling_type == "random":
+        return RandomClipSampler(clip_duration)
+    else:
+        raise NotImplementedError(f"{sampling_type} not supported")
 
 
 class UniformClipSampler(ClipSampler):
@@ -90,6 +90,6 @@ class RandomClipSampler(ClipSampler):
             are in seconds and is_last_clip is always True for this clip sampler.
 
         """
-        delta = max(video_duration - self._clip_duration, 0)
-        clip_start_sec = random.uniform(0, delta)
+        max_possible_clip_start = max(video_duration - self._clip_duration, 0)
+        clip_start_sec = random.uniform(0, max_possible_clip_start)
         return clip_start_sec, clip_start_sec + self._clip_duration, True

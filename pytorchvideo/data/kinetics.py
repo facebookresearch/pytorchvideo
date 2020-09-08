@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import logging
 import pathlib
-from typing import Any, Callable, List, Tuple, Type
+from typing import Any, Callable, List, Optional, Tuple, Type
 
 import av
 import torch.utils.data
@@ -34,7 +34,7 @@ class Kinetics(torch.utils.data.IterableDataset):
         data_path: pathlib.Path,
         clip_sampler: ClipSampler,
         video_sampler: Type[torch.utils.data.Sampler] = torch.utils.data.RandomSampler,
-        transform: Callable[[dict], Any] = None,
+        transform: Optional[Callable[[dict], Any]] = None,
     ) -> None:
         """
         Args:
@@ -54,7 +54,7 @@ class Kinetics(torch.utils.data.IterableDataset):
                 video container. This defines the order videos are decoded and,
                 if necessary, the distributed split.
 
-            transform (Callable): This callable is evaluated on the clip output before
+            transform (Optional[Callable]): This callable is evaluated on the clip output before
                 the clip is returned. It can be used for user defined preprocessing and
                 augmentations to the clips. The clip output is a dictionary with the
                 following format:

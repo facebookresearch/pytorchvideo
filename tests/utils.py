@@ -3,10 +3,12 @@
 
 import contextlib
 import os
+import pathlib
 import tempfile
 
 import torch
 import torchvision.io as io
+import torchvision.transforms as transforms
 from pytorchvideo.data.utils import thwc_to_cthw
 
 
@@ -37,3 +39,16 @@ def temp_encoded_video(num_frames: int, fps: int, height=10, width=10, prefix=No
         io.write_video(f.name, data, fps=fps, video_codec=video_codec, options=options)
         yield f.name, thwc_to_cthw(data)
     os.unlink(f.name)
+
+
+@contextlib.contextmanager
+def temp_frame_video(frame_image_file_names, height=10, width=10):
+    data = create_video_frames(len(frame_image_file_names), height, width)
+    data = thwc_to_cthw(data)
+    with tempfile.TemporaryDirectory() as root_dir:
+        root_dir = pathlib.Path(root_dir)
+        root_dir.mkdir(exist_ok=True)
+        for i, file_name in enumerate(frame_image_file_names):
+            im = transforms.ToPILImage()(data[:, i])
+            im.save(root_dir / file_name, compress_level=0, optimize=False)
+        yield root_dir, data
