@@ -7,26 +7,86 @@ import unittest
 import av
 import pytest
 from pytorchvideo.data.encoded_video import EncodedVideo
-from utils import temp_encoded_video
+from pytorchvideo.data.utils import thwc_to_cthw
+from utils import temp_encoded_video, temp_encoded_video_with_audio
 
 
 class TestEncodedVideo(unittest.TestCase):
-    def test_video_with_header_info_works(self):
-        num_frames = 10
+    def test_video_works(self):
+        num_frames = 11
         fps = 5
-        with temp_encoded_video(num_frames=num_frames, fps=fps) as (f_name, data):
-
-            test_video = EncodedVideo(f_name)
-            self.assertEqual(test_video.duration, num_frames / fps)
+        with temp_encoded_video(num_frames=num_frames, fps=fps) as (file_name, data):
+            test_video = EncodedVideo(file_name)
+            self.assertAlmostEqual(test_video.duration, num_frames / fps)
 
             # All frames
-            frames = test_video.get_clip(0, test_video.duration)
+            frames, audio_samples = test_video.get_clip(0, test_video.duration)
             self.assertTrue(frames.equal(data))
+            self.assertEqual(audio_samples, None)
 
-            # Half frames. eps(1e-6) is subtracted from half duration because clip
-            # sampling is start_time inclusive.
-            frames = test_video.get_clip(0, test_video.duration / 2 - 1e-6)
-            self.assertTrue(frames.equal(data[:, : num_frames // 2]))
+            # Half frames
+            frames, audio_samples = test_video.get_clip(0, test_video.duration / 2)
+            self.assertTrue(frames.equal(data[:, : round(num_frames / 2)]))
+            self.assertEqual(audio_samples, None)
+
+            # No frames
+            error = test_video.get_clip(
+                test_video.duration + 1, test_video.duration + 3
+            )
+            self.assertEqual(error, None)
+            self.assertEqual(error, None)
+
+            test_video.close()
+
+    def test_video_with_shorter_audio_works(self):
+        num_audio_samples = 8000
+        num_frames = 5
+        fps = 5
+        audio_rate = 8000
+        with temp_encoded_video_with_audio(
+            num_frames=num_frames,
+            fps=fps,
+            num_audio_samples=num_audio_samples,
+            audio_rate=audio_rate,
+        ) as (file_name, video_data, audio_data):
+            video_data = thwc_to_cthw(video_data)
+
+            test_video = EncodedVideo(file_name)
+
+            # Duration is max of both streams, therefore, the video duration will be expected.
+            self.assertEqual(test_video.duration, num_frames / fps)
+
+            # All audio
+            frames, audio_samples = test_video.get_clip(0, test_video.duration)
+            self.assertTrue(frames.equal(video_data))
+            self.assertTrue(audio_samples.equal(audio_data))
+
+            # Half frames
+            frames, audio_samples = test_video.get_clip(0, test_video.duration / 2)
+            self.assertTrue(frames.equal(video_data[:, : num_frames // 2]))
+            self.assertTrue(audio_samples.equal(audio_data))
+
+            test_video.close()
+
+    def test_video_with_longer_audio_works(self):
+        audio_rate = 10000
+        fps = 5
+        num_frames = 5
+        num_audio_samples = 40000
+        with temp_encoded_video_with_audio(
+            num_frames=num_frames,
+            fps=fps,
+            num_audio_samples=num_audio_samples,
+            audio_rate=audio_rate,
+        ) as (file_name, video_data, audio_data):
+            video_data = thwc_to_cthw(video_data)
+
+            test_video = EncodedVideo(file_name)
+
+            # All audio
+            frames, audio_samples = test_video.get_clip(0, test_video.duration)
+            self.assertTrue(frames.equal(video_data))
+            self.assertTrue(audio_samples.equal(audio_data))
 
             # No frames (3 - 5 seconds)
             frames = test_video.get_clip(

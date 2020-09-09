@@ -3,9 +3,10 @@
 import logging
 import math
 import pathlib
-from typing import List, Tuple
+from typing import List, Optional, Tuple
 
 import av
+import numpy as np
 import torch
 
 from .utils import thwc_to_cthw
@@ -30,24 +31,61 @@ class EncodedVideo:
         self._file_path = file_path
 
         try:
-            self._video = av.open(self._file_path)
+            self._container = av.open(self._file_path)
         except Exception as e:
             logger.warning(f"Failed to open path {self._file_path}. {e}")
             raise e
 
-        self._time_base = self._video.streams.video[0].time_base
-        self._start_pts = self._video.streams.video[0].start_time
-        self._duration_pts = self._video.streams.video[0].duration
-        if self._start_pts is None:
-            self._start_pts = 0.0
+        # Retrieve video header information if available.
+        self._video_time_base = self._container.streams.video[0].time_base
+        self._video_start_pts = self._container.streams.video[0].start_time
+        if self._video_start_pts is None:
+            self._video_start_pts = 0.0
 
-        # If duration isn't found in video header the whole video is decoded to
+        video_duration = self._container.streams.video[0].duration
+
+        # Retrieve audio header information if available.
+        self._has_audio = self._container.streams.audio
+        audio_duration = None
+        if self._has_audio:
+            self._audio_time_base = self._container.streams.audio[0].time_base
+            self._audio_start_pts = self._container.streams.audio[0].start_time
+            if self._audio_start_pts is None:
+                self._audio_start_pts = 0.0
+
+            audio_duration = self._container.streams.audio[0].duration
+
+        # If duration isn't found in header the whole video is decoded to
         # determine the duration.
-        self._frames = None
-        self._selective_decoding = True
-        if self._duration_pts is None:
-            self._frames, self._duration_pts = self._pyav_decode_video()
+        self._video, self._audio, self._selective_decoding = (None, None, True)
+        if audio_duration is None and video_duration is None:
             self._selective_decoding = False
+            self._video, self._audio = self._pyav_decode_video()
+            if self._video is not None:
+                video_duration = self._video[-1][1]
+
+            if self._audio is not None:
+                audio_duration = self._audio[-1][1]
+
+        # Take the largest duration of either video or duration stream.
+        if audio_duration is not None and video_duration is not None:
+            self._duration = max(
+                self._pts_to_secs(
+                    video_duration, self._video_time_base, self._video_start_pts
+                ),
+                self._pts_to_secs(
+                    audio_duration, self._audio_time_base, self._audio_start_pts
+                ),
+            )
+        elif video_duration is not None:
+            self._duration = self._pts_to_secs(
+                video_duration, self._video_time_base, self._video_start_pts
+            )
+
+        elif audio_duration is not None:
+            self._duration = self._pts_to_secs(
+                audio_duration, self._audio_time_base, self._audio_start_pts
+            )
 
     @property
     def name(self) -> str:
@@ -63,9 +101,11 @@ class EncodedVideo:
         Returns:
             duration: the video's duration/end-time in seconds.
         """
-        return (self._duration_pts - self._start_pts) * float(self._time_base)
+        return self._duration
 
-    def get_clip(self, start_sec: float, end_sec: float) -> torch.Tensor:
+    def get_clip(
+        self, start_sec: float, end_sec: float
+    ) -> Tuple[Optional[torch.Tensor], Optional[torch.Tensor]]:
         """
         Retrieves frames from the encoded video at the specified start and end times
         in seconds (the video always starts at 0 seconds).
@@ -74,76 +114,147 @@ class EncodedVideo:
             start_sec (float): the clip start time in seconds
             end_sec (float): the clip end time in seconds
         Returns:
-            clip_frames: A tensor of the clip's RGB frames with shape:
+            clip_video: A tensor of the clip's RGB frames with shape:
                 (channel, time, height, width). The frames are of type torch.uint8 and
-                in the range [0 - 255]. Returns None if no frames are found.
+                in the range [0 - 255].
+            clip_audio: A tensor of the clip's audio samples with shape:
+                (samples). The samples are of type torch.uint8 and
+                in the range [0 - 255].
+            Returns None if no video or audio found within time range.
         """
-        start_pts = self._seconds_to_video_pts(start_sec)
-        end_pts = self._seconds_to_video_pts(end_sec)
         if self._selective_decoding:
-            self._frames, _ = self._pyav_decode_video(start_pts, end_pts)
+            self._video, self._audio = self._pyav_decode_video(start_sec, end_sec)
 
-        if self._frames is None:
+        if self._video is None and self._audio is None:
             logger.warning(
-                f"No frames found within {start_sec} and {end_sec}. Video starts "
-                f"at time 0 and ends at {self.duration}."
+                f"No video or audio found within {start_sec} and {end_sec} seconds. "
+                "Video starts at time 0 and ends at {self.duration}."
             )
             return None
 
-        clip_frames = [
-            f for f, pts in self._frames if pts >= start_pts and pts <= end_pts
+        video_start_pts = self._secs_to_pts(
+            start_sec, self._video_time_base, self._video_start_pts
+        )
+        video_end_pts = self._secs_to_pts(
+            end_sec, self._video_time_base, self._video_start_pts
+        )
+        video_frames = [
+            f
+            for f, pts in self._video
+            if pts >= video_start_pts and pts <= video_end_pts
         ]
-        if len(clip_frames) == 0:
+
+        audio_samples = None
+        if self._has_audio:
+            audio_start_pts = self._secs_to_pts(
+                start_sec, self._audio_time_base, self._audio_start_pts
+            )
+            audio_end_pts = self._secs_to_pts(
+                end_sec, self._audio_time_base, self._audio_start_pts
+            )
+            audio_samples = [
+                f
+                for f, pts in self._audio
+                if pts >= audio_start_pts and pts <= audio_end_pts
+            ]
+            audio_samples = torch.cat(audio_samples, axis=0)
+
+        if len(video_frames) == 0 and len(audio_samples) == 0:
             return None
 
-        return thwc_to_cthw(torch.stack(clip_frames))
+        return thwc_to_cthw(torch.stack(video_frames)), audio_samples
 
     def close(self):
         """
         Closes the internal video container.
         """
-        if self._video is not None:
-            self._video.close()
+        if self._container is not None:
+            self._container.close()
 
-    def _seconds_to_video_pts(self, time_in_seconds: float) -> float:
+    def _secs_to_pts(
+        self, time_in_seconds: float, time_base: float, start_pts: float
+    ) -> float:
         """
-        Converts a time in seconds to the video's time base and offset relative to
-        the video's start_pts.
+        Converts a time (in seconds) to the given time base and start_pts offset
+        presentation time.
 
         Returns:
-            video_pts (float): The time in the video's time base.
+            pts (float): The time in the given time base.
         """
-        time_base = float(self._time_base)
-        return int(time_in_seconds / time_base) + self._start_pts
+        if time_in_seconds == math.inf:
+            return math.inf
+
+        time_base = float(time_base)
+        return int(time_in_seconds / time_base) + start_pts
+
+    def _pts_to_secs(
+        self, time_in_seconds: float, time_base: float, start_pts: float
+    ) -> float:
+        """
+        Converts a present time with the given time base and start_pts offset to seconds.
+
+        Returns:
+            time_in_seconds (float): The corresponding time in seconds.
+        """
+        if time_in_seconds == math.inf:
+            return math.inf
+
+        return (time_in_seconds - start_pts) * float(time_base)
 
     def _pyav_decode_video(
-        self, start_pts: float = 0.0, end_pts: float = math.inf
+        self, start_secs: float = 0.0, end_secs: float = math.inf
     ) -> float:
         """
         Selectively decodes a video between start_pts and end_pts in time units of the
         self._video's timebase.
         """
-        frames_and_pts = None
-        duration = None
+        video_and_pts = None
+        audio_and_pts = None
         try:
-            pyav_frames, duration = _pyav_decode_stream(
-                self._video,
-                start_pts,
-                end_pts,
-                self._video.streams.video[0],
+            pyav_video_frames, _ = _pyav_decode_stream(
+                self._container,
+                self._secs_to_pts(
+                    start_secs, self._video_time_base, self._video_start_pts
+                ),
+                self._secs_to_pts(
+                    end_secs, self._video_time_base, self._video_start_pts
+                ),
+                self._container.streams.video[0],
                 {"video": 0},
             )
-            if len(pyav_frames) > 0:
-                frames_and_pts = [
+            if len(pyav_video_frames) > 0:
+                video_and_pts = [
                     (torch.from_numpy(frame.to_rgb().to_ndarray()), frame.pts)
-                    for frame in pyav_frames
+                    for frame in pyav_video_frames
                 ]
+
+            if self._has_audio:
+                pyav_audio_frames, _ = _pyav_decode_stream(
+                    self._container,
+                    self._secs_to_pts(
+                        start_secs, self._audio_time_base, self._audio_start_pts
+                    ),
+                    self._secs_to_pts(
+                        end_secs, self._audio_time_base, self._audio_start_pts
+                    ),
+                    self._container.streams.audio[0],
+                    {"audio": 0},
+                )
+
+                if len(pyav_audio_frames) > 0:
+                    audio_and_pts = [
+                        (
+                            torch.from_numpy(np.mean(frame.to_ndarray(), axis=0)),
+                            frame.pts,
+                        )
+                        for frame in pyav_audio_frames
+                    ]
 
         except Exception as e:
             logger.warning(f"Failed to decode video at path {self._file_path}. {e}")
             raise e
 
-        return frames_and_pts, duration
+        return video_and_pts, audio_and_pts
 
 
 def _pyav_decode_stream(

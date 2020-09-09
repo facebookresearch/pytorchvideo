@@ -79,7 +79,7 @@ class EncodedVideoDataset(torch.utils.data.IterableDataset):
         # from one video. In that case, we keep the store video, label and previous sampled
         # clip time in these variables.
         self._loaded_video_label = None
-        self._last_clip_end_time = 0.0
+        self._next_clip_start_time = 0.0
 
     def __next__(self) -> dict:
         """
@@ -123,22 +123,28 @@ class EncodedVideoDataset(torch.utils.data.IterableDataset):
                 retry_next()
 
         clip_start, clip_end, is_last_clip = self._clip_sampler(
-            self._last_clip_end_time, video.duration
+            self._next_clip_start_time, video.duration
         )
-        frames = video.get_clip(clip_start, clip_end)
-        self._last_clip_end_time = clip_end
+        frames, audio_samples = video.get_clip(clip_start, clip_end)
+        self._next_clip_start_time = clip_end
 
         if is_last_clip or frames is None:
             # Close the loaded encoded video and reset the last sampled clip time ready
             # to sample a new video on the next iteration.
             self._loaded_video_label[0].close()
             self._loaded_video_label = None
-            self._last_clip_end_time = 0.0
+            self._next_clip_start_time = 0.0
 
             if frames is None:
                 retry_next()
 
-        sample_dict = {"video": frames, "label": label, "video_name": video.name}
+        sample_dict = {
+            "video": frames,
+            "audio": audio_samples,
+            "label": label,
+            "video_name": video.name,
+        }
+
         if self._transform is not None:
             sample_dict = self._transform(sample_dict)
 
