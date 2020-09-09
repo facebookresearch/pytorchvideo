@@ -1,5 +1,6 @@
 # Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved.
 
+import io
 import logging
 import math
 import pathlib
@@ -8,6 +9,7 @@ from typing import List, Optional, Tuple
 import av
 import numpy as np
 import torch
+from fvcore.common.file_io import PathManager
 
 from .utils import thwc_to_cthw
 
@@ -30,10 +32,15 @@ class EncodedVideo:
         """
         self._file_path = file_path
 
+        # We read the file with PathManager rather than pyav so that we can read from
+        # remote uris.
+        with PathManager.open(file_path, "rb") as fh:
+            path_data = io.BytesIO(fh.read())
+
         try:
-            self._container = av.open(self._file_path)
+            self._container = av.open(path_data)
         except Exception as e:
-            logger.warning(f"Failed to open path {self._file_path}. {e}")
+            logger.warning(f"Failed to open path {file_path}. {e}")
             raise e
 
         # Retrieve video header information if available.

@@ -8,7 +8,6 @@ import os
 import pathlib
 from typing import Any, Callable, List, Optional, Tuple, Type
 
-import av
 import torch.utils.data
 from fvcore.common.file_io import PathManager
 from pytorchvideo.data.clip_sampling import ClipSampler
@@ -118,7 +117,7 @@ class EncodedVideoDataset(torch.utils.data.IterableDataset):
                 video_path, label = self._labeled_videos[video_index]
                 video = EncodedVideo(video_path)
                 self._loaded_video_label = (video, label)
-            except (av.error.ValueError, OSError) as e:
+            except OSError as e:
                 logger.warning(e)
                 retry_next()
 
@@ -161,25 +160,24 @@ class LabeledVideoPaths:
     """
 
     @classmethod
-    def from_path(cls, data_path: pathlib.Path) -> LabeledVideoPaths:
+    def from_path(cls, data_path: str) -> LabeledVideoPaths:
         """
         Factory function that creates a LabeledVideoPaths object depending on the path
         type.
         - If it is a directory path it uses the LabeledVideoPaths.from_directory function.
         - If it's a file it uses the LabeledVideoPaths.from_csv file.
         Args:
-            file_path (pathlib.Path): The path to the file to be read.
+            file_path (str): The path to the file to be read.
         """
-        data_path = pathlib.Path(data_path)
-        if data_path.is_file():
+        if pathlib.Path(data_path).is_file():
             return LabeledVideoPaths.from_csv(data_path)
-        elif data_path.is_dir():
+        elif pathlib.Path(data_path).is_dir():
             return LabeledVideoPaths.from_directory(data_path)
         else:
             raise FileNotFoundError(f"{data_path} not found.")
 
     @classmethod
-    def from_csv(cls, file_path: pathlib.Path) -> LabeledVideoPaths:
+    def from_csv(cls, file_path: str) -> LabeledVideoPaths:
         """
         Factory function that creates a LabeledVideoPaths object by reading a file with the
         following format:
@@ -188,7 +186,7 @@ class LabeledVideoPaths:
             <path> <integer_label>
 
         Args:
-            file_path (pathlib.Path): The path to the file to be read.
+            file_path (str): The path to the file to be read.
         """
         assert PathManager.exists(file_path), f"{file_path} not found."
         video_paths_and_label = []
@@ -213,7 +211,7 @@ class LabeledVideoPaths:
         return cls(video_paths_and_label)
 
     @classmethod
-    def from_directory(cls, dir_path: pathlib.Path) -> LabeledVideoPaths:
+    def from_directory(cls, dir_path: str) -> LabeledVideoPaths:
         """
         Factory function that creates a LabeledVideoPaths object by parsing the structure
         of the given directory's subdirectories into the classification labels. It
@@ -233,16 +231,16 @@ class LabeledVideoPaths:
         Would produce two classes labeled 0 and 1 with 3 videos paths associated with each.
 
         Args:
-            dir_path (pathlib.Path): Root directory to the video class directories .
+            dir_path (str): Root directory to the video class directories .
         """
         assert PathManager.exists(dir_path), f"{dir_path} not found."
 
         # Find all classes based on directory names. These classes are then sorted and indexed
         # from 0 to the number of classes.
-        classes = sorted((f for f in dir_path.iterdir() if f.is_dir()))
+        classes = sorted((f for f in pathlib.Path(dir_path).iterdir() if f.is_dir()))
         class_to_idx = {classes[i]: i for i in range(len(classes))}
         video_paths_and_label = make_dataset(
-            dir_path, class_to_idx, extensions=("mp4",)
+            dir_path, class_to_idx, extensions=("mp4", "avi")
         )
         assert (
             len(video_paths_and_label) > 0

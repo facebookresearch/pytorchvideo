@@ -97,7 +97,7 @@ class TestEncodedVideo(unittest.TestCase):
             test_video.close()
 
     def test_open_video_failure(self):
-        with pytest.raises(av.AVError):
+        with pytest.raises(FileNotFoundError):
             test_video = EncodedVideo("non_existent_file.txt")
             test_video.close()
 
