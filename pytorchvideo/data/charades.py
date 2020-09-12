@@ -76,6 +76,10 @@ class Charades(torch.utils.data.IterableDataset):
         self._loaded_video = None
         self._next_clip_start_time = 0.0
 
+    @property
+    def video_sampler(self):
+        return self._video_sampler
+
     def __next__(self) -> dict:
         """
         Retrieves the next clip based on the clip sampling strategy and video sampler.

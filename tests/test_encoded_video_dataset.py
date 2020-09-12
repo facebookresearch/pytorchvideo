@@ -1,6 +1,7 @@
-#!/usr/bin/env python3
 # Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved.
-
+import itertools
+import multiprocessing
+import os
 import pathlib
 import tempfile
 import unittest
@@ -11,11 +12,17 @@ from unittest.mock import Mock, patch
 # av import has to be added for `buck test` to work.
 import av  # noqa: F401
 import torch
-from pytorchvideo.data import Kinetics
+import torch.distributed as dist
 from pytorchvideo.data.clip_sampling import make_clip_sampler
 from pytorchvideo.data.encoded_video_dataset import EncodedVideoDataset
 from pytorchvideo.data.utils import MultiProcessSampler, thwc_to_cthw
-from torch.utils.data import DataLoader, SequentialSampler, TensorDataset
+from torch.multiprocessing import Process
+from torch.utils.data import (
+    DataLoader,
+    DistributedSampler,
+    SequentialSampler,
+    TensorDataset,
+)
 from utils import create_video_frames, temp_encoded_video
 
 
@@ -224,7 +231,7 @@ class TestEncodedVideoDataset(unittest.TestCase):
             total_duration = num_frames / fps
             half_duration = total_duration / 2 - self._EPS
             clip_sampler = make_clip_sampler("uniform", half_duration)
-            dataset = Kinetics(
+            dataset = EncodedVideoDataset(
                 f.name, clip_sampler=clip_sampler, video_sampler=SequentialSampler
             )
 
@@ -259,7 +266,7 @@ class TestEncodedVideoDataset(unittest.TestCase):
             total_duration = num_frames / fps
             half_duration = total_duration / 2 - self._EPS
             clip_sampler = make_clip_sampler("uniform", half_duration)
-            dataset = Kinetics(
+            dataset = EncodedVideoDataset(
                 f.name, clip_sampler=clip_sampler, video_sampler=SequentialSampler
             )
 
@@ -299,7 +306,7 @@ class TestEncodedVideoDataset(unittest.TestCase):
                 total_duration = num_frames / fps
                 half_duration = total_duration / 2 - self._EPS
                 clip_sampler = make_clip_sampler("uniform", half_duration)
-                dataset = Kinetics(
+                dataset = EncodedVideoDataset(
                     f.name, clip_sampler=clip_sampler, video_sampler=SequentialSampler
                 )
 
@@ -331,6 +338,79 @@ class TestEncodedVideoDataset(unittest.TestCase):
             # Sampler indices will be split into 3. The last worker (id=2) will have the
             # last 3 indices (7, 8, 9).
             self.assertEqual(list(sampler), [7, 8, 9])
+
+    def test_sampling_with_distributed_sampler(self):
+
+        # Make one video with 15 frames and one with 10 frames, producing 3 clips and 2
+        # clips respectively.
+        num_frames = 10
+        fps = 5
+        with temp_encoded_video(num_frames=int(num_frames * 1.5), fps=fps) as (
+            video_file_name_1,
+            data_1,
+        ):
+            with temp_encoded_video(num_frames=num_frames, fps=fps) as (
+                video_file_name_2,
+                data_2,
+            ):
+                with tempfile.NamedTemporaryFile(delete=False, suffix=".txt") as f:
+                    f.write(f"{video_file_name_1} 0\n".encode())
+                    f.write(f"{video_file_name_2} 1\n".encode())
+
+                total_duration = num_frames / fps
+                half_duration = total_duration / 2 - self._EPS
+
+                def run_distributed(rank, size, return_dict):
+                    """
+                    This function is run by each distributed process. It samples videos
+                    based on the distributed split (determined by the
+                    DistributedSampler) and returns the dataset clips in the return_dict.
+                    """
+                    os.environ["MASTER_ADDR"] = "127.0.0.1"
+                    os.environ["MASTER_PORT"] = "29500"
+                    dist.init_process_group("gloo", rank=rank, world_size=size)
+                    clip_sampler = make_clip_sampler("uniform", half_duration)
+                    dataset = EncodedVideoDataset(
+                        f.name,
+                        clip_sampler=clip_sampler,
+                        video_sampler=DistributedSampler,
+                    )
+                    test_dataloader = DataLoader(
+                        dataset, batch_size=None, num_workers=0
+                    )
+                    return_dict[rank] = [
+                        (sample["label"], sample["video"]) for sample in test_dataloader
+                    ]
+
+                # Create several processes initialized in a PyTorch distributed process
+                # group so that distributed sampler is setup correctly when dataset is
+                # constructed.
+                num_processes = 2
+                processes = []
+                return_dict = multiprocessing.Manager().dict()
+                for rank in range(num_processes):
+                    p = Process(
+                        target=run_distributed, args=(rank, num_processes, return_dict)
+                    )
+                    p.start()
+                    processes.append(p)
+
+                for p in processes:
+                    p.join()
+
+                # After joining all distributed processes we expect all these label,
+                # video pairs to be returned in random order.
+                half_frames = num_frames // 2
+                expected = {
+                    (0, data_1[:, half_frames * 2 :]),  # 1/3 clip
+                    (0, data_1[:, half_frames : half_frames * 2]),  # 2/3 clip
+                    (0, data_1[:, :half_frames]),  # 3/3/ clip
+                    (1, data_2[:, :half_frames]),  # First half
+                    (1, data_2[:, half_frames:]),  # Second half
+                }
+
+                actual = list(itertools.chain.from_iterable(return_dict.values()))
+                self.assertTrue(unordered_list_compare(expected, actual))
 
 
 def unordered_list_compare(
