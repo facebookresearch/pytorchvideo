@@ -38,7 +38,7 @@ class ResNetBasicHead(nn.Module):
             proj (torch.nn.modules): project module.
             activation (torch.nn.modules): activation module.
         """
-        super(ResNetBasicHead, self).__init__()
+        super().__init__()
         set_attributes(self, locals())
         assert self.proj is not None
 
