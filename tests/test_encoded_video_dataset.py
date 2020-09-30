@@ -13,8 +13,13 @@ from unittest.mock import Mock, patch
 import av  # noqa: F401
 import torch
 import torch.distributed as dist
+from pytorchvideo.data import Hmdb51
 from pytorchvideo.data.clip_sampling import make_clip_sampler
-from pytorchvideo.data.encoded_video_dataset import EncodedVideoDataset
+from pytorchvideo.data.encoded_video_dataset import (
+    EncodedVideoDataset,
+    labeled_encoded_video_dataset,
+)
+from pytorchvideo.data.labeled_video_paths import LabeledVideoPaths
 from pytorchvideo.data.utils import MultiProcessSampler, thwc_to_cthw
 from torch.multiprocessing import Process
 from torch.utils.data import (
@@ -44,8 +49,11 @@ class TestEncodedVideoDataset(unittest.TestCase):
 
             total_duration = num_frames / fps
             clip_sampler = make_clip_sampler("uniform", total_duration)
-            dataset = EncodedVideoDataset(
-                f.name, clip_sampler=clip_sampler, video_sampler=SequentialSampler
+
+            dataset = labeled_encoded_video_dataset(
+                data_path=f.name,
+                clip_sampler=clip_sampler,
+                video_sampler=SequentialSampler,
             )
 
             expected = [(0, data), (1, data)]
@@ -67,8 +75,11 @@ class TestEncodedVideoDataset(unittest.TestCase):
             total_duration = num_frames / fps
             half_duration = total_duration / 2 - self._EPS
             clip_sampler = make_clip_sampler("uniform", half_duration)
+            labeled_video_paths = LabeledVideoPaths.from_path(f.name)
             dataset = EncodedVideoDataset(
-                f.name, clip_sampler=clip_sampler, video_sampler=SequentialSampler
+                labeled_video_paths,
+                clip_sampler=clip_sampler,
+                video_sampler=SequentialSampler,
             )
 
             half_frames = num_frames // 2
@@ -98,8 +109,11 @@ class TestEncodedVideoDataset(unittest.TestCase):
 
             total_duration = num_frames / fps
             clip_sampler = make_clip_sampler("uniform", total_duration)
+            labeled_video_paths = LabeledVideoPaths.from_path(f.name)
             dataset = EncodedVideoDataset(
-                f.name, clip_sampler=clip_sampler, video_sampler=SequentialSampler
+                labeled_video_paths,
+                clip_sampler=clip_sampler,
+                video_sampler=SequentialSampler,
             )
 
             expected = [(0, data), (1, data)]
@@ -121,8 +135,11 @@ class TestEncodedVideoDataset(unittest.TestCase):
             total_duration = num_frames / fps
             half_duration = total_duration / 2 - self._EPS
             clip_sampler = make_clip_sampler("random", half_duration)
+            labeled_video_paths = LabeledVideoPaths.from_path(f.name)
             dataset = EncodedVideoDataset(
-                f.name, clip_sampler=clip_sampler, video_sampler=SequentialSampler
+                labeled_video_paths,
+                clip_sampler=clip_sampler,
+                video_sampler=SequentialSampler,
             )
 
             # [(expected_label, expected_t_shape), ...]
@@ -130,6 +147,94 @@ class TestEncodedVideoDataset(unittest.TestCase):
             for i, sample in enumerate(dataset):
                 self.assertEqual(sample["video"].shape[1], expected[i][1])
                 self.assertEqual(sample["label"], expected[i][0])
+
+    def test_reading_from_directory_structure_hmdb51(self):
+        # For an unknown reason this import has to be here for `buck test` to work.
+        import torchvision.io as io
+
+        with tempfile.TemporaryDirectory() as root_dir:
+
+            # Create test directory structure with two classes and a video in each.
+            root_dir_name = pathlib.Path(root_dir)
+            action_1 = "running"
+            action_2 = "cleaning_windows"
+
+            videos_root_dir = root_dir_name / "videos"
+            videos_root_dir.mkdir()
+
+            test_class_1 = videos_root_dir / action_1
+            test_class_1.mkdir()
+            data_1 = create_video_frames(15, 10, 10)
+            test_class_2 = videos_root_dir / action_2
+            test_class_2.mkdir()
+            data_2 = create_video_frames(20, 15, 15)
+
+            test_splits = root_dir_name / "folds"
+            test_splits.mkdir()
+
+            with tempfile.NamedTemporaryFile(
+                suffix="_u_nm_np1_ba_goo_19.avi", dir=test_class_1
+            ) as f_1, tempfile.NamedTemporaryFile(
+                suffix="_u_nm_np1_fr_med_1.avi", dir=test_class_2
+            ) as f_2:
+                f_1.close()
+                f_2.close()
+
+                # Write lossless video for each class.
+                io.write_video(
+                    f_1.name,
+                    data_1,
+                    fps=30,
+                    video_codec="libx264rgb",
+                    options={"crf": "0"},
+                )
+                io.write_video(
+                    f_2.name,
+                    data_2,
+                    fps=30,
+                    video_codec="libx264rgb",
+                    options={"crf": "0"},
+                )
+
+                _, video_name_1 = os.path.split(f_1.name)
+                _, video_name_2 = os.path.split(f_2.name)
+
+                with open(
+                    os.path.join(test_splits, action_1 + "_test_split1.txt"), "w"
+                ) as f:
+                    f.write(f"{video_name_1} 1\n")
+
+                with open(
+                    os.path.join(test_splits, action_2 + "_test_split1.txt"), "w"
+                ) as f:
+                    f.write(f"{video_name_2} 1\n")
+
+                clip_sampler = make_clip_sampler("uniform", 3)
+                dataset = Hmdb51(
+                    data_path=test_splits,
+                    video_path_prefix=root_dir_name / "videos",
+                    clip_sampler=clip_sampler,
+                    video_sampler=SequentialSampler,
+                    split_id=1,
+                    split_type="train",
+                )
+
+                # Videos are sorted alphabetically so "cleaning windows" (i.e. data_2)
+                # will be first.
+                sample_1 = next(dataset)
+                sample_2 = next(dataset)
+
+                self.assertTrue(sample_1["label"] in [action_1, action_2])
+                if sample_1["label"] == action_2:
+                    sample_1, sample_2 = sample_2, sample_1
+
+                self.assertEqual(sample_1["label"], action_1)
+                self.assertEqual(5, len(sample_1["meta_tags"]))
+                self.assertTrue(sample_1["video"].equal(thwc_to_cthw(data_1)))
+
+                self.assertEqual(sample_2["label"], action_2)
+                self.assertEqual(5, len(sample_2["meta_tags"]))
+                self.assertTrue(sample_2["video"].equal(thwc_to_cthw(data_2)))
 
     def test_reading_from_directory_structure(self):
         # For an unknown reason this import has to be here for `buck test` to work.
@@ -170,8 +275,11 @@ class TestEncodedVideoDataset(unittest.TestCase):
                 )
 
                 clip_sampler = make_clip_sampler("uniform", 3)
+                labeled_video_paths = LabeledVideoPaths.from_path(root_dir)
                 dataset = EncodedVideoDataset(
-                    root_dir, clip_sampler=clip_sampler, video_sampler=SequentialSampler
+                    labeled_video_paths,
+                    clip_sampler=clip_sampler,
+                    video_sampler=SequentialSampler,
                 )
 
                 # Videos are sorted alphabetically so "cleaning windows" (i.e. data_2)
@@ -198,8 +306,11 @@ class TestEncodedVideoDataset(unittest.TestCase):
             total_duration = num_frames / fps
             half_duration = total_duration / 2 - self._EPS
             clip_sampler = make_clip_sampler("uniform", half_duration)
+            labeled_video_paths = LabeledVideoPaths.from_path(f.name)
             dataset = EncodedVideoDataset(
-                f.name, clip_sampler=clip_sampler, video_sampler=SequentialSampler
+                labeled_video_paths,
+                clip_sampler=clip_sampler,
+                video_sampler=SequentialSampler,
             )
 
             half_frames = num_frames // 2
@@ -231,8 +342,11 @@ class TestEncodedVideoDataset(unittest.TestCase):
             total_duration = num_frames / fps
             half_duration = total_duration / 2 - self._EPS
             clip_sampler = make_clip_sampler("uniform", half_duration)
+            labeled_video_paths = LabeledVideoPaths.from_path(f.name)
             dataset = EncodedVideoDataset(
-                f.name, clip_sampler=clip_sampler, video_sampler=SequentialSampler
+                labeled_video_paths,
+                clip_sampler=clip_sampler,
+                video_sampler=SequentialSampler,
             )
 
             half_frames = num_frames // 2
@@ -266,8 +380,11 @@ class TestEncodedVideoDataset(unittest.TestCase):
             total_duration = num_frames / fps
             half_duration = total_duration / 2 - self._EPS
             clip_sampler = make_clip_sampler("uniform", half_duration)
+            labeled_video_paths = LabeledVideoPaths.from_path(f.name)
             dataset = EncodedVideoDataset(
-                f.name, clip_sampler=clip_sampler, video_sampler=SequentialSampler
+                labeled_video_paths,
+                clip_sampler=clip_sampler,
+                video_sampler=SequentialSampler,
             )
 
             half_frames = num_frames // 2
@@ -306,8 +423,11 @@ class TestEncodedVideoDataset(unittest.TestCase):
                 total_duration = num_frames / fps
                 half_duration = total_duration / 2 - self._EPS
                 clip_sampler = make_clip_sampler("uniform", half_duration)
+                labeled_video_paths = LabeledVideoPaths.from_path(f.name)
                 dataset = EncodedVideoDataset(
-                    f.name, clip_sampler=clip_sampler, video_sampler=SequentialSampler
+                    labeled_video_paths,
+                    clip_sampler=clip_sampler,
+                    video_sampler=SequentialSampler,
                 )
 
                 half_frames = num_frames // 2
@@ -370,8 +490,9 @@ class TestEncodedVideoDataset(unittest.TestCase):
                     os.environ["MASTER_PORT"] = "29500"
                     dist.init_process_group("gloo", rank=rank, world_size=size)
                     clip_sampler = make_clip_sampler("uniform", half_duration)
+                    labeled_video_paths = LabeledVideoPaths.from_path(f.name)
                     dataset = EncodedVideoDataset(
-                        f.name,
+                        labeled_video_paths,
                         clip_sampler=clip_sampler,
                         video_sampler=DistributedSampler,
                     )

@@ -4,16 +4,14 @@
 from __future__ import annotations
 
 import logging
-import os
 import pathlib
 from typing import Any, Callable, List, Optional, Tuple, Type
 
 import torch.utils.data
-from fvcore.common.file_io import PathManager
 from pytorchvideo.data.clip_sampling import ClipSampler
 from pytorchvideo.data.encoded_video import EncodedVideo
-from torchvision.datasets.folder import make_dataset
 
+from .labeled_video_paths import LabeledVideoPaths
 from .utils import MultiProcessSampler
 
 
@@ -30,22 +28,15 @@ class EncodedVideoDataset(torch.utils.data.IterableDataset):
 
     def __init__(
         self,
-        data_path: pathlib.Path,
+        labeled_video_paths: List[Tuple[str, Optional[dict]]],
         clip_sampler: ClipSampler,
         video_sampler: Type[torch.utils.data.Sampler] = torch.utils.data.RandomSampler,
         transform: Optional[Callable[[dict], Any]] = None,
-        video_path_prefix: str = "",
     ) -> None:
         """
         Args:
-            data_path (pathlib.Path): Path to the data. The path type defines how the
-                data should be read:
-                    - For a file path, the file is read and each line is parsed into a
-                      video path and label.
-                    - For a directory, the directory structure defines the classes
-                      (i.e. each subdirectory is a class).
-                See the LabeledVideoPaths class documentation for specific formatting
-                details and examples.
+            labeled_video_paths List[Tuple[str, Optional[dict]]]]) : List containing
+                    video file paths and associated labels
 
             clip_sampler (ClipSampler): Defines how clips should be sampled from each
                 video. See the clip sampling documentation for more information.
@@ -68,8 +59,7 @@ class EncodedVideoDataset(torch.utils.data.IterableDataset):
         """
         self._transform = transform
         self._clip_sampler = clip_sampler
-        self._labeled_videos = LabeledVideoPaths.from_path(data_path)
-        self._labeled_videos.path_prefix = video_path_prefix
+        self._labeled_videos = labeled_video_paths
         self._video_sampler = video_sampler(self._labeled_videos)
         self._video_sampler_iter = None  # Initialized on first call to self.__next__()
         self._num_consecutive_failures = 0
@@ -114,13 +104,13 @@ class EncodedVideoDataset(torch.utils.data.IterableDataset):
         # Reuse previously stored video if there are still clips to be sampled from
         # the last loaded video.
         if self._loaded_video_label:
-            video, label = self._loaded_video_label
+            video, info_dict = self._loaded_video_label
         else:
             video_index = next(self._video_sampler_iter)
             try:
-                video_path, label = self._labeled_videos[video_index]
+                video_path, info_dict = self._labeled_videos[video_index]
                 video = EncodedVideo(video_path)
-                self._loaded_video_label = (video, label)
+                self._loaded_video_label = (video, info_dict)
             except OSError as e:
                 logger.warning(e)
                 retry_next()
@@ -144,8 +134,8 @@ class EncodedVideoDataset(torch.utils.data.IterableDataset):
         sample_dict = {
             "video": frames,
             "audio": audio_samples,
-            "label": label,
             "video_name": video.name,
+            **info_dict,
         }
 
         if self._transform is not None:
@@ -158,129 +148,53 @@ class EncodedVideoDataset(torch.utils.data.IterableDataset):
         return self
 
 
-class LabeledVideoPaths:
+def labeled_encoded_video_dataset(
+    data_path: pathlib.path,
+    clip_sampler: ClipSampler,
+    video_sampler: Type[torch.utils.data.Sampler] = torch.utils.data.RandomSampler,
+    transform: Optional[Callable[[dict], Any]] = None,
+    video_path_prefix: str = "",
+) -> EncodedVideoDataset:
     """
-    LabeledVideoPaths contains pairs of video path and integer index label.
+    A helper function to create EncodedVideoDataset object for Ucf101 and Kinectis datasets.
+
+    Args:
+        data_path (pathlib.Path): Path to the data. The path type defines how the
+        data should be read:
+            - For a file path, the file is read and each line is parsed into a
+                video path and label.
+            - For a directory, the directory structure defines the classes
+                (i.e. each subdirectory is a class).
+        See the LabeledVideoPaths class documentation for specific formatting
+        details and examples.
+
+        clip_sampler (ClipSampler): Defines how clips should be sampled from each
+                video. See the clip sampling documentation for more information.
+
+        video_sampler (Type[torch.utils.data.Sampler]): Sampler for the internal
+                video container. This defines the order videos are decoded and,
+                if necessary, the distributed split.
+
+        transform (Callable): This callable is evaluated on the clip output before
+                the clip is returned. It can be used for user defined preprocessing and
+                augmentations to the clips. The clip output is a dictionary with the
+                following format:
+                    {
+                        'video': <video_tensor>,
+                        'label': <index_label>,
+                        'index': <clip_index>
+                    }
+                If transform is None, the raw clip output in the above format is
+                returned unmodified.
+
+        video_path_prefix (str): Path to root directory with the videos that are
+                loaded in EncodedVideoDataset. All the video paths before loading
+                are prefixed with this path.
+
     """
-
-    @classmethod
-    def from_path(cls, data_path: str) -> LabeledVideoPaths:
-        """
-        Factory function that creates a LabeledVideoPaths object depending on the path
-        type.
-        - If it is a directory path it uses the LabeledVideoPaths.from_directory function.
-        - If it's a file it uses the LabeledVideoPaths.from_csv file.
-        Args:
-            file_path (str): The path to the file to be read.
-        """
-        if pathlib.Path(data_path).is_file():
-            return LabeledVideoPaths.from_csv(data_path)
-        elif pathlib.Path(data_path).is_dir():
-            return LabeledVideoPaths.from_directory(data_path)
-        else:
-            raise FileNotFoundError(f"{data_path} not found.")
-
-    @classmethod
-    def from_csv(cls, file_path: str) -> LabeledVideoPaths:
-        """
-        Factory function that creates a LabeledVideoPaths object by reading a file with the
-        following format:
-            <path> <integer_label>
-            ...
-            <path> <integer_label>
-
-        Args:
-            file_path (str): The path to the file to be read.
-        """
-        assert PathManager.exists(file_path), f"{file_path} not found."
-        video_paths_and_label = []
-        with PathManager.open(file_path, "r") as f:
-            for path_label in f.read().splitlines():
-                line_split = path_label.rsplit(None, 1)
-
-                # The video path file may not contain labels (e.g. for a test split). We
-                # assume this is the case if only 1 path is found and set the label to
-                # -1 if so.
-                if len(line_split) == 1:
-                    file_path = line_split[0]
-                    label = -1
-                else:
-                    file_path, label = line_split
-
-                video_paths_and_label.append((file_path, int(label)))
-
-        assert (
-            len(video_paths_and_label) > 0
-        ), f"Failed to load dataset from {file_path}."
-        return cls(video_paths_and_label)
-
-    @classmethod
-    def from_directory(cls, dir_path: str) -> LabeledVideoPaths:
-        """
-        Factory function that creates a LabeledVideoPaths object by parsing the structure
-        of the given directory's subdirectories into the classification labels. It
-        expects the directory format to be the following:
-             dir_path/<class_name>/<video_name>.mp4
-
-        Classes are indexed from 0 to the number of classes, alphabetically.
-
-        E.g.
-            dir_path/class_x/xxx.ext
-            dir_path/class_x/xxy.ext
-            dir_path/class_x/xxz.ext
-            dir_path/class_y/123.ext
-            dir_path/class_y/nsdf3.ext
-            dir_path/class_y/asd932_.ext
-
-        Would produce two classes labeled 0 and 1 with 3 videos paths associated with each.
-
-        Args:
-            dir_path (str): Root directory to the video class directories .
-        """
-        assert PathManager.exists(dir_path), f"{dir_path} not found."
-
-        # Find all classes based on directory names. These classes are then sorted and indexed
-        # from 0 to the number of classes.
-        classes = sorted((f for f in pathlib.Path(dir_path).iterdir() if f.is_dir()))
-        class_to_idx = {classes[i]: i for i in range(len(classes))}
-        video_paths_and_label = make_dataset(
-            dir_path, class_to_idx, extensions=("mp4", "avi")
-        )
-        assert (
-            len(video_paths_and_label) > 0
-        ), f"Failed to load dataset from {dir_path}."
-        return cls(video_paths_and_label)
-
-    def __init__(
-        self, paths_and_labels: List[Tuple[str, Optional[int]]], path_prefix=""
-    ) -> None:
-        """
-        Args:
-            paths_and_labels [(str, int)]: a list of tuples containing the video
-                path and integer label.
-        """
-        self._paths_and_labels = paths_and_labels
-        self._path_prefix = path_prefix
-
-    def path_prefix(self, prefix):
-        self._path_prefix = prefix
-
-    path_prefix = property(None, path_prefix)
-
-    def __getitem__(self, index: int) -> Tuple[str, int]:
-        """
-        Args:
-            index (int): the path and label index.
-
-        Returns:
-            The path and label tuple for the given index.
-        """
-        path, label = self._paths_and_labels[index]
-        return (os.path.join(self._path_prefix, path), label)
-
-    def __len__(self) -> int:
-        """
-        Returns:
-            The number of video paths and label pairs.
-        """
-        return len(self._paths_and_labels)
+    labeled_video_paths = LabeledVideoPaths.from_path(data_path)
+    labeled_video_paths.path_prefix = video_path_prefix
+    dataset = EncodedVideoDataset(
+        labeled_video_paths, clip_sampler, video_sampler, transform
+    )
+    return dataset
