@@ -604,8 +604,6 @@ def create_default_resnet(
     *,
     # Input clip configs.
     input_channel: int = 3,
-    input_clip_length: int = 8,
-    input_crop_size: int = 224,
     # Model configs.
     model_depth: int = 50,
     model_num_class: int = 400,
@@ -646,6 +644,7 @@ def create_default_resnet(
     bottleneck: Callable = create_default_bottleneck_block,
     # Head configs.
     head_pool: Callable = nn.AvgPool3d,
+    head_pool_kernel_size: Tuple[int] = (4, 7, 7),
     head_output_size: Tuple[int] = (1, 1, 1),
     head_activation: Callable = nn.Softmax,
 ) -> nn.Module:
@@ -670,8 +669,6 @@ def create_default_resnet(
     Args:
         Input clip configs:
             input_channel (int): number of channels for the input video clip.
-            input_clip_length (int): length of the input video clip.
-            input_crop_size (int): spatial resolution of the input video clip.
 
         Model configs:
             model_depth (int): the depth of the resnet.
@@ -705,6 +702,7 @@ def create_default_resnet(
 
         Head configs:
             head_pool (callable): a callable that constructs resnet head pooling layer.
+            head_pool_kernel_size (tuple): the pooling kernel size.
             head_output_size (tuple): the size of output tensor for head.
             head_activation (callable): a callable that constructs activation layer.
 
@@ -767,19 +765,6 @@ def create_default_resnet(
         stages.append(stage)
         stage_dim_in = stage_dim_out
         stage_dim_out = stage_dim_out * 2
-
-    # Create head for resnet.
-    total_spatial_stride = (
-        stem_conv_stride[1] * stem_pool_stride[1] * np.prod(stage_spatial_stride)
-    )
-    total_temporal_stride = (
-        stem_conv_stride[0] * stem_pool_stride[0] * np.prod(stage_temporal_stride)
-    )
-    head_pool_kernel_size = (
-        input_clip_length // total_temporal_stride,
-        input_crop_size // total_spatial_stride,
-        input_crop_size // total_spatial_stride,
-    )
 
     head = create_res_basic_head(
         in_features=stage_dim_in,

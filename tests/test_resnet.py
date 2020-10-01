@@ -924,6 +924,9 @@ class TestResNet(unittest.TestCase):
             input_clip_length = 4
             input_crop_size = 56
             model_depth = 50
+            stage_spatial_stride = (2, 1, 1, 1)
+            stage_temporal_stride = (2, 1, 1, 1)
+
             model_gt, num_class = self._build_resnet(
                 input_channel,
                 input_clip_length,
@@ -933,10 +936,16 @@ class TestResNet(unittest.TestCase):
                 activation,
             )
 
+            total_spatial_stride = 4 * np.prod(stage_spatial_stride)
+            total_temporal_stride = np.prod(stage_temporal_stride)
+            head_pool_kernel_size = (
+                input_clip_length // total_temporal_stride,
+                input_crop_size // total_spatial_stride,
+                input_crop_size // total_spatial_stride,
+            )
+
             model = create_default_resnet(
                 input_channel=input_channel,
-                input_clip_length=input_clip_length,
-                input_crop_size=input_crop_size,
                 model_depth=50,
                 model_num_class=num_class,
                 dropout_rate=0,
@@ -950,10 +959,11 @@ class TestResNet(unittest.TestCase):
                 stem_pool_stride=(1, 2, 2),
                 stage_conv_a_kernel_size=((3, 1, 1),) * 4,
                 stage_conv_b_kernel_size=((1, 3, 3),) * 4,
-                stage_spatial_stride=(2, 1, 1, 1),
-                stage_temporal_stride=(2, 1, 1, 1),
+                stage_spatial_stride=stage_spatial_stride,
+                stage_temporal_stride=stage_temporal_stride,
                 bottleneck=create_default_bottleneck_block,
                 head_pool=nn.AvgPool3d,
+                head_pool_kernel_size=head_pool_kernel_size,
                 head_output_size=(1, 1, 1),
                 head_activation=nn.Softmax,
             )
