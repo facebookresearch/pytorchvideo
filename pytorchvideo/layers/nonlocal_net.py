@@ -36,14 +36,17 @@ class NonLocal(nn.Module):
             "dot_product",
             "softmax",
         ), "Unknown norm type {}".format(instantiation)
-        assert len(
-            {
-                self.conv_theta.out_channels,
-                self.conv_phi.out_channels,
-                self.conv_g.out_channels,
-                self.conv_out.in_channels,
-            }
-        ) == 1, "Nonlocal convolution's input/ output dimension mismatch."
+        assert (
+            len(
+                {
+                    self.conv_theta.out_channels,
+                    self.conv_phi.out_channels,
+                    self.conv_g.out_channels,
+                    self.conv_out.in_channels,
+                }
+            )
+            == 1
+        ), "Nonlocal convolution's input/ output dimension mismatch."
 
     def forward(self, x) -> torch.Tensor:
         dim_inner = self.conv_theta.out_channels
