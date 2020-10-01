@@ -357,7 +357,9 @@ class TestResBottleneckBlock(unittest.TestCase):
                 activation=activation,
             )
             model_gt = ResBlock(
-                branch1_conv=nn.Conv3d(32, 64, kernel_size=(1, 1, 1), stride=(1, 2, 2)),
+                branch1_conv=nn.Conv3d(
+                    32, 64, kernel_size=(1, 1, 1), stride=(1, 2, 2), bias=False
+                ),
                 branch1_norm=None if norm is None else norm(num_features=64),
                 branch2=BottleneckBlock(
                     conv_a=nn.Conv3d(
@@ -460,84 +462,88 @@ class TestResStageTransform(unittest.TestCase):
             (4, 8, 16), (2, 4), (4, 8, 16)
         ):
             model = ResStage(
-                res_blocks=[
-                    ResBlock(
-                        branch1_conv=nn.Conv3d(dim_in, dim_out, kernel_size=(1, 1, 1))
-                        if dim_in != dim_out
-                        else None,
-                        branch1_norm=nn.BatchNorm3d(num_features=dim_out)
-                        if dim_in != dim_out
-                        else None,
-                        branch2=BottleneckBlock(
-                            conv_a=nn.Conv3d(
-                                dim_in,
-                                dim_inner,
-                                kernel_size=[3, 1, 1],
-                                stride=[1, 1, 1],
-                                padding=[1, 0, 0],
-                                bias=False,
+                res_blocks=nn.ModuleList(
+                    [
+                        ResBlock(
+                            branch1_conv=nn.Conv3d(
+                                dim_in, dim_out, kernel_size=(1, 1, 1)
+                            )
+                            if dim_in != dim_out
+                            else None,
+                            branch1_norm=nn.BatchNorm3d(num_features=dim_out)
+                            if dim_in != dim_out
+                            else None,
+                            branch2=BottleneckBlock(
+                                conv_a=nn.Conv3d(
+                                    dim_in,
+                                    dim_inner,
+                                    kernel_size=[3, 1, 1],
+                                    stride=[1, 1, 1],
+                                    padding=[1, 0, 0],
+                                    bias=False,
+                                ),
+                                norm_a=nn.BatchNorm3d(dim_inner),
+                                act_a=nn.ReLU(),
+                                conv_b=nn.Conv3d(
+                                    dim_inner,
+                                    dim_inner,
+                                    kernel_size=[1, 3, 3],
+                                    stride=[1, 1, 1],
+                                    padding=[0, 1, 1],
+                                    bias=False,
+                                ),
+                                norm_b=nn.BatchNorm3d(dim_inner),
+                                act_b=nn.ReLU(),
+                                conv_c=nn.Conv3d(
+                                    dim_inner,
+                                    dim_out,
+                                    kernel_size=[1, 1, 1],
+                                    stride=[1, 1, 1],
+                                    padding=[0, 0, 0],
+                                    bias=False,
+                                ),
+                                norm_c=nn.BatchNorm3d(dim_out),
                             ),
-                            norm_a=nn.BatchNorm3d(dim_inner),
-                            act_a=nn.ReLU(),
-                            conv_b=nn.Conv3d(
-                                dim_inner,
-                                dim_inner,
-                                kernel_size=[1, 3, 3],
-                                stride=[1, 1, 1],
-                                padding=[0, 1, 1],
-                                bias=False,
-                            ),
-                            norm_b=nn.BatchNorm3d(dim_inner),
-                            act_b=nn.ReLU(),
-                            conv_c=nn.Conv3d(
-                                dim_inner,
-                                dim_out,
-                                kernel_size=[1, 1, 1],
-                                stride=[1, 1, 1],
-                                padding=[0, 0, 0],
-                                bias=False,
-                            ),
-                            norm_c=nn.BatchNorm3d(dim_out),
+                            activation=nn.ReLU(),
                         ),
-                        activation=nn.ReLU(),
-                    ),
-                    ResBlock(
-                        branch1_conv=None,
-                        branch1_norm=None,
-                        branch2=BottleneckBlock(
-                            conv_a=nn.Conv3d(
-                                dim_out,
-                                dim_inner,
-                                kernel_size=[3, 1, 1],
-                                stride=[1, 1, 1],
-                                padding=[1, 0, 0],
-                                bias=False,
+                        ResBlock(
+                            branch1_conv=None,
+                            branch1_norm=None,
+                            branch2=BottleneckBlock(
+                                conv_a=nn.Conv3d(
+                                    dim_out,
+                                    dim_inner,
+                                    kernel_size=[3, 1, 1],
+                                    stride=[1, 1, 1],
+                                    padding=[1, 0, 0],
+                                    bias=False,
+                                ),
+                                norm_a=nn.BatchNorm3d(dim_inner),
+                                act_a=nn.ReLU(),
+                                conv_b=nn.Conv3d(
+                                    dim_inner,
+                                    dim_inner,
+                                    kernel_size=[1, 3, 3],
+                                    stride=[1, 1, 1],
+                                    padding=[0, 1, 1],
+                                    bias=False,
+                                ),
+                                norm_b=nn.BatchNorm3d(dim_inner),
+                                act_b=nn.ReLU(),
+                                conv_c=nn.Conv3d(
+                                    dim_inner,
+                                    dim_out,
+                                    kernel_size=[1, 1, 1],
+                                    stride=[1, 1, 1],
+                                    padding=[0, 0, 0],
+                                    bias=False,
+                                ),
+                                norm_c=nn.BatchNorm3d(dim_out),
                             ),
-                            norm_a=nn.BatchNorm3d(dim_inner),
-                            act_a=nn.ReLU(),
-                            conv_b=nn.Conv3d(
-                                dim_inner,
-                                dim_inner,
-                                kernel_size=[1, 3, 3],
-                                stride=[1, 1, 1],
-                                padding=[0, 1, 1],
-                                bias=False,
-                            ),
-                            norm_b=nn.BatchNorm3d(dim_inner),
-                            act_b=nn.ReLU(),
-                            conv_c=nn.Conv3d(
-                                dim_inner,
-                                dim_out,
-                                kernel_size=[1, 1, 1],
-                                stride=[1, 1, 1],
-                                padding=[0, 0, 0],
-                                bias=False,
-                            ),
-                            norm_c=nn.BatchNorm3d(dim_out),
+                            activation=nn.ReLU(),
                         ),
-                        activation=nn.ReLU(),
-                    ),
-                ]
+                    ]
+                )
             )
 
             # Test forwarding.
@@ -595,86 +601,90 @@ class TestResStageTransform(unittest.TestCase):
                 activation=activation,
             )
             model_gt = ResStage(
-                res_blocks=[
-                    ResBlock(
-                        branch1_conv=nn.Conv3d(dim_in, dim_out, kernel_size=(1, 1, 1))
-                        if dim_in != dim_out
-                        else None,
-                        branch1_norm=None
-                        if norm is None
-                        else norm(num_features=dim_out)
-                        if dim_in != dim_out
-                        else None,
-                        branch2=BottleneckBlock(
-                            conv_a=nn.Conv3d(
-                                dim_in,
-                                dim_inner,
-                                kernel_size=[3, 1, 1],
-                                stride=[1, 1, 1],
-                                padding=[1, 0, 0],
-                                bias=False,
+                res_blocks=nn.ModuleList(
+                    [
+                        ResBlock(
+                            branch1_conv=nn.Conv3d(
+                                dim_in, dim_out, kernel_size=(1, 1, 1), bias=False
+                            )
+                            if dim_in != dim_out
+                            else None,
+                            branch1_norm=None
+                            if norm is None
+                            else norm(num_features=dim_out)
+                            if dim_in != dim_out
+                            else None,
+                            branch2=BottleneckBlock(
+                                conv_a=nn.Conv3d(
+                                    dim_in,
+                                    dim_inner,
+                                    kernel_size=[3, 1, 1],
+                                    stride=[1, 1, 1],
+                                    padding=[1, 0, 0],
+                                    bias=False,
+                                ),
+                                norm_a=None if norm is None else norm(dim_inner),
+                                act_a=None if activation is None else activation(),
+                                conv_b=nn.Conv3d(
+                                    dim_inner,
+                                    dim_inner,
+                                    kernel_size=[1, 3, 3],
+                                    stride=[1, 1, 1],
+                                    padding=[0, 1, 1],
+                                    bias=False,
+                                ),
+                                norm_b=None if norm is None else norm(dim_inner),
+                                act_b=None if activation is None else activation(),
+                                conv_c=nn.Conv3d(
+                                    dim_inner,
+                                    dim_out,
+                                    kernel_size=[1, 1, 1],
+                                    stride=[1, 1, 1],
+                                    padding=[0, 0, 0],
+                                    bias=False,
+                                ),
+                                norm_c=None if norm is None else norm(dim_out),
                             ),
-                            norm_a=None if norm is None else norm(dim_inner),
-                            act_a=None if activation is None else activation(),
-                            conv_b=nn.Conv3d(
-                                dim_inner,
-                                dim_inner,
-                                kernel_size=[1, 3, 3],
-                                stride=[1, 1, 1],
-                                padding=[0, 1, 1],
-                                bias=False,
-                            ),
-                            norm_b=None if norm is None else norm(dim_inner),
-                            act_b=None if activation is None else activation(),
-                            conv_c=nn.Conv3d(
-                                dim_inner,
-                                dim_out,
-                                kernel_size=[1, 1, 1],
-                                stride=[1, 1, 1],
-                                padding=[0, 0, 0],
-                                bias=False,
-                            ),
-                            norm_c=None if norm is None else norm(dim_out),
+                            activation=None if activation is None else activation(),
                         ),
-                        activation=None if activation is None else activation(),
-                    ),
-                    ResBlock(
-                        branch1_conv=None,
-                        branch1_norm=None,
-                        branch2=BottleneckBlock(
-                            conv_a=nn.Conv3d(
-                                dim_out,
-                                dim_inner,
-                                kernel_size=[3, 1, 1],
-                                stride=[1, 1, 1],
-                                padding=[1, 0, 0],
-                                bias=False,
+                        ResBlock(
+                            branch1_conv=None,
+                            branch1_norm=None,
+                            branch2=BottleneckBlock(
+                                conv_a=nn.Conv3d(
+                                    dim_out,
+                                    dim_inner,
+                                    kernel_size=[3, 1, 1],
+                                    stride=[1, 1, 1],
+                                    padding=[1, 0, 0],
+                                    bias=False,
+                                ),
+                                norm_a=None if norm is None else norm(dim_inner),
+                                act_a=None if activation is None else activation(),
+                                conv_b=nn.Conv3d(
+                                    dim_inner,
+                                    dim_inner,
+                                    kernel_size=[1, 3, 3],
+                                    stride=[1, 1, 1],
+                                    padding=[0, 1, 1],
+                                    bias=False,
+                                ),
+                                norm_b=None if norm is None else norm(dim_inner),
+                                act_b=None if activation is None else activation(),
+                                conv_c=nn.Conv3d(
+                                    dim_inner,
+                                    dim_out,
+                                    kernel_size=[1, 1, 1],
+                                    stride=[1, 1, 1],
+                                    padding=[0, 0, 0],
+                                    bias=False,
+                                ),
+                                norm_c=None if norm is None else norm(dim_out),
                             ),
-                            norm_a=None if norm is None else norm(dim_inner),
-                            act_a=None if activation is None else activation(),
-                            conv_b=nn.Conv3d(
-                                dim_inner,
-                                dim_inner,
-                                kernel_size=[1, 3, 3],
-                                stride=[1, 1, 1],
-                                padding=[0, 1, 1],
-                                bias=False,
-                            ),
-                            norm_b=None if norm is None else norm(dim_inner),
-                            act_b=None if activation is None else activation(),
-                            conv_c=nn.Conv3d(
-                                dim_inner,
-                                dim_out,
-                                kernel_size=[1, 1, 1],
-                                stride=[1, 1, 1],
-                                padding=[0, 0, 0],
-                                bias=False,
-                            ),
-                            norm_c=None if norm is None else norm(dim_out),
+                            activation=None if activation is None else activation(),
                         ),
-                        activation=None if activation is None else activation(),
-                    ),
-                ]
+                    ]
+                )
             )
             model.load_state_dict(
                 model_gt.state_dict(), strict=True
@@ -791,6 +801,7 @@ class TestResNet(unittest.TestCase):
                         block_dim_out,
                         kernel_size=(1, 1, 1),
                         stride=(temporal_stride, spatial_stride, spatial_stride),
+                        bias=False,
                     )
                     if block_dim_in != block_dim_out
                     else None,
@@ -809,7 +820,7 @@ class TestResNet(unittest.TestCase):
                             bias=False,
                         ),
                         norm_a=None if norm is None else norm(block_dim_inner),
-                        act_a=nn.ReLU(),
+                        act_a=None if activation is None else activation(),
                         conv_b=nn.Conv3d(
                             block_dim_inner,
                             block_dim_inner,
@@ -819,7 +830,7 @@ class TestResNet(unittest.TestCase):
                             bias=False,
                         ),
                         norm_b=None if norm is None else norm(block_dim_inner),
-                        act_b=nn.ReLU(),
+                        act_b=None if activation is None else activation(),
                         conv_c=nn.Conv3d(
                             block_dim_inner,
                             block_dim_out,
@@ -836,7 +847,7 @@ class TestResNet(unittest.TestCase):
                 block_dim_in = block_dim_out
                 blocks.append(block)
 
-            stage = ResStage(blocks)
+            stage = ResStage(nn.ModuleList(blocks))
             stages.append(stage)
 
             stage_dim_in = stage_dim_out
@@ -858,7 +869,10 @@ class TestResNet(unittest.TestCase):
             dropout=None,
         )
 
-        return ResNet(stem=stem, stages=stages, head=head), model_num_class
+        return (
+            ResNet(stem=stem, stages=nn.ModuleList(stages), head=head),
+            model_num_class,
+        )
 
     def test_create_resnet(self):
         """
@@ -934,8 +948,8 @@ class TestResNet(unittest.TestCase):
                 stem_pool=nn.MaxPool3d,
                 stem_pool_kernel_size=(1, 3, 3),
                 stem_pool_stride=(1, 2, 2),
-                stage_conv_a_kernel_size=(3, 1, 1),
-                stage_conv_b_kernel_size=(1, 3, 3),
+                stage_conv_a_kernel_size=((3, 1, 1),) * 4,
+                stage_conv_b_kernel_size=((1, 3, 3),) * 4,
                 stage_spatial_stride=(2, 1, 1, 1),
                 stage_temporal_stride=(2, 1, 1, 1),
                 bottleneck=create_default_bottleneck_block,

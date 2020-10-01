@@ -190,4 +190,4 @@ def create_default_csn(
         dropout_rate=dropout_rate,
         activation=head_activation,
     )
-    return ResNet(stem=stem, stages=stages, head=head)
+    return ResNet(stem=stem, stages=nn.ModuleList(stages), head=head)

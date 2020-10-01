@@ -1,4 +1,4 @@
-from typing import Callable, List, Tuple
+from typing import Callable, Tuple
 
 import numpy as np
 import torch
@@ -33,13 +33,12 @@ def init_resnet_weights(model: nn.Module, fc_init_std: float = 0.01) -> None:
             arXiv preprint arXiv:1502.01852 (2015)}
             """
             c2_msra_fill(m)
-        elif isinstance(m, nn.BatchNorm3d):
-            if (
-                m.weight is not None
-                and hasattr(m, "block_final_bn")
-                and m.block_final_bn
-            ):
-                m.weight.data.zero_()
+        elif isinstance(m, nn.modules.batchnorm._NormBase):
+            if m.weight is not None:
+                if hasattr(m, "block_final_bn") and m.block_final_bn:
+                    m.weight.data.fill_(0.0)
+                else:
+                    m.weight.data.fill_(1.0)
             if m.bias is not None:
                 m.bias.data.zero_()
         if isinstance(m, nn.Linear):
@@ -385,6 +384,7 @@ def create_default_res_block(
             dim_out,
             kernel_size=(1, 1, 1),
             stride=tuple(map(np.prod, zip(conv_a_stride, conv_b_stride))),
+            bias=False,
         )
         if dim_in != dim_out and use_shortcut
         else None,
@@ -419,42 +419,26 @@ class ResStage(nn.Module):
                                            ↓
                                        ResBlock
                                            ↓
-                                      (Optional)
-                                      Plugin layer
-                                           ↓
                                            .
                                            .
                                            .
                                            ↓
                                        ResBlock
-                                           ↓
-                                      (Optional)
-                                      Plugin layer
 
     The default builder can be found in `create_default_res_stage`.
     """
 
-    def __init__(self, res_blocks: List[nn.Module] = None) -> nn.Module:
+    def __init__(self, res_blocks: nn.ModuleList) -> nn.Module:
         """
         Args:
-            res_blocks (list of torch.nn.modules): a list of ResBlock module(s).
+            res_blocks (torch.nn.module_list): ResBlock module(s).
         """
         super().__init__()
-        self._construct_model(res_blocks)
+        self.res_blocks = res_blocks
 
-    def _construct_model(self, res_blocks: List[nn.Module] = None) -> None:
-        """
-        Constructs a nn.ModuleList model from `res_blocks`.
-            res_blocks (list of torch.nn.modules): a list of ResBlock module(s).
-        """
-        models = []
-        for ind in range(len(res_blocks)):
-            models.append(res_blocks[ind])
-        self.stage = torch.nn.ModuleList(models)
-
-    def forward(self, x) -> torch.Tensor:
-        for _, m in enumerate(self.stage):
-            x = m(x)
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        for _, res_block in enumerate(self.res_blocks):
+            x = res_block(x)
         return x
 
 
@@ -557,7 +541,7 @@ def create_default_res_stage(
             activation=activation,
         )
         res_blocks.append(block)
-    return ResStage(res_blocks=res_blocks)
+    return ResStage(res_blocks=nn.ModuleList(res_blocks))
 
 
 class ResNet(nn.Module):
@@ -590,13 +574,13 @@ class ResNet(nn.Module):
         self,
         *,
         stem: nn.Module = None,
-        stages: List[nn.Module] = None,
+        stages: nn.ModuleList = None,
         head: nn.Module = None,
     ) -> None:
         """
         Args:
             stem (torch.nn.modules): the Stem module.
-            stages (list of torch.nn.modules): a list of Stage module(s).
+            stages (torch.nn.module_list): Stage modulelist.
             head (torch.nn.modules): the Head module.
         """
         super().__init__()
@@ -638,10 +622,25 @@ def create_default_resnet(
     stem_pool_kernel_size: Tuple[int] = (1, 3, 3),
     stem_pool_stride: Tuple[int] = (1, 2, 2),
     # Stage configs.
-    stage_conv_a_kernel_size: Tuple[int] = (3, 1, 1),
-    stage_conv_b_kernel_size: Tuple[int] = (1, 3, 3),
-    stage_conv_b_num_groups: int = 1,
-    stage_conv_b_dilation: Tuple[int] = (1, 1, 1),
+    stage_conv_a_kernel_size: Tuple[Tuple[int]] = (
+        (1, 1, 1),
+        (1, 1, 1),
+        (3, 1, 1),
+        (3, 1, 1),
+    ),
+    stage_conv_b_kernel_size: Tuple[Tuple[int]] = (
+        (1, 3, 3),
+        (1, 3, 3),
+        (1, 3, 3),
+        (1, 3, 3),
+    ),
+    stage_conv_b_num_groups: Tuple[int] = (1, 1, 1, 1),
+    stage_conv_b_dilation: Tuple[Tuple[int]] = (
+        (1, 1, 1),
+        (1, 1, 1),
+        (1, 1, 1),
+        (1, 1, 1),
+    ),
     stage_spatial_stride: Tuple[int] = (1, 2, 2, 2),
     stage_temporal_stride: Tuple[int] = (1, 2, 2, 2),
     bottleneck: Callable = create_default_bottleneck_block,
@@ -696,7 +695,7 @@ def create_default_resnet(
         Stage configs:
             stage_conv_a_kernel_size (tuple): convolutional kernel size(s) for conv_a.
             stage_conv_b_kernel_size (tuple): convolutional kernel size(s) for conv_b.
-            stage_conv_b_num_groups (int): number of groups for groupwise convolution
+            stage_conv_b_num_groups (tuple): number of groups for groupwise convolution
                 for conv_b. 1 for ResNet, and larger than 1 for ResNeXt.
             stage_conv_b_dilation (tuple): dilation for 3D convolution for conv_b.
             stage_spatial_stride (tuple): the spatial stride for each stage.
@@ -753,14 +752,14 @@ def create_default_resnet(
             dim_inner=stage_dim_inner,
             dim_out=stage_dim_out,
             bottleneck=bottleneck,
-            conv_a_kernel_size=stage_conv_a_kernel_size,
+            conv_a_kernel_size=stage_conv_a_kernel_size[idx],
             conv_a_stride=stage_conv_a_stride,
-            conv_a_padding=[size // 2 for size in stage_conv_a_kernel_size],
-            conv_b_kernel_size=stage_conv_b_kernel_size,
+            conv_a_padding=[size // 2 for size in stage_conv_a_kernel_size[idx]],
+            conv_b_kernel_size=stage_conv_b_kernel_size[idx],
             conv_b_stride=stage_conv_b_stride,
-            conv_b_padding=[size // 2 for size in stage_conv_b_kernel_size],
-            conv_b_num_groups=stage_conv_b_num_groups,
-            conv_b_dilation=stage_conv_b_dilation,
+            conv_b_padding=[size // 2 for size in stage_conv_b_kernel_size[idx]],
+            conv_b_num_groups=stage_conv_b_num_groups[idx],
+            conv_b_dilation=stage_conv_b_dilation[idx],
             norm=norm,
             activation=activation,
         )
@@ -791,4 +790,4 @@ def create_default_resnet(
         dropout_rate=dropout_rate,
         activation=head_activation,
     )
-    return ResNet(stem=stem, stages=stages, head=head)
+    return ResNet(stem=stem, stages=nn.ModuleList(stages), head=head)
