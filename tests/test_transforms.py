@@ -10,6 +10,7 @@ from pytorchvideo.transforms import (
     UniformTemporalSubsample,
 )
 from pytorchvideo.transforms.functional import (
+    repeat_temporal_frames_subsample,
     short_side_scale,
     uniform_temporal_subsample,
 )
@@ -97,3 +98,13 @@ class TestTransforms(unittest.TestCase):
             torch.manual_seed(0)
             script_output = transform_script(video)
             self.assertTrue(output.equal(script_output))
+
+    def test_repeat_temporal_frames_subsample(self):
+        video = thwc_to_cthw(create_video_frames(32, 10, 10)).to(dtype=torch.float32)
+        actual = repeat_temporal_frames_subsample(video, (1, 4))
+        expected_shape = ((3, 32, 10, 10), (3, 8, 10, 10))
+        for idx in range(len(actual)):
+            self.assertEqual(actual[idx].shape, expected_shape[idx])
+
+    # TODO: add a test case for short_side_scale in the next diff
+    # (a sanity check to make sure the interp is not changed)
