@@ -4,7 +4,7 @@ import numpy as np
 import torch.nn as nn
 from pytorchvideo.models.head import create_res_basic_head
 from pytorchvideo.models.resnet import (
-    ResNet,
+    Net,
     create_default_bottleneck_block,
     create_default_res_stage,
 )
@@ -109,6 +109,7 @@ def create_default_csn(
     """
     # Number of blocks for different stages given the model depth.
     _MODEL_STAGE_DEPTH = {50: (3, 4, 6, 3), 101: (3, 4, 23, 3), 152: (3, 8, 36, 3)}
+    blocks = []
     # Create stem for CSN.
     stem = create_default_res_basic_stem(
         in_channels=input_channel,
@@ -120,6 +121,7 @@ def create_default_csn(
         norm=norm,
         activation=activation,
     )
+    blocks.append(stem)
 
     # Given a model depth, get the number of blocks for each stage.
     assert (
@@ -130,7 +132,6 @@ def create_default_csn(
     stage_dim_in = stem_dim_out
     stage_dim_out = stage_dim_in * 4
 
-    stages = []
     # Create each stage for CSN.
     for idx in range(len(stage_depths)):
         stage_dim_inner = stage_dim_out // 8
@@ -160,7 +161,7 @@ def create_default_csn(
             activation=activation,
         )
 
-        stages.append(stage)
+        blocks.append(stage)
         stage_dim_in = stage_dim_out
         stage_dim_out = stage_dim_out * 2
 
@@ -190,4 +191,5 @@ def create_default_csn(
         dropout_rate=dropout_rate,
         activation=head_activation,
     )
-    return ResNet(stem=stem, stages=nn.ModuleList(stages), head=head)
+    blocks.append(head)
+    return Net(blocks=nn.ModuleList(blocks))

@@ -4,10 +4,10 @@ import unittest
 import numpy as np
 import torch
 from pytorchvideo.models.head import ResNetBasicHead
+from pytorchvideo.models.net import Net
 from pytorchvideo.models.resnet import (
     BottleneckBlock,
     ResBlock,
-    ResNet,
     ResStage,
     create_default_bottleneck_block,
     create_default_res_block,
@@ -755,6 +755,7 @@ class TestResNet(unittest.TestCase):
         _MODEL_STAGE_DEPTH = {50: (3, 4, 6, 3), 101: (3, 4, 23, 3), 152: (3, 8, 36, 3)}
         stem_dim_out = 8
         model_num_class = 10
+        stages = []
         # create the Stem for ResNet
         stem = ResNetBasicStem(
             conv=nn.Conv3d(
@@ -771,6 +772,7 @@ class TestResNet(unittest.TestCase):
                 kernel_size=[1, 3, 3], stride=[1, 2, 2], padding=[0, 1, 1]
             ),
         )
+        stages.append(stem)
 
         # get the number of Blocks for each Stage
         stage_depths = _MODEL_STAGE_DEPTH[model_depth]
@@ -780,7 +782,6 @@ class TestResNet(unittest.TestCase):
         stage_spatial_stride = (2, 1, 1, 1)
         stage_temporal_stride = (2, 1, 1, 1)
 
-        stages = []
         # create each Stage for ResNet
         for i in range(len(stage_depths)):
             stage_dim_inner = stage_dim_out // 4
@@ -868,11 +869,9 @@ class TestResNet(unittest.TestCase):
             pool=nn.AvgPool3d(kernel_size=head_pool_kernel_size, stride=[1, 1, 1]),
             dropout=None,
         )
+        stages.append(head)
 
-        return (
-            ResNet(stem=stem, stages=nn.ModuleList(stages), head=head),
-            model_num_class,
-        )
+        return (Net(blocks=nn.ModuleList(stages)), model_num_class)
 
     def test_create_resnet(self):
         """

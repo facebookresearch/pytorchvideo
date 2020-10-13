@@ -3,48 +3,10 @@ from typing import Callable, Tuple
 import numpy as np
 import torch
 import torch.nn as nn
-from fvcore.nn.weight_init import c2_msra_fill
 from pytorchvideo.models.head import create_res_basic_head
+from pytorchvideo.models.net import Net
 from pytorchvideo.models.stem import create_default_res_basic_stem
 from pytorchvideo.models.utils import set_attributes
-
-
-def init_resnet_weights(model: nn.Module, fc_init_std: float = 0.01) -> None:
-    """
-    Performs ResNet style weight initialization.
-    Performs ResNet style weight initialization. That is, recursively initialize the
-    given model in the following way for each type:
-        Conv - Follow the initialization of kaiming_normal:
-            https://pytorch.org/docs/stable/_modules/torch/nn/init.html#kaiming_normal_
-        BatchNorm - Set weight and bias of last BatchNorm at every residual bottleneck
-            to 0.
-        Linear - Set weight to 0 mean Gaussian with std deviation fc_init_std and bias
-            to 0.
-    Args:
-        fc_init_std (float): the expected standard deviation for fully-connected layer.
-    """
-    for m in model.modules():
-        if isinstance(m, nn.Conv3d):
-            """
-            Follow the initialization method proposed in:
-            {He, Kaiming, et al.
-            "Delving deep into rectifiers: Surpassing human-level
-            performance on imagenet classification."
-            arXiv preprint arXiv:1502.01852 (2015)}
-            """
-            c2_msra_fill(m)
-        elif isinstance(m, nn.modules.batchnorm._NormBase):
-            if m.weight is not None:
-                if hasattr(m, "block_final_bn") and m.block_final_bn:
-                    m.weight.data.fill_(0.0)
-                else:
-                    m.weight.data.fill_(1.0)
-            if m.bias is not None:
-                m.bias.data.zero_()
-        if isinstance(m, nn.Linear):
-            m.weight.data.normal_(mean=0.0, std=fc_init_std)
-            m.bias.data.zero_()
-    return model
 
 
 class BottleneckBlock(nn.Module):
@@ -544,62 +506,6 @@ def create_default_res_stage(
     return ResStage(res_blocks=nn.ModuleList(res_blocks))
 
 
-class ResNet(nn.Module):
-    """
-    Build ResNet style models for video recognition. ResNet has three parts:
-    Stem, Stages and Head. Stem is the first Convolution layer (Conv1) with an
-    optional pooling layer. Stages are grouped residual blocks. There are usually
-    multiple stages and each stage may include multiple residual blocks. Head
-    may include pooling, dropout, a fully-connected layer and global spatial
-    temporal averaging. The three parts are assembled in the following order:
-
-                                         Input
-                                           ↓
-                                         Stem
-                                           ↓
-                                         Stage 1
-                                           ↓
-                                           .
-                                           .
-                                           .
-                                           ↓
-                                         Stage N
-                                           ↓
-                                         Head
-
-    The default ResNet can be found in `create_default_resnet`.
-    """
-
-    def __init__(
-        self,
-        *,
-        stem: nn.Module = None,
-        stages: nn.ModuleList = None,
-        head: nn.Module = None,
-    ) -> None:
-        """
-        Args:
-            stem (torch.nn.modules): the Stem module.
-            stages (torch.nn.module_list): Stage modulelist.
-            head (torch.nn.modules): the Head module.
-        """
-        super().__init__()
-        set_attributes(self, locals())
-        assert self.stages is not None
-        init_resnet_weights(self)
-
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
-        if self.stem is not None:
-            x = self.stem(x)
-
-        for idx in range(len(self.stages)):
-            x = self.stages[idx](x)
-
-        if self.head is not None:
-            x = self.head(x)
-        return x
-
-
 def create_default_resnet(
     *,
     # Input clip configs.
@@ -650,7 +556,11 @@ def create_default_resnet(
 ) -> nn.Module:
     """
     Build ResNet style models for video recognition. ResNet has three parts:
-    Stem, Stages and Head. The three parts are assembled in the following order:
+    Stem, Stages and Head. Stem is the first Convolution layer (Conv1) with an
+    optional pooling layer. Stages are grouped residual blocks. There are usually
+    multiple stages and each stage may include multiple residual blocks. Head
+    may include pooling, dropout, a fully-connected layer and global spatial
+    temporal averaging. The three parts are assembled in the following order:
 
                                          Input
                                            ↓
@@ -711,6 +621,7 @@ def create_default_resnet(
     """
     # Number of blocks for different stages given the model depth.
     _MODEL_STAGE_DEPTH = {50: (3, 4, 6, 3), 101: (3, 4, 23, 3), 152: (3, 8, 36, 3)}
+    blocks = []
     # Create stem for resnet.
     stem = create_default_res_basic_stem(
         in_channels=input_channel,
@@ -725,6 +636,7 @@ def create_default_resnet(
         norm=norm,
         activation=activation,
     )
+    blocks.append(stem)
 
     # Given a model depth, get the number of blocks for each stage.
     assert (
@@ -735,7 +647,6 @@ def create_default_resnet(
     stage_dim_in = stem_dim_out
     stage_dim_out = stage_dim_in * 4
 
-    stages = []
     # Create each stage for resnet.
     for idx in range(len(stage_depths)):
         stage_dim_inner = stage_dim_out // 4
@@ -762,7 +673,7 @@ def create_default_resnet(
             activation=activation,
         )
 
-        stages.append(stage)
+        blocks.append(stage)
         stage_dim_in = stage_dim_out
         stage_dim_out = stage_dim_out * 2
 
@@ -775,4 +686,5 @@ def create_default_resnet(
         dropout_rate=dropout_rate,
         activation=head_activation,
     )
-    return ResNet(stem=stem, stages=nn.ModuleList(stages), head=head)
+    blocks.append(head)
+    return Net(blocks=nn.ModuleList(blocks))
