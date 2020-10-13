@@ -1,6 +1,9 @@
+from typing import List, Optional
+
 import torch
 import torch.nn as nn
 from fvcore.nn.weight_init import c2_msra_fill
+from pytorchvideo.models.utils import set_attributes
 
 
 class Net(nn.Module):
@@ -72,3 +75,37 @@ def init_net_weights(model: nn.Module, fc_init_std: float = 0.01) -> None:
             m.weight.data.normal_(mean=0.0, std=fc_init_std)
             m.bias.data.zero_()
     return model
+
+
+class MultiPathWayWithFuse(nn.Module):
+    """
+    Build multi-pathway block with fusion for video recognition, each of the pathway
+    contains its own Blocks and Fusion layers across different pathways.
+
+                            Pathway 1  ... Pathway N
+                                ↓              ↓
+                             Block 1        Block N
+                                ↓⭠ --Fusion----↓
+    """
+
+    def __init__(
+        self,
+        *,
+        multipathway_blocks: nn.ModuleList,
+        multipathway_fusion: Optional[nn.Module],
+    ) -> None:
+        """
+        Args:
+            multipathway_blocks (nn.module_list): list of models from all pathways.
+            multipathway_fusion (nn.module): fusion model.
+        """
+        super().__init__()
+        set_attributes(self, locals())
+
+    def forward(self, x: List[torch.Tensor]) -> torch.Tensor:
+        for pathway_idx in range(len(self.multipathway_blocks)):
+            if self.multipathway_blocks[pathway_idx] is not None:
+                x[pathway_idx] = self.multipathway_blocks[pathway_idx](x[pathway_idx])
+        if self.multipathway_fusion is not None:
+            x = self.multipathway_fusion(x)
+        return x

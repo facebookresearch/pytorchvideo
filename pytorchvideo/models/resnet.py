@@ -1,3 +1,5 @@
+# Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved.
+
 from typing import Callable, Tuple
 
 import numpy as np
@@ -545,8 +547,8 @@ def create_default_resnet(
         (1, 1, 1),
         (1, 1, 1),
     ),
-    stage_spatial_stride: Tuple[int] = (1, 2, 2, 2),
-    stage_temporal_stride: Tuple[int] = (1, 2, 2, 2),
+    stage_spatial_stride: Tuple[int] = (2, 1, 1, 1),
+    stage_temporal_stride: Tuple[int] = (1, 1, 1, 1),
     bottleneck: Callable = create_default_bottleneck_block,
     # Head configs.
     head_pool: Callable = nn.AvgPool3d,
