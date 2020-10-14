@@ -54,7 +54,7 @@ def short_side_scale(
     else:
         new_h = size
         new_w = int(math.floor((float(w) / h) * size))
-    return torch.nn.functional.interpolate(x, size=(new_h, new_w), mode=interpolation)
+    return torch.nn.functional.interpolate(x, size=(new_h, new_w), mode=interpolation, align_corners=False)
 
 
 def repeat_temporal_frames_subsample(
