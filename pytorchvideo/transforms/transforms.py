@@ -30,6 +30,15 @@ class MapDict:
         return x
 
 
+class RemoveKey(torch.nn.Module):
+    def __init__(self, key: str):
+        self._key = key
+
+    def __call__(self, x: Dict[str, torch.Tensor]) -> Dict[str, torch.Tensor]:
+        del x[self._key]
+        return x
+
+
 class UniformTemporalSubsample(torch.nn.Module):
     """
     nn.Module wrapper for pytorchvideo.transforms.functional.uniform_temporal_subsample.
