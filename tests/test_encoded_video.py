@@ -7,7 +7,6 @@ import unittest
 import av
 import pytest
 from pytorchvideo.data.encoded_video import EncodedVideo
-from pytorchvideo.data.utils import thwc_to_cthw
 from utils import temp_encoded_video, temp_encoded_video_with_audio
 
 
@@ -49,8 +48,6 @@ class TestEncodedVideo(unittest.TestCase):
             num_audio_samples=num_audio_samples,
             audio_rate=audio_rate,
         ) as (file_name, video_data, audio_data):
-            video_data = thwc_to_cthw(video_data)
-
             test_video = EncodedVideo(file_name)
 
             # Duration is max of both streams, therefore, the video duration will be expected.
@@ -79,8 +76,6 @@ class TestEncodedVideo(unittest.TestCase):
             num_audio_samples=num_audio_samples,
             audio_rate=audio_rate,
         ) as (file_name, video_data, audio_data):
-            video_data = thwc_to_cthw(video_data)
-
             test_video = EncodedVideo(file_name)
 
             # All audio

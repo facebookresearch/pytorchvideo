@@ -122,10 +122,10 @@ class EncodedVideo:
             end_sec (float): the clip end time in seconds
         Returns:
             clip_video: A tensor of the clip's RGB frames with shape:
-                (channel, time, height, width). The frames are of type torch.uint8 and
+                (channel, time, height, width). The frames are of type torch.float32 and
                 in the range [0 - 255].
             clip_audio: A tensor of the clip's audio samples with shape:
-                (samples). The samples are of type torch.uint8 and
+                (samples). The samples are of type torch.float32 and
                 in the range [0 - 255].
             Returns None if no video or audio found within time range.
         """
@@ -135,7 +135,7 @@ class EncodedVideo:
         if self._video is None and self._audio is None:
             logger.warning(
                 f"No video or audio found within {start_sec} and {end_sec} seconds. "
-                "Video starts at time 0 and ends at {self.duration}."
+                f"Video starts at time 0 and ends at {self.duration}."
             )
             return None
 
@@ -165,11 +165,15 @@ class EncodedVideo:
                 if pts >= audio_start_pts and pts <= audio_end_pts
             ]
             audio_samples = torch.cat(audio_samples, axis=0)
+            audio_samples = audio_samples.to(torch.float32)
 
-        if len(video_frames) == 0 and len(audio_samples) == 0:
+        if len(video_frames) == 0 and (
+            audio_samples is None or len(audio_samples) == 0
+        ):
             return None
 
-        return thwc_to_cthw(torch.stack(video_frames)), audio_samples
+        cthw_video_frames = thwc_to_cthw(torch.stack(video_frames)).to(torch.float32)
+        return cthw_video_frames, audio_samples
 
     def close(self):
         """

@@ -39,7 +39,7 @@ def temp_encoded_video(num_frames: int, fps: int, height=10, width=10, prefix=No
     with tempfile.NamedTemporaryFile(prefix=prefix, suffix=".mp4") as f:
         f.close()
         io.write_video(f.name, data, fps=fps, video_codec=video_codec, options=options)
-        yield f.name, thwc_to_cthw(data)
+        yield f.name, thwc_to_cthw(data).to(torch.float32)
     os.unlink(f.name)
 
 
@@ -60,7 +60,8 @@ def temp_encoded_video_with_audio(
         write_audio_video(
             f.name, video_data, audio_data, fps=fps, audio_rate=audio_rate
         )
-        yield f.name, video_data, audio_data[0].to(torch.float64)
+        cthw_video_data = thwc_to_cthw(video_data).to(torch.float32)
+        yield f.name, cthw_video_data, audio_data[0].to(torch.float32)
 
 
 @contextlib.contextmanager

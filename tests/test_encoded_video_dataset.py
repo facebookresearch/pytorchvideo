@@ -230,11 +230,15 @@ class TestEncodedVideoDataset(unittest.TestCase):
 
                 self.assertEqual(sample_1["label"], action_1)
                 self.assertEqual(5, len(sample_1["meta_tags"]))
-                self.assertTrue(sample_1["video"].equal(thwc_to_cthw(data_1)))
+                self.assertTrue(
+                    sample_1["video"].equal(thwc_to_cthw(data_1).to(torch.float32))
+                )
 
                 self.assertEqual(sample_2["label"], action_2)
                 self.assertEqual(5, len(sample_2["meta_tags"]))
-                self.assertTrue(sample_2["video"].equal(thwc_to_cthw(data_2)))
+                self.assertTrue(
+                    sample_2["video"].equal(thwc_to_cthw(data_2).to(torch.float32))
+                )
 
     def test_reading_from_directory_structure(self):
         # For an unknown reason this import has to be here for `buck test` to work.
@@ -286,11 +290,15 @@ class TestEncodedVideoDataset(unittest.TestCase):
                 # will be first.
                 sample_1 = next(dataset)
                 self.assertEqual(sample_1["label"], 0)
-                self.assertTrue(sample_1["video"].equal(thwc_to_cthw(data_2)))
+                self.assertTrue(
+                    sample_1["video"].equal(thwc_to_cthw(data_2).to(torch.float32))
+                )
 
                 sample_2 = next(dataset)
                 self.assertEqual(sample_2["label"], 1)
-                self.assertTrue(sample_2["video"].equal(thwc_to_cthw(data_1)))
+                self.assertTrue(
+                    sample_2["video"].equal(thwc_to_cthw(data_1).to(torch.float32))
+                )
 
     def test_sampling_with_multiple_processes(self):
         num_frames = 10
