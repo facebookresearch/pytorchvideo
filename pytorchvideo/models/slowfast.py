@@ -270,7 +270,12 @@ def create_default_slowfast(
     """
     # Number of blocks for different stages given the model depth.
     _num_pathway = 2
-    _MODEL_STAGE_DEPTH = {50: (3, 4, 6, 3), 101: (3, 4, 23, 3), 152: (3, 8, 36, 3)}
+    _MODEL_STAGE_DEPTH = {
+        18: (1, 1, 1, 1),
+        50: (3, 4, 6, 3),
+        101: (3, 4, 23, 3),
+        152: (3, 8, 36, 3),
+    }
     assert (
         model_depth in _MODEL_STAGE_DEPTH.keys()
     ), f"{model_depth} is not in {_MODEL_STAGE_DEPTH.keys()}"

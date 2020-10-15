@@ -32,7 +32,7 @@ class TestSlowFast(unittest.TestCase):
                 slowfast_fusion_conv_kernel_size=(7, 1, 1),
                 slowfast_fusion_conv_stride=(4, 1, 1),
                 input_channels=(input_channel,) * 2,
-                model_depth=50,
+                model_depth=18,
                 model_num_class=400,
                 dropout_rate=0,
                 norm=norm,
