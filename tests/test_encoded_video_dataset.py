@@ -539,7 +539,12 @@ class TestEncodedVideoDataset(unittest.TestCase):
                 }
 
                 actual = list(itertools.chain.from_iterable(return_dict.values()))
-                self.assertTrue(unordered_list_compare(expected, actual))
+                expected_str = str([(label, clip.shape) for label, clip in expected])
+                actual_str = str([(label, clip.shape) for label, clip in expected])
+                failure_str = f"Expected set: {expected_str}\n actual set: {actual_str}"
+                self.assertTrue(
+                    unordered_list_compare(expected, actual), msg=failure_str
+                )
 
 
 def unordered_list_compare(
