@@ -1,6 +1,8 @@
 # Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved.
 
 from .charades import Charades  # noqa
+from .clip_sampling import make_clip_sampler
+from .encoded_video_dataset import EncodedVideoDataset  # noqa
 from .hmdb51 import Hmdb51  # noqa
 from .kinetics import Kinetics  # noqa
 from .ucf101 import Ucf101  # noqa

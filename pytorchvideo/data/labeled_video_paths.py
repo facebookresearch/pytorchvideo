@@ -25,9 +25,10 @@ class LabeledVideoPaths:
         Args:
             file_path (str): The path to the file to be read.
         """
-        if pathlib.Path(data_path).is_file():
+
+        if PathManager.isfile(data_path):
             return LabeledVideoPaths.from_csv(data_path)
-        elif pathlib.Path(data_path).is_dir():
+        elif PathManager.isdir(data_path):
             return LabeledVideoPaths.from_directory(data_path)
         else:
             raise FileNotFoundError(f"{data_path} not found.")
