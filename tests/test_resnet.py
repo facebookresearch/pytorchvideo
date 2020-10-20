@@ -11,6 +11,7 @@ from pytorchvideo.models.resnet import (
     BottleneckBlock,
     ResBlock,
     ResStage,
+    SeparableBottleneckBlock,
     create_default_bottleneck_block,
     create_default_res_block,
     create_default_res_stage,
@@ -115,6 +116,176 @@ class TestBottleneckBlock(unittest.TestCase):
                     bias=False,
                 ),
                 norm_c=nn.BatchNorm3d(dim_out),
+            )
+
+            # Test forwarding.
+            for input_tensor in TestBottleneckBlock._get_inputs(dim_in):
+                if input_tensor.shape[1] != dim_in:
+                    with self.assertRaises(Exception):
+                        output_tensor = model(input_tensor)
+                    continue
+
+                output_tensor = model(input_tensor)
+                input_shape = input_tensor.shape
+                output_shape = output_tensor.shape
+
+                output_shape_gt = (
+                    input_shape[0],
+                    dim_out,
+                    (input_shape[2] - 1) // 2 + 1,
+                    (input_shape[3] - 1) // 2 + 1,
+                    (input_shape[4] - 1) // 2 + 1,
+                )
+
+                self.assertEqual(
+                    output_shape,
+                    output_shape_gt,
+                    "Output shape {} is different from expected shape {}".format(
+                        output_shape, output_shape_gt
+                    ),
+                )
+
+    def test_create_separable_bottleneck_block_sum(self):
+        """
+        Test SeparableBottleneckBlock with different dimensions.
+        """
+        for dim_in, dim_inner, dim_out in itertools.product(
+            (4, 8, 16), (2, 4), (4, 8, 16)
+        ):
+            model = SeparableBottleneckBlock(
+                conv_a=nn.Conv3d(
+                    dim_in,
+                    dim_inner,
+                    kernel_size=[3, 1, 1],
+                    stride=[2, 1, 1],
+                    padding=[1, 0, 0],
+                    bias=False,
+                ),
+                norm_a=nn.BatchNorm3d(dim_inner),
+                act_a=nn.ReLU(),
+                conv_b=nn.ModuleList(
+                    [
+                        nn.Conv3d(
+                            dim_inner,
+                            dim_inner,
+                            kernel_size=[1, 3, 3],
+                            stride=[1, 2, 2],
+                            padding=[0, 1, 1],
+                            groups=1,
+                            dilation=[1, 1, 1],
+                            bias=False,
+                        ),
+                        nn.Conv3d(
+                            dim_inner,
+                            dim_inner,
+                            kernel_size=[1, 3, 3],
+                            stride=[1, 2, 2],
+                            padding=[0, 1, 1],
+                            groups=1,
+                            dilation=[1, 1, 1],
+                            bias=False,
+                        ),
+                    ]
+                ),
+                norm_b=nn.ModuleList(
+                    [nn.BatchNorm3d(dim_inner), nn.BatchNorm3d(dim_inner)]
+                ),
+                act_b=nn.ModuleList([nn.ReLU(), nn.ReLU()]),
+                conv_c=nn.Conv3d(
+                    dim_inner,
+                    dim_out,
+                    kernel_size=[1, 1, 1],
+                    stride=[1, 1, 1],
+                    padding=[0, 0, 0],
+                    bias=False,
+                ),
+                norm_c=nn.BatchNorm3d(dim_out),
+                reduce_method="sum",
+            )
+
+            # Test forwarding.
+            for input_tensor in TestBottleneckBlock._get_inputs(dim_in):
+                if input_tensor.shape[1] != dim_in:
+                    with self.assertRaises(Exception):
+                        output_tensor = model(input_tensor)
+                    continue
+
+                output_tensor = model(input_tensor)
+                input_shape = input_tensor.shape
+                output_shape = output_tensor.shape
+
+                output_shape_gt = (
+                    input_shape[0],
+                    dim_out,
+                    (input_shape[2] - 1) // 2 + 1,
+                    (input_shape[3] - 1) // 2 + 1,
+                    (input_shape[4] - 1) // 2 + 1,
+                )
+
+                self.assertEqual(
+                    output_shape,
+                    output_shape_gt,
+                    "Output shape {} is different from expected shape {}".format(
+                        output_shape, output_shape_gt
+                    ),
+                )
+
+    def test_separable_complex_bottleneck_block_cat(self):
+        """
+        Test SeparableBottleneckBlock with different dimensions.
+        """
+        for dim_in, dim_inner, dim_out in itertools.product(
+            (4, 8, 16), (2, 4), (4, 8, 16)
+        ):
+            model = SeparableBottleneckBlock(
+                conv_a=nn.Conv3d(
+                    dim_in,
+                    dim_inner,
+                    kernel_size=[3, 1, 1],
+                    stride=[2, 1, 1],
+                    padding=[1, 0, 0],
+                    bias=False,
+                ),
+                norm_a=nn.BatchNorm3d(dim_inner),
+                act_a=nn.ReLU(),
+                conv_b=nn.ModuleList(
+                    [
+                        nn.Conv3d(
+                            dim_inner,
+                            dim_inner,
+                            kernel_size=[1, 3, 3],
+                            stride=[1, 2, 2],
+                            padding=[0, 1, 1],
+                            groups=1,
+                            dilation=[1, 1, 1],
+                            bias=False,
+                        ),
+                        nn.Conv3d(
+                            dim_inner,
+                            dim_inner,
+                            kernel_size=[1, 3, 3],
+                            stride=[1, 2, 2],
+                            padding=[0, 1, 1],
+                            groups=1,
+                            dilation=[1, 1, 1],
+                            bias=False,
+                        ),
+                    ]
+                ),
+                norm_b=nn.ModuleList(
+                    [nn.BatchNorm3d(dim_inner), nn.BatchNorm3d(dim_inner)]
+                ),
+                act_b=nn.ModuleList([nn.ReLU(), nn.ReLU()]),
+                conv_c=nn.Conv3d(
+                    dim_inner * 2,
+                    dim_out,
+                    kernel_size=[1, 1, 1],
+                    stride=[1, 1, 1],
+                    padding=[0, 0, 0],
+                    bias=False,
+                ),
+                norm_c=nn.BatchNorm3d(dim_out),
+                reduce_method="cat",
             )
 
             # Test forwarding.

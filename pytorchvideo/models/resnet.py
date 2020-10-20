@@ -88,6 +88,96 @@ class BottleneckBlock(nn.Module):
         return x
 
 
+class SeparableBottleneckBlock(nn.Module):
+    """
+    Separable Bottleneck block: a sequence of spatiotemporal Convolution, Normalization,
+    and Activations repeated in the following order. Requires a tuple of models to be
+    provided to conv_b, norm_b, act_b to perform Convolution, Normalization, and
+    Activations in parallel Separably.
+
+                                    Conv3d (conv_a)
+                                           ↓
+                                 Normalization (norm_a)
+                                           ↓
+                                   Activation (act_a)
+                                           ↓
+                                 Conv3d(s) (conv_b), ...
+                                         ↓ (↓)
+                              Normalization(s) (norm_b), ...
+                                         ↓ (↓)
+                                 Activation(s) (act_b), ...
+                                         ↓ (↓)
+                                  Reduce (sum or cat)
+                                           ↓
+                                    Conv3d (conv_c)
+                                           ↓
+                                 Normalization (norm_c)
+    """
+
+    def __init__(
+        self,
+        *,
+        conv_a: nn.Module,
+        norm_a: nn.Module,
+        act_a: nn.Module,
+        conv_b: nn.ModuleList,
+        norm_b: nn.ModuleList,
+        act_b: nn.ModuleList,
+        conv_c: nn.Module,
+        norm_c: nn.Module,
+        reduce_method: str = "sum",
+    ) -> None:
+        """
+        Args:
+            conv_a (torch.nn.modules): convolutional module.
+            norm_a (torch.nn.modules): normalization module.
+            act_a (torch.nn.modules): activation module.
+            conv_b (torch.nn.modules_list): convolutional module(s).
+            norm_b (torch.nn.modules_list): normalization module(s).
+            act_b (torch.nn.modules_list): activation module(s).
+            conv_c (torch.nn.modules): convolutional module.
+            norm_c (torch.nn.modules): normalization module.
+            reduce_method (str): if multiple conv_b is used, reduce the output with
+                `sum`, or `cat`.
+        """
+        super().__init__()
+        set_attributes(self, locals())
+        assert all(op is not None for op in (self.conv_a, self.conv_b, self.conv_c))
+        assert reduce_method in ["sum", "cat"]
+        if self.norm_c is not None:
+            # This flag is used for weight initialization.
+            self.norm_c.block_final_bn = True
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        # Explicitly forward every layer.
+        # Branch2a, for example Tx1x1, BN, ReLU.
+        x = self.conv_a(x)
+        if self.norm_a is not None:
+            x = self.norm_a(x)
+        if self.act_a is not None:
+            x = self.act_a(x)
+
+        # Branch2b, for example 1xHxW, BN, ReLU.
+        output = []
+        for ind in range(len(self.conv_b)):
+            x_ = self.conv_b[ind](x)
+            if self.norm_b[ind] is not None:
+                x_ = self.norm_b[ind](x_)
+            if self.act_b[ind] is not None:
+                x_ = self.act_b[ind](x_)
+            output.append(x_)
+        if self.reduce_method == "sum":
+            x = torch.stack(output, dim=0).sum(dim=0, keepdim=False)
+        elif self.reduce_method == "cat":
+            x = torch.cat(output, dim=1)
+
+        # Branch2c, for example 1x1x1, BN.
+        x = self.conv_c(x)
+        if self.norm_c is not None:
+            x = self.norm_c(x)
+        return x
+
+
 def create_default_bottleneck_block(
     *,
     # Convolution configs.
