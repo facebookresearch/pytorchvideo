@@ -12,6 +12,7 @@ from pytorchvideo.models.resnet import (
     ResBlock,
     ResStage,
     SeparableBottleneckBlock,
+    create_acoustic_bottleneck_block,
     create_default_bottleneck_block,
     create_default_res_block,
     create_default_res_stage,
@@ -313,6 +314,100 @@ class TestBottleneckBlock(unittest.TestCase):
                     "Output shape {} is different from expected shape {}".format(
                         output_shape, output_shape_gt
                     ),
+                )
+
+    def test_create_acoustic_bottleneck_block_with_callable(self):
+        """
+        Test default builder `create_acoustic_bottleneck_block` with callable
+        inputs.
+        """
+        for (norm_model, act_model) in itertools.product(
+            (nn.BatchNorm3d,), (nn.ReLU, nn.Softmax, nn.Sigmoid)
+        ):
+            model = create_acoustic_bottleneck_block(
+                dim_in=32,
+                dim_inner=16,
+                dim_out=64,
+                conv_a_kernel_size=(3, 1, 1),
+                conv_a_stride=(1, 1, 1),
+                conv_a_padding=(1, 0, 0),
+                conv_b_kernel_size=(3, 3, 3),
+                conv_b_stride=(1, 1, 1),
+                conv_b_padding=(1, 1, 1),
+                conv_b_num_groups=1,
+                conv_b_dilation=(1, 1, 1),
+                norm=norm_model,
+                activation=act_model,
+            )
+            model_gt = SeparableBottleneckBlock(
+                conv_a=nn.Conv3d(
+                    32,
+                    16,
+                    kernel_size=[3, 1, 1],
+                    stride=[1, 1, 1],
+                    padding=[1, 0, 0],
+                    bias=False,
+                ),
+                norm_a=norm_model(16),
+                act_a=act_model(),
+                conv_b=nn.ModuleList(
+                    [
+                        nn.Conv3d(
+                            16,
+                            16,
+                            kernel_size=[1, 3, 3],
+                            stride=[1, 1, 1],
+                            padding=[0, 1, 1],
+                            dilation=1,
+                            bias=False,
+                        ),
+                        nn.Conv3d(
+                            16,
+                            16,
+                            kernel_size=[3, 1, 1],
+                            stride=[1, 1, 1],
+                            padding=[1, 0, 0],
+                            dilation=1,
+                            bias=False,
+                        ),
+                    ]
+                ),
+                norm_b=nn.ModuleList([norm_model(16), norm_model(16)]),
+                act_b=nn.ModuleList([act_model(), act_model()]),
+                conv_c=nn.Conv3d(
+                    16,
+                    64,
+                    kernel_size=[1, 1, 1],
+                    stride=[1, 1, 1],
+                    padding=[0, 0, 0],
+                    bias=False,
+                ),
+                norm_c=norm_model(64),
+            )
+
+            model.load_state_dict(
+                model_gt.state_dict(), strict=True
+            )  # explicitly use strict mode.
+
+            # Test forwarding.
+            for input_tensor in TestBottleneckBlock._get_inputs(dim_in=32):
+                with torch.no_grad():
+                    if input_tensor.shape[1] != 32:
+                        with self.assertRaises(RuntimeError):
+                            output_tensor = model(input_tensor)
+                        continue
+
+                    output_tensor = model(input_tensor)
+                    output_tensor_gt = model_gt(input_tensor)
+                self.assertEqual(
+                    output_tensor.shape,
+                    output_tensor_gt.shape,
+                    "Output shape {} is different from expected shape {}".format(
+                        output_tensor.shape, output_tensor_gt.shape
+                    ),
+                )
+                self.assertTrue(
+                    np.allclose(output_tensor.numpy(), output_tensor_gt.numpy())
                 )
 
     def test_create_default_bottleneck_block_with_callable(self):
