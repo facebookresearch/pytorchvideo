@@ -1,3 +1,5 @@
+# Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved.
+
 from .encoded_video_dataset import labeled_encoded_video_dataset
 
 
