@@ -14,79 +14,6 @@ from pytorchvideo.models.stem import create_default_res_basic_stem
 from pytorchvideo.models.utils import set_attributes
 
 
-# TODO: move to pytorchvideo/layer once we have a common.py
-class PoolConcatPathway(nn.Module):
-    """
-    Given a list of tensors, perform optional spatio-temporal pool and concatenate the
-        tensors along the channel dimension.
-    """
-
-    def __init__(
-        self,
-        retain_list: bool = False,
-        pool: Optional[nn.ModuleList] = None,
-        dim: int = 1,
-    ) -> None:
-        """
-        Args:
-            retain_list (bool): if True, return the concatenated tensor in a list.
-            pool (nn.module_list): if not None, list of pooling models for different
-                pathway before performing concatenation.
-            dim (int): dimension to performance concatenation.
-        """
-        super().__init__()
-        set_attributes(self, locals())
-
-    def forward(self, x: List[torch.Tensor]) -> torch.Tensor:
-        if self.pool is not None:
-            assert len(x) == len(self.pool)
-        output = []
-        for ind in range(len(x)):
-            if x[ind] is not None:
-                if self.pool is not None and self.pool[ind] is not None:
-                    x[ind] = self.pool[ind](x[ind])
-                output.append(x[ind])
-        if self.retain_list:
-            return [torch.cat(output, 1)]
-        else:
-            return torch.cat(output, 1)
-
-
-class FuseFastToSlow(nn.Module):
-    """
-    Given a list of two tensors from Slow pathway and Fast pathway, fusion information
-    from the Fast pathway to the Slow on through a convolution followed by a
-    concatenation, then return the fused list of tensors from Slow and Fast pathway in
-    order.
-    """
-
-    def __init__(
-        self,
-        conv_fast_to_slow: nn.Module,
-        norm: Optional[nn.Module] = None,
-        activation: Optional[nn.Module] = None,
-    ) -> None:
-        """
-        Args:
-            conv_fast_to_slow (nn.module): convolution to perform fusion.
-            norm (nn.module): normalization module.
-            activation (torch.nn.modules): activation module.
-        """
-        super().__init__()
-        set_attributes(self, locals())
-
-    def forward(self, x):
-        x_s = x[0]
-        x_f = x[1]
-        fuse = self.conv_fast_to_slow(x_f)
-        if self.norm is not None:
-            fuse = self.norm(fuse)
-        if self.activation is not None:
-            fuse = self.activation(fuse)
-        x_s_fuse = torch.cat([x_s, fuse], 1)
-        return [x_s_fuse, x_f]
-
-
 def create_fuse_fast_to_slow(
     *,
     conv_dim_in: int,
@@ -416,3 +343,76 @@ def create_default_slowfast(
             )
         )
     return Net(blocks=nn.ModuleList(stages))
+
+
+# TODO: move to pytorchvideo/layer once we have a common.py
+class PoolConcatPathway(nn.Module):
+    """
+    Given a list of tensors, perform optional spatio-temporal pool and concatenate the
+        tensors along the channel dimension.
+    """
+
+    def __init__(
+        self,
+        retain_list: bool = False,
+        pool: Optional[nn.ModuleList] = None,
+        dim: int = 1,
+    ) -> None:
+        """
+        Args:
+            retain_list (bool): if True, return the concatenated tensor in a list.
+            pool (nn.module_list): if not None, list of pooling models for different
+                pathway before performing concatenation.
+            dim (int): dimension to performance concatenation.
+        """
+        super().__init__()
+        set_attributes(self, locals())
+
+    def forward(self, x: List[torch.Tensor]) -> torch.Tensor:
+        if self.pool is not None:
+            assert len(x) == len(self.pool)
+        output = []
+        for ind in range(len(x)):
+            if x[ind] is not None:
+                if self.pool is not None and self.pool[ind] is not None:
+                    x[ind] = self.pool[ind](x[ind])
+                output.append(x[ind])
+        if self.retain_list:
+            return [torch.cat(output, 1)]
+        else:
+            return torch.cat(output, 1)
+
+
+class FuseFastToSlow(nn.Module):
+    """
+    Given a list of two tensors from Slow pathway and Fast pathway, fusion information
+    from the Fast pathway to the Slow on through a convolution followed by a
+    concatenation, then return the fused list of tensors from Slow and Fast pathway in
+    order.
+    """
+
+    def __init__(
+        self,
+        conv_fast_to_slow: nn.Module,
+        norm: Optional[nn.Module] = None,
+        activation: Optional[nn.Module] = None,
+    ) -> None:
+        """
+        Args:
+            conv_fast_to_slow (nn.module): convolution to perform fusion.
+            norm (nn.module): normalization module.
+            activation (torch.nn.modules): activation module.
+        """
+        super().__init__()
+        set_attributes(self, locals())
+
+    def forward(self, x):
+        x_s = x[0]
+        x_f = x[1]
+        fuse = self.conv_fast_to_slow(x_f)
+        if self.norm is not None:
+            fuse = self.norm(fuse)
+        if self.activation is not None:
+            fuse = self.activation(fuse)
+        x_s_fuse = torch.cat([x_s, fuse], 1)
+        return [x_s_fuse, x_f]

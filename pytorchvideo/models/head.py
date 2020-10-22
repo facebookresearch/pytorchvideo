@@ -7,63 +7,6 @@ import torch.nn as nn
 from pytorchvideo.models.utils import set_attributes
 
 
-class ResNetBasicHead(nn.Module):
-    """
-    ResNet basic head. This layer performs an optional pooling operation followed by an
-    optional dropout, a fully-connected projection, an optional activation layer and a
-    global spatiotemporal averaging.
-
-                                        Pool3d
-                                           ↓
-                                        Dropout
-                                           ↓
-                                       Projection
-                                           ↓
-                                       Activation
-                                           ↓
-                                       Averaging
-
-    The default builder can be found in `create_res_basic_head`.
-    """
-
-    def __init__(
-        self,
-        pool: nn.Module = None,
-        dropout: nn.Module = None,
-        proj: nn.Module = None,
-        activation: nn.Module = None,
-    ) -> None:
-        """
-        Args:
-            pool (torch.nn.modules): pooling module.
-            dropout(torch.nn.modules): dropout module.
-            proj (torch.nn.modules): project module.
-            activation (torch.nn.modules): activation module.
-        """
-        super().__init__()
-        set_attributes(self, locals())
-        assert self.proj is not None
-
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
-        # Performs pooling.
-        if self.pool is not None:
-            x = self.pool(x)
-        # Performs dropout.
-        if self.dropout is not None:
-            x = self.dropout(x)
-        # Performs projection.
-        x = x.permute((0, 2, 3, 4, 1))
-        x = self.proj(x)
-        x = x.permute((0, 4, 1, 2, 3))
-        # Performs activation.
-        if self.activation is not None:
-            x = self.activation(x)
-        # Performs global averaging.
-        x = x.mean([2, 3, 4])
-        x = x.view(x.shape[0], -1)
-        return x
-
-
 def create_res_basic_head(
     *,
     # Projection configs.
@@ -145,3 +88,60 @@ def create_res_basic_head(
         pool=pool_model,
         dropout=nn.Dropout(dropout_rate) if dropout_rate > 0 else None,
     )
+
+
+class ResNetBasicHead(nn.Module):
+    """
+    ResNet basic head. This layer performs an optional pooling operation followed by an
+    optional dropout, a fully-connected projection, an optional activation layer and a
+    global spatiotemporal averaging.
+
+                                        Pool3d
+                                           ↓
+                                        Dropout
+                                           ↓
+                                       Projection
+                                           ↓
+                                       Activation
+                                           ↓
+                                       Averaging
+
+    The default builder can be found in `create_res_basic_head`.
+    """
+
+    def __init__(
+        self,
+        pool: nn.Module = None,
+        dropout: nn.Module = None,
+        proj: nn.Module = None,
+        activation: nn.Module = None,
+    ) -> None:
+        """
+        Args:
+            pool (torch.nn.modules): pooling module.
+            dropout(torch.nn.modules): dropout module.
+            proj (torch.nn.modules): project module.
+            activation (torch.nn.modules): activation module.
+        """
+        super().__init__()
+        set_attributes(self, locals())
+        assert self.proj is not None
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        # Performs pooling.
+        if self.pool is not None:
+            x = self.pool(x)
+        # Performs dropout.
+        if self.dropout is not None:
+            x = self.dropout(x)
+        # Performs projection.
+        x = x.permute((0, 2, 3, 4, 1))
+        x = self.proj(x)
+        x = x.permute((0, 4, 1, 2, 3))
+        # Performs activation.
+        if self.activation is not None:
+            x = self.activation(x)
+        # Performs global averaging.
+        x = x.mean([2, 3, 4])
+        x = x.view(x.shape[0], -1)
+        return x

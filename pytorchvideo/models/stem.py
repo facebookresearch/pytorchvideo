@@ -8,52 +8,6 @@ from pytorchvideo.layers.convolutions import ConvReduce3D
 from pytorchvideo.models.utils import set_attributes
 
 
-class ResNetBasicStem(nn.Module):
-    """
-    ResNet basic 3D stem module. Performs spatiotemporal Convolution, BN, and activation
-    following by a spatiotemporal pooling.
-
-                                        Conv3d
-                                           ↓
-                                     Normalization
-                                           ↓
-                                       Activation
-                                           ↓
-                                        Pool3d
-
-    The default builder can be found in `create_default_res_basic_stem`.
-    """
-
-    def __init__(
-        self,
-        *,
-        conv: nn.Module = None,
-        norm: nn.Module = None,
-        activation: nn.Module = None,
-        pool: nn.Module = None,
-    ) -> None:
-        """
-        Args:
-            conv (torch.nn.modules): convolutional module.
-            norm (torch.nn.modules): normalization module.
-            activation (torch.nn.modules): activation module.
-            pool (torch.nn.modules): pooling module.
-        """
-        super().__init__()
-        set_attributes(self, locals())
-        assert self.conv is not None
-
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
-        x = self.conv(x)
-        if self.norm is not None:
-            x = self.norm(x)
-        if self.activation is not None:
-            x = self.activation(x)
-        if self.pool is not None:
-            x = self.pool(x)
-        return x
-
-
 def create_default_res_basic_stem(
     *,
     # Conv configs.
@@ -257,3 +211,49 @@ def create_default_acoustic_res_basic_stem(
         activation=activation_module,
         pool=pool_module,
     )
+
+
+class ResNetBasicStem(nn.Module):
+    """
+    ResNet basic 3D stem module. Performs spatiotemporal Convolution, BN, and activation
+    following by a spatiotemporal pooling.
+
+                                        Conv3d
+                                           ↓
+                                     Normalization
+                                           ↓
+                                       Activation
+                                           ↓
+                                        Pool3d
+
+    The default builder can be found in `create_default_res_basic_stem`.
+    """
+
+    def __init__(
+        self,
+        *,
+        conv: nn.Module = None,
+        norm: nn.Module = None,
+        activation: nn.Module = None,
+        pool: nn.Module = None,
+    ) -> None:
+        """
+        Args:
+            conv (torch.nn.modules): convolutional module.
+            norm (torch.nn.modules): normalization module.
+            activation (torch.nn.modules): activation module.
+            pool (torch.nn.modules): pooling module.
+        """
+        super().__init__()
+        set_attributes(self, locals())
+        assert self.conv is not None
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        x = self.conv(x)
+        if self.norm is not None:
+            x = self.norm(x)
+        if self.activation is not None:
+            x = self.activation(x)
+        if self.pool is not None:
+            x = self.pool(x)
+        return x

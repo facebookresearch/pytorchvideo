@@ -11,173 +11,6 @@ from pytorchvideo.models.stem import create_default_res_basic_stem
 from pytorchvideo.models.utils import set_attributes
 
 
-class BottleneckBlock(nn.Module):
-    """
-    Bottleneck block: a sequence of spatiotemporal Convolution, Normalization,
-    and Activations repeated in the following order:
-
-                                    Conv3d (conv_a)
-                                           ↓
-                                 Normalization (norm_a)
-                                           ↓
-                                   Activation (act_a)
-                                           ↓
-                                    Conv3d (conv_b)
-                                           ↓
-                                 Normalization (norm_b)
-                                           ↓
-                                   Activation (act_b)
-                                           ↓
-                                    Conv3d (conv_c)
-                                           ↓
-                                 Normalization (norm_c)
-
-    The default builder can be found in `create_default_bottleneck_block`.
-    """
-
-    def __init__(
-        self,
-        *,
-        conv_a: nn.Module = None,
-        norm_a: nn.Module = None,
-        act_a: nn.Module = None,
-        conv_b: nn.Module = None,
-        norm_b: nn.Module = None,
-        act_b: nn.Module = None,
-        conv_c: nn.Module = None,
-        norm_c: nn.Module = None,
-    ) -> None:
-        """
-        Args:
-            conv_a (torch.nn.modules): convolutional module.
-            norm_a (torch.nn.modules): normalization module.
-            act_a (torch.nn.modules): activation module.
-            conv_b (torch.nn.modules): convolutional module.
-            norm_b (torch.nn.modules): normalization module.
-            act_b (torch.nn.modules): activation module.
-            conv_c (torch.nn.modules): convolutional module.
-            norm_c (torch.nn.modules): normalization module.
-        """
-        super().__init__()
-        set_attributes(self, locals())
-        assert all(op is not None for op in (self.conv_a, self.conv_b, self.conv_c))
-        if self.norm_c is not None:
-            # This flag is used for weight initialization.
-            self.norm_c.block_final_bn = True
-
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
-        # Explicitly forward every layer.
-        # Branch2a, for example Tx1x1, BN, ReLU.
-        x = self.conv_a(x)
-        if self.norm_a is not None:
-            x = self.norm_a(x)
-        if self.act_a is not None:
-            x = self.act_a(x)
-
-        # Branch2b, for example 1xHxW, BN, ReLU.
-        x = self.conv_b(x)
-        if self.norm_b is not None:
-            x = self.norm_b(x)
-        if self.act_b is not None:
-            x = self.act_b(x)
-
-        # Branch2c, for example 1x1x1, BN.
-        x = self.conv_c(x)
-        if self.norm_c is not None:
-            x = self.norm_c(x)
-        return x
-
-
-class SeparableBottleneckBlock(nn.Module):
-    """
-    Separable Bottleneck block: a sequence of spatiotemporal Convolution, Normalization,
-    and Activations repeated in the following order. Requires a tuple of models to be
-    provided to conv_b, norm_b, act_b to perform Convolution, Normalization, and
-    Activations in parallel Separably.
-
-                                    Conv3d (conv_a)
-                                           ↓
-                                 Normalization (norm_a)
-                                           ↓
-                                   Activation (act_a)
-                                           ↓
-                                 Conv3d(s) (conv_b), ...
-                                         ↓ (↓)
-                              Normalization(s) (norm_b), ...
-                                         ↓ (↓)
-                                 Activation(s) (act_b), ...
-                                         ↓ (↓)
-                                  Reduce (sum or cat)
-                                           ↓
-                                    Conv3d (conv_c)
-                                           ↓
-                                 Normalization (norm_c)
-    """
-
-    def __init__(
-        self,
-        *,
-        conv_a: nn.Module,
-        norm_a: nn.Module,
-        act_a: nn.Module,
-        conv_b: nn.ModuleList,
-        norm_b: nn.ModuleList,
-        act_b: nn.ModuleList,
-        conv_c: nn.Module,
-        norm_c: nn.Module,
-        reduce_method: str = "sum",
-    ) -> None:
-        """
-        Args:
-            conv_a (torch.nn.modules): convolutional module.
-            norm_a (torch.nn.modules): normalization module.
-            act_a (torch.nn.modules): activation module.
-            conv_b (torch.nn.modules_list): convolutional module(s).
-            norm_b (torch.nn.modules_list): normalization module(s).
-            act_b (torch.nn.modules_list): activation module(s).
-            conv_c (torch.nn.modules): convolutional module.
-            norm_c (torch.nn.modules): normalization module.
-            reduce_method (str): if multiple conv_b is used, reduce the output with
-                `sum`, or `cat`.
-        """
-        super().__init__()
-        set_attributes(self, locals())
-        assert all(op is not None for op in (self.conv_a, self.conv_b, self.conv_c))
-        assert reduce_method in ["sum", "cat"]
-        if self.norm_c is not None:
-            # This flag is used for weight initialization.
-            self.norm_c.block_final_bn = True
-
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
-        # Explicitly forward every layer.
-        # Branch2a, for example Tx1x1, BN, ReLU.
-        x = self.conv_a(x)
-        if self.norm_a is not None:
-            x = self.norm_a(x)
-        if self.act_a is not None:
-            x = self.act_a(x)
-
-        # Branch2b, for example 1xHxW, BN, ReLU.
-        output = []
-        for ind in range(len(self.conv_b)):
-            x_ = self.conv_b[ind](x)
-            if self.norm_b[ind] is not None:
-                x_ = self.norm_b[ind](x_)
-            if self.act_b[ind] is not None:
-                x_ = self.act_b[ind](x_)
-            output.append(x_)
-        if self.reduce_method == "sum":
-            x = torch.stack(output, dim=0).sum(dim=0, keepdim=False)
-        elif self.reduce_method == "cat":
-            x = torch.cat(output, dim=1)
-
-        # Branch2c, for example 1x1x1, BN.
-        x = self.conv_c(x)
-        if self.norm_c is not None:
-            x = self.norm_c(x)
-        return x
-
-
 def create_default_bottleneck_block(
     *,
     # Convolution configs.
@@ -464,55 +297,6 @@ def create_acoustic_bottleneck_block(
     )
 
 
-class ResBlock(nn.Module):
-    """
-    Residual block. Performs a summation between an identity shortcut in branch1 and a
-    main block in branch2. When the input and output dimensions are different, a
-    convolution followed by a normalization will be performed.
-
-                                         Input
-                                           |-------+
-                                           ↓       |
-                                         Block     |
-                                           ↓       |
-                                       Summation ←-+
-                                           ↓
-                                       Activation
-
-    The default builder can be found in `create_default_res_block`.
-    """
-
-    def __init__(
-        self,
-        branch1_conv: nn.Module = None,
-        branch1_norm: nn.Module = None,
-        branch2: nn.Module = None,
-        activation: nn.Module = None,
-    ) -> nn.Module:
-        """
-        Args:
-            branch1_conv (torch.nn.modules): convolutional module in branch1.
-            branch1_norm (torch.nn.modules): normalization module in branch1.
-            branch2 (torch.nn.modules): bottleneck block module in branch2.
-            activation (torch.nn.modules): activation module.
-        """
-        super().__init__()
-        set_attributes(self, locals())
-        assert self.branch2 is not None
-
-    def forward(self, x) -> torch.Tensor:
-        if self.branch1_conv is None:
-            x = x + self.branch2(x)
-        else:
-            residual = self.branch1_conv(x)
-            if self.branch1_norm is not None:
-                residual = self.branch1_norm(residual)
-            x = residual + self.branch2(x)
-        if self.activation is not None:
-            x = self.activation(x)
-        return x
-
-
 def create_default_res_block(
     *,
     # Bottleneck Block configs.
@@ -622,38 +406,6 @@ def create_default_res_block(
         ),
         activation=None if activation is None else activation(),
     )
-
-
-class ResStage(nn.Module):
-    """
-    ResStage composes sequential blocks that make up a ResNet. These blocks could be,
-    for example, Residual blocks, Non-Local layers, or Squeeze-Excitation layers.
-
-                                        Input
-                                           ↓
-                                       ResBlock
-                                           ↓
-                                           .
-                                           .
-                                           .
-                                           ↓
-                                       ResBlock
-
-    The default builder can be found in `create_default_res_stage`.
-    """
-
-    def __init__(self, res_blocks: nn.ModuleList) -> nn.Module:
-        """
-        Args:
-            res_blocks (torch.nn.module_list): ResBlock module(s).
-        """
-        super().__init__()
-        self.res_blocks = res_blocks
-
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
-        for _, res_block in enumerate(self.res_blocks):
-            x = res_block(x)
-        return x
 
 
 def create_default_res_stage(
@@ -940,3 +692,251 @@ def create_default_resnet(
     )
     blocks.append(head)
     return Net(blocks=nn.ModuleList(blocks))
+
+
+class ResBlock(nn.Module):
+    """
+    Residual block. Performs a summation between an identity shortcut in branch1 and a
+    main block in branch2. When the input and output dimensions are different, a
+    convolution followed by a normalization will be performed.
+
+                                         Input
+                                           |-------+
+                                           ↓       |
+                                         Block     |
+                                           ↓       |
+                                       Summation ←-+
+                                           ↓
+                                       Activation
+
+    The default builder can be found in `create_default_res_block`.
+    """
+
+    def __init__(
+        self,
+        branch1_conv: nn.Module = None,
+        branch1_norm: nn.Module = None,
+        branch2: nn.Module = None,
+        activation: nn.Module = None,
+    ) -> nn.Module:
+        """
+        Args:
+            branch1_conv (torch.nn.modules): convolutional module in branch1.
+            branch1_norm (torch.nn.modules): normalization module in branch1.
+            branch2 (torch.nn.modules): bottleneck block module in branch2.
+            activation (torch.nn.modules): activation module.
+        """
+        super().__init__()
+        set_attributes(self, locals())
+        assert self.branch2 is not None
+
+    def forward(self, x) -> torch.Tensor:
+        if self.branch1_conv is None:
+            x = x + self.branch2(x)
+        else:
+            residual = self.branch1_conv(x)
+            if self.branch1_norm is not None:
+                residual = self.branch1_norm(residual)
+            x = residual + self.branch2(x)
+        if self.activation is not None:
+            x = self.activation(x)
+        return x
+
+
+class SeparableBottleneckBlock(nn.Module):
+    """
+    Separable Bottleneck block: a sequence of spatiotemporal Convolution, Normalization,
+    and Activations repeated in the following order. Requires a tuple of models to be
+    provided to conv_b, norm_b, act_b to perform Convolution, Normalization, and
+    Activations in parallel Separably.
+
+                                    Conv3d (conv_a)
+                                           ↓
+                                 Normalization (norm_a)
+                                           ↓
+                                   Activation (act_a)
+                                           ↓
+                                 Conv3d(s) (conv_b), ...
+                                         ↓ (↓)
+                              Normalization(s) (norm_b), ...
+                                         ↓ (↓)
+                                 Activation(s) (act_b), ...
+                                         ↓ (↓)
+                                  Reduce (sum or cat)
+                                           ↓
+                                    Conv3d (conv_c)
+                                           ↓
+                                 Normalization (norm_c)
+    """
+
+    def __init__(
+        self,
+        *,
+        conv_a: nn.Module,
+        norm_a: nn.Module,
+        act_a: nn.Module,
+        conv_b: nn.ModuleList,
+        norm_b: nn.ModuleList,
+        act_b: nn.ModuleList,
+        conv_c: nn.Module,
+        norm_c: nn.Module,
+        reduce_method: str = "sum",
+    ) -> None:
+        """
+        Args:
+            conv_a (torch.nn.modules): convolutional module.
+            norm_a (torch.nn.modules): normalization module.
+            act_a (torch.nn.modules): activation module.
+            conv_b (torch.nn.modules_list): convolutional module(s).
+            norm_b (torch.nn.modules_list): normalization module(s).
+            act_b (torch.nn.modules_list): activation module(s).
+            conv_c (torch.nn.modules): convolutional module.
+            norm_c (torch.nn.modules): normalization module.
+            reduce_method (str): if multiple conv_b is used, reduce the output with
+                `sum`, or `cat`.
+        """
+        super().__init__()
+        set_attributes(self, locals())
+        assert all(op is not None for op in (self.conv_a, self.conv_b, self.conv_c))
+        assert reduce_method in ["sum", "cat"]
+        if self.norm_c is not None:
+            # This flag is used for weight initialization.
+            self.norm_c.block_final_bn = True
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        # Explicitly forward every layer.
+        # Branch2a, for example Tx1x1, BN, ReLU.
+        x = self.conv_a(x)
+        if self.norm_a is not None:
+            x = self.norm_a(x)
+        if self.act_a is not None:
+            x = self.act_a(x)
+
+        # Branch2b, for example 1xHxW, BN, ReLU.
+        output = []
+        for ind in range(len(self.conv_b)):
+            x_ = self.conv_b[ind](x)
+            if self.norm_b[ind] is not None:
+                x_ = self.norm_b[ind](x_)
+            if self.act_b[ind] is not None:
+                x_ = self.act_b[ind](x_)
+            output.append(x_)
+        if self.reduce_method == "sum":
+            x = torch.stack(output, dim=0).sum(dim=0, keepdim=False)
+        elif self.reduce_method == "cat":
+            x = torch.cat(output, dim=1)
+
+        # Branch2c, for example 1x1x1, BN.
+        x = self.conv_c(x)
+        if self.norm_c is not None:
+            x = self.norm_c(x)
+        return x
+
+
+class BottleneckBlock(nn.Module):
+    """
+    Bottleneck block: a sequence of spatiotemporal Convolution, Normalization,
+    and Activations repeated in the following order:
+
+                                    Conv3d (conv_a)
+                                           ↓
+                                 Normalization (norm_a)
+                                           ↓
+                                   Activation (act_a)
+                                           ↓
+                                    Conv3d (conv_b)
+                                           ↓
+                                 Normalization (norm_b)
+                                           ↓
+                                   Activation (act_b)
+                                           ↓
+                                    Conv3d (conv_c)
+                                           ↓
+                                 Normalization (norm_c)
+
+    The default builder can be found in `create_default_bottleneck_block`.
+    """
+
+    def __init__(
+        self,
+        *,
+        conv_a: nn.Module = None,
+        norm_a: nn.Module = None,
+        act_a: nn.Module = None,
+        conv_b: nn.Module = None,
+        norm_b: nn.Module = None,
+        act_b: nn.Module = None,
+        conv_c: nn.Module = None,
+        norm_c: nn.Module = None,
+    ) -> None:
+        """
+        Args:
+            conv_a (torch.nn.modules): convolutional module.
+            norm_a (torch.nn.modules): normalization module.
+            act_a (torch.nn.modules): activation module.
+            conv_b (torch.nn.modules): convolutional module.
+            norm_b (torch.nn.modules): normalization module.
+            act_b (torch.nn.modules): activation module.
+            conv_c (torch.nn.modules): convolutional module.
+            norm_c (torch.nn.modules): normalization module.
+        """
+        super().__init__()
+        set_attributes(self, locals())
+        assert all(op is not None for op in (self.conv_a, self.conv_b, self.conv_c))
+        if self.norm_c is not None:
+            # This flag is used for weight initialization.
+            self.norm_c.block_final_bn = True
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        # Explicitly forward every layer.
+        # Branch2a, for example Tx1x1, BN, ReLU.
+        x = self.conv_a(x)
+        if self.norm_a is not None:
+            x = self.norm_a(x)
+        if self.act_a is not None:
+            x = self.act_a(x)
+
+        # Branch2b, for example 1xHxW, BN, ReLU.
+        x = self.conv_b(x)
+        if self.norm_b is not None:
+            x = self.norm_b(x)
+        if self.act_b is not None:
+            x = self.act_b(x)
+
+        # Branch2c, for example 1x1x1, BN.
+        x = self.conv_c(x)
+        if self.norm_c is not None:
+            x = self.norm_c(x)
+        return x
+
+
+class ResStage(nn.Module):
+    """
+    ResStage composes sequential blocks that make up a ResNet. These blocks could be,
+    for example, Residual blocks, Non-Local layers, or Squeeze-Excitation layers.
+
+                                        Input
+                                           ↓
+                                       ResBlock
+                                           ↓
+                                           .
+                                           .
+                                           .
+                                           ↓
+                                       ResBlock
+
+    The default builder can be found in `create_default_res_stage`.
+    """
+
+    def __init__(self, res_blocks: nn.ModuleList) -> nn.Module:
+        """
+        Args:
+            res_blocks (torch.nn.module_list): ResBlock module(s).
+        """
+        super().__init__()
+        self.res_blocks = res_blocks
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        for _, res_block in enumerate(self.res_blocks):
+            x = res_block(x)
+        return x
