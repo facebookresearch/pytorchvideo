@@ -21,7 +21,6 @@ def create_video_frames(num_frames: int, height: int, width: int):
         yc = 1 - float(i) / (2 * num_frames)
         d = torch.exp(-((x - xc) ** 2 + (y - yc) ** 2) / 2) * 255
         data.append(d.unsqueeze(2).repeat(1, 1, 3).byte())
-
     return torch.stack(data, 0)
 
 

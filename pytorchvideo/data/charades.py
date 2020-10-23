@@ -102,7 +102,7 @@ class Charades(torch.utils.data.IterableDataset):
         else:
             video_index = next(self._video_sampler_iter)
             path_to_video_frames = self._path_to_videos[video_index]
-            video = FrameVideo(path_to_video_frames)
+            video = FrameVideo.from_frame_paths(path_to_video_frames)
             self._loaded_video = (video, video_index)
 
         clip_start, clip_end, is_last_clip = self._clip_sampler(
