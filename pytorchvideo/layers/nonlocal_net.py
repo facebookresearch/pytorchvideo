@@ -92,7 +92,7 @@ class NonLocal(nn.Module):
         return x_identity + p
 
 
-def create_default_nonlocal(
+def create_nonlocal(
     *,
     # Nonlocal configs.
     dim_in: int,
@@ -115,14 +115,14 @@ def create_default_nonlocal(
         dim_in (int): number of dimension for the input.
         dim_inner (int): number of dimension inside of the Non-local block.
         pool_size (tuple[int]): the kernel size of spatial temporal pooling,
-            temporal pool kernel size, spatial pool kernel size, spatial
-            pool kernel size in order. By default pool_size is None,
-            then there would be no pooling used.
+            temporal pool kernel size, spatial pool kernel size, spatial pool kernel
+            size in order. By default pool_size is None, then there would be no pooling
+            used.
         instantiation (string): supports two different instantiation method:
             "dot_product": normalizing correlation matrix with L2.
             "softmax": normalizing correlation matrix with Softmax.
-        norm (nn.Module): nn.Module for the normalization layer. The
-            default is nn.BatchNorm3d.
+        norm (nn.Module): nn.Module for the normalization layer. The default is
+            nn.BatchNorm3d.
         norm_eps (float): normalization epsilon.
         norm_momentum (float): normalization momentum.
     """

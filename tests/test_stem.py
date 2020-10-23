@@ -7,10 +7,9 @@ import numpy as np
 import torch
 from pytorchvideo.layers.convolutions import ConvReduce3D
 from pytorchvideo.models.stem import (
-    ResNetBasicStem,
-    create_default_acoustic_res_basic_stem,
-    create_default_res_basic_stem,
+    create_acoustic_res_basic_stem,
 )
+from pytorchvideo.models.stem import ResNetBasicStem, create_res_basic_stem
 from torch import nn
 
 
@@ -160,16 +159,16 @@ class TestResNetBasicStem(unittest.TestCase):
                     ),
                 )
 
-    def test_create_default_stem_with_callable(self):
+    def test_create_stem_with_callable(self):
         """
-        Test default builder `create_default_res_basic_stem` with callable inputs.
+        Test builder `create_res_basic_stem` with callable inputs.
         """
         for (pool, activation, norm) in itertools.product(
             (nn.AvgPool3d, nn.MaxPool3d, None),
             (nn.ReLU, nn.Softmax, nn.Sigmoid, None),
             (nn.BatchNorm3d, None),
         ):
-            model = create_default_res_basic_stem(
+            model = create_res_basic_stem(
                 in_channels=3,
                 out_channels=64,
                 pool=pool,
@@ -217,9 +216,9 @@ class TestResNetBasicStem(unittest.TestCase):
                     np.allclose(output_tensor.numpy(), output_tensor_gt.numpy())
                 )
 
-    def test_create_acoustic_default_stem_with_callable(self):
+    def test_create_acoustic_stem_with_callable(self):
         """
-        Test default builder `create_default_acoustic_res_basic_stem` with callable
+        Test builder `create_acoustic_res_basic_stem` with callable
         inputs.
         """
         for (pool, activation, norm) in itertools.product(
@@ -227,7 +226,7 @@ class TestResNetBasicStem(unittest.TestCase):
             (nn.ReLU, nn.Softmax, nn.Sigmoid, None),
             (nn.BatchNorm3d, None),
         ):
-            model = create_default_acoustic_res_basic_stem(
+            model = create_acoustic_res_basic_stem(
                 in_channels=3,
                 out_channels=64,
                 pool=pool,

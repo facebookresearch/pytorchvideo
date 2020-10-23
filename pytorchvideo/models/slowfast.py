@@ -6,11 +6,8 @@ import torch
 import torch.nn as nn
 from pytorchvideo.models.head import create_res_basic_head
 from pytorchvideo.models.net import MultiPathWayWithFuse, Net
-from pytorchvideo.models.resnet import (
-    create_default_bottleneck_block,
-    create_default_res_stage,
-)
-from pytorchvideo.models.stem import create_default_res_basic_stem
+from pytorchvideo.models.resnet import create_bottleneck_block, create_res_stage
+from pytorchvideo.models.stem import create_res_basic_stem
 from pytorchvideo.models.utils import set_attributes
 
 
@@ -71,7 +68,7 @@ def create_fuse_fast_to_slow(
     )
 
 
-def create_default_slowfast(
+def create_slowfast(
     *,
     # SlowFast configs.
     slowfast_channel_reduction_ratio: int = 8,
@@ -111,7 +108,7 @@ def create_default_slowfast(
     ),
     stage_spatial_strides: Tuple[Tuple[int]] = ((1, 2, 2, 2), (1, 2, 2, 2)),
     stage_temporal_strides: Tuple[Tuple[int]] = ((1, 1, 1, 1), (1, 1, 1, 1)),
-    bottleneck: Callable = create_default_bottleneck_block,
+    bottleneck: Callable = create_bottleneck_block,
     # Head configs.
     head_pool: Callable = nn.AvgPool3d,
     head_pool_kernel_sizes: Tuple[Tuple[int]] = ((8, 7, 7), (32, 7, 7)),
@@ -185,7 +182,7 @@ def create_default_slowfast(
             stage_spatial_strides (tuple): the spatial stride for each stage.
             stage_temporal_strides (tuple): the temporal stride for each stage.
             bottleneck (callable): a callable that constructs bottleneck block layer.
-                Examples include: create_default_bottleneck_block.
+                Examples include: create_bottleneck_block.
 
         Head configs:
             head_pool (callable): a callable that constructs resnet head pooling layer.
@@ -214,7 +211,7 @@ def create_default_slowfast(
     stems = []
     for pathway_idx in range(_num_pathway):
         stems.append(
-            create_default_res_basic_stem(
+            create_res_basic_stem(
                 in_channels=input_channels[pathway_idx],
                 out_channels=stem_dim_outs[pathway_idx],
                 conv_kernel_size=stem_conv_kernel_sizes[pathway_idx],
@@ -274,7 +271,7 @@ def create_default_slowfast(
                 stage_spatial_strides[pathway_idx][idx],
             )
             stage.append(
-                create_default_res_stage(
+                create_res_stage(
                     depth=depth,
                     dim_in=pathway_stage_dim_in[pathway_idx],
                     dim_inner=pathway_stage_dim_inner[pathway_idx],

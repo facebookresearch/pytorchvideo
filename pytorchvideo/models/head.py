@@ -24,7 +24,7 @@ def create_res_basic_head(
     activation: Callable = nn.Softmax,
 ) -> nn.Module:
     """
-    Creates default ResNet basic head. This layer performs an optional pooling operation
+    Creates ResNet basic head. This layer performs an optional pooling operation
     followed by an optional dropout, a fully-connected projection, an activation layer
     and a global spatiotemporal averaging.
 
@@ -106,7 +106,7 @@ class ResNetBasicHead(nn.Module):
                                            ↓
                                        Averaging
 
-    The default builder can be found in `create_res_basic_head`.
+    The builder can be found in `create_res_basic_head`.
     """
 
     def __init__(

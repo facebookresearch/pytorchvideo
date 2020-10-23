@@ -8,7 +8,7 @@ from pytorchvideo.layers.convolutions import ConvReduce3D
 from pytorchvideo.models.utils import set_attributes
 
 
-def create_default_res_basic_stem(
+def create_res_basic_stem(
     *,
     # Conv configs.
     in_channels: int,
@@ -106,7 +106,7 @@ def create_default_res_basic_stem(
     )
 
 
-def create_default_acoustic_res_basic_stem(
+def create_acoustic_res_basic_stem(
     *,
     # Conv configs.
     in_channels: int,
@@ -226,7 +226,7 @@ class ResNetBasicStem(nn.Module):
                                            ↓
                                         Pool3d
 
-    The default builder can be found in `create_default_res_basic_stem`.
+    The builder can be found in `create_res_basic_stem`.
     """
 
     def __init__(

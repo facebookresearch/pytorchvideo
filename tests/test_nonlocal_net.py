@@ -6,7 +6,7 @@ from typing import Iterable
 
 import numpy as np
 import torch
-from pytorchvideo.layers.nonlocal_net import NonLocal, create_default_nonlocal
+from pytorchvideo.layers.nonlocal_net import NonLocal, create_nonlocal
 from torch import nn
 
 
@@ -62,9 +62,9 @@ class TestNonlocal(unittest.TestCase):
                     ),
                 )
 
-    def test_build_default_nonlocal(self):
+    def test_nonlocal_builder(self):
         """
-        Test default builder `create_default_nonlocal`.
+        Test builder `create_nonlocal`.
         """
         for dim_in, dim_inner, pool_size, norm, instantiation in itertools.product(
             (4, 8),
@@ -90,7 +90,7 @@ class TestNonlocal(unittest.TestCase):
             else:
                 pool_model = None
 
-            model = create_default_nonlocal(
+            model = create_nonlocal(
                 dim_in=dim_in,
                 dim_inner=dim_inner,
                 pool_size=pool_size,

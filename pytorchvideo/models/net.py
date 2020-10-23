@@ -21,7 +21,7 @@ class Net(nn.Module):
                                          Block N
                                            ↓
 
-    The default ResNet can be found in `create_default_resnet`.
+    The ResNet builder can be found in `create_resnet`.
     """
 
     def __init__(self, *, blocks: nn.ModuleList) -> None:

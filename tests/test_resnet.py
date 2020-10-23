@@ -13,10 +13,10 @@ from pytorchvideo.models.resnet import (
     ResStage,
     SeparableBottleneckBlock,
     create_acoustic_bottleneck_block,
-    create_default_bottleneck_block,
-    create_default_res_block,
-    create_default_res_stage,
-    create_default_resnet,
+    create_bottleneck_block,
+    create_res_block,
+    create_res_stage,
+    create_resnet,
 )
 from pytorchvideo.models.stem import ResNetBasicStem
 from torch import nn
@@ -318,8 +318,7 @@ class TestBottleneckBlock(unittest.TestCase):
 
     def test_create_acoustic_bottleneck_block_with_callable(self):
         """
-        Test default builder `create_acoustic_bottleneck_block` with callable
-        inputs.
+        Test builder `create_acoustic_bottleneck_block` with callable inputs.
         """
         for (norm_model, act_model) in itertools.product(
             (nn.BatchNorm3d,), (nn.ReLU, nn.Softmax, nn.Sigmoid)
@@ -410,14 +409,14 @@ class TestBottleneckBlock(unittest.TestCase):
                     np.allclose(output_tensor.numpy(), output_tensor_gt.numpy())
                 )
 
-    def test_create_default_bottleneck_block_with_callable(self):
+    def test_create_bottleneck_block_with_callable(self):
         """
-        Test default builder `create_default_bottleneck_block` with callable inputs.
+        Test builder `create_bottleneck_block` with callable inputs.
         """
         for (norm_model, act_model) in itertools.product(
             (nn.BatchNorm3d,), (nn.ReLU, nn.Softmax, nn.Sigmoid)
         ):
-            model = create_default_bottleneck_block(
+            model = create_bottleneck_block(
                 dim_in=32,
                 dim_inner=16,
                 dim_out=64,
@@ -522,7 +521,7 @@ class TestResBottleneckBlock(unittest.TestCase):
         super().setUp()
         torch.set_rng_state(torch.manual_seed(42).get_state())
 
-    def test_create_default_res_block(self):
+    def test_create_res_block(self):
         """
         Test simple ResBlock with different inputs.
         """
@@ -599,18 +598,18 @@ class TestResBottleneckBlock(unittest.TestCase):
                     ),
                 )
 
-    def test_create_default_res_block_with_callable(self):
+    def test_create_res_block_with_callable(self):
         """
-        Test default builder `create_default_res_block` with callable inputs.
+        Test builder `create_res_block` with callable inputs.
         """
         for (norm, activation) in itertools.product(
             (nn.BatchNorm3d, None), (nn.ReLU, nn.Softmax, nn.Sigmoid, None)
         ):
-            model = create_default_res_block(
+            model = create_res_block(
                 dim_in=32,
                 dim_inner=16,
                 dim_out=64,
-                bottleneck=create_default_bottleneck_block,
+                bottleneck=create_bottleneck_block,
                 conv_a_kernel_size=(3, 1, 1),
                 conv_a_stride=(1, 1, 1),
                 conv_a_padding=(1, 0, 0),
@@ -841,20 +840,20 @@ class TestResStageTransform(unittest.TestCase):
                     ),
                 )
 
-    def test_create_default_res_stage_with_callable(self):
+    def test_create_res_stage_with_callable(self):
         """
-        Test default builder `create_default_res_stage` with callable inputs.
+        Test builder `create_res_stage` with callable inputs.
         """
         dim_in, dim_inner, dim_out = 32, 16, 64
         for (norm, activation) in itertools.product(
             (nn.BatchNorm3d, None), (nn.ReLU, nn.Sigmoid, None)
         ):
-            model = create_default_res_stage(
+            model = create_res_stage(
                 depth=2,
                 dim_in=dim_in,
                 dim_inner=dim_inner,
                 dim_out=dim_out,
-                bottleneck=create_default_bottleneck_block,
+                bottleneck=create_bottleneck_block,
                 conv_a_kernel_size=(3, 1, 1),
                 conv_a_stride=(1, 1, 1),
                 conv_a_padding=(1, 0, 0),
@@ -1180,9 +1179,9 @@ class TestResNet(unittest.TestCase):
                     ),
                 )
 
-    def test_create_default_resnet_with_callable(self):
+    def test_create_resnet_with_callable(self):
         """
-        Test default builder `create_default_resnet` with callable inputs.
+        Test builder `create_resnet` with callable inputs.
         """
         for (norm, activation) in itertools.product(
             (nn.BatchNorm3d, None), (nn.ReLU, nn.Sigmoid, None)
@@ -1211,7 +1210,7 @@ class TestResNet(unittest.TestCase):
                 input_crop_size // total_spatial_stride,
             )
 
-            model = create_default_resnet(
+            model = create_resnet(
                 input_channel=input_channel,
                 model_depth=50,
                 model_num_class=num_class,
@@ -1228,7 +1227,7 @@ class TestResNet(unittest.TestCase):
                 stage_conv_b_kernel_size=((1, 3, 3),) * 4,
                 stage_spatial_stride=stage_spatial_stride,
                 stage_temporal_stride=stage_temporal_stride,
-                bottleneck=create_default_bottleneck_block,
+                bottleneck=create_bottleneck_block,
                 head_pool=nn.AvgPool3d,
                 head_pool_kernel_size=head_pool_kernel_size,
                 head_output_size=(1, 1, 1),

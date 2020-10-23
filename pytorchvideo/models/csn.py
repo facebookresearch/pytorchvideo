@@ -5,15 +5,11 @@ from typing import Callable, Tuple
 import numpy as np
 import torch.nn as nn
 from pytorchvideo.models.head import create_res_basic_head
-from pytorchvideo.models.resnet import (
-    Net,
-    create_default_bottleneck_block,
-    create_default_res_stage,
-)
-from pytorchvideo.models.stem import create_default_res_basic_stem
+from pytorchvideo.models.resnet import Net, create_bottleneck_block, create_res_stage
+from pytorchvideo.models.stem import create_res_basic_stem
 
 
-def create_default_csn(
+def create_csn(
     *,
     # Input clip configs.
     input_channel: int = 3,
@@ -37,7 +33,7 @@ def create_default_csn(
     stage_conv_b_width_per_group: int = 1,
     stage_spatial_stride: Tuple[int] = (1, 2, 2, 2),
     stage_temporal_stride: Tuple[int] = (1, 2, 2, 1),
-    bottleneck: Callable = create_default_bottleneck_block,
+    bottleneck: Callable = create_bottleneck_block,
     # Head configs.
     head_pool: Callable = nn.AvgPool3d,
     head_output_size: Tuple[int] = (1, 1, 1),
@@ -65,9 +61,9 @@ def create_default_csn(
                                            ↓
                                          Head
 
-    Unlike the default ResNet, CSN uses depthwise convolution. To further
-    reduce the computational cost, it uses low resolution (112x112), short
-    clips (4 frames), different striding and kernel size, etc.
+    CSN uses depthwise convolution. To further reduce the computational cost, it uses
+    low resolution (112x112), short clips (4 frames), different striding and kernel
+    size, etc.
 
     Args:
         Input clip configs:
@@ -99,7 +95,7 @@ def create_default_csn(
             stage_spatial_stride (tuple): the spatial stride for each stage.
             stage_temporal_stride (tuple): the temporal stride for each stage.
             bottleneck (callable): a callable that constructs bottleneck block layer.
-                Examples include: create_default_bottleneck_block.
+                Examples include: create_bottleneck_block.
 
         Head configs:
             head_pool (callable): a callable that constructs resnet head pooling layer.
@@ -113,7 +109,7 @@ def create_default_csn(
     _MODEL_STAGE_DEPTH = {50: (3, 4, 6, 3), 101: (3, 4, 23, 3), 152: (3, 8, 36, 3)}
     blocks = []
     # Create stem for CSN.
-    stem = create_default_res_basic_stem(
+    stem = create_res_basic_stem(
         in_channels=input_channel,
         out_channels=stem_dim_out,
         conv_kernel_size=stem_conv_kernel_size,
@@ -145,7 +141,7 @@ def create_default_csn(
             stage_spatial_stride[idx],
         )
 
-        stage = create_default_res_stage(
+        stage = create_res_stage(
             depth=depth,
             dim_in=stage_dim_in,
             dim_inner=stage_dim_inner,

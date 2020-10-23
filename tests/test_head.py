@@ -77,9 +77,9 @@ class TestHeadHelper(unittest.TestCase):
                     ),
                 )
 
-    def test_build_default_head_with_callable(self):
+    def test_build_head_with_callable(self):
         """
-        Test default builder `create_res_basic_head`.
+        Test builder `create_res_basic_head`.
         """
         for (pool, activation) in itertools.product(
             (nn.AvgPool3d, nn.MaxPool3d, nn.AdaptiveAvgPool3d, None),

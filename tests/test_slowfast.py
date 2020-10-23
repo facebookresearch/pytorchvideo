@@ -5,7 +5,7 @@ import unittest
 from typing import Tuple
 
 import torch
-from pytorchvideo.models.slowfast import create_default_slowfast
+from pytorchvideo.models.slowfast import create_slowfast
 from pytorchvideo.transforms.functional import repeat_temporal_frames_subsample
 from torch import nn
 
@@ -15,9 +15,9 @@ class TestSlowFast(unittest.TestCase):
         super().setUp()
         torch.set_rng_state(torch.manual_seed(42).get_state())
 
-    def test_create_default_slowfast_with_callable(self):
+    def test_create_slowfast_with_callable(self):
         """
-        Test default builder `create_default_slowfast` with callable inputs.
+        Test builder `create_slowfast` with callable inputs.
         """
         for (norm, activation) in itertools.product(
             (nn.BatchNorm3d, None), (nn.ReLU, nn.Sigmoid, None)
@@ -26,7 +26,7 @@ class TestSlowFast(unittest.TestCase):
             input_crop_size = 224
             input_channel = 3
 
-            model = create_default_slowfast(
+            model = create_slowfast(
                 slowfast_channel_reduction_ratio=8,
                 slowfast_conv_channel_fusion_ratio=2,
                 slowfast_fusion_conv_kernel_size=(7, 1, 1),

@@ -4,8 +4,8 @@ import itertools
 import unittest
 
 import torch
-from pytorchvideo.models.csn import create_default_csn
-from pytorchvideo.models.resnet import create_default_bottleneck_block
+from pytorchvideo.models.csn import create_csn
+from pytorchvideo.models.resnet import create_bottleneck_block
 from torch import nn
 
 
@@ -21,7 +21,7 @@ class TestCSN(unittest.TestCase):
         for input_channel, input_clip_length, input_crop_size in itertools.product(
             (3, 2), (4, 8), (56, 64)
         ):
-            model = create_default_csn(
+            model = create_csn(
                 input_channel=input_channel,
                 input_clip_length=input_clip_length,
                 input_crop_size=input_crop_size,
@@ -38,7 +38,7 @@ class TestCSN(unittest.TestCase):
                 stage_conv_b_width_per_group=1,
                 stage_spatial_stride=(1, 2, 2, 2),
                 stage_temporal_stride=(1, 2, 2, 1),
-                bottleneck=create_default_bottleneck_block,
+                bottleneck=create_bottleneck_block,
                 head_pool=nn.AvgPool3d,
                 head_output_size=(1, 1, 1),
                 head_activation=nn.Softmax,

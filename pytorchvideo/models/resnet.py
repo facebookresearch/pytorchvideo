@@ -7,11 +7,11 @@ import torch
 import torch.nn as nn
 from pytorchvideo.models.head import create_res_basic_head
 from pytorchvideo.models.net import Net
-from pytorchvideo.models.stem import create_default_res_basic_stem
+from pytorchvideo.models.stem import create_res_basic_stem
 from pytorchvideo.models.utils import set_attributes
 
 
-def create_default_bottleneck_block(
+def create_bottleneck_block(
     *,
     # Convolution configs.
     dim_in: int,
@@ -82,7 +82,7 @@ def create_default_bottleneck_block(
                 activation).
 
     Returns:
-        (nn.Module): resnet default bottleneck block.
+        (nn.Module): resnet bottleneck block.
     """
     conv_a = nn.Conv3d(
         in_channels=dim_in,
@@ -297,7 +297,7 @@ def create_acoustic_bottleneck_block(
     )
 
 
-def create_default_res_block(
+def create_res_block(
     *,
     # Bottleneck Block configs.
     dim_in: int,
@@ -345,7 +345,7 @@ def create_default_res_block(
             dim_inner (int): intermediate channel size of the bottleneck.
             dim_out (int): output channel size of the bottleneck.
             bottleneck (callable): a callable that constructs bottleneck block layer.
-                Examples include: create_default_bottleneck_block.
+                Examples include: create_bottleneck_block.
 
         Convolution related configs:
             conv_a_kernel_size (tuple): convolutional kernel size(s) for conv_a.
@@ -408,7 +408,7 @@ def create_default_res_block(
     )
 
 
-def create_default_res_stage(
+def create_res_stage(
     *,
     # Stage configs.
     depth: int,
@@ -434,8 +434,8 @@ def create_default_res_stage(
     activation: Callable = nn.ReLU,
 ) -> nn.Module:
     """
-    Create default Residual Stage, which composes sequential blocks that make up a
-    ResNet. These blocks could be, for example, Residual blocks, Non-Local layers, or
+    Create Residual Stage, which composes sequential blocks that make up a ResNet. These
+    blocks could be, for example, Residual blocks, Non-Local layers, or
     Squeeze-Excitation layers.
 
 
@@ -451,7 +451,7 @@ def create_default_res_stage(
 
     Normalization examples include: BatchNorm3d and None (no normalization).
     Activation examples include: ReLU, Softmax, Sigmoid, and None (no activation).
-    Bottleneck examples include: create_default_bottleneck_block.
+    Bottleneck examples include: create_bottleneck_block.
 
     Args:
         Bottleneck block related configs:
@@ -459,7 +459,7 @@ def create_default_res_stage(
             dim_inner (int): intermediate channel size of the bottleneck.
             dim_out (int): output channel size of the bottleneck.
             bottleneck (callable): a callable that constructs bottleneck block layer.
-                Examples include: create_default_bottleneck_block.
+                Examples include: create_bottleneck_block.
 
         Convolution related configs:
             conv_a_kernel_size (tuple): convolutional kernel size(s) for conv_a.
@@ -488,7 +488,7 @@ def create_default_res_stage(
     """
     res_blocks = []
     for ind in range(depth):
-        block = create_default_res_block(
+        block = create_res_block(
             dim_in=dim_in if ind == 0 else dim_out,
             dim_inner=dim_inner,
             dim_out=dim_out,
@@ -510,7 +510,7 @@ def create_default_res_stage(
     return ResStage(res_blocks=nn.ModuleList(res_blocks))
 
 
-def create_default_resnet(
+def create_resnet(
     *,
     # Input clip configs.
     input_channel: int = 3,
@@ -551,7 +551,7 @@ def create_default_resnet(
     ),
     stage_spatial_stride: Tuple[int] = (2, 1, 1, 1),
     stage_temporal_stride: Tuple[int] = (1, 1, 1, 1),
-    bottleneck: Callable = create_default_bottleneck_block,
+    bottleneck: Callable = create_bottleneck_block,
     # Head configs.
     head_pool: Callable = nn.AvgPool3d,
     head_pool_kernel_size: Tuple[int] = (4, 7, 7),
@@ -612,7 +612,7 @@ def create_default_resnet(
             stage_spatial_stride (tuple): the spatial stride for each stage.
             stage_temporal_stride (tuple): the temporal stride for each stage.
             bottleneck (callable): a callable that constructs bottleneck block layer.
-                Examples include: create_default_bottleneck_block.
+                Examples include: create_bottleneck_block.
 
         Head configs:
             head_pool (callable): a callable that constructs resnet head pooling layer.
@@ -627,7 +627,7 @@ def create_default_resnet(
     _MODEL_STAGE_DEPTH = {50: (3, 4, 6, 3), 101: (3, 4, 23, 3), 152: (3, 8, 36, 3)}
     blocks = []
     # Create stem for resnet.
-    stem = create_default_res_basic_stem(
+    stem = create_res_basic_stem(
         in_channels=input_channel,
         out_channels=stem_dim_out,
         conv_kernel_size=stem_conv_kernel_size,
@@ -659,7 +659,7 @@ def create_default_resnet(
         stage_conv_a_stride = (stage_temporal_stride[idx], 1, 1)
         stage_conv_b_stride = (1, stage_spatial_stride[idx], stage_spatial_stride[idx])
 
-        stage = create_default_res_stage(
+        stage = create_res_stage(
             depth=depth,
             dim_in=stage_dim_in,
             dim_inner=stage_dim_inner,
@@ -709,7 +709,7 @@ class ResBlock(nn.Module):
                                            ↓
                                        Activation
 
-    The default builder can be found in `create_default_res_block`.
+    The builder can be found in `create_res_block`.
     """
 
     def __init__(
@@ -854,7 +854,7 @@ class BottleneckBlock(nn.Module):
                                            ↓
                                  Normalization (norm_c)
 
-    The default builder can be found in `create_default_bottleneck_block`.
+    The builder can be found in `create_bottleneck_block`.
     """
 
     def __init__(
@@ -925,7 +925,7 @@ class ResStage(nn.Module):
                                            ↓
                                        ResBlock
 
-    The default builder can be found in `create_default_res_stage`.
+    The builder can be found in `create_res_stage`.
     """
 
     def __init__(self, res_blocks: nn.ModuleList) -> nn.Module:
