@@ -72,7 +72,7 @@ def create_csn(
             input_crop_size (int): spatial resolution of the input video clip.
 
         Model configs:
-            model_depth (int): the depth of the resnet.
+            model_depth (int): the depth of the resnet. Options include: 50, 101, 152.
             model_num_class (int): the number of classes for the video dataset.
             dropout_rate (float): dropout rate.
 

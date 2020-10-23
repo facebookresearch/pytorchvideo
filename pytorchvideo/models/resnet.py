@@ -454,6 +454,8 @@ def create_res_stage(
     Bottleneck examples include: create_bottleneck_block.
 
     Args:
+        Stage related configs:
+            depth (init): number of blocks to create.
         Bottleneck block related configs:
             dim_in (int): input channel size to the bottleneck block.
             dim_inner (int): intermediate channel size of the bottleneck.
@@ -585,7 +587,7 @@ def create_resnet(
             input_channel (int): number of channels for the input video clip.
 
         Model configs:
-            model_depth (int): the depth of the resnet.
+            model_depth (int): the depth of the resnet. Options include: 50, 101, 152.
             model_num_class (int): the number of classes for the video dataset.
             dropout_rate (float): dropout rate.
 
