@@ -2,47 +2,23 @@ import csv
 import tempfile
 import unittest
 import unittest.mock
+from contextlib import ExitStack
 from dataclasses import fields as dataclass_fields
 from pathlib import Path
 
 import torch
+from parameterized import parameterized
 from pytorchvideo.data.epic_kitchen import (
     ActionData,
+    EncodedVideoInfo,
     EpicKitchenClip,
     EpicKitchenDataset,
+    EpicKitchenDatasetType,
     VideoFrameInfo,
     VideoInfo,
 )
-
-
-def write_video_info_file(video_infos, file_path):
-    with open(file_path, "w") as f:
-        f.write("video,resolution,duration,fps\n")
-        for _, video_info in video_infos.items():
-            f.write(
-                f"{video_info.video_id},{video_info.resolution},\
-                {str(video_info.duration)},{str(video_info.fps)}\n"
-            )
-
-
-def write_frame_manifest_file(video_frames, file_path):
-    field_names = [f.name for f in dataclass_fields(VideoFrameInfo)]
-    with open(file_path, "w") as output_file:
-        writer = csv.writer(output_file, delimiter=",", quotechar='"')
-        writer.writerow(field_names)
-        for _, video_frame_info in video_frames.items():
-            writer.writerow((getattr(video_frame_info, f) for f in field_names))
-
-
-def write_actions_file(file_path, actions):
-    field_names = [f.name for f in dataclass_fields(ActionData)]
-    with open(file_path, "w") as f:
-        writer = csv.writer(f, delimiter=",", quotechar='"')
-        writer.writerow(field_names)
-        for video_id in actions:
-            video_actions = actions[video_id]
-            for a in video_actions:
-                writer.writerow((getattr(a, f) for f in field_names))
+from pytorchvideo.data.utils import save_dataclass_objs_to_headered_csv
+from utils import temp_encoded_video
 
 
 def get_flat_video_frames(directory, file_extension):
@@ -84,6 +60,19 @@ def get_flat_video_frames(directory, file_extension):
             file_extension=file_extension,
         ),
     }
+
+
+def get_encoded_video_infos(directory, exit_stack=None):
+    video_ids = ["P02_001", "P02_002", "P02_005", "P07_002"]
+    encoded_video_infos = {}
+    for video_id in video_ids:
+        file_path, _ = (
+            exit_stack.enter_context(temp_encoded_video(10, 10))
+            if exit_stack
+            else (f"{directory}/{video_id}.mp4", None)
+        )
+        encoded_video_infos[video_id] = EncodedVideoInfo(video_id, file_path)
+    return encoded_video_infos
 
 
 class TestEpicKitchenDataset(unittest.TestCase):
@@ -224,7 +213,6 @@ class TestEpicKitchenDataset(unittest.TestCase):
                 "all_noun_classes": "[113, 1232, 1]",
             }
         )
-
         self.assertEqual(action.video_id, "P07_002")
         self.assertEqual(action.start_time, 4.0)
         self.assertEqual(action.stop_time, 6.5)
@@ -255,6 +243,15 @@ class TestEpicKitchenDataset(unittest.TestCase):
         self.assertEqual(video_frame_info.min_frame_number, 0)
         self.assertEqual(video_frame_info.max_frame_number, 22)
         self.assertEqual(video_frame_info.file_extension, "png")
+
+    def test_EncodedVideoInfo(self):
+        encoded_video_info = EncodedVideoInfo(
+            # This is a key-mapping as the underlying epic-kitchen
+            # annotation files are of these string columns
+            **{"video_id": "P01_12", "file_path": "c:/P01_12.mp4"}
+        )
+        self.assertEqual(encoded_video_info.video_id, "P01_12")
+        self.assertEqual(encoded_video_info.file_path, "c:/P01_12.mp4")
 
     def test_VideoInfo(self):
         video_info = VideoInfo(
@@ -349,68 +346,111 @@ class TestEpicKitchenDataset(unittest.TestCase):
         for video_id in video_frames_b:
             self.assertEqual(video_frames_b[video_id], video_frames_a_copy[video_id])
 
-    def test__len__(self):
+    @parameterized.expand(
+        [(EpicKitchenDatasetType.Frame,), (EpicKitchenDatasetType.EncodedVideo,)]
+    )
+    def test__len__(self, dataset_type):
         with tempfile.TemporaryDirectory(prefix=f"{TestEpicKitchenDataset}") as tempdir:
             tempdir = Path(tempdir)
 
             video_info_file = tempdir / "test_video_info.csv"
+            save_dataclass_objs_to_headered_csv(
+                list(self.VIDEO_INFOS_A.values()), video_info_file
+            )
             action_file = tempdir / "action_video_info.csv"
-            video_frames_file = tempdir / "test_frame_manifest.json"
-            write_video_info_file(self.VIDEO_INFOS_A, video_info_file)
-            write_actions_file(action_file, self.ACTIONS_DATAS)
-            write_frame_manifest_file(
-                get_flat_video_frames("test_dir", "jpg"), video_frames_file
+            actions = []
+            for action_list in self.ACTIONS_DATAS.values():
+                for action in action_list:
+                    actions.append(action)
+            save_dataclass_objs_to_headered_csv(actions, action_file)
+
+            video_data_manifest_file_path = (
+                tempdir / "video_data_manifest_file_path.json"
             )
+            with ExitStack() as stack:
+                if dataset_type == EpicKitchenDatasetType.Frame:
+                    video_data_dict = get_flat_video_frames(tempdir, "jpg")
+                elif dataset_type == EpicKitchenDatasetType.EncodedVideo:
+                    video_data_dict = get_encoded_video_infos(tempdir, stack)
 
-            dataset = EpicKitchenDataset(
-                video_info_file_path=str(video_info_file),
-                actions_file_path=str(action_file),
-                clip_sampler=lambda x, y: [
-                    EpicKitchenClip(str(i), i * 2.0, i * 2.0 + 0.9) for i in range(0, 7)
-                ],
-                frame_manifest_file_path=str(video_frames_file),
-            )
+                save_dataclass_objs_to_headered_csv(
+                    list(video_data_dict.values()), video_data_manifest_file_path
+                )
 
-            self.assertEqual(len(dataset), 7)
+                dataset = EpicKitchenDataset(
+                    video_info_file_path=str(video_info_file),
+                    actions_file_path=str(action_file),
+                    clip_sampler=lambda x, y: [
+                        EpicKitchenClip(str(i), i * 2.0, i * 2.0 + 0.9)
+                        for i in range(0, 7)
+                    ],
+                    video_data_manifest_file_path=str(video_data_manifest_file_path),
+                    dataset_type=dataset_type,
+                )
 
-    def test__getitem__(self):
+                self.assertEqual(len(dataset), 7)
+
+    @parameterized.expand(
+        [(EpicKitchenDatasetType.Frame,), (EpicKitchenDatasetType.EncodedVideo,)]
+    )
+    def test__getitem__(self, dataset_type):
         with tempfile.TemporaryDirectory(prefix=f"{TestEpicKitchenDataset}") as tempdir:
             tempdir = Path(tempdir)
 
             video_info_file = tempdir / "test_video_info.csv"
+            save_dataclass_objs_to_headered_csv(
+                list(self.VIDEO_INFOS_A.values()), video_info_file
+            )
             action_file = tempdir / "action_video_info.csv"
-            video_frames_file = tempdir / "test_frame_manifest.json"
-            write_video_info_file(self.VIDEO_INFOS_A, video_info_file)
-            write_actions_file(action_file, self.ACTIONS_DATAS)
-            write_frame_manifest_file(
-                get_flat_video_frames("test_dir", "png"), video_frames_file
-            )
+            actions = []
+            for action_list in self.ACTIONS_DATAS.values():
+                for action in action_list:
+                    actions.append(action)
+            save_dataclass_objs_to_headered_csv(actions, action_file)
 
-            video_ids = list(self.ACTIONS_DATAS)
-            dataset = EpicKitchenDataset(
-                video_info_file_path=str(video_info_file),
-                actions_file_path=str(action_file),
-                clip_sampler=lambda x, y: [
-                    EpicKitchenClip(video_ids[i // 2], i * 2.0, i * 2.0 + 0.9)
-                    for i in range(0, 7)
-                ],
-                frame_manifest_file_path=str(video_frames_file),
+            video_data_manifest_file_path = (
+                tempdir / "video_data_manifest_file_path.json"
             )
-            expected_actions = self.ACTIONS_DATAS
-            with unittest.mock.patch(
-                "pytorchvideo.data.frame_video.FrameVideo.get_clip",
-                return_value=({"video": torch.rand(3, 5, 10, 20), "audio": []}),
-            ) as _:
-                clip_1 = dataset.__getitem__(1)
-                for i, a in enumerate(clip_1["actions"]):
-                    self.assertEqual(a, expected_actions[video_ids[0]][i])
-                self.assertEqual(clip_1["start_time"], 2.0)
-                self.assertEqual(clip_1["stop_time"], 2.9)
-                self.assertEqual(clip_1["video_id"], "P02_001")
+            with ExitStack() as stack:
+                if dataset_type == EpicKitchenDatasetType.Frame:
+                    video_data_dict = get_flat_video_frames(tempdir, "jpg")
+                elif dataset_type == EpicKitchenDatasetType.EncodedVideo:
+                    video_data_dict = get_encoded_video_infos(tempdir, stack)
 
-                clip_2 = dataset.__getitem__(2)
-                for i, a in enumerate(clip_2["actions"]):
-                    self.assertEqual(a, expected_actions[video_ids[1]][i])
-                self.assertEqual(clip_2["start_time"], 4.0)
-                self.assertEqual(clip_2["stop_time"], 4.9)
-                self.assertEqual(clip_2["video_id"], "P02_002")
+                save_dataclass_objs_to_headered_csv(
+                    list(video_data_dict.values()), video_data_manifest_file_path
+                )
+                video_ids = list(self.ACTIONS_DATAS)
+                dataset = EpicKitchenDataset(
+                    video_info_file_path=str(video_info_file),
+                    actions_file_path=str(action_file),
+                    clip_sampler=lambda x, y: [
+                        EpicKitchenClip(video_ids[i // 2], i * 2.0, i * 2.0 + 0.9)
+                        for i in range(0, 7)
+                    ],
+                    video_data_manifest_file_path=str(video_data_manifest_file_path),
+                    dataset_type=dataset_type,
+                )
+
+                get_clip_string = (
+                    "pytorchvideo.data.frame_video.FrameVideo.get_clip"
+                    if dataset_type == EpicKitchenDatasetType.Frame
+                    else "pytorchvideo.data.encoded_video.EncodedVideo.get_clip"
+                )
+                with unittest.mock.patch(
+                    get_clip_string,
+                    return_value=({"video": torch.rand(3, 5, 10, 20), "audio": []}),
+                ) as _:
+                    clip_1 = dataset.__getitem__(1)
+                    for i, a in enumerate(clip_1["actions"]):
+                        self.assertEqual(a, self.ACTIONS_DATAS[video_ids[0]][i])
+                    self.assertEqual(clip_1["start_time"], 2.0)
+                    self.assertEqual(clip_1["stop_time"], 2.9)
+                    self.assertEqual(clip_1["video_id"], "P02_001")
+
+                    clip_2 = dataset.__getitem__(2)
+                    for i, a in enumerate(clip_2["actions"]):
+                        self.assertEqual(a, self.ACTIONS_DATAS[video_ids[1]][i])
+                    self.assertEqual(clip_2["start_time"], 4.0)
+                    self.assertEqual(clip_2["stop_time"], 4.9)
+                    self.assertEqual(clip_2["video_id"], "P02_002")

@@ -6,7 +6,11 @@ import unittest.mock
 from dataclasses import dataclass, fields as dataclass_fields
 from pathlib import Path
 
-from pytorchvideo.data.utils import DataclassFieldCaster, load_dataclass_dict_from_csv
+from pytorchvideo.data.utils import (
+    DataclassFieldCaster,
+    load_dataclass_dict_from_csv,
+    save_dataclass_objs_to_headered_csv,
+)
 
 
 @dataclass
@@ -25,21 +29,6 @@ class TestDataclass(DataclassFieldCaster):
 class TestDataclass2(DataclassFieldCaster):
     a: str
     b: int
-
-
-@contextlib.contextmanager
-def write_data_class_to_csv(dataclass_objs):
-    assert dataclass_objs
-    with tempfile.TemporaryDirectory(prefix=f"{TestDataUtils}") as tempdir:
-        dataclass_type = type(dataclass_objs[0])
-        field_names = [f.name for f in dataclass_fields(dataclass_type)]
-        file_name = Path(tempdir) / "data.csv"
-        with open(file_name, "w") as f:
-            writer = csv.writer(f, delimiter=",", quotechar='"')
-            writer.writerow(field_names)
-            for obj in dataclass_objs:
-                writer.writerow([getattr(obj, f) for f in field_names])
-        yield file_name
 
 
 class TestDataUtils(unittest.TestCase):
@@ -63,13 +52,16 @@ class TestDataUtils(unittest.TestCase):
         self.assertEqual(type(test_obj.e), dict)
 
     def test_load_dataclass_dict_from_csv_value_dict(self):
-        objects = [
+        dataclass_objs = [
             TestDataclass2("a", 1),
             TestDataclass2("b", 2),
             TestDataclass2("c", 3),
             TestDataclass2("d", 4),
         ]
-        with write_data_class_to_csv(objects) as csv_file_name:
+        with tempfile.TemporaryDirectory(prefix=f"{TestDataUtils}") as tempdir:
+            csv_file_name = Path(tempdir) / "data.csv"
+            save_dataclass_objs_to_headered_csv(dataclass_objs, csv_file_name)
+
             test_dict = load_dataclass_dict_from_csv(
                 csv_file_name, TestDataclass2, "a", list_per_key=False
             )
@@ -77,7 +69,7 @@ class TestDataUtils(unittest.TestCase):
             self.assertEqual(test_dict["c"].b, 3)
 
     def test_load_dataclass_dict_from_csv_list_dict(self):
-        objects = [
+        dataclass_objs = [
             TestDataclass2("a", 1),
             TestDataclass2("a", 2),
             TestDataclass2("b", 3),
@@ -85,7 +77,9 @@ class TestDataUtils(unittest.TestCase):
             TestDataclass2("c", 4),
             TestDataclass2("c", 4),
         ]
-        with write_data_class_to_csv(objects) as csv_file_name:
+        with tempfile.TemporaryDirectory(prefix=f"{TestDataUtils}") as tempdir:
+            csv_file_name = Path(tempdir) / "data.csv"
+            save_dataclass_objs_to_headered_csv(dataclass_objs, csv_file_name)
             test_dict = load_dataclass_dict_from_csv(
                 csv_file_name, TestDataclass2, "a", list_per_key=True
             )
@@ -95,7 +89,7 @@ class TestDataUtils(unittest.TestCase):
             self.assertEqual([x.b for x in test_dict["c"]], [4, 4, 4])
 
     def test_load_dataclass_dict_from_csv_throws(self):
-        objects = [
+        dataclass_objs = [
             TestDataclass2("a", 1),
             TestDataclass2("a", 2),
             TestDataclass2("b", 3),
@@ -103,10 +97,30 @@ class TestDataUtils(unittest.TestCase):
             TestDataclass2("c", 4),
             TestDataclass2("c", 4),
         ]
-        with write_data_class_to_csv(objects) as csv_file_name:
+        with tempfile.TemporaryDirectory(prefix=f"{TestDataUtils}") as tempdir:
+            csv_file_name = Path(tempdir) / "data.csv"
+            save_dataclass_objs_to_headered_csv(dataclass_objs, csv_file_name)
             self.assertRaises(
                 AssertionError,
                 lambda: load_dataclass_dict_from_csv(
                     csv_file_name, TestDataclass2, "a", list_per_key=False
                 ),
             )
+
+    def test_save_dataclass_objs_to_headered_csv(self):
+        dataclass_objs = [
+            TestDataclass2("a", 1),
+            TestDataclass2("a", 2),
+            TestDataclass2("b", 3),
+        ]
+
+        with tempfile.TemporaryDirectory(prefix=f"{TestDataUtils}") as tempdir:
+            csv_file_name = Path(tempdir) / "data.csv"
+            save_dataclass_objs_to_headered_csv(dataclass_objs, csv_file_name)
+            with open(csv_file_name) as f:
+                lines = list(f.readlines())
+                self.assertEqual(len(lines), 4)
+                self.assertEqual(lines[0], "a,b\n")
+                self.assertEqual(lines[1], "a,1\n")
+                self.assertEqual(lines[2], "a,2\n")
+                self.assertEqual(lines[3], "b,3\n")

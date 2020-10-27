@@ -96,7 +96,7 @@ class FrameVideo(Video):
         self,
         start_sec: float,
         end_sec: float,
-        frame_filter: Optional[Callable[List[int], List[int]]] = None,
+        frame_filter: Optional[Callable[[List[int]], List[int]]] = None,
     ) -> Dict[str, Optional[torch.Tensor]]:
         """
         Retrieves frames from the stored video at the specified start and end times

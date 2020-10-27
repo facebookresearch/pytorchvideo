@@ -1,13 +1,17 @@
 # Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved.
 
-import csv
 import os
-from dataclasses import fields
 from typing import Dict
 
 from fvcore.common.file_io import PathManager
-from pytorchvideo.data.epic_kitchen.epic_kitchen_dataset import VideoFrameInfo
-from pytorchvideo.data.utils import optional_threaded_foreach
+from pytorchvideo.data.epic_kitchen import (
+    EncodedVideoInfo,
+    VideoFrameInfo,
+)
+from pytorchvideo.data.utils import (
+    optional_threaded_foreach,
+    save_dataclass_objs_to_headered_csv,
+)
 
 
 def build_frame_manifest_from_flat_directory(
@@ -173,6 +177,55 @@ def build_frame_manifest_from_nested_directory(
     return video_frames
 
 
+def build_encoded_manifest_from_nested_directory(
+    data_directory_path: str,
+) -> Dict[str, EncodedVideoInfo]:
+    """
+        Creates a dictionary from video_id to EncodedVideoInfo for
+        encoded videos in the given directory.
+
+        Args:
+            data_directory_path (str): The folder to ls to find encoded
+            video files.
+
+        Returns:
+            Dict[str, EncodedVideoInfo] mapping video_id to EncodedVideoInfo
+            for each file in 'data_directory_path'
+    """
+    encoded_video_infos = {}
+    for participant_id in PathManager.ls(data_directory_path):
+        participant_folder_path = f"{data_directory_path}/{participant_id}"
+        for video_file_name in PathManager.ls(participant_folder_path):
+            video_id = video_file_name[:6]
+            video_full_path = f"{participant_folder_path}/{video_file_name}"
+            encoded_video_infos[video_id] = EncodedVideoInfo(video_id, video_full_path)
+    return encoded_video_infos
+
+
+def save_encoded_video_manifest(
+    encoded_video_infos: Dict[str, EncodedVideoInfo], file_name: str = None
+) -> str:
+    """
+        Saves the encoded video dictionary as a csv file that can be read for future usage.
+
+        Args:
+            video_frames (Dict[str, EncodedVideoInfo]):
+                Dictionary mapping video_ids to metadata about the location of
+                their video data.
+
+            file_name (str):
+                location to save file (will be automatically generated if None).
+
+        Returns:
+            string of the filename where the video info is stored.
+    """
+    file_name = (
+        f"{os.getcwd()}/encoded_video_manifest.csv" if file_name is None else file_name
+    )
+    save_dataclass_objs_to_headered_csv(list(encoded_video_infos.values()), file_name)
+    return file_name
+
+
 def save_video_frame_info(
     video_frames: Dict[str, VideoFrameInfo], file_name: str = None
 ) -> str:
@@ -185,20 +238,13 @@ def save_video_frame_info(
                 their video frame files.
 
             file_name (str):
-                location to save video frame manifest (will be automatically generated if None).
+                location to save file (will be automatically generated if None).
 
         Returns:
-            string of the filename where the frame manifest file is stored.
+            string of the filename where the video info is stored.
     """
     file_name = (
         f"{os.getcwd()}/video_frame_metadata.csv" if file_name is None else file_name
     )
-
-    field_names = [f.name for f in fields(VideoFrameInfo)]
-    with PathManager.open(file_name, "w") as f:
-        writer = csv.writer(f, delimiter=",", quotechar='"')
-        writer.writerow(field_names)
-        for _, video_frame_info in video_frames.items():
-            writer.writerow((getattr(video_frame_info, f) for f in field_names))
-
+    save_dataclass_objs_to_headered_csv(list(video_frames.values()), file_name)
     return file_name

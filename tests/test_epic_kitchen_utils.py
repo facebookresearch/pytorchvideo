@@ -4,11 +4,11 @@ import unittest
 import unittest.mock
 from pathlib import Path
 
-from pytorchvideo.data.epic_kitchen.epic_kitchen_dataset import VideoFrameInfo
+from pytorchvideo.data.epic_kitchen import EncodedVideoInfo, VideoFrameInfo
 from pytorchvideo.data.epic_kitchen.utils import (
+    build_encoded_manifest_from_nested_directory,
     build_frame_manifest_from_flat_directory,
     build_frame_manifest_from_nested_directory,
-    save_video_frame_info,
 )
 
 
@@ -40,7 +40,7 @@ def get_flat_video_frames(directory, file_extension):
             frame_string_length=16,
             min_frame_number=1,
             max_frame_number=3000,
-            file_extension=file_extension
+            file_extension=file_extension,
         ),
         "P02_002": VideoFrameInfo(
             video_id="P02_002",
@@ -49,7 +49,7 @@ def get_flat_video_frames(directory, file_extension):
             frame_string_length=16,
             min_frame_number=2,
             max_frame_number=3001,
-            file_extension=file_extension
+            file_extension=file_extension,
         ),
         "P02_005": VideoFrameInfo(
             video_id="P02_005",
@@ -58,7 +58,7 @@ def get_flat_video_frames(directory, file_extension):
             frame_string_length=16,
             min_frame_number=1,
             max_frame_number=30003,
-            file_extension=file_extension
+            file_extension=file_extension,
         ),
         "P07_002": VideoFrameInfo(
             video_id="P07_002",
@@ -67,7 +67,7 @@ def get_flat_video_frames(directory, file_extension):
             frame_string_length=16,
             min_frame_number=2,
             max_frame_number=1530,
-            file_extension=file_extension
+            file_extension=file_extension,
         ),
     }
 
@@ -81,7 +81,7 @@ def get_nested_video_frames(directory, file_extension):
             frame_string_length=16,
             min_frame_number=1,
             max_frame_number=3000,
-            file_extension=file_extension
+            file_extension=file_extension,
         ),
         "P02_002": VideoFrameInfo(
             video_id="P02_002",
@@ -90,7 +90,7 @@ def get_nested_video_frames(directory, file_extension):
             frame_string_length=16,
             min_frame_number=2,
             max_frame_number=3001,
-            file_extension=file_extension
+            file_extension=file_extension,
         ),
         "P02_005": VideoFrameInfo(
             video_id="P02_005",
@@ -99,7 +99,7 @@ def get_nested_video_frames(directory, file_extension):
             frame_string_length=16,
             min_frame_number=1,
             max_frame_number=30003,
-            file_extension=file_extension
+            file_extension=file_extension,
         ),
         "P07_002": VideoFrameInfo(
             video_id="P07_002",
@@ -108,7 +108,7 @@ def get_nested_video_frames(directory, file_extension):
             frame_string_length=16,
             min_frame_number=2,
             max_frame_number=1530,
-            file_extension=file_extension
+            file_extension=file_extension,
         ),
     }
 
@@ -149,13 +149,36 @@ class TestEpicKitchenUtils(unittest.TestCase):
                     video_frames[video_id], video_frames_expected[video_id]
                 )
 
-    def test_save_video_frame_info(self):
+    def test_build_encoded_manifest_from_nested_directory(self):
+        file_names = ["P01_01.mp4", "P01_07.mp4", "P23_11.mp4", "P11_00.mp4"]
         with tempfile.TemporaryDirectory(prefix="TestEpicKitchenUtils") as tempdir:
-            video_frames = get_flat_video_frames(tempdir, "jpg")
 
-            saved_file_name = f"{tempdir}/frame_manifest.csv"
-            save_video_frame_info(video_frames, saved_file_name)
+            for file_name in file_names:
+                participant_path = Path(tempdir) / file_name[:3]
+                if not os.path.isdir(participant_path):
+                    os.mkdir(participant_path)
 
-            with open(saved_file_name) as f:
-                csv_text = f.readlines()
-                assert len(csv_text) == len(video_frames) + 1
+                with open(participant_path / file_name, "w") as f:
+                    f.write("0")
+
+            encoded_video_dict = build_encoded_manifest_from_nested_directory(tempdir)
+
+            self.assertEqual(
+                sorted(encoded_video_dict), ["P01_01", "P01_07", "P11_00", "P23_11"]
+            )
+            self.assertEqual(
+                encoded_video_dict["P01_01"],
+                EncodedVideoInfo("P01_01", str(Path(tempdir) / "P01/P01_01.mp4")),
+            )
+            self.assertEqual(
+                encoded_video_dict["P01_07"],
+                EncodedVideoInfo("P01_07", str(Path(tempdir) / "P01/P01_07.mp4")),
+            )
+            self.assertEqual(
+                encoded_video_dict["P11_00"],
+                EncodedVideoInfo("P11_00", str(Path(tempdir) / "P11/P11_00.mp4")),
+            )
+            self.assertEqual(
+                encoded_video_dict["P23_11"],
+                EncodedVideoInfo("P23_11", str(Path(tempdir) / "P23/P23_11.mp4")),
+            )

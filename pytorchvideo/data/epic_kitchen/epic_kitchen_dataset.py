@@ -1,15 +1,16 @@
 # Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved.
 
-
 import ast
 import datetime
 from dataclasses import dataclass, fields as dataclass_fields
-
-from typing import Any, Callable, Dict, List, Optional
+from enum import Enum
+from typing import Any, Callable, Dict, List, Optional, Union
 
 import torch
+from pytorchvideo.data.encoded_video import EncodedVideo
 from pytorchvideo.data.frame_video import FrameVideo
 from pytorchvideo.data.utils import DataclassFieldCaster, load_dataclass_dict_from_csv
+from pytorchvideo.data.video import Video
 
 
 @dataclass
@@ -52,6 +53,16 @@ class VideoFrameInfo(DataclassFieldCaster):
     min_frame_number: int
     max_frame_number: int
     file_extension: str
+
+
+@dataclass
+class EncodedVideoInfo(DataclassFieldCaster):
+    """
+    Class representing the location of an available encoded video.
+    """
+
+    video_id: str
+    file_path: str
 
 
 def _get_seconds_from_hms_time(time_str: str) -> float:
@@ -103,6 +114,11 @@ class ActionData(DataclassFieldCaster):
         return _get_seconds_from_hms_time(self.stop_timestamp)
 
 
+class EpicKitchenDatasetType(Enum):
+    Frame = 1
+    EncodedVideo = 2
+
+
 class EpicKitchenDataset(torch.utils.data.Dataset):
     """
         Video dataset for EpicKitchen-55 Dataset
@@ -117,9 +133,10 @@ class EpicKitchenDataset(torch.utils.data.Dataset):
         video_info_file_path: str,
         actions_file_path: str,
         clip_sampler: Callable[
-            [Dict[str, FrameVideo], Dict[str, List[ActionData]]], List[EpicKitchenClip]
+            [Dict[str, Video], Dict[str, List[ActionData]]], List[EpicKitchenClip]
         ],
-        frame_manifest_file_path: str,
+        video_data_manifest_file_path: str,
+        dataset_type: EpicKitchenDatasetType = EpicKitchenDatasetType.Frame,
         transform: Optional[Callable[[Dict[str, Any]], Any]] = None,
         frame_filter: Optional[Callable[[List[int]], List[int]]] = None,
         multithreaded_io: bool = True,
@@ -136,13 +153,23 @@ class EpicKitchenDataset(torch.utils.data.Dataset):
                 File must ber a csv (w/header) with columns:
                 {[f.name for f in dataclass_fields(ActionData)]}
 
-            frame_manifest_file_path (Optional[str]):
-                The path to a json file outlining the available frames for the
-                associated videos. File must be a csv (w/header) with columns:
+            clip_sampler (Callable[[Dict[str, Video]], List[EpicKitchenClip]]):
+                This callable takes as input all available videos and outputs a list of clips to
+                be loaded by the dataset.
+
+            video_data_manifest_file_path (str):
+                The path to a json file outlining the available video data for the
+                associated videos.  File must be a csv (w/header) with columns:
                 {[f.name for f in dataclass_fields(VideoFrameInfo)]}
+
+                or
+                {[f.name for f in dataclass_fields(EncodedVideoInfo)]}
 
                 To generate this file from a directory of video frames, see helper
                 functions in Module: pytorchvideo.data.epic_kitchen.utils
+
+            dataset_type (EpicKitchenDatasetType): The dataformat in which dataset
+                video data is store (e.g. video frames, encoded video etc).
 
             transform (Optional[Callable[[Dict[str, Any]], Any]]):
                 This callable is evaluated on the clip output before the clip is returned.
@@ -172,12 +199,15 @@ class EpicKitchenDataset(torch.utils.data.Dataset):
         """
         assert video_info_file_path
         assert actions_file_path
-        assert frame_manifest_file_path
+        assert video_data_manifest_file_path
         assert clip_sampler
 
         # Populate video and metadata data providers
-        self._videos: Dict[str, FrameVideo] = EpicKitchenDataset._load_videos(
-            frame_manifest_file_path, video_info_file_path, multithreaded_io
+        self._videos: Dict[str, Video] = EpicKitchenDataset._load_videos(
+            video_data_manifest_file_path,
+            video_info_file_path,
+            multithreaded_io,
+            dataset_type,
         )
 
         self._actions: Dict[str, List[ActionData]] = load_dataclass_dict_from_csv(
@@ -209,6 +239,7 @@ class EpicKitchenDataset(torch.utils.data.Dataset):
             Otherwise, the transform defines the clip output.
         """
         clip = self._clips[index]
+
         clip_data = {
             "video_id": clip.video_id,
             **self._videos[clip.video_id].get_clip(
@@ -233,15 +264,32 @@ class EpicKitchenDataset(torch.utils.data.Dataset):
 
     @staticmethod
     def _load_videos(
-        frame_manifest_file_path: str, video_info_file_path: str, multithreaded_io: bool
-    ) -> Dict[str, FrameVideo]:
-        video_infos : Dict[str, VideoInfo] = load_dataclass_dict_from_csv(
+        video_data_manifest_file_path: Optional[str],
+        video_info_file_path: str,
+        multithreaded_io: bool,
+        dataset_type: EpicKitchenDatasetType,
+    ) -> Dict[str, Video]:
+        video_infos: Dict[str, VideoInfo] = load_dataclass_dict_from_csv(
             video_info_file_path, VideoInfo, "video_id"
         )
+        if dataset_type == EpicKitchenDatasetType.Frame:
+            return EpicKitchenDataset._load_frame_videos(
+                video_data_manifest_file_path, video_infos, multithreaded_io
+            )
+        elif dataset_type == EpicKitchenDatasetType.EncodedVideo:
+            return EpicKitchenDataset._load_encoded_videos(
+                video_data_manifest_file_path, video_infos
+            )
+
+    @staticmethod
+    def _load_frame_videos(
+        frame_manifest_file_path: str,
+        video_infos: Dict[str, VideoInfo],
+        multithreaded_io: bool,
+    ):
         video_frames: Dict[str, VideoFrameInfo] = load_dataclass_dict_from_csv(
             frame_manifest_file_path, VideoFrameInfo, "video_id"
         )
-
         EpicKitchenDataset._remove_video_info_missing_or_incomplete_videos(
             video_frames, video_infos
         )
@@ -255,6 +303,22 @@ class EpicKitchenDataset(torch.utils.data.Dataset):
                 multithreaded_io=multithreaded_io,
             )
             for video_id in video_infos
+        }
+
+    @staticmethod
+    def _load_encoded_videos(
+        encoded_video_manifest_file_path: str, video_infos: Dict[str, VideoInfo]
+    ):
+        encoded_video_infos: Dict[str, EncodedVideoInfo] = load_dataclass_dict_from_csv(
+            encoded_video_manifest_file_path, EncodedVideoInfo, "video_id"
+        )
+        EpicKitchenDataset._remove_video_info_missing_or_incomplete_videos(
+            encoded_video_infos, video_infos
+        )
+
+        return {
+            video_id: EncodedVideo(encoded_video_info.file_path)
+            for video_id, encoded_video_info in encoded_video_infos.items()
         }
 
     @staticmethod
@@ -292,30 +356,34 @@ class EpicKitchenDataset(torch.utils.data.Dataset):
 
     @staticmethod
     def _remove_video_info_missing_or_incomplete_videos(
-        video_frames: Dict[str, VideoFrameInfo], video_infos: Dict[str, VideoInfo]
+        video_data_infos: Dict[str, Union[VideoFrameInfo, EncodedVideoInfo]],
+        video_infos: Dict[str, VideoInfo],
     ) -> None:
         # Avoid deletion keys from dict during iteration over keys
         video_ids = list(video_infos)
         for video_id in video_ids:
             video_info = video_infos[video_id]
 
-            # Remove videos we have metadata for but don't have frames
-            if video_id not in video_frames:
+            # Remove videos we have metadata for but don't have video data
+            if video_id not in video_data_infos:
                 del video_infos[video_id]
                 continue
 
             # Remove videos we have metadata for but don't have the right number of frames
-            video_frames_info = video_frames[video_id]
-            expected_frames = round(video_info.duration * video_info.fps)
-            num_frames = (
-                video_frames_info.max_frame_number - video_frames_info.min_frame_number
-            )
-            if abs(num_frames - expected_frames) > video_info.fps:
-                del video_frames[video_id]
-                del video_infos[video_id]
+            if type(video_data_infos[video_id]) == VideoFrameInfo:
+                video_frames_info = video_data_infos[video_id]
+                expected_frames = round(video_info.duration * video_info.fps)
+                num_frames = (
+                    video_frames_info.max_frame_number
+                    - video_frames_info.min_frame_number
+                )
+                if abs(num_frames - expected_frames) > video_info.fps:
+                    del video_data_infos[video_id]
+                    del video_infos[video_id]
 
-        video_ids = list(video_frames)  # Avoid modifying dict during iteration
+        video_ids = list(video_data_infos)  # Avoid modifying dict during iteration
         for video_id in video_ids:
-            # Remove videos we have frames for but don't have metadata
+            # Remove videos we have video data for but don't have metadata
             if video_id not in video_infos:
-                del video_frames[video_id]
+
+                del video_data_infos[video_id]

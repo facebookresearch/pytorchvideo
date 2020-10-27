@@ -8,12 +8,14 @@ from typing import Any, Callable, Dict, List, Optional
 import torch
 from pytorchvideo.data.epic_kitchen import (
     ActionData,
+    EncodedVideoInfo,
     EpicKitchenClip,
     EpicKitchenDataset,
+    EpicKitchenDatasetType,
     VideoFrameInfo,
     VideoInfo,
 )
-from pytorchvideo.data.frame_video import FrameVideo
+from pytorchvideo.data.video import Video
 
 
 class ClipSampling(Enum):
@@ -32,8 +34,9 @@ class EpicKitchenRecognition(EpicKitchenDataset):
         self,
         video_info_file_path: str,
         actions_file_path: str,
-        frame_manifest_file_path: Optional[str] = None,
+        video_data_manifest_file_path: str,
         clip_sampling: ClipSampling = ClipSampling.RandomOffsetUniform,
+        dataset_type: EpicKitchenDatasetType = EpicKitchenDatasetType.Frame,
         seconds_per_clip: float = 2.0,
         frames_per_clip: Optional[int] = None,
         transform: Callable[[Dict[str, Any]], Any] = None,
@@ -51,16 +54,24 @@ class EpicKitchenRecognition(EpicKitchenDataset):
                 File must ber a csv (w/header) with columns:
                 {[f.name for f in dataclass_fields(ActionData)]}
 
-            frame_manifest_file_path (Optional[str]):
-                The path to a json file outlining the available frames for the
-                associated videos. File must be a csv (w/header) with columns:
+            video_data_manifest_file_path (str):
+                The path to a json file outlining the available video data for the
+                associated videos. File must be a csv (w/header) with columns either:
+
+                For Frame Videos:
                 {[f.name for f in dataclass_fields(VideoFrameInfo)]}
+
+                For Encoded Videos:
+                {[f.name for f in dataclass_fields(EncodedVideoInfo)]}
 
                 To generate this file from a directory of video frames, see helper
                 functions in Module: pytorchvideo.data.epic_kitchen.utils
 
             clip_sampling (ClipSampling):
                 The type of sampling to perform to perform on the videos of the dataset.
+
+            dataset_type (EpicKitchenDatasetType): The dataformat in which dataset
+                video data is store (e.g. video frames, encoded video etc).
 
             seconds_per_clip (float): The length of each sampled clip in seconds.
 
@@ -96,10 +107,11 @@ class EpicKitchenRecognition(EpicKitchenDataset):
             else None
         )
 
-        return super().__init__(
+        super().__init__(
             video_info_file_path=video_info_file_path,
             actions_file_path=actions_file_path,
-            frame_manifest_file_path=frame_manifest_file_path,
+            dataset_type=dataset_type,
+            video_data_manifest_file_path=video_data_manifest_file_path,
             transform=transform,
             frame_filter=frame_filter,
             clip_sampler=define_clip_structure_fn,
@@ -165,7 +177,7 @@ class EpicKitchenRecognition(EpicKitchenDataset):
     def _define_clip_structure_generator(
         seconds_per_clip: float, clip_sampling: ClipSampling
     ) -> Callable[
-        [Dict[str, FrameVideo], Dict[str, List[ActionData]]], List[EpicKitchenClip]
+        [Dict[str, Video], Dict[str, List[ActionData]]], List[EpicKitchenClip]
     ]:
         """
         Args:
@@ -184,7 +196,7 @@ class EpicKitchenRecognition(EpicKitchenDataset):
             )
 
         def define_clip_structure(
-            videos: Dict[str, FrameVideo], actions: Dict[str, List[ActionData]]
+            videos: Dict[str, Video], actions: Dict[str, List[ActionData]]
         ) -> List[EpicKitchenClip]:
             clips = []
             for video_id, video in videos.items():

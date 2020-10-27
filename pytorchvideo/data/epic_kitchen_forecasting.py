@@ -7,12 +7,14 @@ from typing import Any, Callable, Dict, List, Optional
 import torch
 from pytorchvideo.data.epic_kitchen import (
     ActionData,
+    EncodedVideoInfo,
     EpicKitchenClip,
     EpicKitchenDataset,
+    EpicKitchenDatasetType,
     VideoFrameInfo,
     VideoInfo,
 )
-from pytorchvideo.data.frame_video import FrameVideo
+from pytorchvideo.data.video import Video
 
 
 class ClipSampling(Enum):
@@ -31,8 +33,9 @@ class EpicKitchenForecasting(EpicKitchenDataset):
         self,
         video_info_file_path: str,
         actions_file_path: str,
-        frame_manifest_file_path: Optional[str] = None,
+        video_data_manifest_file_path: str,
         clip_sampling: ClipSampling = ClipSampling.Random,
+        dataset_type: EpicKitchenDatasetType = EpicKitchenDatasetType.Frame,
         seconds_per_clip: float = 2.0,
         clip_time_stride: float = 10.0,
         num_input_clips: int = 1,
@@ -53,16 +56,24 @@ class EpicKitchenForecasting(EpicKitchenDataset):
                 File must ber a csv (w/header) with columns:
                 {[f.name for f in dataclass_fields(ActionData)]}
 
-            frame_manifest_file_path (Optional[str]):
-                The path to a json file outlining the available frames for the
-                associated videos. File must be a csv (w/header) with columns:
+            video_data_manifest_file_path (str):
+                The path to a json file outlining the available video data for the
+                associated videos. File must be a csv (w/header) with columns either:
+
+                For Frame Videos:
                 {[f.name for f in dataclass_fields(VideoFrameInfo)]}
+
+                For Encoded Videos:
+                {[f.name for f in dataclass_fields(EncodedVideoInfo)]}
 
                 To generate this file from a directory of video frames, see helper
                 functions in Module: pytorchvideo.data.epic_kitchen.utils
 
             clip_sampling (ClipSampling):
                 The type of sampling to perform to perform on the videos of the dataset.
+
+            dataset_type (EpicKitchenDatasetType): The dataformat in which dataset
+                video data is store (e.g. video frames, encoded video etc).
 
             seconds_per_clip (float): The length of each sampled subclip in seconds.
 
@@ -119,7 +130,8 @@ class EpicKitchenForecasting(EpicKitchenDataset):
         super().__init__(
             video_info_file_path=video_info_file_path,
             actions_file_path=actions_file_path,
-            frame_manifest_file_path=frame_manifest_file_path,
+            video_data_manifest_file_path=video_data_manifest_file_path,
+            dataset_type=dataset_type,
             transform=transform,
             frame_filter=frame_filter,
             clip_sampler=define_clip_structure_fn,
@@ -228,7 +240,7 @@ class EpicKitchenForecasting(EpicKitchenDataset):
         num_input_clips: int,
         num_forecast_actions: int,
     ) -> Callable[
-        [Dict[str, FrameVideo], Dict[str, List[ActionData]]], List[EpicKitchenClip]
+        [Dict[str, Video], Dict[str, List[ActionData]]], List[EpicKitchenClip]
     ]:
         """
         Args:
@@ -255,7 +267,7 @@ class EpicKitchenForecasting(EpicKitchenDataset):
         time_window_length = seconds_per_clip + (num_input_clips - 1) * clip_time_stride
 
         def define_clip_structure(
-            videos: Dict[str, FrameVideo], video_actions: Dict[str, List[ActionData]]
+            videos: Dict[str, Video], video_actions: Dict[str, List[ActionData]]
         ) -> List[EpicKitchenClip]:
             candidate_sample_clips = []
             for video_id, actions in video_actions.items():

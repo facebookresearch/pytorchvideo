@@ -5,5 +5,7 @@ from .epic_kitchen_dataset import (
     EpicKitchenClip,
     EpicKitchenDataset,
     VideoFrameInfo,
+    EncodedVideoInfo,
     VideoInfo,
+    EpicKitchenDatasetType,
 )
