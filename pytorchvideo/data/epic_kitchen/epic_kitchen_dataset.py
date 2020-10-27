@@ -3,7 +3,8 @@
 
 import ast
 import datetime
-from dataclasses import dataclass
+from dataclasses import dataclass, fields as dataclass_fields
+
 from typing import Any, Callable, Dict, List, Optional
 
 import torch
@@ -123,24 +124,22 @@ class EpicKitchenDataset(torch.utils.data.Dataset):
         frame_filter: Optional[Callable[[List[int]], List[int]]] = None,
         multithreaded_io: bool = True,
     ) -> None:
-        """
+        f"""
         Args:
             video_info_file_path (str):
                 Path or URI to manifest with basic metadata of each video.
-                File must be a csv (w/header) with the columns of the fields of VideoInfo
+                File must be a csv (w/header) with columns:
+                {[f.name for f in dataclass_fields(VideoInfo)]}
 
             actions_file_path (str):
                 Path or URI to manifest with action annotations for each video.
-                File must ber a csv (w/header) with the columns of  the fields of ActionInfo
+                File must ber a csv (w/header) with columns:
+                {[f.name for f in dataclass_fields(ActionData)]}
 
-            clip_sampler (Callable[[Dict[str, FrameVideo]], List[EpicKitchenClip]]):
-                This callable takes as input all available videos and outputs a list of clips to
-                be loaded by the dataset.
-
-            frame_manifest_file_path (str):
+            frame_manifest_file_path (Optional[str]):
                 The path to a json file outlining the available frames for the
-                associated videos.  File must be a csv (w/header) with the columns
-                of the fields of VideoFrameInfo.
+                associated videos. File must be a csv (w/header) with columns:
+                {[f.name for f in dataclass_fields(VideoFrameInfo)]}
 
                 To generate this file from a directory of video frames, see helper
                 functions in Module: pytorchvideo.data.epic_kitchen.utils
@@ -150,13 +149,13 @@ class EpicKitchenDataset(torch.utils.data.Dataset):
                 It can be used for user-defined preprocessing and augmentations to the clips.
 
                     The clip input is a dictionary with the following format:
-                        {
+                        {{
                             'video': <video_tensor>,
                             'audio': <audio_tensor>,
                             'actions': <List[ActionData]>,
                             'start_time': <float>,
                             'stop_time': <float>
-                        }
+                        }}
 
                 If transform is None, the raw clip output in the above format is
                 returned unmodified.
@@ -212,10 +211,9 @@ class EpicKitchenDataset(torch.utils.data.Dataset):
         clip = self._clips[index]
         clip_data = {
             "video_id": clip.video_id,
-            "video": self._videos[clip.video_id].get_clip(
+            **self._videos[clip.video_id].get_clip(
                 clip.start_time, clip.stop_time, self._frame_filter
-            )[0],
-            "audio": None,
+            ),
             "actions": self._actions[clip.video_id],
             "start_time": clip.start_time,
             "stop_time": clip.stop_time,

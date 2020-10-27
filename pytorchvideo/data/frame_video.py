@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import logging
 import time
-from typing import Callable, List, Optional, Tuple
+from typing import Callable, Dict, List, Optional
 
 import cv2
 import numpy as np
@@ -14,12 +14,13 @@ from fvcore.common.file_io import PathManager
 from pytorchvideo.data.utils import optional_threaded_foreach
 
 from .utils import thwc_to_cthw
+from .video import Video
 
 
 logger = logging.getLogger(__name__)
 
 
-class FrameVideo:
+class FrameVideo(Video):
     """
     FrameVideo is an abstractions for accessing clips based on their start and end
     time for a video where each frame is stored as an image. PathManager is used for
@@ -96,7 +97,7 @@ class FrameVideo:
         start_sec: float,
         end_sec: float,
         frame_filter: Optional[Callable[List[int], List[int]]] = None,
-    ) -> Tuple[torch.Tensor, List[int]]:
+    ) -> Dict[str, Optional[torch.Tensor]]:
         """
         Retrieves frames from the stored video at the specified start and end times
         in seconds (the video always starts at 0 seconds). Given that PathManager may
@@ -111,10 +112,15 @@ class FrameVideo:
                 If None, no subsampling is peformed.
         Returns:
             clip_frames: A tensor of the clip's RGB frames with shape:
-                (channel, time, height, width). The frames are of type torch.uint8 and
+                (channel, time, height, width). The frames are of type torch.float32 and
                 in the range [0 - 255]. Raises an exception if unable to load images.
 
-            clip_indices: A list of indices for each frame relative to all frames in the
+            clip_data:
+                "video": A tensor of the clip's RGB frames with shape:
+                (channel, time, height, width). The frames are of type torch.float32 and
+                in the range [0 - 255]. Raises an exception if unable to load images.
+
+                "frame_indices": A list of indices for each frame relative to all frames in the
                 video.
 
             Returns None if no frames are found.
@@ -137,8 +143,8 @@ class FrameVideo:
         clip_frames = _load_images_with_retries(
             clip_paths, multithreaded=self._multithreaded_io
         )
-        clip_frames = thwc_to_cthw(clip_frames)
-        return clip_frames, frame_indices
+        clip_frames = thwc_to_cthw(clip_frames).to(torch.float32)
+        return {"video": clip_frames, "frame_indices": frame_indices}
 
     def _video_frame_to_path(self, frame_index: int) -> str:
         if self._video_frame_to_path_fn:

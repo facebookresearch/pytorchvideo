@@ -17,23 +17,21 @@ class TestEncodedVideo(unittest.TestCase):
             test_video = EncodedVideo(file_name)
             self.assertAlmostEqual(test_video.duration, num_frames / fps)
 
-            # All frames
-            frames, audio_samples = test_video.get_clip(0, test_video.duration)
+            # All frames (0 - test_video.duration seconds)
+            clip = test_video.get_clip(0, test_video.duration)
+            frames, audio_samples = clip["video"], clip["audio"]
             self.assertTrue(frames.equal(data))
             self.assertEqual(audio_samples, None)
 
             # Half frames
-            frames, audio_samples = test_video.get_clip(0, test_video.duration / 2)
+            clip = test_video.get_clip(0, test_video.duration / 2)
+            frames, audio_samples = clip["video"], clip["audio"]
             self.assertTrue(frames.equal(data[:, : round(num_frames / 2)]))
             self.assertEqual(audio_samples, None)
 
             # No frames
-            error = test_video.get_clip(
-                test_video.duration + 1, test_video.duration + 3
-            )
-            self.assertEqual(error, None)
-            self.assertEqual(error, None)
-
+            clip = test_video.get_clip(test_video.duration + 1, test_video.duration + 3)
+            self.assertEqual(clip, None)
             test_video.close()
 
     def test_video_with_shorter_audio_works(self):
@@ -52,13 +50,16 @@ class TestEncodedVideo(unittest.TestCase):
             # Duration is max of both streams, therefore, the video duration will be expected.
             self.assertEqual(test_video.duration, num_frames / fps)
 
-            # All audio
-            frames, audio_samples = test_video.get_clip(0, test_video.duration)
+            # All audio (0 - 2 seconds)
+            clip = test_video.get_clip(0, test_video.duration)
+            frames, audio_samples = clip["video"], clip["audio"]
             self.assertTrue(frames.equal(video_data))
             self.assertTrue(audio_samples.equal(audio_data))
 
             # Half frames
-            frames, audio_samples = test_video.get_clip(0, test_video.duration / 2)
+            clip = test_video.get_clip(0, test_video.duration / 2)
+            frames, audio_samples = clip["video"], clip["audio"]
+
             self.assertTrue(frames.equal(video_data[:, : num_frames // 2]))
             self.assertTrue(audio_samples.equal(audio_data))
 
@@ -78,15 +79,14 @@ class TestEncodedVideo(unittest.TestCase):
             test_video = EncodedVideo(file_name)
 
             # All audio
-            frames, audio_samples = test_video.get_clip(0, test_video.duration)
+            clip = test_video.get_clip(0, test_video.duration)
+            frames, audio_samples = clip["video"], clip["audio"]
             self.assertTrue(frames.equal(video_data))
             self.assertTrue(audio_samples.equal(audio_data))
 
             # No frames (3 - 5 seconds)
-            frames = test_video.get_clip(
-                test_video.duration + 1, test_video.duration + 2
-            )
-            self.assertEqual(frames, None)
+            clip = test_video.get_clip(test_video.duration + 1, test_video.duration + 2)
+            self.assertEqual(clip, None)
 
             test_video.close()
 

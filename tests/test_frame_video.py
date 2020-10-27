@@ -19,12 +19,20 @@ class TestFrameVideo(unittest.TestCase):
             self.assertEqual(test_video.duration, expected_duration)
 
             # All frames (0 - 0.1 seconds)
-            frames, indices = test_video.get_clip(0, 0.1)
+            clip = test_video.get_clip(0, 0.1)
+            frames, indices = clip["video"], clip["frame_indices"]
             self.assertTrue(frames.equal(data))
             self.assertEqual(indices, [0, 1, 2])
 
+            # All frames (0 - 0.1 seconds), filtred to middle frame
+            clip = test_video.get_clip(0, 0.1, lambda lst: lst[1:2])
+            frames, indices = clip["video"], clip["frame_indices"]
+            self.assertTrue(frames.equal(data[:, 1:2]))
+            self.assertEqual(indices, [1])
+
             # 2 frames (0 - 0.066 seconds)
-            frames, indices = test_video.get_clip(0, 0.066)
+            clip = test_video.get_clip(0, 0.066)
+            frames, indices = clip["video"], clip["frame_indices"]
             self.assertTrue(frames.equal(data[:, :2]))
             self.assertEqual(indices, [0, 1])
 

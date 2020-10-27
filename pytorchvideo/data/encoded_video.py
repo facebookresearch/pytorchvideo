@@ -4,7 +4,7 @@ import io
 import logging
 import math
 import pathlib
-from typing import List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple
 
 import av
 import numpy as np
@@ -12,12 +12,13 @@ import torch
 from fvcore.common.file_io import PathManager
 
 from .utils import thwc_to_cthw
+from .video import Video
 
 
 logger = logging.getLogger(__name__)
 
 
-class EncodedVideo:
+class EncodedVideo(Video):
     """
     EncodedVideo is an abstraction for accessing clips from an encoded video using
     selective decoding. It supports selective decoding when header information is
@@ -112,7 +113,7 @@ class EncodedVideo:
 
     def get_clip(
         self, start_sec: float, end_sec: float
-    ) -> Tuple[Optional[torch.Tensor], Optional[torch.Tensor]]:
+    ) -> Dict[str, Optional[torch.Tensor]]:
         """
         Retrieves frames from the encoded video at the specified start and end times
         in seconds (the video always starts at 0 seconds).
@@ -121,13 +122,19 @@ class EncodedVideo:
             start_sec (float): the clip start time in seconds
             end_sec (float): the clip end time in seconds
         Returns:
-            clip_video: A tensor of the clip's RGB frames with shape:
+            clip_data:
+                A dictionary mapping the entries at "video" and "audio" to a tensors.
+
+                "video": A tensor of the clip's RGB frames with shape:
                 (channel, time, height, width). The frames are of type torch.float32 and
                 in the range [0 - 255].
-            clip_audio: A tensor of the clip's audio samples with shape:
+
+                "audio": A tensor of the clip's audio samples with shape:
                 (samples). The samples are of type torch.float32 and
                 in the range [0 - 255].
+
             Returns None if no video or audio found within time range.
+
         """
         if self._selective_decoding:
             self._video, self._audio = self._pyav_decode_video(start_sec, end_sec)
@@ -172,8 +179,10 @@ class EncodedVideo:
         ):
             return None
 
-        cthw_video_frames = thwc_to_cthw(torch.stack(video_frames)).to(torch.float32)
-        return cthw_video_frames, audio_samples
+        return {
+            "video": thwc_to_cthw(torch.stack(video_frames)).to(torch.float32),
+            "audio": audio_samples,
+        }
 
     def close(self):
         """

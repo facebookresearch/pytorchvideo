@@ -72,7 +72,7 @@ def temp_frame_video(frame_image_file_names, height=10, width=10):
         for i, file_name in enumerate(frame_image_file_names):
             im = transforms.ToPILImage()(data[:, i])
             im.save(root_dir / file_name, compress_level=0, optimize=False)
-        yield root_dir, data
+        yield root_dir, data.to(torch.float32)
 
 
 def write_audio_video(path, video, audio, fps=30, audio_rate=48000):

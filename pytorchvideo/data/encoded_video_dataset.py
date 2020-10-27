@@ -117,7 +117,9 @@ class EncodedVideoDataset(torch.utils.data.IterableDataset):
         clip_start, clip_end, is_last_clip = self._clip_sampler(
             self._next_clip_start_time, video.duration
         )
-        frames, audio_samples = video.get_clip(clip_start, clip_end)
+        clip_data = video.get_clip(clip_start, clip_end)
+        frames = clip_data["video"]
+        audio_samples = clip_data["audio"]
         self._next_clip_start_time = clip_end
 
         if is_last_clip or frames is None:
@@ -136,7 +138,6 @@ class EncodedVideoDataset(torch.utils.data.IterableDataset):
             "video_name": video.name,
             **info_dict,
         }
-
         if self._transform is not None:
             sample_dict = self._transform(sample_dict)
 

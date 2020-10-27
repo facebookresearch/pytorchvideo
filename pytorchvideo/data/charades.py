@@ -108,8 +108,8 @@ class Charades(torch.utils.data.IterableDataset):
         clip_start, clip_end, is_last_clip = self._clip_sampler(
             self._next_clip_start_time, video.duration
         )
-
-        frames, frame_indices = video.get_clip(clip_start, clip_end)
+        clip = video.get_clip(clip_start, clip_end)
+        frames, frame_indices = clip["video"], clip["frame_indices"]
         self._next_clip_start_time = clip_end
 
         if is_last_clip:

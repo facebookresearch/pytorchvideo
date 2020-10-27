@@ -399,7 +399,7 @@ class TestEpicKitchenDataset(unittest.TestCase):
             expected_actions = self.ACTIONS_DATAS
             with unittest.mock.patch(
                 "pytorchvideo.data.frame_video.FrameVideo.get_clip",
-                return_value=(torch.rand(3, 5, 10, 20), []),
+                return_value=({"video": torch.rand(3, 5, 10, 20), "audio": []}),
             ) as _:
                 clip_1 = dataset.__getitem__(1)
                 for i, a in enumerate(clip_1["actions"]):
