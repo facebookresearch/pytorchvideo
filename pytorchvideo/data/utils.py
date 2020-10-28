@@ -231,14 +231,14 @@ def save_dataclass_objs_to_headered_csv(
     dataclass_objs: List[Any], file_name: str
 ) -> None:
     """
-        Saves a list of @dataclass objects to the specified csv file.
+    Saves a list of @dataclass objects to the specified csv file.
 
-        Args:
-            dataclass_objs (List[Any]):
-                A list of @dataclass objects to be saved.
+    Args:
+        dataclass_objs (List[Any]):
+            A list of @dataclass objects to be saved.
 
-            file_name (str):
-                file_name to save csv data to.
+        file_name (str):
+            file_name to save csv data to.
     """
     dataclass_type = type(dataclass_objs[0])
     field_names = [f.name for f in dataclass_fields(dataclass_type)]

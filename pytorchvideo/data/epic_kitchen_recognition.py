@@ -24,10 +24,10 @@ class ClipSampling(Enum):
 
 class EpicKitchenRecognition(EpicKitchenDataset):
     """
-        Action recognition video data set for EpicKitchen-55 Dataset.
-        <https://epic-kitchens.github.io/2019/>
+    Action recognition video data set for EpicKitchen-55 Dataset.
+    <https://epic-kitchens.github.io/2019/>
 
-        This dataset handles the loading, decoding, and clip sampling for the videos.
+    This dataset handles the loading, decoding, and clip sampling for the videos.
     """
 
     def __init__(
@@ -97,8 +97,10 @@ class EpicKitchenRecognition(EpicKitchenDataset):
                 Boolean to control whether parllelizable io operations are performed across
                 multiple threads.
         """
-        define_clip_structure_fn = EpicKitchenRecognition._define_clip_structure_generator(
-            seconds_per_clip, clip_sampling
+        define_clip_structure_fn = (
+            EpicKitchenRecognition._define_clip_structure_generator(
+                seconds_per_clip, clip_sampling
+            )
         )
         transform = EpicKitchenRecognition._transform_generator(transform)
         frame_filter = (

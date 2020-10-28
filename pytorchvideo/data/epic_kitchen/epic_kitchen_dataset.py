@@ -67,13 +67,13 @@ class EncodedVideoInfo(DataclassFieldCaster):
 
 def _get_seconds_from_hms_time(time_str: str) -> float:
     """
-        Get Seconds from timestamp of form 'HH:MM:SS'.
+    Get Seconds from timestamp of form 'HH:MM:SS'.
 
-        Args:
-            time_str (str)
+    Args:
+        time_str (str)
 
-        Returns:
-            float of seconds
+    Returns:
+        float of seconds
 
     """
     time_since_min_time = datetime.datetime.strptime(time_str, "%H:%M:%S.%f")
@@ -121,11 +121,11 @@ class EpicKitchenDatasetType(Enum):
 
 class EpicKitchenDataset(torch.utils.data.Dataset):
     """
-        Video dataset for EpicKitchen-55 Dataset
-        <https://epic-kitchens.github.io/2019/>
+    Video dataset for EpicKitchen-55 Dataset
+    <https://epic-kitchens.github.io/2019/>
 
-        This dataset handles the loading, decoding, and configurable clip
-        sampling for the videos.
+    This dataset handles the loading, decoding, and configurable clip
+    sampling for the videos.
     """
 
     def __init__(

@@ -393,12 +393,14 @@ class TestEpicKitchenForecasting(unittest.TestCase):
         }
         random_value = 0.5
         with unittest.mock.patch("random.random", return_value=random_value) as _:
-            define_clip_structure_fn = EpicKitchenForecasting._define_clip_structure_generator(
-                seconds_per_clip=1,
-                clip_time_stride=3,
-                num_input_clips=2,
-                num_forecast_actions=2,
-                clip_sampling=ClipSampling.Random,
+            define_clip_structure_fn = (
+                EpicKitchenForecasting._define_clip_structure_generator(
+                    seconds_per_clip=1,
+                    clip_time_stride=3,
+                    num_input_clips=2,
+                    num_forecast_actions=2,
+                    clip_sampling=ClipSampling.Random,
+                )
             )
             clips = define_clip_structure_fn(frame_videos, actions)
             sorted_clips = sorted(clips, key=lambda c: c.start_time)  # For stability

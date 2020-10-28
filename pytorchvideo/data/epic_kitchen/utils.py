@@ -4,10 +4,7 @@ import os
 from typing import Dict
 
 from fvcore.common.file_io import PathManager
-from pytorchvideo.data.epic_kitchen import (
-    EncodedVideoInfo,
-    VideoFrameInfo,
-)
+from pytorchvideo.data.epic_kitchen import EncodedVideoInfo, VideoFrameInfo
 from pytorchvideo.data.utils import (
     optional_threaded_foreach,
     save_dataclass_objs_to_headered_csv,
@@ -18,22 +15,22 @@ def build_frame_manifest_from_flat_directory(
     data_directory_path: str, multithreaded: bool
 ) -> Dict[str, VideoFrameInfo]:
     """
-        Args:
-            data_directory_path (str): Path or URI to EpicKitchenDataset data.
-                    Data at this path must be a folder of structure:
-                        {
-                            "{video_id}": [
-                                "frame_{frame_number}.{file_extension}",
-                                "frame_{frame_number}.{file_extension}",
-                                "frame_{frame_number}.{file_extension}",
-                            ...]
-                        ...}
-            multithreaded (bool):
-                controls whether io operations are performed across multiple threads.
+    Args:
+        data_directory_path (str): Path or URI to EpicKitchenDataset data.
+                Data at this path must be a folder of structure:
+                    {
+                        "{video_id}": [
+                            "frame_{frame_number}.{file_extension}",
+                            "frame_{frame_number}.{file_extension}",
+                            "frame_{frame_number}.{file_extension}",
+                        ...]
+                    ...}
+        multithreaded (bool):
+            controls whether io operations are performed across multiple threads.
 
-        Returns:
-            Dictionary mapping video_id of available videos to the locations of their
-            underlying frame files.
+    Returns:
+        Dictionary mapping video_id of available videos to the locations of their
+        underlying frame files.
     """
 
     video_frames = {}
@@ -181,16 +178,16 @@ def build_encoded_manifest_from_nested_directory(
     data_directory_path: str,
 ) -> Dict[str, EncodedVideoInfo]:
     """
-        Creates a dictionary from video_id to EncodedVideoInfo for
-        encoded videos in the given directory.
+    Creates a dictionary from video_id to EncodedVideoInfo for
+    encoded videos in the given directory.
 
-        Args:
-            data_directory_path (str): The folder to ls to find encoded
-            video files.
+    Args:
+        data_directory_path (str): The folder to ls to find encoded
+        video files.
 
-        Returns:
-            Dict[str, EncodedVideoInfo] mapping video_id to EncodedVideoInfo
-            for each file in 'data_directory_path'
+    Returns:
+        Dict[str, EncodedVideoInfo] mapping video_id to EncodedVideoInfo
+        for each file in 'data_directory_path'
     """
     encoded_video_infos = {}
     for participant_id in PathManager.ls(data_directory_path):
@@ -206,18 +203,18 @@ def save_encoded_video_manifest(
     encoded_video_infos: Dict[str, EncodedVideoInfo], file_name: str = None
 ) -> str:
     """
-        Saves the encoded video dictionary as a csv file that can be read for future usage.
+    Saves the encoded video dictionary as a csv file that can be read for future usage.
 
-        Args:
-            video_frames (Dict[str, EncodedVideoInfo]):
-                Dictionary mapping video_ids to metadata about the location of
-                their video data.
+    Args:
+        video_frames (Dict[str, EncodedVideoInfo]):
+            Dictionary mapping video_ids to metadata about the location of
+            their video data.
 
-            file_name (str):
-                location to save file (will be automatically generated if None).
+        file_name (str):
+            location to save file (will be automatically generated if None).
 
-        Returns:
-            string of the filename where the video info is stored.
+    Returns:
+        string of the filename where the video info is stored.
     """
     file_name = (
         f"{os.getcwd()}/encoded_video_manifest.csv" if file_name is None else file_name
@@ -230,18 +227,18 @@ def save_video_frame_info(
     video_frames: Dict[str, VideoFrameInfo], file_name: str = None
 ) -> str:
     """
-        Saves the video frame dictionary as a csv file that can be read for future usage.
+    Saves the video frame dictionary as a csv file that can be read for future usage.
 
-        Args:
-            video_frames (Dict[str, VideoFrameInfo]):
-                Dictionary mapping video_ids to metadata about the location of
-                their video frame files.
+    Args:
+        video_frames (Dict[str, VideoFrameInfo]):
+            Dictionary mapping video_ids to metadata about the location of
+            their video frame files.
 
-            file_name (str):
-                location to save file (will be automatically generated if None).
+        file_name (str):
+            location to save file (will be automatically generated if None).
 
-        Returns:
-            string of the filename where the video info is stored.
+    Returns:
+        string of the filename where the video info is stored.
     """
     file_name = (
         f"{os.getcwd()}/video_frame_metadata.csv" if file_name is None else file_name

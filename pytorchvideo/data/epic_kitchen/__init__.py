@@ -2,10 +2,10 @@
 
 from .epic_kitchen_dataset import (
     ActionData,
+    EncodedVideoInfo,
     EpicKitchenClip,
     EpicKitchenDataset,
-    VideoFrameInfo,
-    EncodedVideoInfo,
-    VideoInfo,
     EpicKitchenDatasetType,
+    VideoFrameInfo,
+    VideoInfo,
 )

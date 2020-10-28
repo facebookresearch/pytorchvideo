@@ -1,9 +1,7 @@
-import contextlib
-import csv
 import tempfile
 import unittest
 import unittest.mock
-from dataclasses import dataclass, fields as dataclass_fields
+from dataclasses import dataclass
 from pathlib import Path
 
 from pytorchvideo.data.utils import (

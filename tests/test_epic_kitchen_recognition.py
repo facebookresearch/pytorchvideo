@@ -117,8 +117,10 @@ class TestEpicKitchenRecognition(unittest.TestCase):
 
     def test_define_clip_structure_generator(self):
         seconds_per_clip = 5
-        define_clip_structure_fn = EpicKitchenRecognition._define_clip_structure_generator(
-            seconds_per_clip=5, clip_sampling=ClipSampling.RandomOffsetUniform
+        define_clip_structure_fn = (
+            EpicKitchenRecognition._define_clip_structure_generator(
+                seconds_per_clip=5, clip_sampling=ClipSampling.RandomOffsetUniform
+            )
         )
         frame_videos = {
             "P01_003": FrameVideo.from_frame_paths(

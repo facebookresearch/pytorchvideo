@@ -23,10 +23,10 @@ class ClipSampling(Enum):
 
 class EpicKitchenForecasting(EpicKitchenDataset):
     """
-        Action forecasting video data set for EpicKitchen-55 Dataset.
-        <https://epic-kitchens.github.io/2019/>
+    Action forecasting video data set for EpicKitchen-55 Dataset.
+    <https://epic-kitchens.github.io/2019/>
 
-        This dataset handles the loading, decoding, and clip sampling for the videos.
+    This dataset handles the loading, decoding, and clip sampling for the videos.
     """
 
     def __init__(
@@ -109,12 +109,14 @@ class EpicKitchenForecasting(EpicKitchenDataset):
                 Boolean to control whether parllelizable io operations are performed across
                 multiple threads.
         """
-        define_clip_structure_fn = EpicKitchenForecasting._define_clip_structure_generator(
-            clip_sampling,
-            seconds_per_clip,
-            clip_time_stride,
-            num_input_clips,
-            num_forecast_actions,
+        define_clip_structure_fn = (
+            EpicKitchenForecasting._define_clip_structure_generator(
+                clip_sampling,
+                seconds_per_clip,
+                clip_time_stride,
+                num_input_clips,
+                num_forecast_actions,
+            )
         )
         frame_filter = (
             EpicKitchenForecasting._frame_filter_generator(

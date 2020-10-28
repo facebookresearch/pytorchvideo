@@ -1,6 +1,6 @@
 import torch.nn as nn
-
 from fvcore.nn.weight_init import c2_msra_fill
+
 
 def init_net_weights(model: nn.Module, fc_init_std: float = 0.01) -> None:
     """
