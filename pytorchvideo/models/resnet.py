@@ -696,6 +696,153 @@ def create_resnet(
     return Net(blocks=nn.ModuleList(blocks))
 
 
+def create_acoustic_building_block(
+    *,
+    # Convolution configs.
+    dim_in: int,
+    dim_inner: int,
+    dim_out: int,
+    conv_a_kernel_size: Tuple[int] = None,
+    conv_a_stride: Tuple[int] = None,
+    conv_a_padding: Tuple[int] = None,
+    # Conv b f configs.
+    conv_b_kernel_size: Tuple[int] = (1, 1, 1),
+    conv_b_stride: Tuple[int] = (1, 1, 1),
+    conv_b_padding: Tuple[int] = (0, 0, 0),
+    conv_b_num_groups: int = 1,
+    conv_b_dilation: Tuple[int] = (1, 1, 1),
+    # Norm configs.
+    norm: Callable = nn.BatchNorm3d,
+    norm_eps: float = 1e-5,
+    norm_momentum: float = 0.1,
+    # Activation configs.
+    activation: Callable = nn.ReLU,
+) -> nn.Module:
+    """
+    Acoustic building block: a sequence of spatiotemporal Convolution, Normalization,
+    and Activations repeated in the following order:
+
+                                    Conv3d (conv_a)
+                                           ↓
+                                 Normalization (norm_a)
+                                           ↓
+                                   Activation (act_a)
+                                           ↓
+                           ---------------------------------
+                           ↓                               ↓
+                Temporal Conv3d (conv_b)        Spatial Conv3d (conv_b)
+                           ↓                               ↓
+                 Normalization (norm_b)         Normalization (norm_b)
+                           ↓                               ↓
+                   Activation (act_b)              Activation (act_b)
+                           ↓                               ↓
+                           ---------------------------------
+                                           ↓
+                                    Conv3d (conv_c)
+                                           ↓
+                                 Normalization (norm_c)
+
+    Normalization examples include: BatchNorm3d and None (no normalization).
+    Activation examples include: ReLU, Softmax, Sigmoid, and None (no activation).
+
+    Args:
+        Convolution related configs:
+            dim_in (int): input channel size to the bottleneck block.
+            dim_inner (int): intermediate channel size of the bottleneck.
+            dim_out (int): output channel size of the bottleneck.
+            conv_a_kernel_size (tuple): convolutional kernel size(s) for conv_a.
+            conv_a_stride (tuple): convolutional stride size(s) for conv_a.
+            conv_a_padding (tuple): convolutional padding(s) for conv_a.
+            conv_b_kernel_size (tuple): convolutional kernel size(s) for conv_b.
+            conv_b_stride (tuple): convolutional stride size(s) for conv_b.
+            conv_b_padding (tuple): convolutional padding(s) for conv_b.
+            conv_b_num_groups (int): number of groups for groupwise convolution for
+                conv_b.
+            conv_b_dilation (tuple): dilation for 3D convolution for conv_b.
+
+        Normalization related configs:
+            norm (callable): a callable that constructs normalization layer, examples
+                include nn.BatchNorm3d, None (not performing normalization).
+            norm_eps (float): normalization epsilon.
+            norm_momentum (float): normalization momentum.
+
+        Activation related configs:
+            activation (callable): a callable that constructs activation layer, examples
+                include: nn.ReLU, nn.Softmax, nn.Sigmoid, and None (not performing
+                activation).
+
+    Returns:
+        (nn.Module): resnet acoustic bottleneck block.
+    """
+    # Conv b f configs.
+    conv_b_1_kernel_size = [conv_b_kernel_size[0], 1, 1]
+    conv_b_2_kernel_size = [1, conv_b_kernel_size[1], conv_b_kernel_size[2]]
+
+    conv_b_1_stride = [conv_b_stride[0], 1, 1]
+    conv_b_2_stride = [1, conv_b_stride[1], conv_b_stride[2]]
+
+    conv_b_1_padding = [conv_b_padding[0], 0, 0]
+    conv_b_2_padding = [0, conv_b_padding[1], conv_b_padding[2]]
+
+    conv_b_1_num_groups, conv_b_2_num_groups = (conv_b_num_groups,) * 2
+
+    conv_b_1_dilation = [conv_b_dilation[0], 1, 1]
+    conv_b_2_dilation = [1, conv_b_dilation[1], conv_b_dilation[2]]
+
+    conv_b_1 = nn.Conv3d(
+        in_channels=dim_in,
+        out_channels=dim_inner,
+        kernel_size=conv_b_1_kernel_size,
+        stride=conv_b_1_stride,
+        padding=conv_b_1_padding,
+        bias=False,
+        groups=conv_b_1_num_groups,
+        dilation=conv_b_1_dilation,
+    )
+    norm_b_1 = (
+        None
+        if norm is None
+        else norm(num_features=dim_inner, eps=norm_eps, momentum=norm_momentum)
+    )
+    act_b_1 = None if activation is None else activation()
+
+    conv_b_2 = nn.Conv3d(
+        in_channels=dim_in,
+        out_channels=dim_inner,
+        kernel_size=conv_b_2_kernel_size,
+        stride=conv_b_2_stride,
+        padding=conv_b_2_padding,
+        bias=False,
+        groups=conv_b_2_num_groups,
+        dilation=conv_b_2_dilation,
+    )
+    norm_b_2 = (
+        None
+        if norm is None
+        else norm(num_features=dim_inner, eps=norm_eps, momentum=norm_momentum)
+    )
+    act_b_2 = None if activation is None else activation()
+
+    conv_c = nn.Conv3d(
+        in_channels=dim_inner, out_channels=dim_out, kernel_size=(1, 1, 1), bias=False
+    )
+    norm_c = (
+        None
+        if norm is None
+        else norm(num_features=dim_out, eps=norm_eps, momentum=norm_momentum)
+    )
+    return SeparableBottleneckBlock(
+        conv_a=None,
+        norm_a=None,
+        act_a=None,
+        conv_b=nn.ModuleList([conv_b_1, conv_b_2]),
+        norm_b=nn.ModuleList([norm_b_1, norm_b_2]),
+        act_b=nn.ModuleList([act_b_1, act_b_2]),
+        conv_c=conv_c,
+        norm_c=norm_c,
+    )
+
+
 class ResBlock(nn.Module):
     """
     Residual block. Performs a summation between an identity shortcut in branch1 and a
@@ -799,7 +946,9 @@ class SeparableBottleneckBlock(nn.Module):
         """
         super().__init__()
         set_attributes(self, locals())
-        assert all(op is not None for op in (self.conv_a, self.conv_b, self.conv_c))
+        assert all(
+            op is not None for op in (self.conv_b, self.conv_c)
+        ), f"{self.conv_a}, {self.conv_b}, {self.conv_c} has None"
         assert reduce_method in ["sum", "cat"]
         if self.norm_c is not None:
             # This flag is used for weight initialization.
@@ -808,7 +957,8 @@ class SeparableBottleneckBlock(nn.Module):
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         # Explicitly forward every layer.
         # Branch2a, for example Tx1x1, BN, ReLU.
-        x = self.conv_a(x)
+        if self.conv_a is not None:
+            x = self.conv_a(x)
         if self.norm_a is not None:
             x = self.norm_a(x)
         if self.act_a is not None:
