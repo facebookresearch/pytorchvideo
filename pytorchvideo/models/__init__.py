@@ -1,17 +1,9 @@
 # Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved.
 
-# Model builder with flat interface.
-from .head import create_res_basic_head
-from .stem import create_res_basic_stem
 from .csn import create_csn
+from .head import ResNetBasicHead, create_res_basic_head
+from .net import MultiPathWayWithFuse, Net
+from .resnet import BottleneckBlock, create_bottleneck_block, create_resnet
 from .slowfast import create_slowfast
-from .resnet import create_resnet, create_bottleneck_block
-
-# Model builder with nn.Module interface.
-from .head import ResNetBasicHead  # noqa
-from .resnet import BottleneckBlock  # noqa
-from .stem import ResNetBasicStem  # noqa
-from .net import Net, MultiPathWayWithFuse
-
-# Other functions.
+from .stem import ResNetBasicStem, create_res_basic_stem
 from .weight_init import init_net_weights
