@@ -10,6 +10,14 @@ setup(
     url="unknown",  # https://github.com/facebookresearch/pytorchvideo
     description="",
     python_requires=">=3.6",
-    install_requires=["fvcore", "torch", "torchvision"],
+    install_requires=[
+        "fvcore",
+        "torch",
+        "torchvision",
+        "pytest",
+        "av",
+        "parameterized",
+        "opencv-python"
+    ],
     packages=find_packages(exclude=("scripts", "tests")),
 )

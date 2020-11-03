@@ -15,3 +15,5 @@ dependencies:
   - fvcore
   - pytest
   - av
+  - parameterized
+  - opencv
