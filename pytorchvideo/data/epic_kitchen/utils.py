@@ -37,7 +37,7 @@ def build_frame_manifest_from_flat_directory(
     video_ids = PathManager.ls(str(data_directory_path))
 
     def add_video_frames(video_id: str, video_path: str) -> None:
-        video_frame_file_names = PathManager.ls(video_path)
+        video_frame_file_names = sorted(PathManager.ls(video_path))
         for frame in video_frame_file_names:
             file_extension = frame.split(".")[-1]
             frame_name = frame[: -(len(file_extension) + 1)]
@@ -117,7 +117,7 @@ def build_frame_manifest_from_nested_directory(
     def add_participant_video_frames(
         participant_id: str, participant_path: str
     ) -> None:
-        participant_frames = PathManager.ls(str(participant_path))
+        participant_frames = sorted(PathManager.ls(str(participant_path)))
         for frame_file_name in participant_frames:
             file_extension = frame_file_name.split(".")[-1]
             frame_name = frame_file_name[: -(len(file_extension) + 1)]

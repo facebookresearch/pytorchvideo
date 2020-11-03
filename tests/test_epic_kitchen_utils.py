@@ -18,9 +18,13 @@ def write_mock_frame_files(video_frames, tempdir, ext):
         if not os.path.isdir(video_frame_info.location):
             os.mkdir(video_frame_info.location)
 
-        for frame_num in range(
-            video_frame_info.min_frame_number, video_frame_info.max_frame_number + 1
-        ):
+        for frame_num in reversed(
+            range(
+                video_frame_info.min_frame_number, video_frame_info.max_frame_number + 1
+            )
+        ):  # Here we reverse the order of the frames we write to test that code
+            # doesn't rely on ls returning frames in order due to
+            # frames being written in order temporally.
             frame_num_str = str(frame_num)
             stem = video_frame_info.frame_file_stem
             frame_num_zeros = "0" * (
