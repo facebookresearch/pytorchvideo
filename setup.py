@@ -17,7 +17,7 @@ setup(
         "pytest",
         "av",
         "parameterized",
-        "opencv-python"
+        "opencv-python",
     ],
     packages=find_packages(exclude=("scripts", "tests")),
 )
