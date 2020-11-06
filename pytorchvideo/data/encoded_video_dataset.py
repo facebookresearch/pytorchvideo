@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+import multiprocessing
 import pathlib
 from typing import Any, Callable, List, Optional, Tuple, Type
 
@@ -12,7 +13,7 @@ from pytorchvideo.data.encoded_video import EncodedVideo
 
 from .labeled_video_paths import LabeledVideoPaths
 from .utils import MultiProcessSampler
-import multiprocessing
+
 
 logger = logging.getLogger(__name__)
 
@@ -192,8 +193,9 @@ def labeled_encoded_video_dataset(
                 are prefixed with this path.
 
     """
-    # PathManager may configure the multiprocessing context in a way that conflicts with PyTorch DataLoader workers.
-    # To avoid this, we make sure the PathManager calls (made by LabeledVideoPaths) are wrapped in their own sandboxed process.
+    # PathManager may configure the multiprocessing context in a way that conflicts
+    # with PyTorch DataLoader workers. To avoid this, we make sure the PathManager
+    # calls (made by LabeledVideoPaths) are wrapped in their own sandboxed process.
     pool = multiprocessing.Pool(processes=1)
     labeled_video_paths = pool.map(LabeledVideoPaths.from_path, [data_path])[0]
     labeled_video_paths.path_prefix = video_path_prefix
