@@ -2,6 +2,12 @@
 
 from .csn import create_csn
 from .head import ResNetBasicHead, create_res_basic_head
+from .masked_multistream import (
+    LearnMaskedDefault,
+    MaskedSequential,
+    MaskedTemporalPooling,
+    TransposeMultiheadAttention,
+)
 from .net import MultiPathWayWithFuse, Net
 from .resnet import BottleneckBlock, create_bottleneck_block, create_resnet
 from .slowfast import create_slowfast
