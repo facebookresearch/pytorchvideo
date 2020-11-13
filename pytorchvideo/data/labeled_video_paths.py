@@ -6,7 +6,7 @@ import os
 import pathlib
 from typing import List, Optional, Tuple
 
-from fvcore.common.file_io import PathManager
+from iopath.common.file_io import g_pathmgr
 from torchvision.datasets.folder import make_dataset
 
 
@@ -26,9 +26,9 @@ class LabeledVideoPaths:
             file_path (str): The path to the file to be read.
         """
 
-        if PathManager.isfile(data_path):
+        if g_pathmgr.isfile(data_path):
             return LabeledVideoPaths.from_csv(data_path)
-        elif PathManager.isdir(data_path):
+        elif g_pathmgr.isdir(data_path):
             return LabeledVideoPaths.from_directory(data_path)
         else:
             raise FileNotFoundError(f"{data_path} not found.")
@@ -45,9 +45,9 @@ class LabeledVideoPaths:
         Args:
             file_path (str): The path to the file to be read.
         """
-        assert PathManager.exists(file_path), f"{file_path} not found."
+        assert g_pathmgr.exists(file_path), f"{file_path} not found."
         video_paths_and_label = []
-        with PathManager.open(file_path, "r") as f:
+        with g_pathmgr.open(file_path, "r") as f:
             for path_label in f.read().splitlines():
                 line_split = path_label.rsplit(None, 1)
 
@@ -90,7 +90,7 @@ class LabeledVideoPaths:
         Args:
             dir_path (str): Root directory to the video class directories .
         """
-        assert PathManager.exists(dir_path), f"{dir_path} not found."
+        assert g_pathmgr.exists(dir_path), f"{dir_path} not found."
 
         # Find all classes based on directory names. These classes are then sorted and indexed
         # from 0 to the number of classes.

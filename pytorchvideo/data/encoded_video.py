@@ -9,7 +9,7 @@ from typing import Dict, List, Optional, Tuple
 import av
 import numpy as np
 import torch
-from fvcore.common.file_io import PathManager
+from iopath.common.file_io import g_pathmgr
 
 from .utils import thwc_to_cthw
 from .video import Video
@@ -35,7 +35,7 @@ class EncodedVideo(Video):
 
         # We read the file with PathManager rather than pyav so that we can read from
         # remote uris.
-        with PathManager.open(file_path, "rb") as fh:
+        with g_pathmgr.open(file_path, "rb") as fh:
             path_data = io.BytesIO(fh.read())
 
         try:

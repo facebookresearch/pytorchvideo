@@ -3,7 +3,7 @@
 import os
 from typing import Dict
 
-from fvcore.common.file_io import PathManager
+from iopath.common.file_io import g_pathmgr
 from pytorchvideo.data.epic_kitchen import EncodedVideoInfo, VideoFrameInfo
 from pytorchvideo.data.utils import (
     optional_threaded_foreach,
@@ -34,10 +34,10 @@ def build_frame_manifest_from_flat_directory(
     """
 
     video_frames = {}
-    video_ids = PathManager.ls(str(data_directory_path))
+    video_ids = g_pathmgr.ls(str(data_directory_path))
 
     def add_video_frames(video_id: str, video_path: str) -> None:
-        video_frame_file_names = sorted(PathManager.ls(video_path))
+        video_frame_file_names = sorted(g_pathmgr.ls(video_path))
         for frame in video_frame_file_names:
             file_extension = frame.split(".")[-1]
             frame_name = frame[: -(len(file_extension) + 1)]
@@ -110,14 +110,14 @@ def build_frame_manifest_from_nested_directory(
             underlying frame files.
     """
 
-    participant_ids = PathManager.ls(str(data_directory_path))
+    participant_ids = g_pathmgr.ls(str(data_directory_path))
     video_frames = {}
 
     # Create function to execute in parallel that lists files available for each participant
     def add_participant_video_frames(
         participant_id: str, participant_path: str
     ) -> None:
-        participant_frames = sorted(PathManager.ls(str(participant_path)))
+        participant_frames = sorted(g_pathmgr.ls(str(participant_path)))
         for frame_file_name in participant_frames:
             file_extension = frame_file_name.split(".")[-1]
             frame_name = frame_file_name[: -(len(file_extension) + 1)]
@@ -190,9 +190,9 @@ def build_encoded_manifest_from_nested_directory(
         for each file in 'data_directory_path'
     """
     encoded_video_infos = {}
-    for participant_id in PathManager.ls(data_directory_path):
+    for participant_id in g_pathmgr.ls(data_directory_path):
         participant_folder_path = f"{data_directory_path}/{participant_id}"
-        for video_file_name in PathManager.ls(participant_folder_path):
+        for video_file_name in g_pathmgr.ls(participant_folder_path):
             video_id = video_file_name[:6]
             video_full_path = f"{participant_folder_path}/{video_file_name}"
             encoded_video_infos[video_id] = EncodedVideoInfo(video_id, video_full_path)

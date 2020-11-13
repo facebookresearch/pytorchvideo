@@ -7,7 +7,7 @@ from typing import Any, Callable, List, Optional, Tuple, Type
 
 import torch
 import torch.utils.data
-from fvcore.common.file_io import PathManager
+from iopath.common.file_io import g_pathmgr
 from pytorchvideo.data.clip_sampling import ClipSampler
 from pytorchvideo.data.frame_video import FrameVideo
 
@@ -147,7 +147,7 @@ def _read_video_paths_and_labels(
     """
     image_paths = defaultdict(list)
     labels = defaultdict(list)
-    with PathManager.open(video_path_label_file, "r") as f:
+    with g_pathmgr.open(video_path_label_file, "r") as f:
 
         # Space separated CSV with format: original_vido_id video_id frame_id path labels
         csv_reader = csv.DictReader(f, delimiter=" ")

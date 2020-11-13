@@ -12,7 +12,7 @@ from typing import Any, Callable, Dict, Iterable, List, Tuple, Union
 
 import numpy as np
 import torch
-from fvcore.common.file_io import PathManager
+from iopath.common.file_io import g_pathmgr
 
 
 logger = logging.getLogger(__name__)
@@ -206,7 +206,7 @@ def load_dataclass_dict_from_csv(
     """
 
     output_dict = defaultdict(list) if list_per_key else {}
-    with PathManager.open(input_csv_file_path) as dataclass_file:
+    with g_pathmgr.open(input_csv_file_path) as dataclass_file:
         reader = csv.reader(dataclass_file, delimiter=",", quotechar='"')
         column_index = {header: i for i, header in enumerate(next(reader))}
         for line in reader:
@@ -242,7 +242,7 @@ def save_dataclass_objs_to_headered_csv(
     """
     dataclass_type = type(dataclass_objs[0])
     field_names = [f.name for f in dataclass_fields(dataclass_type)]
-    with PathManager.open(file_name, "w") as f:
+    with g_pathmgr.open(file_name, "w") as f:
         writer = csv.writer(f, delimiter=",", quotechar='"')
         writer.writerow(field_names)
         for obj in dataclass_objs:

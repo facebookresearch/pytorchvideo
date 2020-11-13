@@ -8,7 +8,7 @@ import pathlib
 from typing import Any, Callable, List, Optional, Tuple, Type, Union
 
 import torch.utils.data
-from fvcore.common.file_io import PathManager
+from iopath.common.file_io import g_pathmgr
 
 from .clip_sampling import ClipSampler
 from .encoded_video_dataset import EncodedVideoDataset
@@ -106,13 +106,13 @@ class Hmdb51LabeledVideoPaths:
         video_paths_and_label = []
         for file_path in file_paths:
             file_path = pathlib.Path(file_path)
-            assert PathManager.exists(file_path), f"{file_path} not found."
+            assert g_pathmgr.exists(file_path), f"{file_path} not found."
             if not (file_path.suffix == ".txt" and "_test_split" in file_path.stem):
                 return RuntimeError(f"Ivalid file: {file_path}")
 
             action_name = "_"
             action_name = action_name.join((file_path.stem).split("_")[:-2])
-            with PathManager.open(file_path, "r") as f:
+            with g_pathmgr.open(file_path, "r") as f:
                 for path_label in f.read().splitlines():
                     line_split = path_label.rsplit(None, 1)
 

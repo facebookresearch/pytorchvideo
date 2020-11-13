@@ -10,7 +10,7 @@ import cv2
 import numpy as np
 import torch
 import torch.utils.data
-from fvcore.common.file_io import PathManager
+from iopath.common.file_io import g_pathmgr
 from pytorchvideo.data.utils import optional_threaded_foreach
 
 from .utils import thwc_to_cthw
@@ -176,7 +176,7 @@ def _load_images_with_retries(
 
     def fetch_image(image_index: int, image_path: str) -> None:
         for i in range(num_retries):
-            with PathManager.open(image_path, "rb") as f:
+            with g_pathmgr.open(image_path, "rb") as f:
                 img_str = np.frombuffer(f.read(), np.uint8)
                 img_bgr = cv2.imdecode(img_str, flags=cv2.IMREAD_COLOR)
                 img_rgb = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2RGB)
