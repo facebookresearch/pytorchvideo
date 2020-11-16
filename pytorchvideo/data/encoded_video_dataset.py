@@ -109,7 +109,7 @@ class EncodedVideoDataset(torch.utils.data.IterableDataset):
             video_index = next(self._video_sampler_iter)
             try:
                 video_path, info_dict = self._labeled_videos[video_index]
-                video = EncodedVideo(video_path)
+                video = EncodedVideo.from_path(video_path)
                 self._loaded_video_label = (video, info_dict)
             except OSError as e:
                 logger.warning(e)

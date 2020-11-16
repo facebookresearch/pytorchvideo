@@ -14,7 +14,7 @@ class TestEncodedVideo(unittest.TestCase):
         num_frames = 11
         fps = 5
         with temp_encoded_video(num_frames=num_frames, fps=fps) as (file_name, data):
-            test_video = EncodedVideo(file_name)
+            test_video = EncodedVideo.from_path(file_name)
             self.assertAlmostEqual(test_video.duration, num_frames / fps)
 
             # All frames (0 - test_video.duration seconds)
@@ -45,7 +45,7 @@ class TestEncodedVideo(unittest.TestCase):
             num_audio_samples=num_audio_samples,
             audio_rate=audio_rate,
         ) as (file_name, video_data, audio_data):
-            test_video = EncodedVideo(file_name)
+            test_video = EncodedVideo.from_path(file_name)
 
             # Duration is max of both streams, therefore, the video duration will be expected.
             self.assertEqual(test_video.duration, num_frames / fps)
@@ -76,7 +76,7 @@ class TestEncodedVideo(unittest.TestCase):
             num_audio_samples=num_audio_samples,
             audio_rate=audio_rate,
         ) as (file_name, video_data, audio_data):
-            test_video = EncodedVideo(file_name)
+            test_video = EncodedVideo.from_path(file_name)
 
             # All audio
             clip = test_video.get_clip(0, test_video.duration)
@@ -90,14 +90,27 @@ class TestEncodedVideo(unittest.TestCase):
 
             test_video.close()
 
+    def test_file_api(self):
+        num_frames = 11
+        fps = 5
+        with temp_encoded_video(num_frames=num_frames, fps=fps) as (file_name, data):
+            with open(file_name, "rb") as f:
+                test_video = EncodedVideo(f)
+
+            self.assertAlmostEqual(test_video.duration, num_frames / fps)
+            clip = test_video.get_clip(0, test_video.duration)
+            frames, audio_samples = clip["video"], clip["audio"]
+            self.assertTrue(frames.equal(data))
+            self.assertEqual(audio_samples, None)
+
     def test_open_video_failure(self):
         with pytest.raises(FileNotFoundError):
-            test_video = EncodedVideo("non_existent_file.txt")
+            test_video = EncodedVideo.from_path("non_existent_file.txt")
             test_video.close()
 
     def test_decode_video_failure(self):
         with tempfile.NamedTemporaryFile(suffix=".mp4") as f:
             f.write(b"This is not an mp4 file")
             with pytest.raises(av.AVError):
-                test_video = EncodedVideo(f.name)
+                test_video = EncodedVideo.from_path(f.name)
                 test_video.close()

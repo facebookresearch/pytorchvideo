@@ -4,7 +4,7 @@ import io
 import logging
 import math
 import pathlib
-from typing import Dict, List, Optional, Tuple
+from typing import BinaryIO, Dict, List, Optional, Tuple
 
 import av
 import numpy as np
@@ -22,26 +22,38 @@ class EncodedVideo(Video):
     """
     EncodedVideo is an abstraction for accessing clips from an encoded video using
     selective decoding. It supports selective decoding when header information is
-    available PyAV is used as the decoding backend.
+    available. PyAV is used as the decoding backend.
     """
 
-    def __init__(self, file_path: str) -> None:
+    @classmethod
+    def from_path(cls, file_path: str):
         """
+        Fetches the given video path using PathManager (allowing remote uris to be
+        fetched) and constructs the EncodedVideo object.
+
         Args:
-            file_path (str): a file a or file-like object (e.g. io.BytesIO or
-                io.StringIO) that contains the encoded video.
+            file_path (str): a PathManager file-path.
         """
-        self._file_path = file_path
 
         # We read the file with PathManager rather than pyav so that we can read from
         # remote uris.
         with g_pathmgr.open(file_path, "rb") as fh:
-            path_data = io.BytesIO(fh.read())
+            video_file = io.BytesIO(fh.read())
+
+        return cls(video_file, pathlib.Path(file_path).name)
+
+    def __init__(self, file: BinaryIO, video_name: Optional[str] = None) -> None:
+        """
+        Args:
+            file (BinaryIO): a file-like object (e.g. io.BytesIO or io.StringIO) that
+                contains the encoded video.
+        """
+        self._video_name = video_name
 
         try:
-            self._container = av.open(path_data)
+            self._container = av.open(file)
         except Exception as e:
-            logger.warning(f"Failed to open path {file_path}. {e}")
+            logger.warning(f"Failed to open video {video_name}. {e}")
             raise e
 
         # Retrieve video header information if available.
@@ -96,12 +108,12 @@ class EncodedVideo(Video):
             )
 
     @property
-    def name(self) -> str:
+    def name(self) -> Optional[str]:
         """
         Returns:
-            name: the name of the stored video extracted from the video path.
+            name: the name of the stored video if set.
         """
-        return pathlib.Path(self._file_path).name
+        return self._video_name
 
     @property
     def duration(self) -> float:

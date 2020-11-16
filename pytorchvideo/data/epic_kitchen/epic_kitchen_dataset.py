@@ -317,7 +317,7 @@ class EpicKitchenDataset(torch.utils.data.Dataset):
         )
 
         return {
-            video_id: EncodedVideo(encoded_video_info.file_path)
+            video_id: EncodedVideo.from_path(encoded_video_info.file_path)
             for video_id, encoded_video_info in encoded_video_infos.items()
         }
 
