@@ -18,6 +18,7 @@ setup(
         "av",
         "parameterized",
         "opencv-python",
+        "iopath",
     ],
     packages=find_packages(exclude=("scripts", "tests")),
 )
