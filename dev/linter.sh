@@ -6,7 +6,7 @@
 {
   black --version | grep "20.8b1" > /dev/null
 } || {
-  echo "Linter requires black==19.3b0 !"
+  echo "Linter requires black==20.8b1 !"
   exit 1
 }
 
