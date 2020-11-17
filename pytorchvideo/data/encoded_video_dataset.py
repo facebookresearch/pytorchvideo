@@ -113,7 +113,7 @@ class EncodedVideoDataset(torch.utils.data.IterableDataset):
                 self._loaded_video_label = (video, info_dict)
             except OSError as e:
                 logger.warning(e)
-                retry_next()
+                return retry_next()
 
         clip_start, clip_end, is_last_clip = self._clip_sampler(
             self._next_clip_start_time, video.duration
@@ -131,7 +131,7 @@ class EncodedVideoDataset(torch.utils.data.IterableDataset):
             self._next_clip_start_time = 0.0
 
             if frames is None:
-                retry_next()
+                return retry_next()
 
         sample_dict = {
             "video": frames,
