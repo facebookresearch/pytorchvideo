@@ -6,7 +6,7 @@ import pytorchvideo.transforms.functional
 import torch
 
 
-class MapDict:
+class ApplyTransformToKey:
     """
     Applies transform to key of dictionary input.
 
@@ -15,7 +15,7 @@ class MapDict:
         transform (callable): the transform that is applied
 
     Example:
-        >>>   transforms.MapDict(
+        >>>   transforms.ApplyTransformToKey(
         >>>       key='video',
         >>>       transform=UniformTemporalSubsample(num_video_samples),
         >>>   )

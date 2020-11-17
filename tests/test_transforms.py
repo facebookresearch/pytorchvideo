@@ -5,7 +5,7 @@ import unittest
 import torch
 from pytorchvideo.data.utils import thwc_to_cthw
 from pytorchvideo.transforms import (
-    MapDict,
+    ApplyTransformToKey,
     RandomShortSideScale,
     UniformTemporalSubsample,
 )
@@ -33,7 +33,7 @@ class TestTransforms(unittest.TestCase):
         num_subsample = 10
         transform = Compose(
             [
-                MapDict(
+                ApplyTransformToKey(
                     key="video",
                     transform=Compose(
                         [
