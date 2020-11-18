@@ -4,6 +4,7 @@ from .csn import create_csn
 from .head import ResNetBasicHead, create_res_basic_head
 from .masked_multistream import (
     LearnMaskedDefault,
+    MaskedMultiPathWay,
     MaskedSequential,
     MaskedTemporalPooling,
     TransposeMultiheadAttention,

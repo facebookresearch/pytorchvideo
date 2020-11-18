@@ -1,8 +1,9 @@
 # Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
 
-from typing import Optional
+from typing import List, Optional, Tuple
 
 import torch
+from pytorchvideo.models.utils import set_attributes
 from torch import nn
 
 
@@ -49,7 +50,9 @@ class MaskedTemporalPooling(torch.nn.Module):
         assert method in ("max", "avg", "sum")
         self._method = method
 
-    def forward(self, x: torch.Tensor, mask: torch.Tensor) -> torch.Tensor:
+    def forward(
+        self, x: torch.Tensor, mask: Optional[torch.Tensor] = None
+    ) -> torch.Tensor:
         """
         Args:
             x (torch.Tensor): tensor with shape (batch_size, seq_len, feature_dim)
@@ -60,7 +63,10 @@ class MaskedTemporalPooling(torch.nn.Module):
             Tensor with shape (batch_size, feature_dim)
         """
         assert x.dim() == 3, "Requires x shape (batch_size x seq_len x feature_dim)"
-        b, t = mask.shape[0], mask.shape[1]
+        b, t = x.shape[0], x.shape[1]
+        if mask is None:
+            mask = torch.ones((b, t), dtype=torch.bool)
+
         if self._method == "max":
             x[~mask, :] = float("-inf")
 
@@ -113,7 +119,9 @@ class TransposeMultiheadAttention(nn.Module):
         """
         return self._attention_weights
 
-    def forward(self, x: torch.Tensor, mask: torch.Tensor) -> torch.Tensor:
+    def forward(
+        self, x: torch.Tensor, mask: Optional[torch.Tensor] = None
+    ) -> torch.Tensor:
         """
         Args:
             x (torch.Tensor): tensor of shape (batch_size, seq_len, feature_dim)
@@ -125,14 +133,16 @@ class TransposeMultiheadAttention(nn.Module):
         """
         assert x.dim() == 3, "Requires x shape (batch_size x seq_len x feature_dim)"
 
-        # At least the first element of each masked batch row must be valid for
-        # key_padding_mask.
-        mask[:, 0] = True
+        if mask is not None:
+            # At least the first element of each masked batch row must be valid for
+            # key_padding_mask.
+            mask[:, 0] = True
+            mask = ~mask
 
         # Transpose x to (seq_length x batch_size x feature_dim).
         x = x.transpose(0, 1)
         attn_output, self._attention_weights = self._attention(
-            x, x, x, key_padding_mask=~mask
+            x, x, x, key_padding_mask=mask
         )
 
         # Transpose attention output to (batch_size x seq_length x feature_dim).
@@ -215,3 +225,41 @@ class MaskedSequential(nn.Sequential):
                 input = module(input)
 
         return input
+
+
+class MaskedMultiPathWay(nn.Module):
+    """
+    Masked multi-pathway is composed of a list of stream nn.Modules followed by a
+    fusion nn.Module that reduces these streams. Each stream module takes a mask
+    and input tensor.
+
+                            Pathway 1  ... Pathway N
+                                ↓              ↓
+                             Block 1        Block N
+                                ↓⭠ --Fusion----↓
+    """
+
+    def __init__(
+        self,
+        *,
+        multipathway_blocks: nn.ModuleList,
+        multipathway_fusion: Optional[nn.Module],
+    ) -> None:
+        """
+        Args:
+            multipathway_blocks (nn.module_list): list of models from all pathways.
+            multipathway_fusion (nn.module): fusion model.
+        """
+        super().__init__()
+        set_attributes(self, locals())
+
+    def forward(
+        self, x_and_mask: List[Tuple[torch.Tensor, torch.Tensor]]
+    ) -> torch.Tensor:
+        out = []
+        for pathway_idx in range(len(self.multipathway_blocks)):
+            out.append(self.multipathway_blocks[pathway_idx](*x_and_mask[pathway_idx]))
+
+        if self.multipathway_fusion is not None:
+            x = self.multipathway_fusion(out)
+        return x

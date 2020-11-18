@@ -14,7 +14,7 @@ construct them.
 """
 
 
-def make_fusion_layer(method: str, feature_dim: List[int]):
+def make_fusion_layer(method: str, feature_dims: List[int]):
     """
     Args:
         method (str): the fusion method to be constructed. Options:
@@ -24,21 +24,21 @@ def make_fusion_layer(method: str, feature_dim: List[int]):
             - 'sum'
             - 'prod'
 
-        feature_dim (List[int]): the first argument of all fusion layers. It holds a list
-            of required embed_dim for each tensor input (where the tensor inputs are of
-            shape (batch_size, seq_len, embed_dim)). The list order must corresponds to
+        feature_dims (List[int]): the first argument of all fusion layers. It holds a list
+            of required feature_dims for each tensor input (where the tensor inputs are of
+            shape (batch_size, seq_len, feature_dim)). The list order must corresponds to
             the tensor order passed to forward(...).
     """
     if method == "concat":
-        return ConcatFusion(feature_dim)
+        return ConcatFusion(feature_dims)
     elif method == "temporal_concat":
-        return TemporalConcatFusion(feature_dim)
+        return TemporalConcatFusion(feature_dims)
     elif method == "max":
-        return ReduceFusion(feature_dim, lambda x: torch.max(x, dim=0).values)
+        return ReduceFusion(feature_dims, lambda x: torch.max(x, dim=0).values)
     elif method == "sum":
-        return ReduceFusion(feature_dim, lambda x: torch.sum(x, dim=0))
+        return ReduceFusion(feature_dims, lambda x: torch.sum(x, dim=0))
     elif method == "prod":
-        return ReduceFusion(feature_dim, lambda x: torch.prod(x, dim=0))
+        return ReduceFusion(feature_dims, lambda x: torch.prod(x, dim=0))
     else:
         raise NotImplementedError(f"Fusion {method} not available.")
 
@@ -49,10 +49,10 @@ class ConcatFusion(nn.Module):
     the sum of the last dimension of all input tensors.
     """
 
-    def __init__(self, feature_dim: List[int]):
+    def __init__(self, feature_dims: List[int]):
         super().__init__()
-        _verify_embed_dim(feature_dim)
-        self._output_dim = sum(feature_dim)
+        _verify_feature_dim(feature_dims)
+        self._output_dim = sum(feature_dims)
 
     @property
     def output_dim(self):
@@ -68,8 +68,8 @@ class ConcatFusion(nn.Module):
                 (batch_size, seq_len, feature_dim).
 
         Returns:
-            Tensor of shape (batch_size, seq_len, sum(feature_dim)) where sum(feature_dim)
-                is the sum of all input feature_dim.
+            Tensor of shape (batch_size, seq_len, sum(feature_dims)) where sum(feature_dims)
+                is the sum of all input feature_dims.
         """
         return torch.cat(input_list, dim=-1)
 
@@ -79,13 +79,13 @@ class TemporalConcatFusion(nn.Module):
     Concatenates all inputs by their temporal dimension which is assumed to be dim=1.
     """
 
-    def __init__(self, feature_dim: List[int]):
+    def __init__(self, feature_dims: List[int]):
         super().__init__()
-        _verify_embed_dim(feature_dim)
+        _verify_feature_dim(feature_dims)
 
         # All input dimensions must be the same
-        self._output_dim = max(feature_dim)
-        assert self._output_dim == min(feature_dim)
+        self._output_dim = max(feature_dims)
+        assert self._output_dim == min(feature_dims)
 
     @property
     def output_dim(self):
@@ -115,15 +115,15 @@ class ReduceFusion(nn.Module):
     """
 
     def __init__(
-        self, feature_dim: List[int], reduce_fn: Callable[[torch.Tensor], torch.Tensor]
+        self, feature_dims: List[int], reduce_fn: Callable[[torch.Tensor], torch.Tensor]
     ):
         super().__init__()
-        _verify_embed_dim(feature_dim)
+        _verify_feature_dim(feature_dims)
         self.reduce_fn = reduce_fn
 
         # All input dimensions must be the same
-        self._output_dim = max(feature_dim)
-        assert self._output_dim == min(feature_dim)
+        self._output_dim = max(feature_dims)
+        assert self._output_dim == min(feature_dims)
 
     @property
     def output_dim(self):
@@ -144,6 +144,6 @@ class ReduceFusion(nn.Module):
         return self.reduce_fn(torch.stack(input_list))
 
 
-def _verify_embed_dim(feature_dim: List[int]):
-    assert isinstance(feature_dim, list)
-    assert all(x > 0 for x in feature_dim)
+def _verify_feature_dim(feature_dims: List[int]):
+    assert isinstance(feature_dims, list)
+    assert all(x > 0 for x in feature_dims)

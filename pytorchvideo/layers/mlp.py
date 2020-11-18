@@ -35,7 +35,7 @@ def make_multilayer_perceptron(
 
     layers = []
     cur_dim = fully_connected_dims[0]
-    for dim in fully_connected_dims[:-1]:
+    for dim in fully_connected_dims[1:-1]:
         layers.append(nn.Linear(cur_dim, dim))
         if norm is not None:
             layers.append(norm(dim))
