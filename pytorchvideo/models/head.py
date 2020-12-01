@@ -4,7 +4,7 @@ from typing import Callable, Tuple
 
 import torch
 import torch.nn as nn
-from pytorchvideo.models.utils import set_attributes
+from pytorchvideo.layers.utils import set_attributes
 
 
 def create_res_basic_head(

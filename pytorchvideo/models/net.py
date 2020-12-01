@@ -2,7 +2,7 @@ from typing import List, Optional
 
 import torch
 import torch.nn as nn
-from pytorchvideo.models.utils import set_attributes
+from pytorchvideo.layers.utils import set_attributes
 from pytorchvideo.models.weight_init import init_net_weights
 
 

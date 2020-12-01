@@ -196,8 +196,13 @@ def labeled_encoded_video_dataset(
     # PathManager may configure the multiprocessing context in a way that conflicts
     # with PyTorch DataLoader workers. To avoid this, we make sure the PathManager
     # calls (made by LabeledVideoPaths) are wrapped in their own sandboxed process.
-    pool = multiprocessing.Pool(processes=1)
-    labeled_video_paths = pool.map(LabeledVideoPaths.from_path, [data_path])[0]
+    try:
+        with multiprocessing.Pool(processes=1) as pool:
+            res = pool.apply_async(LabeledVideoPaths.from_path, (data_path,))
+            labeled_video_paths = res.get(timeout=10)
+    except multiprocessing.TimeoutError:
+        labeled_video_paths = LabeledVideoPaths.from_path(data_path)
+
     labeled_video_paths.path_prefix = video_path_prefix
     dataset = EncodedVideoDataset(
         labeled_video_paths, clip_sampler, video_sampler, transform

@@ -3,7 +3,7 @@
 from typing import List, Optional, Tuple
 
 import torch
-from pytorchvideo.models.utils import set_attributes
+from pytorchvideo.layers.utils import set_attributes
 from torch import nn
 
 

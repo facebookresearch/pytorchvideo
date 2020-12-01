@@ -4,11 +4,11 @@ from typing import Callable, List, Optional, Tuple
 
 import torch
 import torch.nn as nn
+from pytorchvideo.layers.utils import set_attributes
 from pytorchvideo.models.head import create_res_basic_head
 from pytorchvideo.models.net import MultiPathWayWithFuse, Net
 from pytorchvideo.models.resnet import create_bottleneck_block, create_res_stage
 from pytorchvideo.models.stem import create_res_basic_stem
-from pytorchvideo.models.utils import set_attributes
 
 
 def create_fuse_fast_to_slow(

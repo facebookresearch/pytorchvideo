@@ -4,7 +4,7 @@ from typing import Callable, Iterable, Optional, Tuple
 
 import torch
 import torch.nn as nn
-from pytorchvideo.models.utils import set_attributes
+from pytorchvideo.layers.utils import set_attributes
 
 
 class NonLocal(nn.Module):

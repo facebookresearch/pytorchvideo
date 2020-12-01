@@ -5,10 +5,10 @@ from typing import Callable, Tuple
 import numpy as np
 import torch
 import torch.nn as nn
+from pytorchvideo.layers.utils import set_attributes
 from pytorchvideo.models.head import create_res_basic_head
 from pytorchvideo.models.net import Net
 from pytorchvideo.models.stem import create_res_basic_stem
-from pytorchvideo.models.utils import set_attributes
 
 
 def create_bottleneck_block(
