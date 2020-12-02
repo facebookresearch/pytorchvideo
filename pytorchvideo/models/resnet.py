@@ -551,7 +551,7 @@ def create_resnet(
         (1, 1, 1),
         (1, 1, 1),
     ),
-    stage_spatial_stride: Tuple[int] = (2, 1, 1, 1),
+    stage_spatial_stride: Tuple[int] = (1, 2, 2, 2),
     stage_temporal_stride: Tuple[int] = (1, 1, 1, 1),
     bottleneck: Callable = create_bottleneck_block,
     # Head configs.
