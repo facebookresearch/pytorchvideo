@@ -627,6 +627,13 @@ def create_resnet(
     """
     # Number of blocks for different stages given the model depth.
     _MODEL_STAGE_DEPTH = {50: (3, 4, 6, 3), 101: (3, 4, 23, 3), 152: (3, 8, 36, 3)}
+
+    # Given a model depth, get the number of blocks for each stage.
+    assert (
+        model_depth in _MODEL_STAGE_DEPTH.keys()
+    ), f"{model_depth} is not in {_MODEL_STAGE_DEPTH.keys()}"
+    stage_depths = _MODEL_STAGE_DEPTH[model_depth]
+
     blocks = []
     # Create stem for resnet.
     stem = create_res_basic_stem(
@@ -643,12 +650,6 @@ def create_resnet(
         activation=activation,
     )
     blocks.append(stem)
-
-    # Given a model depth, get the number of blocks for each stage.
-    assert (
-        model_depth in _MODEL_STAGE_DEPTH.keys()
-    ), f"{model_depth} is not in {_MODEL_STAGE_DEPTH.keys()}"
-    stage_depths = _MODEL_STAGE_DEPTH[model_depth]
 
     stage_dim_in = stem_dim_out
     stage_dim_out = stage_dim_in * 4

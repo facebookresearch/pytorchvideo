@@ -2,7 +2,6 @@
 
 from typing import Callable, Tuple
 
-import numpy as np
 import torch.nn as nn
 from pytorchvideo.models.head import create_res_basic_head
 from pytorchvideo.models.resnet import Net, create_bottleneck_block, create_res_stage
@@ -13,8 +12,6 @@ def create_csn(
     *,
     # Input clip configs.
     input_channel: int = 3,
-    input_clip_length: int = 4,
-    input_crop_size: int = 112,
     # Model configs.
     model_depth: int = 50,
     model_num_class: int = 400,
@@ -36,6 +33,7 @@ def create_csn(
     bottleneck: Callable = create_bottleneck_block,
     # Head configs.
     head_pool: Callable = nn.AvgPool3d,
+    head_pool_kernel_size: Tuple[int] = (1, 7, 7),
     head_output_size: Tuple[int] = (1, 1, 1),
     head_activation: Callable = nn.Softmax,
 ) -> nn.Module:
@@ -68,8 +66,6 @@ def create_csn(
     Args:
         Input clip configs:
             input_channel (int): number of channels for the input video clip.
-            input_clip_length (int): length of the input video clip.
-            input_crop_size (int): spatial resolution of the input video clip.
 
         Model configs:
             model_depth (int): the depth of the resnet. Options include: 50, 101, 152.
@@ -99,6 +95,7 @@ def create_csn(
 
         Head configs:
             head_pool (callable): a callable that constructs resnet head pooling layer.
+            head_pool_kernel_size (tuple): the pooling kernel size.
             head_output_size (tuple): the size of output tensor for head.
             head_activation (callable): a callable that constructs activation layer.
 
@@ -107,6 +104,13 @@ def create_csn(
     """
     # Number of blocks for different stages given the model depth.
     _MODEL_STAGE_DEPTH = {50: (3, 4, 6, 3), 101: (3, 4, 23, 3), 152: (3, 8, 36, 3)}
+
+    # Given a model depth, get the number of blocks for each stage.
+    assert (
+        model_depth in _MODEL_STAGE_DEPTH.keys()
+    ), f"{model_depth} is not in {_MODEL_STAGE_DEPTH.keys()}"
+    stage_depths = _MODEL_STAGE_DEPTH[model_depth]
+
     blocks = []
     # Create stem for CSN.
     stem = create_res_basic_stem(
@@ -120,12 +124,6 @@ def create_csn(
         activation=activation,
     )
     blocks.append(stem)
-
-    # Given a model depth, get the number of blocks for each stage.
-    assert (
-        model_depth in _MODEL_STAGE_DEPTH.keys()
-    ), f"{model_depth} is not in {_MODEL_STAGE_DEPTH.keys()}"
-    stage_depths = _MODEL_STAGE_DEPTH[model_depth]
 
     stage_dim_in = stem_dim_out
     stage_dim_out = stage_dim_in * 4
@@ -164,22 +162,6 @@ def create_csn(
         stage_dim_out = stage_dim_out * 2
 
     # Create head for CSN.
-    total_spatial_stride = stem_conv_stride[1] * np.prod(stage_spatial_stride)
-    total_temporal_stride = stem_conv_stride[0] * np.prod(stage_temporal_stride)
-
-    assert (
-        input_clip_length >= total_temporal_stride
-    ), "Clip length doesn't match temporal stride!"
-    assert (
-        input_crop_size >= total_spatial_stride
-    ), "Crop size doesn't match spatial stride!"
-
-    head_pool_kernel_size = (
-        input_clip_length // total_temporal_stride,
-        input_crop_size // total_spatial_stride,
-        input_crop_size // total_spatial_stride,
-    )
-
     head = create_res_basic_head(
         in_features=stage_dim_in,
         out_features=model_num_class,
