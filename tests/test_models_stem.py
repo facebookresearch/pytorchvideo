@@ -205,7 +205,7 @@ class TestResNetBasicStem(unittest.TestCase):
                         continue
                     else:
                         output_tensor = model(input_tensor)
-                        output_tensor_gt = model(input_tensor)
+                        output_tensor_gt = model_gt(input_tensor)
                 self.assertEqual(
                     output_tensor.shape,
                     output_tensor_gt.shape,
@@ -263,7 +263,7 @@ class TestResNetBasicStem(unittest.TestCase):
                         continue
                     else:
                         output_tensor = model(input_tensor)
-                        output_tensor_gt = model(input_tensor)
+                        output_tensor_gt = model_gt(input_tensor)
                 self.assertEqual(
                     output_tensor.shape,
                     output_tensor_gt.shape,
