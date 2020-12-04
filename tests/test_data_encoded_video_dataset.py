@@ -1,6 +1,7 @@
 # Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved.
 
 import itertools
+import math
 import multiprocessing
 import os
 import pathlib
@@ -240,6 +241,53 @@ class TestEncodedVideoDataset(unittest.TestCase):
                 self.assertTrue(
                     sample_2["video"].equal(thwc_to_cthw(data_2).to(torch.float32))
                 )
+
+    def test_constant_clips_per_video_sampling_works(self):
+
+        # Make one video with 15 frames and one with 10 frames, producing 3 clips and 2
+        # clips respectively.
+        num_frames = 10
+        fps = 5
+        with temp_encoded_video(num_frames=int(num_frames * 1.5), fps=fps) as (
+            video_file_name_1,
+            data_1,
+        ):
+            with temp_encoded_video(num_frames=num_frames, fps=fps) as (
+                video_file_name_2,
+                data_2,
+            ):
+                with tempfile.NamedTemporaryFile(delete=False, suffix=".txt") as f:
+                    f.write(f"{video_file_name_1} 0\n".encode())
+                    f.write(f"{video_file_name_2} 1\n".encode())
+
+                clip_frames = 2
+                duration_for_frames = clip_frames / fps - self._EPS
+                clip_sampler = make_clip_sampler(
+                    "constant_clips_per_video", duration_for_frames, 2
+                )
+                labeled_video_paths = LabeledVideoPaths.from_path(f.name)
+                dataset = EncodedVideoDataset(
+                    labeled_video_paths,
+                    clip_sampler=clip_sampler,
+                    video_sampler=SequentialSampler,
+                )
+
+                # Dataset has 2 videos. Each video has two evenly spaced clips of size
+                # clip_frames sampled. The first clip of each video will always be
+                # sampled at second 0. The second clip of the video is the next frame
+                # from time: (total_duration - clip_duration) / 2
+                half_frames_1 = math.ceil((data_1.shape[1] - clip_frames) / 2)
+                half_frames_2 = math.ceil((data_2.shape[1] - clip_frames) / 2)
+                expected = [
+                    (0, data_1[:, :clip_frames]),
+                    (0, data_1[:, half_frames_1 : half_frames_1 + clip_frames]),
+                    (1, data_2[:, :clip_frames]),
+                    (1, data_2[:, half_frames_2 : half_frames_2 + clip_frames]),
+                ]
+
+                for i, sample in enumerate(dataset):
+                    self.assertTrue(sample["video"].equal(expected[i][1]))
+                    self.assertEqual(sample["label"], expected[i][0])
 
     def test_reading_from_directory_structure(self):
         # For an unknown reason this import has to be here for `buck test` to work.
@@ -532,9 +580,9 @@ class TestEncodedVideoDataset(unittest.TestCase):
                 # video pairs to be returned in random order.
                 half_frames = num_frames // 2
                 expected = {
-                    (0, data_1[:, half_frames * 2 :]),  # 1/3 clip
+                    (0, data_1[:, :half_frames]),  # 1/3 clip
                     (0, data_1[:, half_frames : half_frames * 2]),  # 2/3 clip
-                    (0, data_1[:, :half_frames]),  # 3/3/ clip
+                    (0, data_1[:, half_frames * 2 :]),  # 3/3 clip
                     (1, data_2[:, :half_frames]),  # First half
                     (1, data_2[:, half_frames:]),  # Second half
                 }
