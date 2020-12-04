@@ -14,6 +14,7 @@ from pytorchvideo.models.resnet import (
     SeparableBottleneckBlock,
     create_acoustic_bottleneck_block,
     create_acoustic_building_block,
+    create_acoustic_resnet,
     create_bottleneck_block,
     create_res_block,
     create_res_stage,
@@ -412,8 +413,7 @@ class TestBottleneckBlock(unittest.TestCase):
 
     def test_create_acoustic_building_block_with_callable(self):
         """
-        Test default builder `create_building_bottleneck_block` with callable
-        inputs.
+        Test builder `create_building_bottleneck_block` with callable inputs.
         """
         for (norm_model, act_model) in itertools.product(
             (nn.BatchNorm3d,), (nn.ReLU, nn.Softmax, nn.Sigmoid)
@@ -1280,7 +1280,6 @@ class TestResNet(unittest.TestCase):
             model_depth = 50
             stage_spatial_stride = (2, 1, 1, 1)
             stage_temporal_stride = (2, 1, 1, 1)
-
             model_gt, num_class = self._build_resnet(
                 input_channel,
                 input_clip_length,
@@ -1349,6 +1348,45 @@ class TestResNet(unittest.TestCase):
                 self.assertTrue(
                     np.allclose(out.numpy(), out_gt.numpy(), rtol=1e-1, atol=1e-1)
                 )
+
+    def test_create_acoustic_resnet_with_callable(self):
+        """
+        Test builder `create_acoustic_resnet` with callable inputs.
+        """
+        _input_channel = 2
+        for (norm, activation) in itertools.product(
+            (nn.BatchNorm3d, None), (nn.ReLU, nn.Sigmoid, None)
+        ):
+            model = create_acoustic_resnet(
+                input_channel=_input_channel,
+                stem_conv_kernel_size=(3, 3, 3),
+                stem_conv_padding=(1, 1, 1),
+                model_depth=50,
+                model_num_class=400,
+                dropout_rate=0,
+                norm=norm,
+                activation=activation,
+                stem_dim_out=8,
+                stem_pool=nn.MaxPool3d,
+                stem_pool_kernel_size=(1, 3, 3),
+                stem_pool_stride=(1, 2, 2),
+                stage_conv_a_kernel_size=(3, 1, 1),
+                stage_conv_b_kernel_size=(1, 3, 3),
+                stage_spatial_stride=(2, 1, 1, 1),
+                stage_temporal_stride=(2, 1, 1, 1),
+                head_pool=nn.AvgPool3d,
+                head_output_size=(1, 1, 1),
+                head_activation=nn.Softmax,
+            )
+
+            # Test forwarding.
+            for tensor in TestResNet._get_inputs(_input_channel, 8, 56):
+                with torch.no_grad():
+                    if tensor.shape[1] != _input_channel:
+                        with self.assertRaises(RuntimeError):
+                            model(tensor)
+                        continue
+                    model(tensor)
 
     @staticmethod
     def _get_inputs(
