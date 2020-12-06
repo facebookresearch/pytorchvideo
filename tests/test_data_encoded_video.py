@@ -31,7 +31,9 @@ class TestEncodedVideo(unittest.TestCase):
 
             # No frames
             clip = test_video.get_clip(test_video.duration + 1, test_video.duration + 3)
-            self.assertEqual(clip, None)
+            frames, audio_samples = clip["video"], clip["audio"]
+            self.assertEqual(frames, None)
+            self.assertEqual(audio_samples, None)
             test_video.close()
 
     def test_video_with_shorter_audio_works(self):
@@ -86,7 +88,9 @@ class TestEncodedVideo(unittest.TestCase):
 
             # No frames (3 - 5 seconds)
             clip = test_video.get_clip(test_video.duration + 1, test_video.duration + 2)
-            self.assertEqual(clip, None)
+            frames, audio_samples = clip["video"], clip["audio"]
+            self.assertEqual(frames, None)
+            self.assertEqual(audio_samples, None)
 
             test_video.close()
 

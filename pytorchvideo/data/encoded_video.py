@@ -56,13 +56,17 @@ class EncodedVideo(Video):
             logger.warning(f"Failed to open video {video_name}. {e}")
             raise e
 
+        if self._container is None or len(self._container.streams.video) == 0:
+            raise RuntimeError(f"Video stream not found {video_name}")
+
         # Retrieve video header information if available.
-        self._video_time_base = self._container.streams.video[0].time_base
-        self._video_start_pts = self._container.streams.video[0].start_time
+        video_stream = self._container.streams.video[0]
+        self._video_time_base = video_stream.time_base
+        self._video_start_pts = video_stream.start_time
         if self._video_start_pts is None:
             self._video_start_pts = 0.0
 
-        video_duration = self._container.streams.video[0].duration
+        video_duration = video_stream.duration
 
         # Retrieve audio header information if available.
         self._has_audio = self._container.streams.audio
@@ -151,27 +155,22 @@ class EncodedVideo(Video):
         if self._selective_decoding:
             self._video, self._audio = self._pyav_decode_video(start_sec, end_sec)
 
-        if self._video is None and self._audio is None:
-            logger.warning(
-                f"No video or audio found within {start_sec} and {end_sec} seconds. "
-                f"Video starts at time 0 and ends at {self.duration}."
+        video_frames = None
+        if self._video is not None:
+            video_start_pts = self._secs_to_pts(
+                start_sec, self._video_time_base, self._video_start_pts
             )
-            return None
-
-        video_start_pts = self._secs_to_pts(
-            start_sec, self._video_time_base, self._video_start_pts
-        )
-        video_end_pts = self._secs_to_pts(
-            end_sec, self._video_time_base, self._video_start_pts
-        )
-        video_frames = [
-            f
-            for f, pts in self._video
-            if pts >= video_start_pts and pts <= video_end_pts
-        ]
+            video_end_pts = self._secs_to_pts(
+                end_sec, self._video_time_base, self._video_start_pts
+            )
+            video_frames = [
+                f
+                for f, pts in self._video
+                if pts >= video_start_pts and pts <= video_end_pts
+            ]
 
         audio_samples = None
-        if self._has_audio:
+        if self._has_audio and self._audio is not None:
             audio_start_pts = self._secs_to_pts(
                 start_sec, self._audio_time_base, self._audio_start_pts
             )
@@ -186,13 +185,19 @@ class EncodedVideo(Video):
             audio_samples = torch.cat(audio_samples, axis=0)
             audio_samples = audio_samples.to(torch.float32)
 
-        if len(video_frames) == 0 and (
-            audio_samples is None or len(audio_samples) == 0
-        ):
-            return None
+        if video_frames is None or len(video_frames) == 0:
+            logger.warning(
+                f"No video found within {start_sec} and {end_sec} seconds. "
+                f"Video starts at time 0 and ends at {self.duration}."
+            )
+
+            video_frames = None
+
+        if video_frames is not None:
+            video_frames = thwc_to_cthw(torch.stack(video_frames)).to(torch.float32)
 
         return {
-            "video": thwc_to_cthw(torch.stack(video_frames)).to(torch.float32),
+            "video": video_frames,
             "audio": audio_samples,
         }
 

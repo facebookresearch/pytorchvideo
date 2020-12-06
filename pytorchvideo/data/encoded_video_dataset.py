@@ -111,7 +111,7 @@ class EncodedVideoDataset(torch.utils.data.IterableDataset):
                 video_path, info_dict = self._labeled_videos[video_index]
                 video = EncodedVideo.from_path(video_path)
                 self._loaded_video_label = (video, info_dict)
-            except OSError as e:
+            except (RuntimeError, OSError) as e:
                 logger.warning(e)
                 return retry_next()
 
@@ -199,7 +199,7 @@ def labeled_encoded_video_dataset(
     try:
         with multiprocessing.Pool(processes=1) as pool:
             res = pool.apply_async(LabeledVideoPaths.from_path, (data_path,))
-            labeled_video_paths = res.get(timeout=10)
+            labeled_video_paths = res.get(timeout=100)
     except multiprocessing.TimeoutError:
         labeled_video_paths = LabeledVideoPaths.from_path(data_path)
 

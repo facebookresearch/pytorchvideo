@@ -54,6 +54,19 @@ class UniformTemporalSubsample(torch.nn.Module):
         )
 
 
+class ShortSideScale(torch.nn.Module):
+    """
+    nn.Module wrapper for pytorchvideo.transforms.functional.short_side_scale.
+    """
+
+    def __init__(self, size: int):
+        super().__init__()
+        self._size = size
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        return pytorchvideo.transforms.functional.short_side_scale(x, self._size)
+
+
 class RandomShortSideScale(torch.nn.Module):
     """
     nn.Module wrapper for pytorchvideo.transforms.functional.short_side_scale. The size
