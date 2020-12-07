@@ -35,7 +35,8 @@ def create_csn(
     head_pool: Callable = nn.AvgPool3d,
     head_pool_kernel_size: Tuple[int] = (1, 7, 7),
     head_output_size: Tuple[int] = (1, 1, 1),
-    head_activation: Callable = nn.Softmax,
+    head_activation: Callable = None,
+    head_output_with_global_average: bool = True,
 ) -> nn.Module:
     """
     Build Channel-Separated Convolutional Networks (CSN):
@@ -98,6 +99,8 @@ def create_csn(
             head_pool_kernel_size (tuple): the pooling kernel size.
             head_output_size (tuple): the size of output tensor for head.
             head_activation (callable): a callable that constructs activation layer.
+            head_output_with_global_average (bool): if True, perform global averaging on
+                the head output.
 
     Returns:
         (nn.Module): the csn model.
@@ -170,6 +173,7 @@ def create_csn(
         pool_kernel_size=head_pool_kernel_size,
         dropout_rate=dropout_rate,
         activation=head_activation,
+        output_with_global_average=head_output_with_global_average,
     )
     blocks.append(head)
     return Net(blocks=nn.ModuleList(blocks))

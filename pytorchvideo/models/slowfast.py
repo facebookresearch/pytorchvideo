@@ -113,7 +113,8 @@ def create_slowfast(
     head_pool: Callable = nn.AvgPool3d,
     head_pool_kernel_sizes: Tuple[Tuple[int]] = ((8, 7, 7), (32, 7, 7)),
     head_output_size: Tuple[int] = (1, 1, 1),
-    head_activation: Callable = nn.Softmax,
+    head_activation: Callable = None,
+    head_output_with_global_average: bool = True,
 ) -> nn.Module:
     """
     Build SlowFast model for video recognition, SlowFast model involves a Slow pathway,
@@ -188,7 +189,8 @@ def create_slowfast(
             head_pool (callable): a callable that constructs resnet head pooling layer.
             head_output_sizes (tuple): the size of output tensor for head.
             head_activation (callable): a callable that constructs activation layer.
-
+            head_output_with_global_average (bool): if True, perform global averaging on
+                the head output.
     Returns:
         (nn.Module): SlowFast model.
     """
@@ -327,6 +329,7 @@ def create_slowfast(
                     output_size=head_output_size,
                     dropout_rate=dropout_rate,
                     activation=head_activation,
+                    output_with_global_average=head_output_with_global_average,
                 )
             ]
         )

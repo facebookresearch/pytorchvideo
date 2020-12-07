@@ -1223,6 +1223,7 @@ class TestResNet(unittest.TestCase):
             activation=nn.Softmax(),
             pool=nn.AvgPool3d(kernel_size=head_pool_kernel_size, stride=[1, 1, 1]),
             dropout=None,
+            output_pool=nn.AdaptiveAvgPool3d(1),
         )
         stages.append(head)
 

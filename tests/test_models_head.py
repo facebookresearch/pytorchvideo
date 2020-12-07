@@ -20,7 +20,9 @@ class TestHeadHelper(unittest.TestCase):
         """
         for input_dim, output_dim in itertools.product((4, 8), (4, 8, 16)):
             model = ResNetBasicHead(
-                proj=nn.Linear(input_dim, output_dim), pool=nn.AdaptiveAvgPool3d(1)
+                proj=nn.Linear(input_dim, output_dim),
+                pool=nn.AdaptiveAvgPool3d(1),
+                output_pool=nn.AdaptiveAvgPool3d(1),
             )
 
             # Test forwarding.
@@ -54,6 +56,7 @@ class TestHeadHelper(unittest.TestCase):
                 activation=nn.Softmax(),
                 pool=nn.AdaptiveAvgPool3d(1),
                 dropout=nn.Dropout(0.5),
+                output_pool=nn.AdaptiveAvgPool3d(1),
             )
 
             # Test forwarding.
@@ -107,12 +110,14 @@ class TestHeadHelper(unittest.TestCase):
                 output_size=(1, 1, 1),
                 dropout_rate=0.0,
                 activation=activation,
+                output_with_global_average=True,
             )
             model_gt = ResNetBasicHead(
                 proj=nn.Linear(16, 32),
                 activation=activation_model,
                 pool=pool_model,
                 dropout=None,
+                output_pool=nn.AdaptiveAvgPool3d(1),
             )
             model.load_state_dict(
                 model_gt.state_dict(), strict=True

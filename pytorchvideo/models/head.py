@@ -21,7 +21,9 @@ def create_res_basic_head(
     # Dropout configs.
     dropout_rate: float = 0.5,
     # Activation configs.
-    activation: Callable = nn.Softmax,
+    activation: Callable = None,
+    # Output configs.
+    output_with_global_average: bool = True,
 ) -> nn.Module:
     """
     Creates ResNet basic head. This layer performs an optional pooling operation
@@ -65,6 +67,10 @@ def create_res_basic_head(
 
         Dropout related configs:
             dropout_rate (float): dropout rate.
+
+        Output related configs:
+            output_with_global_average (bool): if True, perform global averaging on temporal
+                and spatial dimensions and reshape output to batch_size x out_features.
     """
     if activation is None:
         activation_model = None
@@ -82,11 +88,17 @@ def create_res_basic_head(
             kernel_size=pool_kernel_size, stride=pool_stride, padding=pool_padding
         )
 
+    if output_with_global_average:
+        output_pool = nn.AdaptiveAvgPool3d(1)
+    else:
+        output_pool = None
+
     return ResNetBasicHead(
         proj=nn.Linear(in_features, out_features),
         activation=activation_model,
         pool=pool_model,
         dropout=nn.Dropout(dropout_rate) if dropout_rate > 0 else None,
+        output_pool=output_pool,
     )
 
 
@@ -115,6 +127,7 @@ class ResNetBasicHead(nn.Module):
         dropout: nn.Module = None,
         proj: nn.Module = None,
         activation: nn.Module = None,
+        output_pool: nn.Module = None,
     ) -> None:
         """
         Args:
@@ -122,6 +135,7 @@ class ResNetBasicHead(nn.Module):
             dropout(torch.nn.modules): dropout module.
             proj (torch.nn.modules): project module.
             activation (torch.nn.modules): activation module.
+            output_pool (torch.nn.Module): pooling module for output.
         """
         super().__init__()
         set_attributes(self, locals())
@@ -141,7 +155,9 @@ class ResNetBasicHead(nn.Module):
         # Performs activation.
         if self.activation is not None:
             x = self.activation(x)
-        # Performs global averaging.
-        x = x.mean([2, 3, 4])
-        x = x.view(x.shape[0], -1)
+
+        if self.output_pool is not None:
+            # Performs global averaging.
+            x = self.output_pool(x)
+            x = x.view(x.shape[0], -1)
         return x
