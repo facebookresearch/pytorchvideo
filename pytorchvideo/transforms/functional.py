@@ -11,6 +11,8 @@ def uniform_temporal_subsample(
 ) -> torch.Tensor:
     """
     Uniformly subsamples num_samples indices from the temporal dimension of the video.
+    When num_samples is larger than the size of temporal dimension of the video, it
+    will sample frames based on nearest neighbor interpolation.
 
     Args:
         x (torch.Tensor): A video tensor with dimension larger than one with torch
@@ -22,7 +24,8 @@ def uniform_temporal_subsample(
         An x-like Tensor with subsampled temporal dimension.
     """
     t = x.shape[temporal_dim]
-    assert num_samples <= t
+    assert num_samples > 0 and t > 0
+    # Sample by nearest neighbor interpolation if num_samples > t.
     indices = torch.linspace(0, t - 1, num_samples)
     indices = torch.clamp(indices, 0, t - 1).long()
     return torch.index_select(x, temporal_dim, indices)
