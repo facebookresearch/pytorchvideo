@@ -5,6 +5,7 @@ from typing import List, Optional, Tuple
 import torch
 from pytorchvideo.layers.utils import set_attributes
 from torch import nn
+from torch.nn.utils.rnn import pack_padded_sequence
 
 
 """
@@ -204,6 +205,73 @@ class LearnMaskedDefault(nn.Module):
         return x
 
 
+class LSTM(nn.Module):
+    """
+    Wrapper for torch.nn.LSTM that handles masked inputs.
+    """
+
+    def __init__(
+        self,
+        dim_in: int,
+        hidden_dim: int,
+        dropout: float = 0.0,
+        bidirectional: bool = False,
+    ):
+        """
+        Args:
+          dim_in (int): input feature dimension
+          hidden_dim (int): hidden dimesion of lstm layer
+          dropout (float): dropout rate - 0.0 if no dropout
+          bidirectional (bool): bidirectional or forward only
+        """
+        super().__init__()
+        self.lstm = nn.LSTM(
+            dim_in,
+            hidden_dim,
+            batch_first=True,
+            dropout=dropout,
+            bidirectional=bidirectional,
+        )
+        self.lstm.flatten_parameters()
+        self.output_dim = 2 * hidden_dim if bidirectional else hidden_dim
+        self.bidirectional = bidirectional
+
+    def forward(
+        self, data: torch.Tensor, mask: Optional[torch.Tensor] = None
+    ) -> torch.Tensor:
+        """
+        Args:
+            data (torch.Tensor): tensor with shape (batch_size, seq_len, feature_dim)
+            mask (torch.Tensor): bool tensor with shape (batch_size, seq_len).
+                Sequence elements that are False are invalid.
+
+        Returns:
+            Tensor with shape (batch_size, output_dim) - outoput_dim is determined by
+                hidden_dim and whether bidirectional or not
+        """
+        assert data.dim() == 3
+        b, t = data.shape[0], data.shape[1]
+
+        if mask is None:
+            mask = torch.ones((b, t), dtype=torch.bool)
+
+        lengths = mask.sum(axis=1)
+        x_packed = pack_padded_sequence(
+            data,
+            lengths.clamp(1, data.size(1)),
+            batch_first=True,
+            enforce_sorted=False,
+        )
+        _, (h, _) = self.lstm(x_packed)
+
+        if self.bidirectional:
+            out = torch.cat([h[0, :, :], h[1, :, :]], dim=-1)
+        else:
+            out = h[-1, :, :]
+
+        return out
+
+
 class MaskedSequential(nn.Sequential):
     """
     A sequential container that overrides forward to take a mask as well as the usual
@@ -215,6 +283,7 @@ class MaskedSequential(nn.Sequential):
         MaskedTemporalPooling,
         LearnMaskedDefault,
         TransposeMultiheadAttention,
+        LSTM,
     ]
 
     def forward(self, input: torch.Tensor, mask: torch.Tensor) -> torch.Tensor:
