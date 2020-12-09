@@ -30,7 +30,7 @@ from torch.utils.data import (
     SequentialSampler,
     TensorDataset,
 )
-from utils import create_video_frames, temp_encoded_video
+from utils import create_dummy_video_frames, temp_encoded_video
 
 
 class TestEncodedVideoDataset(unittest.TestCase):
@@ -166,10 +166,10 @@ class TestEncodedVideoDataset(unittest.TestCase):
 
             test_class_1 = videos_root_dir / action_1
             test_class_1.mkdir()
-            data_1 = create_video_frames(15, 10, 10)
+            data_1 = create_dummy_video_frames(15, 10, 10)
             test_class_2 = videos_root_dir / action_2
             test_class_2.mkdir()
-            data_2 = create_video_frames(20, 15, 15)
+            data_2 = create_dummy_video_frames(20, 15, 15)
 
             test_splits = root_dir_name / "folds"
             test_splits.mkdir()
@@ -299,10 +299,10 @@ class TestEncodedVideoDataset(unittest.TestCase):
             root_dir_name = pathlib.Path(root_dir)
             test_class_1 = root_dir_name / "running"
             test_class_1.mkdir()
-            data_1 = create_video_frames(15, 10, 10)
+            data_1 = create_dummy_video_frames(15, 10, 10)
             test_class_2 = root_dir_name / "cleaning windows"
             test_class_2.mkdir()
-            data_2 = create_video_frames(20, 15, 15)
+            data_2 = create_dummy_video_frames(20, 15, 15)
             with tempfile.NamedTemporaryFile(
                 suffix=".mp4", dir=test_class_1
             ) as f_1, tempfile.NamedTemporaryFile(

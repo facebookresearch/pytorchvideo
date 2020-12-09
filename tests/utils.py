@@ -13,7 +13,7 @@ import torchvision.transforms as transforms
 from pytorchvideo.data.utils import thwc_to_cthw
 
 
-def create_video_frames(num_frames: int, height: int, width: int):
+def create_dummy_video_frames(num_frames: int, height: int, width: int):
     y, x = torch.meshgrid(torch.linspace(-2, 2, height), torch.linspace(-2, 2, width))
     data = []
     for i in range(num_frames):
@@ -33,7 +33,7 @@ def temp_encoded_video(num_frames: int, fps: int, height=10, width=10, prefix=No
     # Lossless options.
     video_codec = "libx264rgb"
     options = {"crf": "0"}
-    data = create_video_frames(num_frames, height, width)
+    data = create_dummy_video_frames(num_frames, height, width)
     with tempfile.NamedTemporaryFile(prefix=prefix, suffix=".mp4") as f:
         f.close()
         io.write_video(f.name, data, fps=fps, video_codec=video_codec, options=options)
@@ -52,7 +52,7 @@ def temp_encoded_video_with_audio(
     prefix=None,
 ):
     audio_data = torch.from_numpy(np.random.rand(1, num_audio_samples).astype("<i2"))
-    video_data = create_video_frames(num_frames, height, width)
+    video_data = create_dummy_video_frames(num_frames, height, width)
     with tempfile.NamedTemporaryFile(prefix=prefix, suffix=".avi") as f:
         f.close()
         write_audio_video(
@@ -64,7 +64,7 @@ def temp_encoded_video_with_audio(
 
 @contextlib.contextmanager
 def temp_frame_video(frame_image_file_names, height=10, width=10):
-    data = create_video_frames(len(frame_image_file_names), height, width)
+    data = create_dummy_video_frames(len(frame_image_file_names), height, width)
     data = thwc_to_cthw(data)
     with tempfile.TemporaryDirectory() as root_dir:
         root_dir = pathlib.Path(root_dir)

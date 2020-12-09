@@ -20,12 +20,14 @@ from torchvision.transforms._transforms_video import (
     RandomCropVideo,
     RandomHorizontalFlipVideo,
 )
-from utils import create_video_frames
+from utils import create_dummy_video_frames
 
 
 class TestTransforms(unittest.TestCase):
     def test_compose_with_video_transforms(self):
-        video = thwc_to_cthw(create_video_frames(20, 30, 40)).to(dtype=torch.float32)
+        video = thwc_to_cthw(create_dummy_video_frames(20, 30, 40)).to(
+            dtype=torch.float32
+        )
         test_clip = {"video": video, "label": 0}
 
         # Compose using torchvision and pytorchvideo transformst to ensure they interact
@@ -56,35 +58,49 @@ class TestTransforms(unittest.TestCase):
         self.assertEqual(w, 10)
 
     def test_uniform_temporal_subsample(self):
-        video = thwc_to_cthw(create_video_frames(20, 30, 40)).to(dtype=torch.float32)
+        video = thwc_to_cthw(create_dummy_video_frames(20, 30, 40)).to(
+            dtype=torch.float32
+        )
         actual = uniform_temporal_subsample(video, video.shape[1])
         self.assertTrue(actual.equal(video))
 
-        video = thwc_to_cthw(create_video_frames(20, 30, 40)).to(dtype=torch.float32)
+        video = thwc_to_cthw(create_dummy_video_frames(20, 30, 40)).to(
+            dtype=torch.float32
+        )
         actual = uniform_temporal_subsample(video, video.shape[1] // 2)
         self.assertTrue(actual.equal(video[:, [0, 2, 4, 6, 8, 10, 12, 14, 16, 19]]))
 
-        video = thwc_to_cthw(create_video_frames(20, 30, 40)).to(dtype=torch.float32)
+        video = thwc_to_cthw(create_dummy_video_frames(20, 30, 40)).to(
+            dtype=torch.float32
+        )
         actual = uniform_temporal_subsample(video, 1)
         self.assertTrue(actual.equal(video[:, 0:1]))
 
     def test_short_side_scale_width_shorter(self):
-        video = thwc_to_cthw(create_video_frames(20, 20, 10)).to(dtype=torch.float32)
+        video = thwc_to_cthw(create_dummy_video_frames(20, 20, 10)).to(
+            dtype=torch.float32
+        )
         actual = short_side_scale(video, 5)
         self.assertEqual(actual.shape, (3, 20, 10, 5))
 
     def test_short_side_scale_height_shorter(self):
-        video = thwc_to_cthw(create_video_frames(20, 10, 20)).to(dtype=torch.float32)
+        video = thwc_to_cthw(create_dummy_video_frames(20, 10, 20)).to(
+            dtype=torch.float32
+        )
         actual = short_side_scale(video, 5)
         self.assertEqual(actual.shape, (3, 20, 5, 10))
 
     def test_short_side_scale_equal_size(self):
-        video = thwc_to_cthw(create_video_frames(20, 10, 10)).to(dtype=torch.float32)
+        video = thwc_to_cthw(create_dummy_video_frames(20, 10, 10)).to(
+            dtype=torch.float32
+        )
         actual = short_side_scale(video, 10)
         self.assertEqual(actual.shape, (3, 20, 10, 10))
 
     def test_torchscriptable_input_output(self):
-        video = thwc_to_cthw(create_video_frames(20, 30, 40)).to(dtype=torch.float32)
+        video = thwc_to_cthw(create_dummy_video_frames(20, 30, 40)).to(
+            dtype=torch.float32
+        )
 
         # Test all the torchscriptable tensors.
         for transform in [UniformTemporalSubsample(10), RandomShortSideScale(10, 20)]:
@@ -100,7 +116,9 @@ class TestTransforms(unittest.TestCase):
             self.assertTrue(output.equal(script_output))
 
     def test_repeat_temporal_frames_subsample(self):
-        video = thwc_to_cthw(create_video_frames(32, 10, 10)).to(dtype=torch.float32)
+        video = thwc_to_cthw(create_dummy_video_frames(32, 10, 10)).to(
+            dtype=torch.float32
+        )
         actual = repeat_temporal_frames_subsample(video, (1, 4))
         expected_shape = ((3, 32, 10, 10), (3, 8, 10, 10))
         for idx in range(len(actual)):
