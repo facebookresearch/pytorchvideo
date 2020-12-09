@@ -1354,7 +1354,7 @@ class TestResNet(unittest.TestCase):
         """
         Test builder `create_acoustic_resnet` with callable inputs.
         """
-        _input_channel = 2
+        _input_channel = 1
         for (norm, activation) in itertools.product(
             (nn.BatchNorm3d, None), (nn.ReLU, nn.Sigmoid, None)
         ):
@@ -1381,7 +1381,7 @@ class TestResNet(unittest.TestCase):
             )
 
             # Test forwarding.
-            for tensor in TestResNet._get_inputs(_input_channel, 8, 56):
+            for tensor in TestResNet._get_inputs(_input_channel, 1, 56):
                 with torch.no_grad():
                     if tensor.shape[1] != _input_channel:
                         with self.assertRaises(RuntimeError):

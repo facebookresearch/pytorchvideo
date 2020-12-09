@@ -955,7 +955,8 @@ def create_acoustic_resnet(
             head_activation (callable): a callable that constructs activation layer.
 
     Returns:
-        (nn.Module): basic resnet.
+        (nn.Module): acoustic resnet that takes audio inputs in log-mel-spectrogram of
+            shape B x 1 x 1 x T x F.
     """
     # Given a model depth, get the number of blocks for each stage.
     _MODEL_STAGE_DEPTH = {50: (3, 4, 6, 3), 101: (3, 4, 23, 3), 152: (3, 8, 36, 3)}
