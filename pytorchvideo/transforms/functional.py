@@ -3,6 +3,8 @@
 import math
 from typing import Tuple
 
+import cv2
+import numpy as np
 import torch
 
 
@@ -31,8 +33,53 @@ def uniform_temporal_subsample(
     return torch.index_select(x, temporal_dim, indices)
 
 
+@torch.jit.ignore
+def _interpolate_opencv(
+    x: torch.Tensor, size: Tuple[int, int], interpolation: str
+) -> torch.Tensor:
+    """
+    Down/up samples the input torch tensor x to the given size with given interpolation
+    mode.
+    Args:
+        input (Tensor): the input tensor to be down/up sampled.
+        size (Tuple[int, int]): expected output spatial size.
+        interpolation: model to perform interpolation, options include `nearest`,
+            `linear`, `bilinear`, `bicubic`.
+    """
+    _opencv_pytorch_interpolation_map = {
+        "nearest": cv2.INTER_NEAREST,
+        "linear": cv2.INTER_LINEAR,
+        "bilinear": cv2.INTER_AREA,
+        "bicubic": cv2.INTER_CUBIC,
+    }
+    assert interpolation in _opencv_pytorch_interpolation_map
+    new_h, new_w = size
+    img_array_list = [
+        img_tensor.squeeze(0).numpy()
+        for img_tensor in x.permute(1, 2, 3, 0).split(1, dim=0)
+    ]
+    resized_img_array_list = [
+        cv2.resize(
+            img_array,
+            (new_w, new_h),  # The input order for OpenCV is w, h.
+            interpolation=_opencv_pytorch_interpolation_map[interpolation],
+        )
+        for img_array in img_array_list
+    ]
+    img_array = np.concatenate(
+        [np.expand_dims(img_array, axis=0) for img_array in resized_img_array_list],
+        axis=0,
+    )
+    img_tensor = torch.from_numpy(np.ascontiguousarray(img_array))
+    img_tensor = img_tensor.permute(3, 0, 1, 2)
+    return img_tensor
+
+
 def short_side_scale(
-    x: torch.Tensor, size: int, interpolation: str = "bilinear"
+    x: torch.Tensor,
+    size: int,
+    interpolation: str = "bilinear",
+    backend: str = "pytorch",
 ) -> torch.Tensor:
     """
     Determines the shorter spatial dim of the video (i.e. width or height) and scales
@@ -44,22 +91,32 @@ def short_side_scale(
         size (int): The size the shorter side is scaled to.
         interpolation (str): Algorithm used for upsampling,
             options: nearest' | 'linear' | 'bilinear' | 'bicubic' | 'trilinear' | 'area'
+        backend (str): backend used to perform interpolation. Options includes
+            `pytorch` as default, and `opencv`. Note that opencv and pytorch behave
+            differently on linear interpolation on some versions.
+            https://discuss.pytorch.org/t/pytorch-linear-interpolation-is-different-from-pil-opencv/71181
 
     Returns:
         An x-like Tensor with scaled spatial dims.
     """
     assert len(x.shape) == 4
     assert x.dtype == torch.float32
-    _, t, h, w = x.shape
+    assert backend in ("pytorch", "opencv")
+    c, t, h, w = x.shape
     if w < h:
         new_h = int(math.floor((float(h) / w) * size))
         new_w = size
     else:
         new_h = size
         new_w = int(math.floor((float(w) / h) * size))
-    return torch.nn.functional.interpolate(
-        x, size=(new_h, new_w), mode=interpolation, align_corners=False
-    )
+    if backend == "pytorch":
+        return torch.nn.functional.interpolate(
+            x, size=(new_h, new_w), mode=interpolation, align_corners=False
+        )
+    elif backend == "opencv":
+        return _interpolate_opencv(x, size=(new_h, new_w), interpolation=interpolation)
+    else:
+        raise NotImplementedError(f"{backend} backend not supported.")
 
 
 def repeat_temporal_frames_subsample(

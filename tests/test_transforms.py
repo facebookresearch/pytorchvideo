@@ -76,25 +76,46 @@ class TestTransforms(unittest.TestCase):
         actual = uniform_temporal_subsample(video, 1)
         self.assertTrue(actual.equal(video[:, 0:1]))
 
-    def test_short_side_scale_width_shorter(self):
+    def test_short_side_scale_width_shorter_pytorch(self):
         video = thwc_to_cthw(create_dummy_video_frames(20, 20, 10)).to(
             dtype=torch.float32
         )
-        actual = short_side_scale(video, 5)
+        actual = short_side_scale(video, 5, backend="pytorch")
         self.assertEqual(actual.shape, (3, 20, 10, 5))
 
-    def test_short_side_scale_height_shorter(self):
+    def test_short_side_scale_height_shorter_pytorch(self):
         video = thwc_to_cthw(create_dummy_video_frames(20, 10, 20)).to(
             dtype=torch.float32
         )
-        actual = short_side_scale(video, 5)
+        actual = short_side_scale(video, 5, backend="pytorch")
         self.assertEqual(actual.shape, (3, 20, 5, 10))
 
-    def test_short_side_scale_equal_size(self):
+    def test_short_side_scale_equal_size_pytorch(self):
         video = thwc_to_cthw(create_dummy_video_frames(20, 10, 10)).to(
             dtype=torch.float32
         )
-        actual = short_side_scale(video, 10)
+        actual = short_side_scale(video, 10, backend="pytorch")
+        self.assertEqual(actual.shape, (3, 20, 10, 10))
+
+    def test_short_side_scale_width_shorter_opencv(self):
+        video = thwc_to_cthw(create_dummy_video_frames(20, 20, 10)).to(
+            dtype=torch.float32
+        )
+        actual = short_side_scale(video, 5, backend="opencv")
+        self.assertEqual(actual.shape, (3, 20, 10, 5))
+
+    def test_short_side_scale_height_shorter_opencv(self):
+        video = thwc_to_cthw(create_dummy_video_frames(20, 10, 20)).to(
+            dtype=torch.float32
+        )
+        actual = short_side_scale(video, 5, backend="opencv")
+        self.assertEqual(actual.shape, (3, 20, 5, 10))
+
+    def test_short_side_scale_equal_size_opencv(self):
+        video = thwc_to_cthw(create_dummy_video_frames(20, 10, 10)).to(
+            dtype=torch.float32
+        )
+        actual = short_side_scale(video, 10, backend="opencv")
         self.assertEqual(actual.shape, (3, 20, 10, 10))
 
     def test_torchscriptable_input_output(self):
