@@ -8,7 +8,7 @@ import torch
 
 class Video(ABC):
     """
-    Video is an abstraction for accessing clips of video, audio, and other data from a video.
+    Video provides an interface to access clips from a video container.
     """
 
     @property
@@ -25,7 +25,7 @@ class Video(ABC):
         self, start_sec: float, end_sec: float
     ) -> Dict[str, Optional[torch.Tensor]]:
         """
-        Retrieves frames from the encoded video at the specified start and end times
+        Retrieves frames from the internal video at the specified start and end times
         in seconds (the video always starts at 0 seconds).
 
         Args:
@@ -33,7 +33,7 @@ class Video(ABC):
             end_sec (float): the clip end time in seconds
         Returns:
             video_data_dictonary: A dictionary mapping strings to tensor of the clip's
-            underlying visual, audio, and other data.
+                underlying data.
 
         """
         pass

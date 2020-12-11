@@ -98,7 +98,7 @@ def short_side_scale(
 
     Returns:
         An x-like Tensor with scaled spatial dims.
-    """
+    """  # noqa
     assert len(x.shape) == 4
     assert x.dtype == torch.float32
     assert backend in ("pytorch", "opencv")
