@@ -537,29 +537,6 @@ class TestEncodedVideoDataset(unittest.TestCase):
                 total_duration = num_frames / fps
                 half_duration = total_duration / 2 - self._EPS
 
-                def run_distributed(rank, size, return_dict):
-                    """
-                    This function is run by each distributed process. It samples videos
-                    based on the distributed split (determined by the
-                    DistributedSampler) and returns the dataset clips in the return_dict.
-                    """
-                    os.environ["MASTER_ADDR"] = "127.0.0.1"
-                    os.environ["MASTER_PORT"] = "29500"
-                    dist.init_process_group("gloo", rank=rank, world_size=size)
-                    clip_sampler = make_clip_sampler("uniform", half_duration)
-                    labeled_video_paths = LabeledVideoPaths.from_path(f.name)
-                    dataset = EncodedVideoDataset(
-                        labeled_video_paths,
-                        clip_sampler=clip_sampler,
-                        video_sampler=DistributedSampler,
-                    )
-                    test_dataloader = DataLoader(
-                        dataset, batch_size=None, num_workers=0
-                    )
-                    return_dict[rank] = [
-                        (sample["label"], sample["video"]) for sample in test_dataloader
-                    ]
-
                 # Create several processes initialized in a PyTorch distributed process
                 # group so that distributed sampler is setup correctly when dataset is
                 # constructed.
@@ -568,7 +545,8 @@ class TestEncodedVideoDataset(unittest.TestCase):
                 return_dict = multiprocessing.Manager().dict()
                 for rank in range(num_processes):
                     p = Process(
-                        target=run_distributed, args=(rank, num_processes, return_dict)
+                        target=run_distributed,
+                        args=(rank, num_processes, half_duration, f.name, return_dict),
                     )
                     p.start()
                     processes.append(p)
@@ -616,3 +594,25 @@ def unordered_list_compare(
             return False
 
     return True
+
+
+def run_distributed(rank, size, clip_duration, data_name, return_dict):
+    """
+    This function is run by each distributed process. It samples videos
+    based on the distributed split (determined by the
+    DistributedSampler) and returns the dataset clips in the return_dict.
+    """
+    os.environ["MASTER_ADDR"] = "127.0.0.1"
+    os.environ["MASTER_PORT"] = "29500"
+    dist.init_process_group("gloo", rank=rank, world_size=size)
+    clip_sampler = make_clip_sampler("uniform", clip_duration)
+    labeled_video_paths = LabeledVideoPaths.from_path(data_name)
+    dataset = EncodedVideoDataset(
+        labeled_video_paths,
+        clip_sampler=clip_sampler,
+        video_sampler=DistributedSampler,
+    )
+    test_dataloader = DataLoader(dataset, batch_size=None, num_workers=0)
+    return_dict[rank] = [
+        (sample["label"], sample["video"]) for sample in test_dataloader
+    ]
