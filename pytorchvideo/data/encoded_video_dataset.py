@@ -62,7 +62,6 @@ class EncodedVideoDataset(torch.utils.data.IterableDataset):
         self._labeled_videos = labeled_video_paths
         self._video_sampler = video_sampler(self._labeled_videos)
         self._video_sampler_iter = None  # Initialized on first call to self.__next__()
-        self._num_consecutive_failures = 0
 
         # Depending on the clip sampler type, we may want to sample multiple clips
         # from one video. In that case, we keep the store video, label and previous sampled
@@ -91,59 +90,64 @@ class EncodedVideoDataset(torch.utils.data.IterableDataset):
             # Setup MultiProcessSampler here - after PyTorch DataLoader workers are spawned.
             self._video_sampler_iter = iter(MultiProcessSampler(self._video_sampler))
 
-        # Called when failed to decode video or retrieve clip.
-        def retry_next():
-            self._num_consecutive_failures += 1
-            if self._num_consecutive_failures >= self._MAX_CONSECUTIVE_FAILURES:
-                raise RuntimeError(
-                    f"Failed to load video after {self._MAX_CONSECUTIVE_FAILURES} retries."
-                )
+        for i_try in range(self._MAX_CONSECUTIVE_FAILURES):
+            # Reuse previously stored video if there are still clips to be sampled from
+            # the last loaded video.
+            if self._loaded_video_label:
+                video, info_dict, video_index = self._loaded_video_label
+            else:
+                video_index = next(self._video_sampler_iter)
+                try:
+                    video_path, info_dict = self._labeled_videos[video_index]
+                    video = EncodedVideo.from_path(video_path)
+                    self._loaded_video_label = (video, info_dict, video_index)
+                except (RuntimeError, OSError) as e:
+                    logger.warning(
+                        "Failed to load video from {} with error {}; trial {}".format(
+                            video_path,
+                            e,
+                            i_try,
+                        )
+                    )
+                    continue
 
-            return self.__next__()
+            clip_start, clip_end, is_last_clip = self._clip_sampler(
+                self._next_clip_start_time, video.duration
+            )
+            clip_data = video.get_clip(clip_start, clip_end)
+            self._next_clip_start_time = clip_end
 
-        # Reuse previously stored video if there are still clips to be sampled from
-        # the last loaded video.
-        if self._loaded_video_label:
-            video, info_dict = self._loaded_video_label
+            if is_last_clip or clip_data is None or clip_data["video"] is None:
+                # Close the loaded encoded video and reset the last sampled clip time ready
+                # to sample a new video on the next iteration.
+                self._loaded_video_label[0].close()
+                self._loaded_video_label = None
+                self._next_clip_start_time = 0.0
+
+                if clip_data is None or clip_data["video"] is None:
+                    logger.warning(
+                        "Failed to meta load video {}; trial {}".format(
+                            video.name, i_try
+                        )
+                    )
+                    continue
+
+            frames = clip_data["video"]
+            audio_samples = clip_data["audio"]
+            sample_dict = {
+                "video": frames,
+                "audio": audio_samples,
+                "video_name": video.name,
+                **info_dict,
+            }
+            if self._transform is not None:
+                sample_dict = self._transform(sample_dict)
+
+            return sample_dict
         else:
-            video_index = next(self._video_sampler_iter)
-            try:
-                video_path, info_dict = self._labeled_videos[video_index]
-                video = EncodedVideo.from_path(video_path)
-                self._loaded_video_label = (video, info_dict)
-            except (RuntimeError, OSError) as e:
-                logger.warning(e)
-                return retry_next()
-
-        clip_start, clip_end, is_last_clip = self._clip_sampler(
-            self._next_clip_start_time, video.duration
-        )
-        clip_data = video.get_clip(clip_start, clip_end)
-        frames = clip_data["video"]
-        audio_samples = clip_data["audio"]
-        self._next_clip_start_time = clip_end
-
-        if is_last_clip or frames is None:
-            # Close the loaded encoded video and reset the last sampled clip time ready
-            # to sample a new video on the next iteration.
-            self._loaded_video_label[0].close()
-            self._loaded_video_label = None
-            self._next_clip_start_time = 0.0
-
-            if frames is None:
-                return retry_next()
-
-        sample_dict = {
-            "video": frames,
-            "audio": audio_samples,
-            "video_name": video.name,
-            **info_dict,
-        }
-        if self._transform is not None:
-            sample_dict = self._transform(sample_dict)
-
-        self._num_consecutive_failures = 0
-        return sample_dict
+            raise RuntimeError(
+                f"Failed to load video after {self._MAX_CONSECUTIVE_FAILURES} retries."
+            )
 
     def __iter__(self):
         return self
