@@ -8,6 +8,7 @@ import torch.nn
 from pytorchvideo.layers import PositionalEncoding, make_multilayer_perceptron
 from pytorchvideo.models.masked_multistream import (
     LSTM,
+    TransposeTransformerEncoder,
     LearnMaskedDefault,
     MaskedSequential,
     MaskedTemporalPooling,
@@ -83,6 +84,18 @@ class TestMaskedMultiStream(unittest.TestCase):
         model = LSTM(feature_dim, hidden_dim=hidden_dim, bidirectional=True)
         output = model(fake_input, mask=mask)
         self.assertTrue(output.shape, (fake_input.shape[0], hidden_dim * 2))
+
+    def test_masked_transpose_transformer_encoder(self):
+        feature_dim = 8
+        seq_len = 10
+        fake_input = torch.rand([4, seq_len, feature_dim])
+        mask = _lengths2mask(
+            torch.tensor([seq_len, seq_len, seq_len, seq_len]), fake_input.shape[1]
+        )
+
+        model = TransposeTransformerEncoder(feature_dim)
+        output = model(fake_input, mask=mask)
+        self.assertEqual(output.shape, (fake_input.shape[0], feature_dim))
 
     def test_learn_masked_default(self):
         feature_dim = 8

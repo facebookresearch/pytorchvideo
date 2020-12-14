@@ -272,6 +272,53 @@ class LSTM(nn.Module):
         return out
 
 
+class TransposeTransformerEncoder(nn.Module):
+    """
+    Wrapper for torch.nn.TransformerEncoder that handles masked inputs.
+    """
+
+    def __init__(
+        self,
+        dim_in: int,
+        num_heads: int = 1,
+        num_layers: int = 1,
+    ):
+        """
+        Args:
+          dim_in (int): input feature dimension
+          num_heads (int): number of heads in the nn.MultiHeadAttention layers
+          num_layers (int): the number of sub-encoder-layers in the encoder
+        """
+        super().__init__()
+        self.encoder = nn.TransformerEncoder(
+            nn.TransformerEncoderLayer(dim_in, num_heads), num_layers
+        )
+
+    def forward(
+        self, data: torch.Tensor, mask: Optional[torch.Tensor] = None
+    ) -> torch.Tensor:
+        """
+        Args:
+            data (torch.Tensor): tensor with shape (batch_size, seq_len, feature_dim)
+            mask (torch.Tensor): bool tensor with shape (batch_size, seq_len).
+                Sequence elements that are False are invalid.
+
+        Returns:
+            Tensor with shape (batch_size, feature_dim)
+        """
+        if mask is not None:
+            # At least the first element of each masked batch row must be valid for
+            # key_padding_mask.
+            mask[:, 0] = True
+            mask = ~mask
+
+        out = self.encoder(
+            src=data.transpose(0, 1), src_key_padding_mask=mask
+        ).transpose(0, 1)
+
+        return out[:, 0, :]
+
+
 class MaskedSequential(nn.Sequential):
     """
     A sequential container that overrides forward to take a mask as well as the usual
@@ -284,6 +331,7 @@ class MaskedSequential(nn.Sequential):
         LearnMaskedDefault,
         TransposeMultiheadAttention,
         LSTM,
+        TransposeTransformerEncoder,
     ]
 
     def forward(self, input: torch.Tensor, mask: torch.Tensor) -> torch.Tensor:
