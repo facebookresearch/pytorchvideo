@@ -2,23 +2,29 @@
 
 import random
 from abc import ABC, abstractmethod
-from typing import Tuple
+from typing import NamedTuple
+
+
+class ClipInfo(NamedTuple):
+    clip_start_sec: float
+    clip_end_sec: float
+    clip_index: int
+    is_last_clip: bool
 
 
 class ClipSampler(ABC):
     """
     Interface for clip sampler's which take a video time, previous sampled clip time,
-    and returns the clip start and end time and a bool specifying whether there are
-    more clips to be sampled from the video.
+    and returns a named-tuple `ClipInfo` with the clip start and end time, clip index and
+    a bool specifying whether there are more clips to be sampled from the video.
     """
 
     def __init__(self, clip_duration: float) -> None:
         self._clip_duration = clip_duration
+        self._current_clip_index = 0
 
     @abstractmethod
-    def __call__(
-        self, last_clip_time: float, video_duration: float
-    ) -> Tuple[float, float, bool]:
+    def __call__(self, last_clip_time: float, video_duration: float) -> ClipInfo:
         pass
 
 
@@ -49,9 +55,7 @@ class UniformClipSampler(ClipSampler):
     def __init__(self, clip_duration: float) -> None:
         super().__init__(clip_duration)
 
-    def __call__(
-        self, last_clip_time: float, video_duration: float
-    ) -> Tuple[float, float, bool]:
+    def __call__(self, last_clip_time: float, video_duration: float) -> ClipInfo:
         """
         Args:
             last_clip_time (float): the last clip end time sampled from this video. This
@@ -59,15 +63,18 @@ class UniformClipSampler(ClipSampler):
                 segments, clip_index is the segment index to sample.
             video_duration: (float): the duration of the video that's being sampled in seconds
         Returns:
-            Tuple of format: (clip_start_time, clip_end_time, is_last_clip), where the
-            times are in seconds and is_last_clip is False when there is still more of
-            time in the video to be sampled.
+            a named-tuple `ClipInfo`: includes the clip information of (clip_start_time,
+                clip_end_time, clip_index, is_last_clip), where the times are in seconds and
+                is_last_clip is False when there is still more of time in the video to be
+                sampled.
 
         """
         clip_start_sec = last_clip_time
         clip_end_sec = clip_start_sec + self._clip_duration
+        clip_index = self._current_clip_index
+        self._current_clip_index += 1
         is_last_clip = (clip_end_sec + self._clip_duration) > video_duration
-        return clip_start_sec, clip_end_sec, is_last_clip
+        return ClipInfo(clip_start_sec, clip_end_sec, clip_index, is_last_clip)
 
 
 class RandomClipSampler(ClipSampler):
@@ -78,22 +85,21 @@ class RandomClipSampler(ClipSampler):
     def __init__(self, clip_duration: float) -> None:
         super().__init__(clip_duration)
 
-    def __call__(
-        self, last_clip_time: float, video_duration: float
-    ) -> Tuple[float, float, bool]:
+    def __call__(self, last_clip_time: float, video_duration: float) -> ClipInfo:
         """
         Args:
             last_clip_time (float): Not used for RandomClipSampler.
             video_duration: (float): the duration (in seconds) for the video that's
                 being sampled
         Returns:
-            Tuple of format: (clip_start_time, clip_end_time, is_last_clip). The times
-            are in seconds and is_last_clip is always True for this clip sampler.
+            a named-tuple `ClipInfo`: includes the clip information of (clip_start_time,
+                clip_end_time, clip_index, is_last_clip). The times are in seconds, clip_index
+                 and is_last_clip are always 0 and True, respectively.
 
         """
         max_possible_clip_start = max(video_duration - self._clip_duration, 0)
         clip_start_sec = random.uniform(0, max_possible_clip_start)
-        return clip_start_sec, clip_start_sec + self._clip_duration, True
+        return ClipInfo(clip_start_sec, clip_start_sec + self._clip_duration, 0, True)
 
 
 class ConstantClipsPerVideoSampler(ClipSampler):
@@ -105,28 +111,24 @@ class ConstantClipsPerVideoSampler(ClipSampler):
     def __init__(self, clip_duration: float, clips_per_video: int) -> None:
         super().__init__(clip_duration)
         self._clips_per_video = clips_per_video
-        self._current_clip_index = 0
 
-    def __call__(
-        self, last_clip_time: float, video_duration: float
-    ) -> Tuple[float, float, bool]:
+    def __call__(self, last_clip_time: float, video_duration: float) -> ClipInfo:
         """
         Args:
             last_clip_time (float): Not used for ConstantClipsPerVideoSampler.
             video_duration: (float): the duration (in seconds) for the video that's
                 being sampled.
         Returns:
-            Tuple of format: (clip_start_time, clip_end_time, is_last_clip). The times
-            are in seconds. is_last_clip is True after clips_per_video clips have
-            been sampled or the end of the video is reached.
+            a named-tuple `ClipInfo`: includes the clip information of (clip_start_time,
+                clip_end_time, clip_index, is_last_clip). The times are in seconds.
+                is_last_clip is True after clips_per_video clips have been sampled or the end
+                of the video is reached.
 
         """
-        assert (
-            self._clip_duration <= video_duration
-        ), f"clip duration ({self._clip_duration}) > video duration ({video_duration})"
         max_possible_clip_start = max(video_duration - self._clip_duration, 0)
         uniform_clip = max_possible_clip_start / self._clips_per_video
         clip_start_sec = uniform_clip * self._current_clip_index
+        clip_index = self._current_clip_index
         self._current_clip_index += 1
 
         # Last clip is True if sampled self._clips_per_video or if end of video is reached.
@@ -138,4 +140,9 @@ class ConstantClipsPerVideoSampler(ClipSampler):
             self._current_clip_index = 0
             is_last_clip = True
 
-        return clip_start_sec, clip_start_sec + self._clip_duration, is_last_clip
+        return ClipInfo(
+            clip_start_sec,
+            clip_start_sec + self._clip_duration,
+            clip_index,
+            is_last_clip,
+        )

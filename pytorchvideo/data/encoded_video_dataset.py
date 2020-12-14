@@ -52,7 +52,8 @@ class EncodedVideoDataset(torch.utils.data.IterableDataset):
                     {
                         'video': <video_tensor>,
                         'label': <index_label>,
-                        'index': <clip_index>
+                        'video_index': <video_index>
+                        'clip_index': <clip_index>
                     }
                 If transform is None, the raw clip output in the above format is
                 returned unmodified.
@@ -82,7 +83,8 @@ class EncodedVideoDataset(torch.utils.data.IterableDataset):
                 {
                     'video': <video_tensor>,
                     'label': <index_label>,
-                    'index': <clip_index>
+                    'video_index': <video_index>
+                    'clip_index': <clip_index>
                 }
             Otherwise, the transform defines the clip output.
         """
@@ -111,7 +113,7 @@ class EncodedVideoDataset(torch.utils.data.IterableDataset):
                     )
                     continue
 
-            clip_start, clip_end, is_last_clip = self._clip_sampler(
+            clip_start, clip_end, clip_index, is_last_clip = self._clip_sampler(
                 self._next_clip_start_time, video.duration
             )
             clip_data = video.get_clip(clip_start, clip_end)
@@ -138,6 +140,8 @@ class EncodedVideoDataset(torch.utils.data.IterableDataset):
                 "video": frames,
                 "audio": audio_samples,
                 "video_name": video.name,
+                "video_index": video_index,
+                "clip_index": clip_index,
                 **info_dict,
             }
             if self._transform is not None:
@@ -187,7 +191,8 @@ def labeled_encoded_video_dataset(
                     {
                         'video': <video_tensor>,
                         'label': <index_label>,
-                        'index': <clip_index>
+                        'video_index': <video_index>
+                        'clip_index': <clip_index>
                     }
                 If transform is None, the raw clip output in the above format is
                 returned unmodified.

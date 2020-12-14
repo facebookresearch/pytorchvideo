@@ -55,7 +55,8 @@ class Charades(torch.utils.data.IterableDataset):
                     {
                         'video': <video_tensor>,
                         'label': <index_label>,
-                        'index': <clip_index>
+                        'video_index': <video_index>
+                        'clip_index': <clip_index>
                     }
                 If transform is None, the raw clip output in the above format is
                 returned unmodified.
@@ -105,7 +106,7 @@ class Charades(torch.utils.data.IterableDataset):
             video = FrameVideo.from_frame_paths(path_to_video_frames)
             self._loaded_video = (video, video_index)
 
-        clip_start, clip_end, is_last_clip = self._clip_sampler(
+        clip_start, clip_end, clip_index, is_last_clip = self._clip_sampler(
             self._next_clip_start_time, video.duration
         )
         clip = video.get_clip(clip_start, clip_end)
@@ -122,6 +123,8 @@ class Charades(torch.utils.data.IterableDataset):
             "video": frames,
             "label": labels_by_frame,
             "video_name": str(video_index),
+            "video_index": video_index,
+            "clip_index": clip_index,
         }
         if self._transform is not None:
             sample_dict = self._transform(sample_dict)
