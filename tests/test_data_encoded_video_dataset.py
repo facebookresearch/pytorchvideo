@@ -1,6 +1,7 @@
 # Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved.
 
-import itertools
+import collections
+import contextlib
 import math
 import multiprocessing
 import os
@@ -15,6 +16,7 @@ from unittest.mock import Mock, patch
 import av  # noqa: F401
 import torch
 import torch.distributed as dist
+from parameterized import parameterized
 from pytorchvideo.data import Hmdb51
 from pytorchvideo.data.clip_sampling import make_clip_sampler
 from pytorchvideo.data.encoded_video_dataset import (
@@ -27,6 +29,7 @@ from torch.multiprocessing import Process
 from torch.utils.data import (
     DataLoader,
     DistributedSampler,
+    RandomSampler,
     SequentialSampler,
     TensorDataset,
 )
@@ -39,64 +42,20 @@ class TestEncodedVideoDataset(unittest.TestCase):
     _EPS = 1e-9
 
     def test_single_clip_per_video_works(self):
-        num_frames = 10
-        fps = 5
-        with temp_encoded_video(num_frames=num_frames, fps=fps) as (
-            video_file_name,
-            data,
-        ):
-            with tempfile.NamedTemporaryFile(delete=False, suffix=".txt") as f:
-                f.write(f"{video_file_name} 0\n".encode())
-                f.write(f"{video_file_name} 1\n".encode())
-
-            total_duration = num_frames / fps
+        with mock_encoded_video_dataset_file() as (mock_csv, expected, total_duration):
             clip_sampler = make_clip_sampler("uniform", total_duration)
-
             dataset = labeled_encoded_video_dataset(
-                data_path=f.name,
+                data_path=mock_csv,
                 clip_sampler=clip_sampler,
                 video_sampler=SequentialSampler,
             )
+            test_dataloader = DataLoader(dataset, batch_size=None, num_workers=2)
 
-            expected = [(0, data), (1, data)]
-            for i, sample in enumerate(dataset):
-                self.assertTrue(sample["video"].equal(expected[i][1]))
-                self.assertEqual(sample["label"], expected[i][0])
-
-    def test_multiple_clips_per_video_works(self):
-        num_frames = 10
-        fps = 5
-        with temp_encoded_video(num_frames=num_frames, fps=fps) as (
-            video_file_name,
-            data,
-        ):
-            with tempfile.NamedTemporaryFile(delete=False, suffix=".txt") as f:
-                f.write(f"{video_file_name} 0\n".encode())
-                f.write(f"{video_file_name} 1\n".encode())
-
-            total_duration = num_frames / fps
-            half_duration = total_duration / 2 - self._EPS
-            clip_sampler = make_clip_sampler("uniform", half_duration)
-            labeled_video_paths = LabeledVideoPaths.from_path(f.name)
-            dataset = EncodedVideoDataset(
-                labeled_video_paths,
-                clip_sampler=clip_sampler,
-                video_sampler=SequentialSampler,
-            )
-
-            half_frames = num_frames // 2
-            first_half_data = data[:, :half_frames]
-            second_half_data = data[:, half_frames:]
-            expected = [
-                (0, first_half_data),
-                (0, second_half_data),
-                (1, first_half_data),
-                (1, second_half_data),
-            ]
-
-            for i, sample in enumerate(dataset):
-                self.assertEqual(sample["label"], expected[i][0])
-                self.assertTrue(sample["video"].equal(expected[i][1]))
+            for _ in range(2):
+                actual = [
+                    (sample["label"], sample["video"]) for sample in test_dataloader
+                ]
+                assert_unordered_list_compare_true(self, expected, actual)
 
     def test_video_name_with_whitespace_works(self):
         num_frames = 10
@@ -124,31 +83,25 @@ class TestEncodedVideoDataset(unittest.TestCase):
                 self.assertEqual(sample["label"], expected[i][0])
 
     def test_random_clip_sampling_works(self):
-        num_frames = 10
-        fps = 5
-        with temp_encoded_video(num_frames=num_frames, fps=fps) as (
-            video_file_name,
-            data,
+        with mock_encoded_video_dataset_file() as (
+            mock_csv,
+            label_videos,
+            total_duration,
         ):
-            with tempfile.NamedTemporaryFile(delete=False, suffix=".txt") as f:
-                f.write(f"{video_file_name} 0\n".encode())
-                f.write(f"{video_file_name} 1\n".encode())
-
-            total_duration = num_frames / fps
             half_duration = total_duration / 2 - self._EPS
             clip_sampler = make_clip_sampler("random", half_duration)
-            labeled_video_paths = LabeledVideoPaths.from_path(f.name)
+            labeled_video_paths = LabeledVideoPaths.from_path(mock_csv)
             dataset = EncodedVideoDataset(
                 labeled_video_paths,
                 clip_sampler=clip_sampler,
                 video_sampler=SequentialSampler,
             )
 
-            # [(expected_label, expected_t_shape), ...]
-            expected = [(0, 5), (1, 5)]
+            expected_labels = [label for label, _ in label_videos]
             for i, sample in enumerate(dataset):
-                self.assertEqual(sample["video"].shape[1], expected[i][1])
-                self.assertEqual(sample["label"], expected[i][0])
+                expected_t_shape = 5
+                self.assertEqual(sample["video"].shape[1], expected_t_shape)
+                self.assertEqual(sample["label"], expected_labels[i])
 
     def test_reading_from_directory_structure_hmdb51(self):
         # For an unknown reason this import has to be here for `buck test` to work.
@@ -349,115 +302,124 @@ class TestEncodedVideoDataset(unittest.TestCase):
                     sample_2["video"].equal(thwc_to_cthw(data_1).to(torch.float32))
                 )
 
-    def test_sampling_with_multiple_processes(self):
-        num_frames = 10
-        fps = 5
-        with temp_encoded_video(num_frames=num_frames, fps=fps) as (
-            video_file_name,
-            data,
-        ):
-            with tempfile.NamedTemporaryFile(delete=False, suffix=".txt") as f:
-                f.write(f"{video_file_name} 0\n".encode())
-                f.write(f"{video_file_name} 1\n".encode())
+    def test_random_video_sampler(self):
+        with mock_encoded_video_dataset_file() as (mock_csv, expected, total_duration):
+            clip_sampler = make_clip_sampler("uniform", total_duration)
+            dataset = labeled_encoded_video_dataset(
+                data_path=mock_csv,
+                clip_sampler=clip_sampler,
+                video_sampler=RandomSampler,
+            )
 
-            total_duration = num_frames / fps
+            for _ in range(2):
+                actual = [(sample["label"], sample["video"]) for sample in dataset]
+                assert_unordered_list_compare_true(self, expected, actual)
+
+    @parameterized.expand([(0,), (1,), (2,)])
+    def test_random_video_sampler_multiprocessing(self, num_workers):
+        with mock_encoded_video_dataset_file() as (mock_csv, expected, total_duration):
+            clip_sampler = make_clip_sampler("uniform", total_duration)
+            dataset = labeled_encoded_video_dataset(
+                data_path=mock_csv,
+                clip_sampler=clip_sampler,
+                video_sampler=RandomSampler,
+            )
+            test_dataloader = DataLoader(
+                dataset, batch_size=None, num_workers=num_workers
+            )
+
+            for _ in range(2):
+                actual = [
+                    (sample["label"], sample["video"]) for sample in test_dataloader
+                ]
+                assert_unordered_list_compare_true(self, expected, actual)
+
+    def test_sampling_with_multiple_processes(self):
+        with mock_encoded_video_dataset_file() as (
+            mock_csv,
+            label_videos,
+            total_duration,
+        ):
             half_duration = total_duration / 2 - self._EPS
             clip_sampler = make_clip_sampler("uniform", half_duration)
-            labeled_video_paths = LabeledVideoPaths.from_path(f.name)
+            labeled_video_paths = LabeledVideoPaths.from_path(mock_csv)
             dataset = EncodedVideoDataset(
                 labeled_video_paths,
                 clip_sampler=clip_sampler,
                 video_sampler=SequentialSampler,
             )
 
-            half_frames = num_frames // 2
-            first_half_data = data[:, :half_frames]
-            second_half_data = data[:, half_frames:]
-            expected = [
-                (0, first_half_data),
-                (0, second_half_data),
-                (1, first_half_data),
-                (1, second_half_data),
-            ]
+            # Split each full video into two clips.
+            expected = []
+            for label, data in label_videos:
+                num_frames = data.shape[0]
+                half_frames = num_frames // 2
+                first_half_data = data[:, :half_frames]
+                second_half_data = data[:, half_frames:]
+                expected.append((label, first_half_data))
+                expected.append((label, second_half_data))
 
             test_dataloader = DataLoader(dataset, batch_size=None, num_workers=2)
             actual = [(sample["label"], sample["video"]) for sample in test_dataloader]
-            self.assertTrue(unordered_list_compare(expected, actual))
+            assert_unordered_list_compare_true(self, expected, actual)
 
     def test_sampling_with_non_divisible_processes_by_videos(self):
-        num_frames = 10
-        fps = 5
-        with temp_encoded_video(num_frames=num_frames, fps=fps) as (
-            video_file_name,
-            data,
+        with mock_encoded_video_dataset_file() as (
+            mock_csv,
+            label_videos,
+            total_duration,
         ):
-            with tempfile.NamedTemporaryFile(delete=False, suffix=".txt") as f:
-                f.write(f"{video_file_name} 0\n".encode())
-                f.write(f"{video_file_name} 1\n".encode())
-                f.write(f"{video_file_name} 2\n".encode())
-
-            total_duration = num_frames / fps
             half_duration = total_duration / 2 - self._EPS
             clip_sampler = make_clip_sampler("uniform", half_duration)
-            labeled_video_paths = LabeledVideoPaths.from_path(f.name)
+            labeled_video_paths = LabeledVideoPaths.from_path(mock_csv)
             dataset = EncodedVideoDataset(
                 labeled_video_paths,
                 clip_sampler=clip_sampler,
                 video_sampler=SequentialSampler,
             )
 
-            half_frames = num_frames // 2
-            first_half_data = data[:, :half_frames]
-            second_half_data = data[:, half_frames:]
-            expected = [
-                (0, first_half_data),
-                (0, second_half_data),
-                (2, first_half_data),
-                (2, second_half_data),
-                (1, first_half_data),
-                (1, second_half_data),
-            ]
+            # Split each full video into two clips.
+            expected = []
+            for label, data in label_videos:
+                num_frames = data.shape[0]
+                half_frames = num_frames // 2
+                first_half_data = data[:, :half_frames]
+                second_half_data = data[:, half_frames:]
+                expected.append((label, first_half_data))
+                expected.append((label, second_half_data))
 
-            test_dataloader = DataLoader(dataset, batch_size=None, num_workers=2)
+            test_dataloader = DataLoader(dataset, batch_size=None, num_workers=4)
             actual = [(sample["label"], sample["video"]) for sample in test_dataloader]
-            self.assertTrue(unordered_list_compare(expected, actual))
+            assert_unordered_list_compare_true(self, expected, actual)
 
     def test_sampling_with_more_processes_than_videos(self):
-        num_frames = 10
-        fps = 5
-        with temp_encoded_video(num_frames=num_frames, fps=fps) as (
-            video_file_name,
-            data,
+        with mock_encoded_video_dataset_file() as (
+            mock_csv,
+            label_videos,
+            total_duration,
         ):
-            with tempfile.NamedTemporaryFile(delete=False, suffix=".txt") as f:
-                f.write(f"{video_file_name} 0\n".encode())
-                f.write(f"{video_file_name} 1\n".encode())
-                f.write(f"{video_file_name} 2\n".encode())
-
-            total_duration = num_frames / fps
             half_duration = total_duration / 2 - self._EPS
             clip_sampler = make_clip_sampler("uniform", half_duration)
-            labeled_video_paths = LabeledVideoPaths.from_path(f.name)
+            labeled_video_paths = LabeledVideoPaths.from_path(mock_csv)
             dataset = EncodedVideoDataset(
                 labeled_video_paths,
                 clip_sampler=clip_sampler,
                 video_sampler=SequentialSampler,
             )
 
-            half_frames = num_frames // 2
-            first_half_data = data[:, :half_frames]
-            second_half_data = data[:, half_frames:]
-            expected = [
-                (0, first_half_data),
-                (0, second_half_data),
-                (2, first_half_data),
-                (2, second_half_data),
-                (1, first_half_data),
-                (1, second_half_data),
-            ]
-            test_dataloader = DataLoader(dataset, batch_size=None, num_workers=8)
+            # Split each full video into two clips.
+            expected = []
+            for label, data in label_videos:
+                num_frames = data.shape[0]
+                half_frames = num_frames // 2
+                first_half_data = data[:, :half_frames]
+                second_half_data = data[:, half_frames:]
+                expected.append((label, first_half_data))
+                expected.append((label, second_half_data))
+
+            test_dataloader = DataLoader(dataset, batch_size=None, num_workers=16)
             actual = [(sample["label"], sample["video"]) for sample in test_dataloader]
-            self.assertTrue(unordered_list_compare(expected, actual))
+            assert_unordered_list_compare_true(self, expected, actual)
 
     def test_sampling_with_non_divisible_processes_by_clips(self):
 
@@ -500,7 +462,7 @@ class TestEncodedVideoDataset(unittest.TestCase):
                 actual = [
                     (sample["label"], sample["video"]) for sample in test_dataloader
                 ]
-                self.assertTrue(unordered_list_compare(expected, actual))
+                assert_unordered_list_compare_true(self, expected, actual)
 
     def test_multi_process_sampler(self):
         # Test coverage ignores multi-process lines of code so we need to mock out
@@ -565,13 +527,31 @@ class TestEncodedVideoDataset(unittest.TestCase):
                     (1, data_2[:, half_frames:]),  # Second half
                 }
 
-                actual = list(itertools.chain.from_iterable(return_dict.values()))
-                expected_str = str([(label, clip.shape) for label, clip in expected])
-                actual_str = str([(label, clip.shape) for label, clip in expected])
-                failure_str = f"Expected set: {expected_str}\n actual set: {actual_str}"
-                self.assertTrue(
-                    unordered_list_compare(expected, actual), msg=failure_str
+                epoch_results = collections.defaultdict(list)
+                for v in return_dict.values():
+                    for k_2, v_2 in v.items():
+                        epoch_results[k_2].extend(v_2)
+
+                assert_unordered_list_compare_true(
+                    self, expected, epoch_results["epoch_1"]
                 )
+                assert_unordered_list_compare_true(
+                    self, expected, epoch_results["epoch_2"]
+                )
+
+
+def assert_unordered_list_compare_true(
+    self,
+    expected: List[Tuple[int, torch.Tensor]],
+    actual: List[Tuple[int, torch.Tensor]],
+):
+    """
+    Asserts True if all tuple values from expected found in actual and lengths are equal.
+    """
+    expected_str = str([(label, clip.shape) for label, clip in expected])
+    actual = str([(label, clip.shape) for label, clip in actual])
+    failure_str = f"Expected set: {expected_str}\n actual set: {actual}"
+    self.assertTrue(unordered_list_compare, msg=failure_str)
 
 
 def unordered_list_compare(
@@ -612,7 +592,44 @@ def run_distributed(rank, size, clip_duration, data_name, return_dict):
         clip_sampler=clip_sampler,
         video_sampler=DistributedSampler,
     )
-    test_dataloader = DataLoader(dataset, batch_size=None, num_workers=0)
-    return_dict[rank] = [
-        (sample["label"], sample["video"]) for sample in test_dataloader
-    ]
+    test_dataloader = DataLoader(dataset, batch_size=None, num_workers=1)
+
+    # Run two epochs, simulating use in a training loop
+    dataset.video_sampler.set_epoch(0)
+    epoch_1 = [(sample["label"], sample["video"]) for sample in test_dataloader]
+    dataset.video_sampler.set_epoch(1)
+    epoch_2 = [(sample["label"], sample["video"]) for sample in test_dataloader]
+    return_dict[rank] = {"epoch_1": epoch_1, "epoch_2": epoch_2}
+
+
+@contextlib.contextmanager
+def mock_encoded_video_dataset_file():
+    """
+    Creates a temporary mock encoded video dataset with 4 videos labeled from 0 - 4.
+    Returns a labeled video file which points to this mock encoded video dataset, the
+    ordered label and videos tuples and the video duration in seconds.
+    """
+    num_frames = 10
+    fps = 5
+    with temp_encoded_video(num_frames=num_frames, fps=fps) as (
+        video_file_name_1,
+        data_1,
+    ):
+        with temp_encoded_video(num_frames=num_frames, fps=fps) as (
+            video_file_name_2,
+            data_2,
+        ):
+            with tempfile.NamedTemporaryFile(delete=False, suffix=".txt") as f:
+                f.write(f"{video_file_name_1} 0\n".encode())
+                f.write(f"{video_file_name_2} 1\n".encode())
+                f.write(f"{video_file_name_1} 2\n".encode())
+                f.write(f"{video_file_name_2} 3\n".encode())
+
+            label_videos = [
+                (0, data_1),
+                (1, data_2),
+                (2, data_1),
+                (3, data_2),
+            ]
+            video_duration = num_frames / fps
+            yield f.name, label_videos, video_duration

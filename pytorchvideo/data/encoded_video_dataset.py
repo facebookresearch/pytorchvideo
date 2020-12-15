@@ -61,7 +61,18 @@ class EncodedVideoDataset(torch.utils.data.IterableDataset):
         self._transform = transform
         self._clip_sampler = clip_sampler
         self._labeled_videos = labeled_video_paths
-        self._video_sampler = video_sampler(self._labeled_videos)
+
+        # If a RandomSampler is used we need to pass in a custom random generator that
+        # ensures all PyTorch multiprocess workers have the same random seed.
+        self._video_random_generator = None
+        if video_sampler == torch.utils.data.RandomSampler:
+            self._video_random_generator = torch.Generator()
+            self._video_sampler = video_sampler(
+                self._labeled_videos, generator=self._video_random_generator
+            )
+        else:
+            self._video_sampler = video_sampler(self._labeled_videos)
+
         self._video_sampler_iter = None  # Initialized on first call to self.__next__()
 
         # Depending on the clip sampler type, we may want to sample multiple clips
@@ -154,6 +165,17 @@ class EncodedVideoDataset(torch.utils.data.IterableDataset):
             )
 
     def __iter__(self):
+        self._video_sampler_iter = None  # Reset video sampler
+
+        # If we're in a PyTorch DataLoader multiprocessing context, we need to use the
+        # same seed for each worker's RandomSampler generator. The workers at each
+        # __iter__ call are created from the unique value: worker_info.seed - worker_info.id,
+        # which we can use for this seed.
+        worker_info = torch.utils.data.get_worker_info()
+        if self._video_random_generator is not None and worker_info is not None:
+            base_seed = worker_info.seed - worker_info.id
+            self._video_random_generator.manual_seed(base_seed)
+
         return self
 
 

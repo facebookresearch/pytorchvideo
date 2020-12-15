@@ -8,11 +8,11 @@ import torch.nn
 from pytorchvideo.layers import PositionalEncoding, make_multilayer_perceptron
 from pytorchvideo.models.masked_multistream import (
     LSTM,
-    TransposeTransformerEncoder,
     LearnMaskedDefault,
     MaskedSequential,
     MaskedTemporalPooling,
     TransposeMultiheadAttention,
+    TransposeTransformerEncoder,
 )
 
 

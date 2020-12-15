@@ -4,12 +4,12 @@ from .csn import create_csn
 from .head import ResNetBasicHead, create_res_basic_head
 from .masked_multistream import (
     LSTM,
-    TransposeTransformerEncoder,
     LearnMaskedDefault,
     MaskedMultiPathWay,
     MaskedSequential,
     MaskedTemporalPooling,
     TransposeMultiheadAttention,
+    TransposeTransformerEncoder,
 )
 from .net import MultiPathWayWithFuse, Net
 from .resnet import BottleneckBlock, create_bottleneck_block, create_resnet
