@@ -7,7 +7,7 @@ import torch.distributed as dist
 import torch.nn as nn
 import torch.nn.functional as F
 from pytorchvideo.layers.distributed import DifferentiableAllGather
-from pytorchvideo.models.utils import set_attributes
+from pytorchvideo.layers.utils import set_attributes
 
 
 class SimCLR(nn.Module):
