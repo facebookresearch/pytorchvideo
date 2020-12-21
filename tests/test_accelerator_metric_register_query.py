@@ -6,7 +6,7 @@ from functools import reduce
 
 import torch
 import torch.nn as nn
-from pytorchvideo.mobile.metric_engine.metric_engine import (
+from pytorchvideo.accelerator.metric_engine.metric_engine import (
     METRIC_QUERY_REGISTRY,
     metric_query,
 )
