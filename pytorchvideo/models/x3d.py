@@ -5,8 +5,8 @@ from typing import Callable, Tuple
 import numpy as np
 import torch
 import torch.nn as nn
+from fvcore.layers.squeeze_excitation import SqueezeExcitation
 from pytorchvideo.layers.convolutions import Conv2plus1d
-from pytorchvideo.layers.se import SE
 from pytorchvideo.layers.swish import Swish
 from pytorchvideo.layers.utils import round_repeats, round_width, set_attributes
 from pytorchvideo.models.head import ResNetBasicHead
@@ -188,13 +188,22 @@ def create_x3d_bottleneck_block(
         groups=dim_inner,
         dilation=(1, 1, 1),
     )
+    se = (
+        SqueezeExcitation(
+            num_channels=dim_inner,
+            num_channels_reduced=round_width(dim_inner, se_ratio),
+            is_3d=True,
+        )
+        if se_ratio > 0.0
+        else nn.Identity()
+    )
     norm_b = nn.Sequential(
         (
             nn.Identity()
             if norm is None
             else norm(num_features=dim_inner, eps=norm_eps, momentum=norm_momentum)
         ),
-        SE(dim_inner, se_ratio) if se_ratio > 0.0 else nn.Identity(),
+        se,
     )
     act_b = None if inner_act is None else inner_act()
 
