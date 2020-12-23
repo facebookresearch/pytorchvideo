@@ -173,6 +173,7 @@ def Hmdb51(
     video_path_prefix: str = "",
     split_id: int = 1,
     split_type: str = "train",
+    decode_audio=True,
 ) -> EncodedVideoDataset:
     """
     A helper function to create EncodedVideoDataset object for HMDB51 dataset
@@ -216,7 +217,11 @@ def Hmdb51(
     )
     labeled_video_paths.path_prefix = video_path_prefix
     dataset = EncodedVideoDataset(
-        labeled_video_paths, clip_sampler, video_sampler, transform
+        labeled_video_paths,
+        clip_sampler,
+        video_sampler,
+        transform,
+        decode_audio=decode_audio,
     )
 
     return dataset

@@ -48,6 +48,7 @@ class TestEncodedVideoDataset(unittest.TestCase):
                 data_path=mock_csv,
                 clip_sampler=clip_sampler,
                 video_sampler=SequentialSampler,
+                decode_audio=False,
             )
             test_dataloader = DataLoader(dataset, batch_size=None, num_workers=2)
 
@@ -75,6 +76,7 @@ class TestEncodedVideoDataset(unittest.TestCase):
                 labeled_video_paths,
                 clip_sampler=clip_sampler,
                 video_sampler=SequentialSampler,
+                decode_audio=False,
             )
 
             expected = [(0, data), (1, data)]
@@ -95,6 +97,7 @@ class TestEncodedVideoDataset(unittest.TestCase):
                 labeled_video_paths,
                 clip_sampler=clip_sampler,
                 video_sampler=SequentialSampler,
+                decode_audio=False,
             )
 
             expected_labels = [label for label, _ in label_videos]
@@ -172,6 +175,7 @@ class TestEncodedVideoDataset(unittest.TestCase):
                     video_sampler=SequentialSampler,
                     split_id=1,
                     split_type="train",
+                    decode_audio=False,
                 )
 
                 # Videos are sorted alphabetically so "cleaning windows" (i.e. data_2)
@@ -223,6 +227,7 @@ class TestEncodedVideoDataset(unittest.TestCase):
                     labeled_video_paths,
                     clip_sampler=clip_sampler,
                     video_sampler=SequentialSampler,
+                    decode_audio=False,
                 )
 
                 # Dataset has 2 videos. Each video has two evenly spaced clips of size
@@ -286,6 +291,7 @@ class TestEncodedVideoDataset(unittest.TestCase):
                     labeled_video_paths,
                     clip_sampler=clip_sampler,
                     video_sampler=SequentialSampler,
+                    decode_audio=False,
                 )
 
                 # Videos are sorted alphabetically so "cleaning windows" (i.e. data_2)
@@ -347,6 +353,7 @@ class TestEncodedVideoDataset(unittest.TestCase):
                 labeled_video_paths,
                 clip_sampler=clip_sampler,
                 video_sampler=SequentialSampler,
+                decode_audio=False,
             )
 
             # Split each full video into two clips.
@@ -376,6 +383,7 @@ class TestEncodedVideoDataset(unittest.TestCase):
                 labeled_video_paths,
                 clip_sampler=clip_sampler,
                 video_sampler=SequentialSampler,
+                decode_audio=False,
             )
 
             # Split each full video into two clips.
@@ -405,6 +413,7 @@ class TestEncodedVideoDataset(unittest.TestCase):
                 labeled_video_paths,
                 clip_sampler=clip_sampler,
                 video_sampler=SequentialSampler,
+                decode_audio=False,
             )
 
             # Split each full video into two clips.
@@ -447,6 +456,7 @@ class TestEncodedVideoDataset(unittest.TestCase):
                     labeled_video_paths,
                     clip_sampler=clip_sampler,
                     video_sampler=SequentialSampler,
+                    decode_audio=False,
                 )
 
                 half_frames = num_frames // 2
@@ -591,6 +601,7 @@ def run_distributed(rank, size, clip_duration, data_name, return_dict):
         labeled_video_paths,
         clip_sampler=clip_sampler,
         video_sampler=DistributedSampler,
+        decode_audio=False,
     )
     test_dataloader = DataLoader(dataset, batch_size=None, num_workers=1)
 

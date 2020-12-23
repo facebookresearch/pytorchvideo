@@ -94,6 +94,27 @@ class TestEncodedVideo(unittest.TestCase):
 
             test_video.close()
 
+    def test_decode_audio_is_false(self):
+        audio_rate = 10000
+        fps = 5
+        num_frames = 5
+        num_audio_samples = 40000
+        with temp_encoded_video_with_audio(
+            num_frames=num_frames,
+            fps=fps,
+            num_audio_samples=num_audio_samples,
+            audio_rate=audio_rate,
+        ) as (file_name, video_data, audio_data):
+            test_video = EncodedVideo.from_path(file_name, decode_audio=False)
+
+            # All audio
+            clip = test_video.get_clip(0, test_video.duration)
+            frames, audio_samples = clip["video"], clip["audio"]
+            self.assertTrue(frames.equal(video_data))
+            self.assertEqual(audio_samples, None)
+
+            test_video.close()
+
     def test_file_api(self):
         num_frames = 11
         fps = 5

@@ -26,7 +26,7 @@ class EncodedVideo(Video):
     """
 
     @classmethod
-    def from_path(cls, file_path: str):
+    def from_path(cls, file_path: str, decode_audio: bool = True):
         """
         Fetches the given video path using PathManager (allowing remote uris to be
         fetched) and constructs the EncodedVideo object.
@@ -40,15 +40,21 @@ class EncodedVideo(Video):
         with g_pathmgr.open(file_path, "rb") as fh:
             video_file = io.BytesIO(fh.read())
 
-        return cls(video_file, pathlib.Path(file_path).name)
+        return cls(video_file, pathlib.Path(file_path).name, decode_audio)
 
-    def __init__(self, file: BinaryIO, video_name: Optional[str] = None) -> None:
+    def __init__(
+        self,
+        file: BinaryIO,
+        video_name: Optional[str] = None,
+        decode_audio: bool = True,
+    ) -> None:
         """
         Args:
             file (BinaryIO): a file-like object (e.g. io.BytesIO or io.StringIO) that
                 contains the encoded video.
         """
         self._video_name = video_name
+        self._decode_audio = decode_audio
 
         try:
             self._container = av.open(file)
@@ -69,15 +75,17 @@ class EncodedVideo(Video):
         video_duration = video_stream.duration
 
         # Retrieve audio header information if available.
-        self._has_audio = self._container.streams.audio
         audio_duration = None
-        if self._has_audio:
-            self._audio_time_base = self._container.streams.audio[0].time_base
-            self._audio_start_pts = self._container.streams.audio[0].start_time
-            if self._audio_start_pts is None:
-                self._audio_start_pts = 0.0
+        self._has_audio = None
+        if self._decode_audio:
+            self._has_audio = self._container.streams.audio
+            if self._has_audio:
+                self._audio_time_base = self._container.streams.audio[0].time_base
+                self._audio_start_pts = self._container.streams.audio[0].start_time
+                if self._audio_start_pts is None:
+                    self._audio_start_pts = 0.0
 
-            audio_duration = self._container.streams.audio[0].duration
+                audio_duration = self._container.streams.audio[0].duration
 
         # If duration isn't found in header the whole video is decoded to
         # determine the duration.

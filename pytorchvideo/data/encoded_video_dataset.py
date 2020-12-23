@@ -32,6 +32,7 @@ class EncodedVideoDataset(torch.utils.data.IterableDataset):
         clip_sampler: ClipSampler,
         video_sampler: Type[torch.utils.data.Sampler] = torch.utils.data.RandomSampler,
         transform: Optional[Callable[[dict], Any]] = None,
+        decode_audio: bool = True,
     ) -> None:
         """
         Args:
@@ -58,6 +59,7 @@ class EncodedVideoDataset(torch.utils.data.IterableDataset):
                 If transform is None, the raw clip output in the above format is
                 returned unmodified.
         """
+        self._decode_audio = decode_audio
         self._transform = transform
         self._clip_sampler = clip_sampler
         self._labeled_videos = labeled_video_paths
@@ -112,7 +114,9 @@ class EncodedVideoDataset(torch.utils.data.IterableDataset):
                 video_index = next(self._video_sampler_iter)
                 try:
                     video_path, info_dict = self._labeled_videos[video_index]
-                    video = EncodedVideo.from_path(video_path)
+                    video = EncodedVideo.from_path(
+                        video_path, decode_audio=self._decode_audio
+                    )
                     self._loaded_video_label = (video, info_dict, video_index)
                 except (RuntimeError, OSError) as e:
                     logger.warning(
@@ -130,14 +134,19 @@ class EncodedVideoDataset(torch.utils.data.IterableDataset):
             clip_data = video.get_clip(clip_start, clip_end)
             self._next_clip_start_time = clip_end
 
-            if is_last_clip or clip_data is None or clip_data["video"] is None:
+            clip_is_null = (
+                clip_data is None
+                or clip_data["video"] is None
+                or (clip_data["audio"] is None and self._decode_audio)
+            )
+            if is_last_clip or clip_is_null:
                 # Close the loaded encoded video and reset the last sampled clip time ready
                 # to sample a new video on the next iteration.
                 self._loaded_video_label[0].close()
                 self._loaded_video_label = None
                 self._next_clip_start_time = 0.0
 
-                if clip_data is None or clip_data["video"] is None:
+                if clip_is_null:
                     logger.warning(
                         "Failed to meta load video {}; trial {}".format(
                             video.name, i_try
@@ -149,14 +158,18 @@ class EncodedVideoDataset(torch.utils.data.IterableDataset):
             audio_samples = clip_data["audio"]
             sample_dict = {
                 "video": frames,
-                "audio": audio_samples,
                 "video_name": video.name,
                 "video_index": video_index,
                 "clip_index": clip_index,
                 **info_dict,
+                **({"audio": audio_samples} if audio_samples is not None else {}),
             }
             if self._transform is not None:
                 sample_dict = self._transform(sample_dict)
+
+                # User can force dataset to continue by returning None in transform.
+                if sample_dict is None:
+                    continue
 
             return sample_dict
         else:
@@ -185,6 +198,7 @@ def labeled_encoded_video_dataset(
     video_sampler: Type[torch.utils.data.Sampler] = torch.utils.data.RandomSampler,
     transform: Optional[Callable[[dict], Any]] = None,
     video_path_prefix: str = "",
+    decode_audio: bool = True,
 ) -> EncodedVideoDataset:
     """
     A helper function to create EncodedVideoDataset object for Ucf101 and Kinectis datasets.
@@ -236,6 +250,10 @@ def labeled_encoded_video_dataset(
 
     labeled_video_paths.path_prefix = video_path_prefix
     dataset = EncodedVideoDataset(
-        labeled_video_paths, clip_sampler, video_sampler, transform
+        labeled_video_paths,
+        clip_sampler,
+        video_sampler,
+        transform,
+        decode_audio=decode_audio,
     )
     return dataset

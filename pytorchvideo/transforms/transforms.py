@@ -35,7 +35,8 @@ class RemoveKey(torch.nn.Module):
         self._key = key
 
     def __call__(self, x: Dict[str, torch.Tensor]) -> Dict[str, torch.Tensor]:
-        del x[self._key]
+        if self._key in x:
+            del x[self._key]
         return x
 
 
