@@ -15,20 +15,30 @@ class TestX3d(unittest.TestCase):
 
     def test_create_x3d(self):
         """
-        Test different version of X3D: X3D-XS, X3D-S, X3D-M, X3D-L.
+        To test different versions of X3D, set the input to:
+        X3D-XS: (4, 160, 2.0, 2.2, 2.25)
+        X3D-S: (13, 160, 2.0, 2.2, 2.25)
+        X3D-M: (16, 224, 2.0, 2.2, 2.25)
+        X3D-L: (16, 312, 2.0, 5.0, 2.25)
+
+        Each of the parameters corresponds to input_clip_length, input_crop_size,
+        width_factor, depth_factor and bottleneck_factor.
         """
-        for input_clip_length, input_crop_size, depth_factor in [
-            (4, 160, 2.2),
-            (13, 160, 2.2),
-            (16, 224, 2.2),
-            (16, 312, 5.0),
+        for (
+            input_clip_length,
+            input_crop_size,
+            width_factor,
+            depth_factor,
+            bottleneck_factor,
+        ) in [
+            (4, 160, 2.0, 2.2, 2.25),
         ]:
             model = create_x3d(
                 input_clip_length=input_clip_length,
                 input_crop_size=input_crop_size,
                 model_num_class=400,
                 dropout_rate=0.5,
-                width_factor=2.0,
+                width_factor=width_factor,
                 depth_factor=depth_factor,
                 norm=nn.BatchNorm3d,
                 activation=nn.ReLU,
@@ -39,7 +49,7 @@ class TestX3d(unittest.TestCase):
                 stage_spatial_stride=(2, 2, 2, 2),
                 stage_temporal_stride=(1, 1, 1, 1),
                 bottleneck=create_x3d_bottleneck_block,
-                bottleneck_factor=2.25,
+                bottleneck_factor=bottleneck_factor,
                 se_ratio=0.0625,
                 inner_act=Swish,
                 head_dim_out=2048,
