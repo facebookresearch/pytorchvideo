@@ -58,19 +58,31 @@ class MultiPathWayWithFuse(nn.Module):
         *,
         multipathway_blocks: nn.ModuleList,
         multipathway_fusion: Optional[nn.Module],
+        inplace: Optional[bool] = True,
     ) -> None:
         """
         Args:
             multipathway_blocks (nn.module_list): list of models from all pathways.
             multipathway_fusion (nn.module): fusion model.
+            inplace (bool): If inplace, directly update the input list without making
+                a copy.
         """
         super().__init__()
         set_attributes(self, locals())
 
     def forward(self, x: List[torch.Tensor]) -> torch.Tensor:
+        assert isinstance(
+            x, list
+        ), "input for MultiPathWayWithFuse needs to be a list of tensors"
+        if self.inplace:
+            x_out = x
+        else:
+            x_out = [None] * len(x)
         for pathway_idx in range(len(self.multipathway_blocks)):
             if self.multipathway_blocks[pathway_idx] is not None:
-                x[pathway_idx] = self.multipathway_blocks[pathway_idx](x[pathway_idx])
+                x_out[pathway_idx] = self.multipathway_blocks[pathway_idx](
+                    x[pathway_idx]
+                )
         if self.multipathway_fusion is not None:
-            x = self.multipathway_fusion(x)
-        return x
+            x_out = self.multipathway_fusion(x_out)
+        return x_out

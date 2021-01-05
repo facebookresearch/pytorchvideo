@@ -17,6 +17,7 @@ def create_res_basic_stem(
     conv_stride: Tuple[int] = (1, 2, 2),
     conv_padding: Tuple[int] = (1, 3, 3),
     conv_bias: bool = False,
+    conv: Callable = nn.Conv3d,
     # Pool configs.
     pool: Callable = nn.MaxPool3d,
     pool_kernel_size: Tuple[int] = (1, 3, 3),
@@ -54,6 +55,7 @@ def create_res_basic_stem(
             conv_padding (tuple): convolutional padding size(s).
             conv_bias (bool): convolutional bias. If true, adds a learnable bias to the
                 output.
+            conv (callable): Callable used to build the convolution layer.
 
         Pooling related configs:
             pool (callable): a callable that constructs pooling layer, options include:
@@ -76,7 +78,7 @@ def create_res_basic_stem(
     Returns:
         (nn.Module): resnet basic stem layer.
     """
-    conv_module = nn.Conv3d(
+    conv_module = conv(
         in_channels=in_channels,
         out_channels=out_channels,
         kernel_size=conv_kernel_size,

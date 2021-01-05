@@ -19,11 +19,14 @@ def create_2plus1d_bottleneck_block(
     conv_a_kernel_size: Tuple[int] = (1, 1, 1),
     conv_a_stride: Tuple[int] = (1, 1, 1),
     conv_a_padding: Tuple[int] = (0, 0, 0),
+    conv_a: Callable = nn.Conv3d,
     conv_b_kernel_size: Tuple[int] = (3, 3, 3),
     conv_b_stride: Tuple[int] = (2, 2, 2),
     conv_b_padding: Tuple[int] = (1, 1, 1),
     conv_b_num_groups: int = 1,
     conv_b_dilation: Tuple[int] = (1, 1, 1),
+    conv_b: Callable = nn.Conv3d,
+    conv_c: Callable = nn.Conv3d,
     # Norm configs.
     norm: Callable = nn.BatchNorm3d,
     norm_eps: float = 1e-5,
@@ -62,12 +65,18 @@ def create_2plus1d_bottleneck_block(
             conv_a_kernel_size (tuple): convolutional kernel size(s) for conv_a.
             conv_a_stride (tuple): convolutional stride size(s) for conv_a.
             conv_a_padding (tuple): convolutional padding(s) for conv_a.
+            conv_a (callable): a callable that constructs the conv_a conv layer, examples
+                include nn.Conv3d, OctaveConv, etc
             conv_b_kernel_size (tuple): convolutional kernel size(s) for conv_b.
             conv_b_stride (tuple): convolutional stride size(s) for conv_b.
             conv_b_padding (tuple): convolutional padding(s) for conv_b.
             conv_b_num_groups (int): number of groups for groupwise convolution for
                 conv_b.
             conv_b_dilation (tuple): dilation for 3D convolution for conv_b.
+            conv_b (callable): a callable that constructs the conv_b conv layer, examples
+                include nn.Conv3d, OctaveConv, etc
+            conv_c (callable): a callable that constructs the conv_c conv layer, examples
+                include nn.Conv3d, OctaveConv, etc
 
         Normalization related configs:
             norm (callable): a callable that constructs normalization layer, examples
@@ -84,7 +93,7 @@ def create_2plus1d_bottleneck_block(
         (nn.Module): 2plus1d bottleneck block.
     """
     # The first 1x1x1 Conv
-    conv_a = nn.Conv3d(
+    conv_a = conv_a(
         in_channels=dim_in,
         out_channels=dim_inner,
         kernel_size=conv_a_kernel_size,
@@ -132,7 +141,7 @@ def create_2plus1d_bottleneck_block(
     act_b = None if activation is None else activation()
 
     # The second 1x1x1 Conv
-    conv_c = nn.Conv3d(
+    conv_c = conv_c(
         in_channels=dim_inner, out_channels=dim_out, kernel_size=(1, 1, 1), bias=False
     )
     norm_c = (

@@ -88,10 +88,14 @@ def create_conv_2plus1d(
     # Conv configs.
     in_channels: int,
     out_channels: int,
-    conv_kernel_size: Tuple[int] = (3, 3, 3),
-    conv_stride: Tuple[int] = (2, 2, 2),
-    conv_padding: Tuple[int] = (1, 1, 1),
-    conv_bias: bool = False,
+    inner_channels: int = None,
+    conv_xy_first: bool = False,
+    kernel_size: Tuple[int] = (3, 3, 3),
+    stride: Tuple[int] = (2, 2, 2),
+    padding: Tuple[int] = (1, 1, 1),
+    bias: bool = False,
+    dilation: Tuple[int] = (1, 1, 1),
+    groups: int = 1,
     # BN configs.
     norm: Callable = nn.BatchNorm3d,
     norm_eps: float = 1e-5,
@@ -103,13 +107,13 @@ def create_conv_2plus1d(
     Create a 2plus1d conv layer. It performs spatiotemporal Convolution, BN, and
     Relu following by a spatiotemporal pooling.
 
-                                        Conv_t
+                        Conv_t (or Conv_xy if conv_xy_first = True)
                                            ↓
                                      Normalization
                                            ↓
                                        Activation
                                            ↓
-                                        Conv_xy
+                        Conv_xy (or Conv_t if conv_xy_first = True)
 
     Normalization options include: BatchNorm3d and None (no normalization).
     Activation options include: ReLU, Softmax, Sigmoid, and None (no activation).
@@ -118,11 +122,14 @@ def create_conv_2plus1d(
         Convolution related configs:
             in_channels (int): input channel size of the convolution.
             out_channels (int): output channel size of the convolution.
-            conv_kernel_size (tuple): convolutional kernel size(s).
-            conv_stride (tuple): convolutional stride size(s).
-            conv_padding (tuple): convolutional padding size(s).
-            conv_bias (bool): convolutional bias. If true, adds a learnable bias to the
+            kernel_size (tuple): convolutional kernel size(s).
+            stride (tuple): convolutional stride size(s).
+            padding (tuple): convolutional padding size(s).
+            bias (bool): convolutional bias. If true, adds a learnable bias to the
                 output.
+            groups (int): Number of groups in convolution layers. value >1 is unsupported.
+            dilation (tuple): dilation value in convolution layers. value >1 is unsupported.
+            conv_xy_first (bool): If True, spatial convolution comes before temporal conv
 
         BN related configs:
             norm (callable): a callable that constructs normalization layer, options
@@ -138,27 +145,37 @@ def create_conv_2plus1d(
     Returns:
         (nn.Module): 2plus1d conv layer.
     """
+    if inner_channels is None:
+        inner_channels = out_channels
+
+    assert (
+        groups == 1
+    ), "Support for groups is not implemented in R2+1 convolution layer"
+    assert (
+        max(dilation) == 1 and min(dilation) == 1
+    ), "Support for dillaiton is not implemented in R2+1 convolution layer"
+
     conv_t_module = nn.Conv3d(
-        in_channels=in_channels,
-        out_channels=out_channels,
-        kernel_size=(conv_kernel_size[0], 1, 1),
-        stride=(conv_stride[0], 1, 1),
-        padding=(conv_padding[0], 0, 0),
-        bias=conv_bias,
+        in_channels=in_channels if not conv_xy_first else inner_channels,
+        out_channels=inner_channels if not conv_xy_first else out_channels,
+        kernel_size=(kernel_size[0], 1, 1),
+        stride=(stride[0], 1, 1),
+        padding=(padding[0], 0, 0),
+        bias=bias,
     )
     norm_module = (
         None
         if norm is None
-        else norm(num_features=out_channels, eps=norm_eps, momentum=norm_momentum)
+        else norm(num_features=inner_channels, eps=norm_eps, momentum=norm_momentum)
     )
     activation_module = None if activation is None else activation()
     conv_xy_module = nn.Conv3d(
-        in_channels=out_channels,
-        out_channels=out_channels,
-        kernel_size=(1, conv_kernel_size[1], conv_kernel_size[2]),
-        stride=(1, conv_stride[1], conv_stride[2]),
-        padding=(0, conv_padding[1], conv_padding[2]),
-        bias=conv_bias,
+        in_channels=inner_channels if not conv_xy_first else in_channels,
+        out_channels=out_channels if not conv_xy_first else inner_channels,
+        kernel_size=(1, kernel_size[1], kernel_size[2]),
+        stride=(1, stride[1], stride[2]),
+        padding=(0, padding[1], padding[2]),
+        bias=bias,
     )
 
     return Conv2plus1d(
@@ -166,6 +183,7 @@ def create_conv_2plus1d(
         norm=norm_module,
         activation=activation_module,
         conv_xy=conv_xy_module,
+        conv_xy_first=conv_xy_first,
     )
 
 
@@ -175,13 +193,13 @@ class Conv2plus1d(nn.Module):
     Convolution and a 2D spatial Convolution with Normalization and Activation module
     in between:
 
-                                        Conv_t
+                        Conv_t (or Conv_xy if conv_xy_first = True)
                                            ↓
                                      Normalization
                                            ↓
                                        Activation
                                            ↓
-                                        Conv_xy
+                        Conv_xy (or Conv_t if conv_xy_first = True)
 
     The 2+1d Convolution is used to build the R(2+1)D network.
     """
@@ -193,6 +211,7 @@ class Conv2plus1d(nn.Module):
         norm: nn.Module = None,
         activation: nn.Module = None,
         conv_xy: nn.Module = None,
+        conv_xy_first: bool = False,
     ) -> None:
         """
         Args:
@@ -200,6 +219,7 @@ class Conv2plus1d(nn.Module):
             norm (torch.nn.modules): normalization module.
             activation (torch.nn.modules): activation module.
             conv_xy (torch.nn.modules): spatial convolution module.
+            conv_xy_first (bool): If True, spatial convolution comes before temporal conv
         """
         super().__init__()
         set_attributes(self, locals())
@@ -207,10 +227,8 @@ class Conv2plus1d(nn.Module):
         assert self.conv_xy is not None
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        x = self.conv_t(x)
-        if self.norm is not None:
-            x = self.norm(x)
-        if self.activation is not None:
-            x = self.activation(x)
-        x = self.conv_xy(x)
+        x = self.conv_xy(x) if self.conv_xy_first else self.conv_t(x)
+        x = self.norm(x) if self.norm else x
+        x = self.activation(x) if self.activation else x
+        x = self.conv_t(x) if self.conv_xy_first else self.conv_xy(x)
         return x

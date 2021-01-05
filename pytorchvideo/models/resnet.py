@@ -23,11 +23,14 @@ def create_bottleneck_block(
     conv_a_kernel_size: Tuple[int] = (3, 1, 1),
     conv_a_stride: Tuple[int] = (2, 1, 1),
     conv_a_padding: Tuple[int] = (1, 0, 0),
+    conv_a: Callable = nn.Conv3d,
     conv_b_kernel_size: Tuple[int] = (1, 3, 3),
     conv_b_stride: Tuple[int] = (1, 2, 2),
     conv_b_padding: Tuple[int] = (0, 1, 1),
     conv_b_num_groups: int = 1,
     conv_b_dilation: Tuple[int] = (1, 1, 1),
+    conv_b: Callable = nn.Conv3d,
+    conv_c: Callable = nn.Conv3d,
     # Norm configs.
     norm: Callable = nn.BatchNorm3d,
     norm_eps: float = 1e-5,
@@ -66,12 +69,18 @@ def create_bottleneck_block(
             conv_a_kernel_size (tuple): convolutional kernel size(s) for conv_a.
             conv_a_stride (tuple): convolutional stride size(s) for conv_a.
             conv_a_padding (tuple): convolutional padding(s) for conv_a.
+            conv_a (callable): a callable that constructs the conv_a conv layer, examples
+                include nn.Conv3d, OctaveConv, etc
             conv_b_kernel_size (tuple): convolutional kernel size(s) for conv_b.
             conv_b_stride (tuple): convolutional stride size(s) for conv_b.
             conv_b_padding (tuple): convolutional padding(s) for conv_b.
             conv_b_num_groups (int): number of groups for groupwise convolution for
                 conv_b.
             conv_b_dilation (tuple): dilation for 3D convolution for conv_b.
+            conv_b (callable): a callable that constructs the conv_b conv layer, examples
+                include nn.Conv3d, OctaveConv, etc
+            conv_c (callable): a callable that constructs the conv_c conv layer, examples
+                include nn.Conv3d, OctaveConv, etc
 
         Normalization related configs:
             norm (callable): a callable that constructs normalization layer, examples
@@ -87,7 +96,7 @@ def create_bottleneck_block(
     Returns:
         (nn.Module): resnet bottleneck block.
     """
-    conv_a = nn.Conv3d(
+    conv_a = conv_a(
         in_channels=dim_in,
         out_channels=dim_inner,
         kernel_size=conv_a_kernel_size,
@@ -102,7 +111,7 @@ def create_bottleneck_block(
     )
     act_a = None if activation is None else activation()
 
-    conv_b = nn.Conv3d(
+    conv_b = conv_b(
         in_channels=dim_inner,
         out_channels=dim_inner,
         kernel_size=conv_b_kernel_size,
@@ -119,7 +128,7 @@ def create_bottleneck_block(
     )
     act_b = None if activation is None else activation()
 
-    conv_c = nn.Conv3d(
+    conv_c = conv_c(
         in_channels=dim_inner, out_channels=dim_out, kernel_size=(1, 1, 1), bias=False
     )
     norm_c = (
@@ -149,12 +158,15 @@ def create_acoustic_bottleneck_block(
     conv_a_kernel_size: Tuple[int] = (3, 1, 1),
     conv_a_stride: Tuple[int] = (2, 1, 1),
     conv_a_padding: Tuple[int] = (1, 0, 0),
+    conv_a: Callable = nn.Conv3d,
     # Conv b f configs.
     conv_b_kernel_size: Tuple[int] = (1, 1, 1),
     conv_b_stride: Tuple[int] = (1, 1, 1),
     conv_b_padding: Tuple[int] = (0, 0, 0),
     conv_b_num_groups: int = 1,
     conv_b_dilation: Tuple[int] = (1, 1, 1),
+    conv_b: Callable = nn.Conv3d,
+    conv_c: Callable = nn.Conv3d,
     # Norm configs.
     norm: Callable = nn.BatchNorm3d,
     norm_eps: float = 1e-5,
@@ -197,12 +209,18 @@ def create_acoustic_bottleneck_block(
             conv_a_kernel_size (tuple): convolutional kernel size(s) for conv_a.
             conv_a_stride (tuple): convolutional stride size(s) for conv_a.
             conv_a_padding (tuple): convolutional padding(s) for conv_a.
+            conv_a (callable): a callable that constructs the conv_a conv layer, examples
+                include nn.Conv3d, OctaveConv, etc
             conv_b_kernel_size (tuple): convolutional kernel size(s) for conv_b.
             conv_b_stride (tuple): convolutional stride size(s) for conv_b.
             conv_b_padding (tuple): convolutional padding(s) for conv_b.
             conv_b_num_groups (int): number of groups for groupwise convolution for
                 conv_b.
             conv_b_dilation (tuple): dilation for 3D convolution for conv_b.
+            conv_b (callable): a callable that constructs the conv_b conv layer, examples
+                include nn.Conv3d, OctaveConv, etc
+            conv_c (callable): a callable that constructs the conv_c conv layer, examples
+                include nn.Conv3d, OctaveConv, etc
 
         Normalization related configs:
             norm (callable): a callable that constructs normalization layer, examples
@@ -218,7 +236,7 @@ def create_acoustic_bottleneck_block(
     Returns:
         (nn.Module): resnet acoustic bottleneck block.
     """
-    conv_a = nn.Conv3d(
+    conv_a = conv_a(
         in_channels=dim_in,
         out_channels=dim_inner,
         kernel_size=conv_a_kernel_size,
@@ -245,7 +263,7 @@ def create_acoustic_bottleneck_block(
     conv_b_1_dilation = [conv_b_dilation[0], 1, 1]
     conv_b_2_dilation = [1, conv_b_dilation[1], conv_b_dilation[2]]
 
-    conv_b_1 = nn.Conv3d(
+    conv_b_1 = conv_b(
         in_channels=dim_inner,
         out_channels=dim_inner,
         kernel_size=conv_b_1_kernel_size,
@@ -262,7 +280,7 @@ def create_acoustic_bottleneck_block(
     )
     act_b_1 = None if activation is None else activation()
 
-    conv_b_2 = nn.Conv3d(
+    conv_b_2 = conv_b(
         in_channels=dim_inner,
         out_channels=dim_inner,
         kernel_size=conv_b_2_kernel_size,
@@ -279,7 +297,7 @@ def create_acoustic_bottleneck_block(
     )
     act_b_2 = None if activation is None else activation()
 
-    conv_c = nn.Conv3d(
+    conv_c = conv_c(
         in_channels=dim_inner, out_channels=dim_out, kernel_size=(1, 1, 1), bias=False
     )
     norm_c = (
@@ -307,22 +325,28 @@ def create_res_block(
     dim_inner: int,
     dim_out: int,
     bottleneck: Callable,
-    use_shortcut: bool = True,
+    use_shortcut: bool = False,
+    branch_fusion: Callable = lambda x, y: x + y,
     # Conv configs.
     conv_a_kernel_size: Tuple[int] = (3, 1, 1),
     conv_a_stride: Tuple[int] = (2, 1, 1),
     conv_a_padding: Tuple[int] = (1, 0, 0),
+    conv_a: Callable = nn.Conv3d,
     conv_b_kernel_size: Tuple[int] = (1, 3, 3),
     conv_b_stride: Tuple[int] = (1, 2, 2),
     conv_b_padding: Tuple[int] = (0, 1, 1),
     conv_b_num_groups: int = 1,
     conv_b_dilation: Tuple[int] = (1, 1, 1),
+    conv_b: Callable = nn.Conv3d,
+    conv_c: Callable = nn.Conv3d,
+    conv_skip: Callable = nn.Conv3d,
     # Norm configs.
     norm: Callable = nn.BatchNorm3d,
     norm_eps: float = 1e-5,
     norm_momentum: float = 0.1,
     # Activation configs.
-    activation: Callable = nn.ReLU,
+    activation_bottleneck: Callable = nn.ReLU,
+    activation_block: Callable = nn.ReLU,
 ) -> nn.Module:
     """
     Residual block. Performs a summation between an identity shortcut in branch1 and a
@@ -349,17 +373,27 @@ def create_res_block(
             dim_out (int): output channel size of the bottleneck.
             bottleneck (callable): a callable that constructs bottleneck block layer.
                 Examples include: create_bottleneck_block.
-
+            use_shortcut (bool): If true, use conv and norm layers in skip connection.
+            branch_fusion (callable): a callable that constructs summation layer.
+                Examples include: lambda x, y: x + y, OctaveSum.
         Convolution related configs:
             conv_a_kernel_size (tuple): convolutional kernel size(s) for conv_a.
             conv_a_stride (tuple): convolutional stride size(s) for conv_a.
             conv_a_padding (tuple): convolutional padding(s) for conv_a.
+            conv_a (callable): a callable that constructs the conv_a conv layer, examples
+                include nn.Conv3d, OctaveConv, etc
             conv_b_kernel_size (tuple): convolutional kernel size(s) for conv_b.
             conv_b_stride (tuple): convolutional stride size(s) for conv_b.
             conv_b_padding (tuple): convolutional padding(s) for conv_b.
             conv_b_num_groups (int): number of groups for groupwise convolution for
                 conv_b.
             conv_b_dilation (tuple): dilation for 3D convolution for conv_b.
+            conv_b (callable): a callable that constructs the conv_b conv layer, examples
+                include nn.Conv3d, OctaveConv, etc
+            conv_c (callable): a callable that constructs the conv_c conv layer, examples
+                include nn.Conv3d, OctaveConv, etc
+            conv_skip (callable): a callable that constructs the conv_skip conv layer,
+            examples include nn.Conv3d, OctaveConv, etc
 
         Normalization related configs:
             norm (callable): a callable that constructs normalization layer. Examples
@@ -368,28 +402,34 @@ def create_res_block(
             norm_momentum (float): normalization momentum.
 
         Activation related configs:
-            activation (callable): a callable that constructs activation layer. Examples
-                include: nn.ReLU, nn.Softmax, nn.Sigmoid, and None (not performing
-                activation).
+            activation_bottleneck (callable): a callable that constructs activation layer in
+                bottleneck. Examples include: nn.ReLU, nn.Softmax, nn.Sigmoid, and None
+                (not performing activation).
+            activation_block (callable): a callable that constructs activation layer used
+                at the end of the block. Examples include: nn.ReLU, nn.Softmax, nn.Sigmoid,
+                and None (not performing activation).
 
     Returns:
         (nn.Module): resnet basic block layer.
     """
+    branch1_conv_stride = tuple(map(np.prod, zip(conv_a_stride, conv_b_stride)))
     norm_model = None
-    if norm is not None and dim_in != dim_out:
-        norm_model = norm(num_features=dim_out)
+    if use_shortcut or (
+        norm is not None and (dim_in != dim_out or np.prod(branch1_conv_stride) != 1)
+    ):
+        norm_model = norm(num_features=dim_out, eps=norm_eps, momentum=norm_momentum)
 
     return ResBlock(
-        branch1_conv=nn.Conv3d(
+        branch1_conv=conv_skip(
             dim_in,
             dim_out,
             kernel_size=(1, 1, 1),
-            stride=tuple(map(np.prod, zip(conv_a_stride, conv_b_stride))),
+            stride=branch1_conv_stride,
             bias=False,
         )
-        if dim_in != dim_out and use_shortcut
+        if (dim_in != dim_out or np.prod(branch1_conv_stride) != 1) or use_shortcut
         else None,
-        branch1_norm=norm_model if dim_in != dim_out and use_shortcut else None,
+        branch1_norm=norm_model,
         branch2=bottleneck(
             dim_in=dim_in,
             dim_inner=dim_inner,
@@ -397,17 +437,21 @@ def create_res_block(
             conv_a_kernel_size=conv_a_kernel_size,
             conv_a_stride=conv_a_stride,
             conv_a_padding=conv_a_padding,
+            conv_a=conv_a,
             conv_b_kernel_size=conv_b_kernel_size,
             conv_b_stride=conv_b_stride,
             conv_b_padding=conv_b_padding,
             conv_b_num_groups=conv_b_num_groups,
             conv_b_dilation=conv_b_dilation,
+            conv_b=conv_b,
+            conv_c=conv_c,
             norm=norm,
             norm_eps=norm_eps,
             norm_momentum=norm_momentum,
-            activation=activation,
+            activation=activation_bottleneck,
         ),
-        activation=None if activation is None else activation(),
+        activation=None if activation_block is None else activation_block(),
+        branch_fusion=branch_fusion,
     )
 
 
@@ -509,7 +553,8 @@ def create_res_stage(
             norm=norm,
             norm_eps=norm_eps,
             norm_momentum=norm_momentum,
-            activation=activation,
+            activation_bottleneck=activation,
+            activation_block=activation,
         )
         res_blocks.append(block)
     return ResStage(res_blocks=nn.ModuleList(res_blocks))
@@ -713,12 +758,15 @@ def create_acoustic_building_block(
     conv_a_kernel_size: Tuple[int] = None,
     conv_a_stride: Tuple[int] = None,
     conv_a_padding: Tuple[int] = None,
+    conv_a: Callable = None,
     # Conv b f configs.
     conv_b_kernel_size: Tuple[int] = (1, 1, 1),
     conv_b_stride: Tuple[int] = (1, 1, 1),
     conv_b_padding: Tuple[int] = (0, 0, 0),
     conv_b_num_groups: int = 1,
     conv_b_dilation: Tuple[int] = (1, 1, 1),
+    conv_b: Callable = nn.Conv3d,
+    conv_c: Callable = nn.Conv3d,
     # Norm configs.
     norm: Callable = nn.BatchNorm3d,
     norm_eps: float = 1e-5,
@@ -761,12 +809,18 @@ def create_acoustic_building_block(
             conv_a_kernel_size (tuple): convolutional kernel size(s) for conv_a.
             conv_a_stride (tuple): convolutional stride size(s) for conv_a.
             conv_a_padding (tuple): convolutional padding(s) for conv_a.
+            conv_a (callable): a callable that constructs the conv_a conv layer, examples
+                include nn.Conv3d, OctaveConv, etc
             conv_b_kernel_size (tuple): convolutional kernel size(s) for conv_b.
             conv_b_stride (tuple): convolutional stride size(s) for conv_b.
             conv_b_padding (tuple): convolutional padding(s) for conv_b.
             conv_b_num_groups (int): number of groups for groupwise convolution for
                 conv_b.
             conv_b_dilation (tuple): dilation for 3D convolution for conv_b.
+            conv_b (callable): a callable that constructs the conv_b conv layer, examples
+                include nn.Conv3d, OctaveConv, etc
+            conv_c (callable): a callable that constructs the conv_c conv layer, examples
+                include nn.Conv3d, OctaveConv, etc
 
         Normalization related configs:
             norm (callable): a callable that constructs normalization layer, examples
@@ -797,7 +851,7 @@ def create_acoustic_building_block(
     conv_b_1_dilation = [conv_b_dilation[0], 1, 1]
     conv_b_2_dilation = [1, conv_b_dilation[1], conv_b_dilation[2]]
 
-    conv_b_1 = nn.Conv3d(
+    conv_b_1 = conv_b(
         in_channels=dim_in,
         out_channels=dim_inner,
         kernel_size=conv_b_1_kernel_size,
@@ -814,7 +868,7 @@ def create_acoustic_building_block(
     )
     act_b_1 = None if activation is None else activation()
 
-    conv_b_2 = nn.Conv3d(
+    conv_b_2 = conv_b(
         in_channels=dim_in,
         out_channels=dim_inner,
         kernel_size=conv_b_2_kernel_size,
@@ -831,7 +885,7 @@ def create_acoustic_building_block(
     )
     act_b_2 = None if activation is None else activation()
 
-    conv_c = nn.Conv3d(
+    conv_c = conv_c(
         in_channels=dim_inner, out_channels=dim_out, kernel_size=(1, 1, 1), bias=False
     )
     norm_c = (
@@ -1050,6 +1104,7 @@ class ResBlock(nn.Module):
         branch1_norm: nn.Module = None,
         branch2: nn.Module = None,
         activation: nn.Module = None,
+        branch_fusion: Callable = None,
     ) -> nn.Module:
         """
         Args:
@@ -1057,6 +1112,8 @@ class ResBlock(nn.Module):
             branch1_norm (torch.nn.modules): normalization module in branch1.
             branch2 (torch.nn.modules): bottleneck block module in branch2.
             activation (torch.nn.modules): activation module.
+            branch_fusion: (Callable): A callable or layer that combines branch1
+                and branch2.
         """
         super().__init__()
         set_attributes(self, locals())
@@ -1064,12 +1121,12 @@ class ResBlock(nn.Module):
 
     def forward(self, x) -> torch.Tensor:
         if self.branch1_conv is None:
-            x = x + self.branch2(x)
+            x = self.branch_fusion(x, self.branch2(x))
         else:
             residual = self.branch1_conv(x)
             if self.branch1_norm is not None:
                 residual = self.branch1_norm(residual)
-            x = residual + self.branch2(x)
+            x = self.branch_fusion(residual, self.branch2(x))
         if self.activation is not None:
             x = self.activation(x)
         return x

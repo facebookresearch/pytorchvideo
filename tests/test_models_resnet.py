@@ -657,6 +657,7 @@ class TestResBottleneckBlock(unittest.TestCase):
                     norm_c=nn.BatchNorm3d(dim_out),
                 ),
                 activation=nn.ReLU(),
+                branch_fusion=lambda x, y: x + y,
             )
 
             # Test forwarding.
@@ -709,7 +710,8 @@ class TestResBottleneckBlock(unittest.TestCase):
                 norm=norm,
                 norm_eps=1e-5,
                 norm_momentum=0.1,
-                activation=activation,
+                activation_bottleneck=activation,
+                activation_block=activation,
             )
             model_gt = ResBlock(
                 branch1_conv=nn.Conv3d(
@@ -748,6 +750,7 @@ class TestResBottleneckBlock(unittest.TestCase):
                     norm_c=None if norm is None else norm(64),
                 ),
                 activation=None if activation is None else activation(),
+                branch_fusion=lambda x, y: x + y,
             )
 
             model.load_state_dict(
@@ -860,6 +863,7 @@ class TestResStageTransform(unittest.TestCase):
                                 norm_c=nn.BatchNorm3d(dim_out),
                             ),
                             activation=nn.ReLU(),
+                            branch_fusion=lambda x, y: x + y,
                         ),
                         ResBlock(
                             branch1_conv=None,
@@ -896,6 +900,7 @@ class TestResStageTransform(unittest.TestCase):
                                 norm_c=nn.BatchNorm3d(dim_out),
                             ),
                             activation=nn.ReLU(),
+                            branch_fusion=lambda x, y: x + y,
                         ),
                     ]
                 )
@@ -1001,6 +1006,7 @@ class TestResStageTransform(unittest.TestCase):
                                 norm_c=None if norm is None else norm(dim_out),
                             ),
                             activation=None if activation is None else activation(),
+                            branch_fusion=lambda x, y: x + y,
                         ),
                         ResBlock(
                             branch1_conv=None,
@@ -1037,6 +1043,7 @@ class TestResStageTransform(unittest.TestCase):
                                 norm_c=None if norm is None else norm(dim_out),
                             ),
                             activation=None if activation is None else activation(),
+                            branch_fusion=lambda x, y: x + y,
                         ),
                     ]
                 )
@@ -1198,6 +1205,7 @@ class TestResNet(unittest.TestCase):
                         norm_c=None if norm is None else norm(block_dim_out),
                     ),
                     activation=None if activation is None else activation(),
+                    branch_fusion=lambda x, y: x + y,
                 )
 
                 block_dim_in = block_dim_out

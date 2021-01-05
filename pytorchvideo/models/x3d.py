@@ -321,6 +321,7 @@ def create_x3d_res_block(
             inner_act=inner_act,
         ),
         activation=None if activation is None else activation(),
+        branch_fusion=lambda x, y: x + y,
     )
 
 
