@@ -71,7 +71,7 @@ class ShortSideScale(torch.nn.Module):
 class RandomShortSideScale(torch.nn.Module):
     """
     nn.Module wrapper for pytorchvideo.transforms.functional.short_side_scale. The size
-    parameter is chosen randomly between min_size and max_size.
+    parameter is chosen randomly in [min_size, max_size].
     """
 
     def __init__(self, min_size: int, max_size: int):
@@ -80,5 +80,5 @@ class RandomShortSideScale(torch.nn.Module):
         self._max_size = max_size
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        size = torch.randint(self._min_size, self._max_size, (1,)).item()
+        size = torch.randint(self._min_size, self._max_size + 1, (1,)).item()
         return pytorchvideo.transforms.functional.short_side_scale(x, size)
