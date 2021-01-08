@@ -1,6 +1,7 @@
 # Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved.
 
 import csv
+import itertools
 import os
 from collections import defaultdict
 from typing import Any, Callable, List, Optional, Tuple, Type
@@ -54,22 +55,23 @@ class Charades(torch.utils.data.IterableDataset):
                 following format:
                     {
                         'video': <video_tensor>,
-                        'label': <index_label>,
-                        'video_index': <video_index>
-                        'clip_index': <clip_index>
+                        'label': <index_label> for clip-level label,
+                        'video_label': <index_label> for video-level label,
+                        'video_index': <video_index>,
+                        'clip_index': <clip_index>,
                     }
                 If transform is None, the raw clip output in the above format is
                 returned unmodified.
         """
         self._transform = transform
         self._clip_sampler = clip_sampler
-        self._path_to_videos, self._labels = _read_video_paths_and_labels(
-            data_path, prefix=video_path_prefix
-        )
+        (
+            self._path_to_videos,
+            self._labels,
+            self._video_labels,
+        ) = _read_video_paths_and_labels(data_path, prefix=video_path_prefix)
         self._video_sampler = video_sampler(self._path_to_videos)
         self._video_sampler_iter = None  # Initialized on first call to self.__next__()
-
-        # TOOO(Tullie): Add test split frame label aggregation.
 
         # Depending on the clip sampler type, we may want to sample multiple clips
         # from one video. In that case, we keep the store video, label and previous sampled
@@ -89,8 +91,10 @@ class Charades(torch.utils.data.IterableDataset):
             A video clip with the following format if transform is None:
                 {
                     'video': <video_tensor>,
-                    'label': <index_label>,
-                    'index': <clip_index>
+                    'label': <index_label> for clip-level label,
+                    'video_label': <index_label> for video-level label,
+                    'video_index': <video_index>,
+                    'clip_index': <clip_index>,
                 }
             Otherwise, the transform defines the clip output.
         """
@@ -122,6 +126,7 @@ class Charades(torch.utils.data.IterableDataset):
         sample_dict = {
             "video": frames,
             "label": labels_by_frame,
+            "video_label": self._video_labels[video_index],
             "video_name": str(video_index),
             "video_index": video_index,
             "clip_index": clip_index,
@@ -170,4 +175,6 @@ def _read_video_paths_and_labels(
     video_names = image_paths.keys()
     image_paths = [image_paths[key] for key in video_names]
     labels = [labels[key] for key in video_names]
-    return image_paths, labels
+    # Aggregate labels from all frames to form video-level labels.
+    video_labels = [list(set(itertools.chain(*label_list))) for label_list in labels]
+    return image_paths, labels, video_labels
