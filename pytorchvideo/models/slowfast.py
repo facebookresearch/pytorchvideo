@@ -207,8 +207,6 @@ def create_slowfast(
     ), f"{model_depth} is not in {_MODEL_STAGE_DEPTH.keys()}"
     stage_depths = _MODEL_STAGE_DEPTH[model_depth]
 
-    blocks = []
-
     # Build stem blocks.
     stems = []
     for pathway_idx in range(_num_pathway):
@@ -231,22 +229,26 @@ def create_slowfast(
                 activation=activation,
             )
         )
-    blocks.append(nn.ModuleList(stems))
 
-    # Build stages blocks.
-    stage_dim_in = stem_dim_outs[0]
-    stage_dim_out = stage_dim_in * 4
-    for idx in range(len(stage_depths)):
-        blocks.append(
-            create_fuse_fast_to_slow(
-                conv_dim_in=stage_dim_in // slowfast_channel_reduction_ratio,
+    stages = []
+    stages.append(
+        MultiPathWayWithFuse(
+            multipathway_blocks=nn.ModuleList(stems),
+            multipathway_fusion=create_fuse_fast_to_slow(
+                conv_dim_in=stem_dim_outs[0] // slowfast_channel_reduction_ratio,
                 conv_fusion_channel_ratio=slowfast_conv_channel_fusion_ratio,
                 conv_kernel_size=slowfast_fusion_conv_kernel_size,
                 conv_stride=slowfast_fusion_conv_stride,
                 norm=norm,
                 activation=activation,
-            )
+            ),
         )
+    )
+
+    # Build stages blocks.
+    stage_dim_in = stem_dim_outs[0]
+    stage_dim_out = stage_dim_in * 4
+    for idx in range(len(stage_depths)):
         pathway_stage_dim_in = [
             stage_dim_in
             + stage_dim_in
@@ -297,7 +299,23 @@ def create_slowfast(
                     activation=activation,
                 )
             )
-        blocks.append(nn.ModuleList(stage))
+        fusion = (
+            create_fuse_fast_to_slow(
+                conv_dim_in=stage_dim_out // slowfast_channel_reduction_ratio,
+                conv_fusion_channel_ratio=slowfast_conv_channel_fusion_ratio,
+                conv_kernel_size=slowfast_fusion_conv_kernel_size,
+                conv_stride=slowfast_fusion_conv_stride,
+                norm=norm,
+                activation=activation,
+            )
+            if idx < len(stage_depths) - 1
+            else None
+        )
+        stages.append(
+            MultiPathWayWithFuse(
+                multipathway_blocks=nn.ModuleList(stage), multipathway_fusion=fusion
+            )
+        )
         stage_dim_in = stage_dim_out
         stage_dim_out = stage_dim_out * 2
 
@@ -317,31 +335,18 @@ def create_slowfast(
     else:
         raise NotImplementedError(f"Unsupported pool_model type {pool_model}")
 
-    blocks.append(PoolConcatPathway(retain_list=True, pool=nn.ModuleList(pool_model)))
-    blocks.append(
-        nn.ModuleList(
-            [
-                create_res_basic_head(
-                    in_features=stage_dim_in
-                    + stage_dim_in // slowfast_channel_reduction_ratio,
-                    out_features=model_num_class,
-                    pool=None,
-                    output_size=head_output_size,
-                    dropout_rate=dropout_rate,
-                    activation=head_activation,
-                    output_with_global_average=head_output_with_global_average,
-                )
-            ]
+    stages.append(PoolConcatPathway(retain_list=False, pool=nn.ModuleList(pool_model)))
+    stages.append(
+        create_res_basic_head(
+            in_features=stage_dim_in + stage_dim_in // slowfast_channel_reduction_ratio,
+            out_features=model_num_class,
+            pool=None,
+            output_size=head_output_size,
+            dropout_rate=dropout_rate,
+            activation=head_activation,
+            output_with_global_average=head_output_with_global_average,
         )
     )
-    blocks.append(PoolConcatPathway(retain_list=False))
-    stages = []
-    for m_block, m_fusion in zip(*[iter(blocks)] * 2):
-        stages.append(
-            MultiPathWayWithFuse(
-                multipathway_blocks=m_block, multipathway_fusion=m_fusion
-            )
-        )
     return Net(blocks=nn.ModuleList(stages))
 
 
