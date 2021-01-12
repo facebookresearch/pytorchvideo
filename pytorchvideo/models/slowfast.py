@@ -1,6 +1,6 @@
 # Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved.
 
-from typing import Callable, List, Optional, Tuple
+from typing import Callable, List, Optional, Tuple, Union
 
 import torch
 import torch.nn as nn
@@ -11,70 +11,24 @@ from pytorchvideo.models.resnet import create_bottleneck_block, create_res_stage
 from pytorchvideo.models.stem import create_res_basic_stem
 
 
-def create_fuse_fast_to_slow(
-    *,
-    conv_dim_in: int,
-    conv_fusion_channel_ratio: float,
-    conv_kernel_size: Tuple[int],
-    conv_stride: Tuple[int],
-    norm: Callable = nn.BatchNorm3d,
-    norm_eps: float = 1e-5,
-    norm_momentum: float = 0.1,
-    activation: Callable = nn.ReLU,
-) -> nn.Module:
-    """
-    Given a list of two tensors from Slow pathway and Fast pathway, fusion information
-    from the Fast pathway to the Slow on through a convolution followed by a
-    concatenation, then return the fused list of tensors from Slow and Fast pathway in
-    order.
-    Args:
-        conv_dim_in (int): the channel dimension of the input.
-        conv_fusion_channel_ratio (int): channel ratio for the convolution used to fuse
-            from Fast pathway to Slow pathway.
-        conv_kernel_size (int): kernel size of the convolution used to fuse from Fast
-            pathway to Slow pathway.
-        conv_stride (int): stride size of the convolution used to fuse from Fast pathway
-            to Slow pathway.
-        norm (callable): a callable that constructs normalization layer, examples
-            include nn.BatchNorm3d, None (not performing normalization).
-        norm_eps (float): normalization epsilon.
-        norm_momentum (float): normalization momentum.
-        activation (callable): a callable that constructs activation layer, examples
-            include: nn.ReLU, nn.Softmax, nn.Sigmoid, and None (not performing
-            activation).
-    """
-    conv_fast_to_slow = nn.Conv3d(
-        conv_dim_in,
-        int(conv_dim_in * conv_fusion_channel_ratio),
-        kernel_size=conv_kernel_size,
-        stride=conv_stride,
-        padding=[k_size // 2 for k_size in conv_kernel_size],
-        bias=False,
-    )
-    norm_module = (
-        None
-        if norm is None
-        else norm(
-            num_features=conv_dim_in * conv_fusion_channel_ratio,
-            eps=norm_eps,
-            momentum=norm_momentum,
-        )
-    )
-    activation_module = None if activation is None else activation()
-    return FuseFastToSlow(
-        conv_fast_to_slow=conv_fast_to_slow,
-        norm=norm_module,
-        activation=activation_module,
-    )
-
-
 def create_slowfast(
     *,
     # SlowFast configs.
-    slowfast_channel_reduction_ratio: int = 8,
+    slowfast_channel_reduction_ratio: Union[Tuple[int], int] = (8,),
     slowfast_conv_channel_fusion_ratio: int = 2,
-    slowfast_fusion_conv_kernel_size: Tuple[int] = (7, 1, 1),
-    slowfast_fusion_conv_stride: Tuple[int] = (4, 1, 1),
+    slowfast_fusion_conv_kernel_size: Tuple[int] = (
+        7,
+        1,
+        1,
+    ),  # deprecated, use fusion_builder
+    slowfast_fusion_conv_stride: Tuple[int] = (
+        4,
+        1,
+        1,
+    ),  # deprecated, use fusion_builder
+    fusion_builder: Callable[
+        [int, int], nn.Module
+    ] = None,  # Args: fusion_dim_in, stage_idx
     # Input clip configs.
     input_channels: Tuple[int] = (3, 3),
     # Model configs.
@@ -86,10 +40,14 @@ def create_slowfast(
     # Activation configs.
     activation: Callable = nn.ReLU,
     # Stem configs.
+    stem_function: Tuple[Callable] = (
+        create_res_basic_stem,
+        create_res_basic_stem,
+    ),
     stem_dim_outs: Tuple[int] = (64, 8),
     stem_conv_kernel_sizes: Tuple[Tuple[int]] = ((1, 7, 7), (5, 7, 7)),
     stem_conv_strides: Tuple[Tuple[int]] = ((1, 2, 2), (1, 2, 2)),
-    stem_pool: Callable = nn.MaxPool3d,
+    stem_pool: Union[Callable, Tuple[Callable]] = (nn.MaxPool3d, nn.MaxPool3d),
     stem_pool_kernel_sizes: Tuple[Tuple[int]] = ((1, 3, 3), (1, 3, 3)),
     stem_pool_strides: Tuple[Tuple[int]] = ((1, 2, 2), (1, 2, 2)),
     # Stage configs.
@@ -108,7 +66,20 @@ def create_slowfast(
     ),
     stage_spatial_strides: Tuple[Tuple[int]] = ((1, 2, 2, 2), (1, 2, 2, 2)),
     stage_temporal_strides: Tuple[Tuple[int]] = ((1, 1, 1, 1), (1, 1, 1, 1)),
-    bottleneck: Callable = create_bottleneck_block,
+    bottleneck: Union[Callable, Tuple[Tuple[Callable]]] = (
+        (
+            create_bottleneck_block,
+            create_bottleneck_block,
+            create_bottleneck_block,
+            create_bottleneck_block,
+        ),
+        (
+            create_bottleneck_block,
+            create_bottleneck_block,
+            create_bottleneck_block,
+            create_bottleneck_block,
+        ),
+    ),
     # Head configs.
     head_pool: Callable = nn.AvgPool3d,
     head_pool_kernel_sizes: Tuple[Tuple[int]] = ((8, 7, 7), (32, 7, 7)),
@@ -147,10 +118,12 @@ def create_slowfast(
                 reduction ratio, $\beta$ between the Slow and Fast pathways.
             slowfast_conv_channel_fusion_ratio (int): Ratio of channel dimensions
                 between the Slow and Fast pathways.
-            slowfast_fusion_conv_kernel_size (tuple): the convolutional kernel size used
-                for fusion.
-            slowfast_fusion_conv_stride (tuple): the convolutional stride size used for
-                fusion.
+            DEPRECATED slowfast_fusion_conv_kernel_size (tuple): the convolutional kernel
+                size used for fusion.
+            DEPRECATED slowfast_fusion_conv_stride (tuple): the convolutional stride size
+                used for fusion.
+            fusion_builder (Callable[[int, int], nn.Module]): Builder function for generating
+                the fusion modules based on stage dimension and index
 
         Input clip configs:
             input_channels (tuple): number of channels for the input video clip.
@@ -167,10 +140,13 @@ def create_slowfast(
             activation (callable): a callable that constructs activation layer.
 
         Stem configs:
+            stem_function (Tuple[Callable]): a callable that constructs stem layer.
+                Examples include create_res_basic_stem. Indexed by pathway
             stem_dim_outs (tuple): output channel size to stem.
             stem_conv_kernel_sizes (tuple): convolutional kernel size(s) of stem.
             stem_conv_strides (tuple): convolutional stride size(s) of stem.
-            stem_pool (callable): a callable that constructs resnet head pooling layer.
+            stem_pool (Tuple[Callable]): a callable that constructs resnet head pooling layer.
+                Indexed by pathway
             stem_pool_kernel_sizes (tuple): pooling kernel size(s).
             stem_pool_strides (tuple): pooling stride size(s).
 
@@ -182,8 +158,9 @@ def create_slowfast(
             stage_conv_b_dilations (tuple): dilation for 3D convolution for conv_b.
             stage_spatial_strides (tuple): the spatial stride for each stage.
             stage_temporal_strides (tuple): the temporal stride for each stage.
-            bottleneck (callable): a callable that constructs bottleneck block layer.
-                Examples include: create_bottleneck_block.
+            bottleneck (Tuple[Tuple[Callable]]): a callable that constructs bottleneck
+                block layer. Examples include: create_bottleneck_block.
+                Indexed by pathway and stage index
 
         Head configs:
             head_pool (callable): a callable that constructs resnet head pooling layer.
@@ -194,8 +171,9 @@ def create_slowfast(
     Returns:
         (nn.Module): SlowFast model.
     """
+
     # Number of blocks for different stages given the model depth.
-    _num_pathway = 2
+    _num_pathway = len(input_channels)
     _MODEL_STAGE_DEPTH = {
         18: (1, 1, 1, 1),
         50: (3, 4, 6, 3),
@@ -207,11 +185,30 @@ def create_slowfast(
     ), f"{model_depth} is not in {_MODEL_STAGE_DEPTH.keys()}"
     stage_depths = _MODEL_STAGE_DEPTH[model_depth]
 
+    # Fix up inputs
+    if isinstance(slowfast_channel_reduction_ratio, int):
+        slowfast_channel_reduction_ratio = (slowfast_channel_reduction_ratio,)
+    if isinstance(stem_pool, Callable):
+        stem_pool = (stem_pool,) * _num_pathway
+    if isinstance(bottleneck, Callable):
+        bottleneck = (bottleneck,) * len(stage_depths)
+        bottleneck = (bottleneck,) * _num_pathway
+    if fusion_builder is None:
+        fusion_builder = FastToSlowFusionBuilder(
+            slowfast_channel_reduction_ratio=slowfast_channel_reduction_ratio[0],
+            conv_fusion_channel_ratio=slowfast_conv_channel_fusion_ratio,
+            conv_kernel_size=slowfast_fusion_conv_kernel_size,
+            conv_stride=slowfast_fusion_conv_stride,
+            norm=norm,
+            activation=activation,
+            max_stage_idx=len(stage_depths) - 1,
+        ).create_module
+
     # Build stem blocks.
     stems = []
     for pathway_idx in range(_num_pathway):
         stems.append(
-            create_res_basic_stem(
+            stem_function[pathway_idx](
                 in_channels=input_channels[pathway_idx],
                 out_channels=stem_dim_outs[pathway_idx],
                 conv_kernel_size=stem_conv_kernel_sizes[pathway_idx],
@@ -219,7 +216,7 @@ def create_slowfast(
                 conv_padding=[
                     size // 2 for size in stem_conv_kernel_sizes[pathway_idx]
                 ],
-                pool=stem_pool,
+                pool=stem_pool[pathway_idx],
                 pool_kernel_size=stem_pool_kernel_sizes[pathway_idx],
                 pool_stride=stem_pool_strides[pathway_idx],
                 pool_padding=[
@@ -234,13 +231,9 @@ def create_slowfast(
     stages.append(
         MultiPathWayWithFuse(
             multipathway_blocks=nn.ModuleList(stems),
-            multipathway_fusion=create_fuse_fast_to_slow(
-                conv_dim_in=stem_dim_outs[0] // slowfast_channel_reduction_ratio,
-                conv_fusion_channel_ratio=slowfast_conv_channel_fusion_ratio,
-                conv_kernel_size=slowfast_fusion_conv_kernel_size,
-                conv_stride=slowfast_fusion_conv_stride,
-                norm=norm,
-                activation=activation,
+            multipathway_fusion=fusion_builder(
+                fusion_dim_in=stem_dim_outs[0],
+                stage_idx=0,
             ),
         )
     )
@@ -253,17 +246,25 @@ def create_slowfast(
             stage_dim_in
             + stage_dim_in
             * slowfast_conv_channel_fusion_ratio
-            // slowfast_channel_reduction_ratio,
-            stage_dim_in // slowfast_channel_reduction_ratio,
+            // slowfast_channel_reduction_ratio[0],
         ]
         pathway_stage_dim_inner = [
             stage_dim_out // 4,
-            stage_dim_out // 4 // slowfast_channel_reduction_ratio,
         ]
         pathway_stage_dim_out = [
             stage_dim_out,
-            stage_dim_out // slowfast_channel_reduction_ratio,
         ]
+        for reduction_ratio in slowfast_channel_reduction_ratio:
+            pathway_stage_dim_in = pathway_stage_dim_in + [
+                stage_dim_in // reduction_ratio
+            ]
+            pathway_stage_dim_inner = pathway_stage_dim_inner + [
+                stage_dim_out // 4 // reduction_ratio
+            ]
+            pathway_stage_dim_out = pathway_stage_dim_out + [
+                stage_dim_out // reduction_ratio
+            ]
+
         stage = []
         for pathway_idx in range(_num_pathway):
             depth = stage_depths[idx]
@@ -280,7 +281,7 @@ def create_slowfast(
                     dim_in=pathway_stage_dim_in[pathway_idx],
                     dim_inner=pathway_stage_dim_inner[pathway_idx],
                     dim_out=pathway_stage_dim_out[pathway_idx],
-                    bottleneck=bottleneck,
+                    bottleneck=bottleneck[pathway_idx][idx],
                     conv_a_kernel_size=stage_conv_a_kernel_sizes[pathway_idx][idx],
                     conv_a_stride=stage_conv_a_stride,
                     conv_a_padding=[
@@ -299,21 +300,13 @@ def create_slowfast(
                     activation=activation,
                 )
             )
-        fusion = (
-            create_fuse_fast_to_slow(
-                conv_dim_in=stage_dim_out // slowfast_channel_reduction_ratio,
-                conv_fusion_channel_ratio=slowfast_conv_channel_fusion_ratio,
-                conv_kernel_size=slowfast_fusion_conv_kernel_size,
-                conv_stride=slowfast_fusion_conv_stride,
-                norm=norm,
-                activation=activation,
-            )
-            if idx < len(stage_depths) - 1
-            else None
-        )
         stages.append(
             MultiPathWayWithFuse(
-                multipathway_blocks=nn.ModuleList(stage), multipathway_fusion=fusion
+                multipathway_blocks=nn.ModuleList(stage),
+                multipathway_fusion=fusion_builder(
+                    fusion_dim_in=stage_dim_out,
+                    stage_idx=idx + 1,
+                ),
             )
         )
         stage_dim_in = stage_dim_out
@@ -336,9 +329,12 @@ def create_slowfast(
         raise NotImplementedError(f"Unsupported pool_model type {pool_model}")
 
     stages.append(PoolConcatPathway(retain_list=False, pool=nn.ModuleList(pool_model)))
+    head_in_features = stage_dim_in
+    for reduction_ratio in slowfast_channel_reduction_ratio:
+        head_in_features = head_in_features + stage_dim_in // reduction_ratio
     stages.append(
         create_res_basic_head(
-            in_features=stage_dim_in + stage_dim_in // slowfast_channel_reduction_ratio,
+            in_features=head_in_features,
             out_features=model_num_class,
             pool=None,
             output_size=head_output_size,
@@ -386,6 +382,80 @@ class PoolConcatPathway(nn.Module):
             return [torch.cat(output, 1)]
         else:
             return torch.cat(output, 1)
+
+
+class FastToSlowFusionBuilder:
+    def __init__(
+        self,
+        slowfast_channel_reduction_ratio: int,
+        conv_fusion_channel_ratio: float,
+        conv_kernel_size: Tuple[int],
+        conv_stride: Tuple[int],
+        norm: Callable = nn.BatchNorm3d,
+        norm_eps: float = 1e-5,
+        norm_momentum: float = 0.1,
+        activation: Callable = nn.ReLU,
+        max_stage_idx: int = 3,
+    ) -> None:
+        """
+        Given a list of two tensors from Slow pathway and Fast pathway, fusion information
+        from the Fast pathway to the Slow on through a convolution followed by a
+        concatenation, then return the fused list of tensors from Slow and Fast pathway in
+        order.
+        Args:
+            slowfast_channel_reduction_ratio (int): Reduction ratio from the stage dimension.
+                Used to compute conv_dim_in = fusion_dim_in // slowfast_channel_reduction_ratio
+            conv_fusion_channel_ratio (int): channel ratio for the convolution used to fuse
+                from Fast pathway to Slow pathway.
+            conv_kernel_size (int): kernel size of the convolution used to fuse from Fast
+                pathway to Slow pathway.
+            conv_stride (int): stride size of the convolution used to fuse from Fast pathway
+                to Slow pathway.
+            norm (callable): a callable that constructs normalization layer, examples
+                include nn.BatchNorm3d, None (not performing normalization).
+            norm_eps (float): normalization epsilon.
+            norm_momentum (float): normalization momentum.
+            activation (callable): a callable that constructs activation layer, examples
+                include: nn.ReLU, nn.Softmax, nn.Sigmoid, and None (not performing
+                activation).
+            max_stage_idx (int): Returns identity module if we exceed this
+        """
+        set_attributes(self, locals())
+
+    def create_module(self, fusion_dim_in: int, stage_idx: int) -> nn.Module:
+        """
+        Creates the module for the given stage
+        Args:
+            fusion_dim_in (int): input stage dimension
+            stage_idx (int): which stage this is
+        """
+        if stage_idx > self.max_stage_idx:
+            return nn.Identity()
+
+        conv_dim_in = fusion_dim_in // self.slowfast_channel_reduction_ratio
+        conv_fast_to_slow = nn.Conv3d(
+            conv_dim_in,
+            int(conv_dim_in * self.conv_fusion_channel_ratio),
+            kernel_size=self.conv_kernel_size,
+            stride=self.conv_stride,
+            padding=[k_size // 2 for k_size in self.conv_kernel_size],
+            bias=False,
+        )
+        norm_module = (
+            None
+            if self.norm is None
+            else self.norm(
+                num_features=conv_dim_in * self.conv_fusion_channel_ratio,
+                eps=self.norm_eps,
+                momentum=self.norm_momentum,
+            )
+        )
+        activation_module = None if self.activation is None else self.activation()
+        return FuseFastToSlow(
+            conv_fast_to_slow=conv_fast_to_slow,
+            norm=norm_module,
+            activation=activation_module,
+        )
 
 
 class FuseFastToSlow(nn.Module):
