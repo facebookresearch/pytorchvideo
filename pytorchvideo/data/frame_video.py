@@ -125,12 +125,14 @@ class FrameVideo(Video):
 
             Returns None if no frames are found.
         """
-        if start_sec < 0 or end_sec > self._duration:
+        if start_sec < 0 or start_sec > self._duration:
             logger.warning(
                 f"No frames found within {start_sec} and {end_sec} seconds. Video starts"
                 f"at time 0 and ends at {self._duration}."
             )
             return None
+
+        end_sec = min(end_sec, self._duration)
 
         start_frame_index = self._get_frame_index_for_time(start_sec)
         end_frame_index = self._get_frame_index_for_time(end_sec)

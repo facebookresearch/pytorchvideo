@@ -1,6 +1,7 @@
 # Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved.
 
 import csv
+import functools
 import itertools
 import os
 from collections import defaultdict
@@ -35,6 +36,7 @@ class Charades(torch.utils.data.IterableDataset):
         video_sampler: Type[torch.utils.data.Sampler] = torch.utils.data.RandomSampler,
         transform: Optional[Callable[[dict], Any]] = None,
         video_path_prefix: str = "",
+        frames_per_clip: Optional[int] = None,
     ) -> None:
         """
         Args:
@@ -62,6 +64,8 @@ class Charades(torch.utils.data.IterableDataset):
                     }
                 If transform is None, the raw clip output in the above format is
                 returned unmodified.
+            video_path_prefix (str): prefix path to add to all paths from data_path.
+            frames_per_clip (Optional[int]): The number of frames per clip to sample.
         """
         self._transform = transform
         self._clip_sampler = clip_sampler
@@ -72,12 +76,38 @@ class Charades(torch.utils.data.IterableDataset):
         ) = _read_video_paths_and_labels(data_path, prefix=video_path_prefix)
         self._video_sampler = video_sampler(self._path_to_videos)
         self._video_sampler_iter = None  # Initialized on first call to self.__next__()
+        self._frame_filter = (
+            functools.partial(
+                Charades._sample_clip_frames,
+                frames_per_clip=frames_per_clip,
+            )
+            if frames_per_clip is not None
+            else None
+        )
 
         # Depending on the clip sampler type, we may want to sample multiple clips
         # from one video. In that case, we keep the store video, label and previous sampled
         # clip time in these variables.
         self._loaded_video = None
         self._next_clip_start_time = 0.0
+
+    @staticmethod
+    def _sample_clip_frames(
+        frame_indices: List[int], frames_per_clip: int
+    ) -> List[int]:
+        """
+        Args:
+            frame_indices (list): list of frame indices.
+            frames_per+clip (int): The number of frames per clip to sample.
+
+        Returns:
+            (list): Outputs a subsampled list with num_samples frames.
+        """
+        num_frames = len(frame_indices)
+        indices = torch.linspace(0, num_frames - 1, frames_per_clip)
+        indices = torch.clamp(indices, 0, num_frames - 1).long()
+
+        return [frame_indices[idx] for idx in indices]
 
     @property
     def video_sampler(self):
@@ -113,7 +143,7 @@ class Charades(torch.utils.data.IterableDataset):
         clip_start, clip_end, clip_index, is_last_clip = self._clip_sampler(
             self._next_clip_start_time, video.duration
         )
-        clip = video.get_clip(clip_start, clip_end)
+        clip = video.get_clip(clip_start, clip_end, self._frame_filter)
         frames, frame_indices = clip["video"], clip["frame_indices"]
         self._next_clip_start_time = clip_end
 
@@ -122,7 +152,10 @@ class Charades(torch.utils.data.IterableDataset):
             self._next_clip_start_time = 0.0
 
         # Merge unique labels from each frame into clip label.
-        labels_by_frame = [self._labels[video_index][i] for i in frame_indices]
+        labels_by_frame = [
+            self._labels[video_index][i]
+            for i in range(min(frame_indices), max(frame_indices) + 1)
+        ]
         sample_dict = {
             "video": frames,
             "label": labels_by_frame,
