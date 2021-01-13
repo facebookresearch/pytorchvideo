@@ -213,6 +213,7 @@ def create_r2plus1d(
     head_pool_kernel_size: Tuple[int] = (4, 7, 7),
     head_output_size: Tuple[int] = (1, 1, 1),
     head_activation: Callable = nn.Softmax,
+    head_output_with_global_average: bool = True,
 ) -> nn.Module:
     """
     Build the R(2+1)D network from::
@@ -275,6 +276,8 @@ def create_r2plus1d(
             head_pool_kernel_size (tuple): the pooling kernel size.
             head_output_size (tuple): the size of output tensor for head.
             head_activation (callable): a callable that constructs activation layer.
+            head_output_with_global_average (bool): if True, perform global averaging on
+                the head output.
 
     Returns:
         (nn.Module): basic resnet.
@@ -347,6 +350,7 @@ def create_r2plus1d(
         pool_kernel_size=head_pool_kernel_size,
         dropout_rate=dropout_rate,
         activation=head_activation,
+        output_with_global_average=head_output_with_global_average,
     )
     blocks.append(head)
     return Net(blocks=nn.ModuleList(blocks))
