@@ -9,7 +9,7 @@ from pytorchvideo.accelerator.efficient_blocks.efficient_block_base import (
     EfficientBlockBase,
 )
 
-from .conv_helper import _Reshape
+from .conv_helper import _Conv3dTemporalKernel3Decomposed, _Reshape
 
 
 class Conv3dPwBnRelu(EfficientBlockBase):
@@ -129,6 +129,108 @@ class Conv3dPwBnRelu(EfficientBlockBase):
             self.kernel,
             _Reshape(self._output_tensor_size),
         )
+        self.convert_flag = True
+        # Set new kernel in eval mode again
+        self.kernel.eval()
+
+    def forward(self, x):
+        x = self.kernel(x)
+        return x
+
+
+class Conv3d3x3x3DwBnRelu(EfficientBlockBase):
+    """
+    Implements Conv3d (3x3x3 dw) + (optional) Bn + (optional) ReLu for pointwise layers.
+    The conv layer has fixed kernel_size = (3,3,3), depthwise, zero padding size of
+    (1,1,1), temporal stride = 1, dilation = 1
+
+                      Input
+                        |
+                        ↓
+                    conv3d (3x3x3 dw)
+                        ↓
+                    BatchNorm (optional)
+                        ↓
+                    ReLU (optional)
+
+    Current implementation of this layer in QNNPACK is reasonably efficient.
+
+    convert_flag variable is to record whether the Conv3d3x3x3DwBnRelu instance
+    has been converted; Conv3d3x3x3DwBnRelu is in original form if convert_flag is false,
+    while it is in deployable form if convert_flag is true.
+
+    Args:
+        in_channels (int): number of channels for conv3d 3x3x3 dw.
+        spatial_stride (tuple length of 2): spatial stride for conv.
+        bias (bool): if true, use bias for conv.
+        use_relu (bool): if true, use relu in block.
+        use_bn (bool): if true, use batchnorm.
+        norm_eps (float): epsilon for batchnorm.
+        norm_momentum (float): momentum for batchnorm.
+
+    Current implementation of this layer in Pytorch Mobile is efficient.
+    Sidenote: QNNPACK has best support for dw with 3x3 spatial kernel.
+    For other spatial kernels like 7x7 dw, the efficiency may be lower.
+    """
+
+    def __init__(
+        self,
+        in_channels: int,
+        spatial_stride: int = 1,
+        bias=False,
+        use_relu=True,
+        use_bn=True,
+        norm_eps: float = 1e-5,
+        norm_momentum: float = 0.1,
+    ):
+        super().__init__()
+        kernel = OrderedDict()
+        conv_stride = (1, spatial_stride, spatial_stride)
+        kernel["conv"] = nn.Conv3d(
+            in_channels,
+            in_channels,
+            kernel_size=(3, 3, 3),
+            stride=conv_stride,
+            groups=in_channels,
+            padding=1,
+            bias=bias,
+        )
+        if use_bn:
+            kernel["bn"] = nn.BatchNorm3d(
+                in_channels, eps=norm_eps, momentum=norm_momentum
+            )
+        if use_relu:
+            kernel["relu"] = nn.ReLU(inplace=True)
+        self.kernel = nn.Sequential(kernel)
+
+        self.convert_flag = False
+
+    def convert(
+        self,
+        input_blob_size: Tuple,
+        **kwargs,
+    ):
+        """
+        Converts Conv3d into equivalent Conv2d for efficient Pytorch Mobile deployment.
+        Args:
+            input_blob_size (tuple): blob size at the input of Conv3d3x3x3DwBnRelu
+                instance during forward.
+            kwargs (any): any keyword argument (unused).
+        """
+        assert (
+            self.convert_flag is False
+        ), "Conv3d3x3x3DwBnRelu: already converted, cannot be converted twice."
+        self.kernel.eval()
+        # Fuse conv and bn if bn exists.
+        if hasattr(self.kernel, "bn"):
+            self.kernel = torch.quantization.fuse_modules(self.kernel, ["conv", "bn"])
+        self.kernel.conv = _Conv3dTemporalKernel3Decomposed(
+            self.kernel.conv, input_blob_size[2:]
+        )
+        """
+        Since conv3d is converted into multiple conv2d,
+        will not fuse conv with relu to keep arithmetic equivalency.
+        """
         self.convert_flag = True
         # Set new kernel in eval mode again
         self.kernel.eval()
