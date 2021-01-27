@@ -33,3 +33,35 @@ class DifferentiableAllGather(torch.autograd.Function):
                 cur_gpu * mini_batchsize : (cur_gpu + 1) * mini_batchsize
             ]
         return grad_output
+
+
+class DifferentiableAllReduce(torch.autograd.Function):
+    """
+    The torch.distributed.all_reduce gathers and reduces tensors in-place in one step.
+    This implementation uses torch.distributed.all_gather to first gather separate tensors
+    and explicitly reduce them afterwards. It is more reliable but maybe less efficient.
+    """
+
+    @staticmethod
+    def forward(ctx, input):
+        input_list = [torch.zeros_like(input) for k in range(dist.get_world_size())]
+        dist.all_gather(input_list, input, async_op=False)
+        inputs = torch.stack(input_list, dim=0)
+        return torch.sum(inputs, dim=0)
+
+    @staticmethod
+    def backward(ctx, grad_output):
+        dist.all_reduce(grad_output, async_op=False)
+        return grad_output
+
+
+def get_world_size() -> int:
+    """
+    Simple wrapper for correctly getting worldsize in both distributed
+    / non-distributed settings
+    """
+    return (
+        torch.distributed.get_world_size()
+        if torch.distributed.is_available() and torch.distributed.is_initialized()
+        else 1
+    )
