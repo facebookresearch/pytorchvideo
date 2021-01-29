@@ -1123,10 +1123,10 @@ class ResBlock(nn.Module):
         if self.branch1_conv is None:
             x = self.branch_fusion(x, self.branch2(x))
         else:
-            residual = self.branch1_conv(x)
+            shortcut = self.branch1_conv(x)
             if self.branch1_norm is not None:
-                residual = self.branch1_norm(residual)
-            x = self.branch_fusion(residual, self.branch2(x))
+                shortcut = self.branch1_norm(shortcut)
+            x = self.branch_fusion(shortcut, self.branch2(x))
         if self.activation is not None:
             x = self.activation(x)
         return x
