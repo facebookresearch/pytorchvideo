@@ -4,7 +4,7 @@ from typing import Tuple
 
 import torch
 from pytorchvideo.layers.fb.octave_conv import get_dim_high_low
-from pytorchvideo.layers.fb.split_attention import SplitAttention, OctaveSplitAttention
+from pytorchvideo.layers.fb.split_attention import OctaveSplitAttention, SplitAttention
 
 
 class TestSplitAttention(unittest.TestCase):
