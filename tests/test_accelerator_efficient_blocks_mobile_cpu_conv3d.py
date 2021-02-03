@@ -7,19 +7,19 @@ from copy import deepcopy
 import torch
 import torch.nn as nn
 from pytorchvideo.accelerator.efficient_blocks.mobile_cpu.convolutions import (
-    Conv3d3x3x3DwBnRelu,
-    Conv3dPwBnRelu,
+    Conv3d3x3x3DwBnAct,
+    Conv3dPwBnAct,
 )
 
 
 class TestConv3dBlockEquivalency(unittest.TestCase):
-    def test_Conv3dPwBnRelu_equivalency(self):
+    def test_Conv3dPwBnAct_equivalency(self):
         # Input tensor
         input_tensor = torch.randn(1, 3, 4, 6, 6)
         # A conv block
-        l0 = Conv3dPwBnRelu(3, 12)
-        l1 = Conv3dPwBnRelu(
-            12, 3, bias=True, use_relu=False
+        l0 = Conv3dPwBnAct(3, 12)
+        l1 = Conv3dPwBnAct(
+            12, 3, bias=True, activation="identity"
         )  # Skip relu to avoid NaN for rel error
         seq0 = nn.Sequential(l0, l1)
         seq0.eval()
@@ -39,20 +39,20 @@ class TestConv3dBlockEquivalency(unittest.TestCase):
 
         logging.info(
             (
-                "test_Conv3dPwBnRelu_equivalency: "
+                "test_Conv3dPwBnAct_equivalency: "
                 f"max_err {max_err}, max_rel_err {max_rel_err}"
             )
         )
         self.assertTrue(max_err < 1e-3)
 
-    def test_Conv3d3x3x3DwBnRelu_equivalency(self):
+    def test_Conv3d3x3x3DwBnAct_equivalency(self):
         # Input tensor
         input_tensor = torch.randn(1, 3, 4, 6, 6)
         # A conv block
-        l0 = Conv3dPwBnRelu(3, 12)
-        l1 = Conv3d3x3x3DwBnRelu(12)
-        l2 = Conv3dPwBnRelu(
-            12, 3, bias=True, use_relu=False
+        l0 = Conv3dPwBnAct(3, 12)
+        l1 = Conv3d3x3x3DwBnAct(12)
+        l2 = Conv3dPwBnAct(
+            12, 3, bias=True, activation="identity"
         )  # Skip relu to avoid NaN for relative error
         seq0 = nn.Sequential(l0, l1, l2)
         seq0.eval()
@@ -73,7 +73,7 @@ class TestConv3dBlockEquivalency(unittest.TestCase):
         max_rel_err = float(torch.max(rel_err))
         logging.info(
             (
-                "test_Conv3d3x3x3DwBnRelu_equivalency: "
+                "test_Conv3d3x3x3DwBnAct_equivalency: "
                 f"max_err {max_err}, max_rel_err {max_rel_err}"
             )
         )

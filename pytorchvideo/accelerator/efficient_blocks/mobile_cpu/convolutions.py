@@ -9,12 +9,17 @@ from pytorchvideo.accelerator.efficient_blocks.efficient_block_base import (
     EfficientBlockBase,
 )
 
-from .conv_helper import _Conv3dTemporalKernel3Decomposed, _Reshape
+from .activation_functions import supported_act_functions
+from .conv_helper import (
+    _Reshape,
+    _Conv3dTemporalKernel3Decomposed,
+    _Conv3dTemporalKernel1Decomposed,
+)
 
 
-class Conv3dPwBnRelu(EfficientBlockBase):
+class Conv3dPwBnAct(EfficientBlockBase):
     """
-    Implements Conv3d + Bn + ReLu for pointwise layers.
+    Implements Conv3d + Bn + Activation for pointwise layers.
     The conv layer has fixed kernel_size = (1,1,1),
     groups = 1, padding = 0, stride = 1, dilation = 1.
 
@@ -25,13 +30,13 @@ class Conv3dPwBnRelu(EfficientBlockBase):
                             ↓
                         BatchNorm (optional)
                             ↓
-                        ReLU (optional)
+                        Activation
 
-    Conv3dPwBnRelu is in original form (for training) once instantiated. User can
+    Conv3dPwBnAct is in original form (for training) once instantiated. User can
     call convert() method to convert it into deployable form for deployment.
 
-    convert_flag variable is to record whether the Conv3dPwBnRelu instance
-    has been converted; Conv3dPwBnRelu is in original form if convert_flag is false,
+    convert_flag variable is to record whether the Conv3dPwBnAct instance
+    has been converted; Conv3dPwBnAct is in original form if convert_flag is false,
     while it is in deployable form if convert_flag is true.
 
     Current implementation of this layer in QNNPACK is very efficient.
@@ -39,7 +44,10 @@ class Conv3dPwBnRelu(EfficientBlockBase):
         in_channels (int): number of input channels for conv3d 1x1x1.
         out_channels (int): number of output channels for conv3d 1x1x1.
         bias (bool): if true, use bias for conv.
-        use_relu (bool): if true, use relu in block.
+        activation (str): applies selected activation from supported_act_functions.
+            See activation_functions.py for more info about supported activations.
+            Currently ReLU ('relu'), Swish ('swish'), Hardswish ('hswish'), Identity
+            ('identity') are supported.
         use_bn (bool): if true, use batchnorm.
         norm_eps (float): epsilon for batchnorm.
         norm_momentum (float): momentum for batchnorm.
@@ -51,7 +59,7 @@ class Conv3dPwBnRelu(EfficientBlockBase):
         in_channels: int,
         out_channels: int,
         bias=False,
-        use_relu=True,
+        activation: str = "relu",
         use_bn=True,
         norm_eps: float = 1e-5,
         norm_momentum: float = 0.1,
@@ -59,14 +67,17 @@ class Conv3dPwBnRelu(EfficientBlockBase):
         super().__init__()
         self._in_channels = in_channels
         self._out_channels = out_channels
+        self.act = activation
         kernel = OrderedDict()
         kernel["conv"] = nn.Conv3d(in_channels, out_channels, kernel_size=1, bias=bias)
         if use_bn:
             kernel["bn"] = nn.BatchNorm3d(
                 out_channels, eps=norm_eps, momentum=norm_momentum
             )
-        if use_relu:
-            kernel["relu"] = nn.ReLU(inplace=True)
+        assert (
+            activation in supported_act_functions
+        ), f"Conv3dPwBnAct: {activation} is not in supported_act_functions."
+        kernel["act"] = supported_act_functions[activation]()
         self.kernel = nn.Sequential(kernel)
         self.convert_flag = False
 
@@ -84,12 +95,12 @@ class Conv3dPwBnRelu(EfficientBlockBase):
         Input (5d tensor) --> reshape (4d tensor) --> conv2d (4d tensor)
             --> reshape (5d tensor) --> output (5d tensor)
         Args:
-            input_blob_size (tuple): blob size at the input of Conv3dPwBnRelu instance.
+            input_blob_size (tuple): blob size at the input of Conv3dPwBnAct instance.
             kwargs (any): any extra keyword arguments from upstream unused by convert().
         """
         assert (
             self.convert_flag is False
-        ), "Conv3dPwBnRelu: already converted, cannot be converted again"
+        ), "Conv3dPwBnAct: already converted, cannot be converted again"
         self.kernel.eval()
         # First fuse conv and bn if bn exists.
         if hasattr(self.kernel, "bn"):
@@ -120,9 +131,13 @@ class Conv3dPwBnRelu(EfficientBlockBase):
         conv_state_dict["weight"] = conv_state_dict["weight"].squeeze(2)
         conv2d_eq.load_state_dict(conv_state_dict)
         self.kernel.conv = conv2d_eq
-        # Fuse relu with conv after conv3d -> conv2d
-        if hasattr(self.kernel, "relu"):
-            self.kernel = torch.quantization.fuse_modules(self.kernel, ["conv", "relu"])
+        # Convert activatiopn function
+        self.kernel.act.convert(input_blob_size, **kwargs)
+        # Fuse act with conv after conv3d -> conv2d if act is relu
+        if self.act == "relu":
+            self.kernel = torch.quantization.fuse_modules(
+                self.kernel, ["conv", "act.act"]
+            )
         # Insert reshape layers before/after conv2d
         self.kernel = nn.Sequential(
             _Reshape(self._input_tensor_reshape_size),
@@ -138,9 +153,9 @@ class Conv3dPwBnRelu(EfficientBlockBase):
         return x
 
 
-class Conv3d3x3x3DwBnRelu(EfficientBlockBase):
+class Conv3d3x3x3DwBnAct(EfficientBlockBase):
     """
-    Implements Conv3d (3x3x3 dw) + (optional) Bn + (optional) ReLu for pointwise layers.
+    Implements Conv3d (3x3x3 dw) + (optional) Bn + Activation layers.
     The conv layer has fixed kernel_size = (3,3,3), depthwise, zero padding size of
     (1,1,1), temporal stride = 1, dilation = 1
 
@@ -151,19 +166,22 @@ class Conv3d3x3x3DwBnRelu(EfficientBlockBase):
                         ↓
                     BatchNorm (optional)
                         ↓
-                    ReLU (optional)
+                    Activation
 
     Current implementation of this layer in QNNPACK is reasonably efficient.
 
-    convert_flag variable is to record whether the Conv3d3x3x3DwBnRelu instance
-    has been converted; Conv3d3x3x3DwBnRelu is in original form if convert_flag is false,
+    convert_flag variable is to record whether the Conv3d3x3x3DwBnAct instance
+    has been converted; Conv3d3x3x3DwBnAct is in original form if convert_flag is false,
     while it is in deployable form if convert_flag is true.
 
     Args:
         in_channels (int): number of channels for conv3d 3x3x3 dw.
         spatial_stride (tuple length of 2): spatial stride for conv.
         bias (bool): if true, use bias for conv.
-        use_relu (bool): if true, use relu in block.
+        activation (str): applies selected activation from supported_act_functions.
+            See activation_functions.py for more info about supported activations.
+            Currently ReLU ('relu'), Swish ('swish'), Hardswish ('hswish'), Identity
+            ('identity') are supported.
         use_bn (bool): if true, use batchnorm.
         norm_eps (float): epsilon for batchnorm.
         norm_momentum (float): momentum for batchnorm.
@@ -178,7 +196,7 @@ class Conv3d3x3x3DwBnRelu(EfficientBlockBase):
         in_channels: int,
         spatial_stride: int = 1,
         bias=False,
-        use_relu=True,
+        activation: str = "relu",
         use_bn=True,
         norm_eps: float = 1e-5,
         norm_momentum: float = 0.1,
@@ -199,8 +217,10 @@ class Conv3d3x3x3DwBnRelu(EfficientBlockBase):
             kernel["bn"] = nn.BatchNorm3d(
                 in_channels, eps=norm_eps, momentum=norm_momentum
             )
-        if use_relu:
-            kernel["relu"] = nn.ReLU(inplace=True)
+        assert (
+            activation in supported_act_functions
+        ), f"Conv3d3x3x3DwBnAct: {activation} is not in supported_act_functions."
+        kernel["act"] = supported_act_functions[activation]()
         self.kernel = nn.Sequential(kernel)
 
         self.convert_flag = False
@@ -213,13 +233,13 @@ class Conv3d3x3x3DwBnRelu(EfficientBlockBase):
         """
         Converts Conv3d into equivalent Conv2d for efficient Pytorch Mobile deployment.
         Args:
-            input_blob_size (tuple): blob size at the input of Conv3d3x3x3DwBnRelu
+            input_blob_size (tuple): blob size at the input of Conv3d3x3x3DwBnAct
                 instance during forward.
             kwargs (any): any keyword argument (unused).
         """
         assert (
             self.convert_flag is False
-        ), "Conv3d3x3x3DwBnRelu: already converted, cannot be converted twice."
+        ), "Conv3d3x3x3DwBnAct: already converted, cannot be converted twice."
         self.kernel.eval()
         # Fuse conv and bn if bn exists.
         if hasattr(self.kernel, "bn"):
@@ -227,10 +247,129 @@ class Conv3d3x3x3DwBnRelu(EfficientBlockBase):
         self.kernel.conv = _Conv3dTemporalKernel3Decomposed(
             self.kernel.conv, input_blob_size[2:]
         )
+        # Convert activatiopn function
+        self.kernel.act.convert(input_blob_size, **kwargs)
         """
         Since conv3d is converted into multiple conv2d,
-        will not fuse conv with relu to keep arithmetic equivalency.
+        will not fuse conv with act to keep arithmetic equivalency.
         """
+        self.convert_flag = True
+        # Set new kernel in eval mode again
+        self.kernel.eval()
+
+    def forward(self, x):
+        x = self.kernel(x)
+        return x
+
+
+class Conv3dTemporalKernel1BnAct(EfficientBlockBase):
+    """
+    Implements Conv3d + Bn + Activation where Conv3d has temporal kernel of 1.
+    The conv layer has padding[0] = 0, stride[0] = 1, dilation[0] = 1.
+
+                                  Input
+                                    |
+                                    ↓
+                                conv3d (1xkxk)
+                                    ↓
+                                BatchNorm (optional)
+                                    ↓
+                                Activation
+
+    Current implementation of this layer in QNNPACK is reasonably efficient
+    (not as efficient as Conv3dPwBnAct for 1x1x1 kernel).
+    Args:
+        in_channels (int): number of input channels for conv3d 1x1x1.
+        out_channels (int): number of output channels for conv3d 1x1x1.
+        bias (bool): if true, use bias for conv.
+        groups (int): number of groups for conv.
+        spstial_kernel (int): spatial kernel for conv3d.
+        spstial_stride (int): spatial stride for conv3d.
+        spatial_padding (int): spatial padding for conv3d.
+        spatial_dilation (int): spatial dilation for conv3d.
+        activation (str): applies selected activation from supported_act_functions.
+            See activation_functions.py for more info about supported activations.
+            Currently ReLU ('relu'), Swish ('swish'), Hardswish ('hswish'), Identity
+            ('identity') are supported.
+        use_bn (bool): if true, use batchnorm.
+        norm_eps (float): epsilon for batchnorm.
+        norm_momentum (float): momentum for batchnorm.
+
+    """
+
+    def __init__(
+        self,
+        in_channels: int,
+        out_channels: int,
+        bias=False,
+        groups: int = 1,
+        spatial_kernel: int = 1,
+        spatial_stride: int = 1,
+        spatial_padding: int = 0,
+        spatial_dilation: int = 1,
+        activation: str = "relu",
+        use_bn=True,
+        norm_eps: float = 1e-5,
+        norm_momentum: float = 0.1,
+    ):
+        super().__init__()
+
+        kernel_size = (1, spatial_kernel, spatial_kernel)
+        stride = (1, spatial_stride, spatial_stride)
+        padding = (0, spatial_padding, spatial_padding)
+        dilation = (1, spatial_dilation, spatial_dilation)
+        kernel = OrderedDict()
+        kernel["conv"] = nn.Conv3d(
+            in_channels,
+            out_channels,
+            kernel_size=kernel_size,
+            padding=padding,
+            stride=stride,
+            dilation=dilation,
+            groups=groups,
+            bias=bias,
+        )
+        if use_bn:
+            kernel["bn"] = nn.BatchNorm3d(
+                out_channels, eps=norm_eps, momentum=norm_momentum
+            )
+        assert (
+            activation in supported_act_functions
+        ), f"Conv3dTemporalKernel1BnAct: {activation} is not in supported_act_functions."
+        kernel["act"] = supported_act_functions[activation]()
+        self.kernel = nn.Sequential(kernel)
+
+        self.convert_flag = False
+
+    def convert(
+        self,
+        input_blob_size: Tuple,
+        **kwargs,
+    ):
+        """
+        Converts Conv3d into equivalent Conv2d for QNNPACK deployment.
+        This conversion is done by first fuse conv3d with bn,
+        convert conv3d into equivalent conv2d,
+        and optionally fuse conv2d with relu.
+        Args:
+            input_blob_size (tuple): blob size at the input of
+                Conv3dTemporalKernel1BnAct instance during forward.
+            kwargs (any): any keyword argument (unused).
+        """
+        assert (
+            self.convert_flag is False
+        ), "Conv3dTemporalKernel1BnAct: already converted, cannot be converted again"
+        self.kernel.eval()
+        # First fuse conv and bn if bn exists.
+        if hasattr(self.kernel, "bn"):
+            self.kernel = torch.quantization.fuse_modules(self.kernel, ["conv", "bn"])
+
+        self.kernel.conv = _Conv3dTemporalKernel1Decomposed(
+            self.kernel.conv, input_blob_size[2:]
+        )
+        # Convert activatiopn function
+        self.kernel.act.convert(input_blob_size, **kwargs)
+
         self.convert_flag = True
         # Set new kernel in eval mode again
         self.kernel.eval()

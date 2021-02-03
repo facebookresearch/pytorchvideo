@@ -195,3 +195,54 @@ class _Conv3dTemporalKernel3Decomposed(nn.Module):
             return self._cat_func.cat(out_tensor_list, 2)
         else:  # Degenerated to simple conv2d
             return self._conv2d_3_3_1(x[:, :, 0])
+
+
+class _Conv3dTemporalKernel1Decomposed(nn.Module):
+    """
+    Helper class for decomposing conv3d with temporal kernel of 1 into conv2d on
+    multiple temporal planes.
+    In conv3d with temporal kernel 1 and input I, for output temporal index of t (O[:,:,t,:,:]),
+    the conv can be expressed as:
+    O[:,:,t,:,:] = conv3d(I[:,:,t,:,:])
+                 = conv2d(I[:,:,t,:,:])
+    The full output can be obtained by concat O[:,:,t,:,:] for t in 0...T,
+    where T is the length of I in temporal dimension.
+    """
+
+    def __init__(
+        self,
+        conv3d_eq: nn.Conv3d,
+        input_THW_tuple: Tuple,
+    ):
+        """
+        Args:
+            conv3d_eq (nn.Module): input nn.Conv3d module to be converted
+                into equivalent conv2d.
+            input_THW_tuple (tuple): input THW size for conv3d_eq during forward.
+        """
+        super().__init__()
+        # create equivalent conv2d module
+        in_channels = conv3d_eq.in_channels
+        out_channels = conv3d_eq.out_channels
+        bias_flag = conv3d_eq.bias is not None
+        self.conv2d_eq = nn.Conv2d(
+            in_channels,
+            out_channels,
+            kernel_size=(conv3d_eq.kernel_size[1], conv3d_eq.kernel_size[2]),
+            stride=(conv3d_eq.stride[1], conv3d_eq.stride[2]),
+            groups=conv3d_eq.groups,
+            bias=bias_flag,
+            padding=(conv3d_eq.padding[1], conv3d_eq.padding[2]),
+            dilation=(conv3d_eq.dilation[1], conv3d_eq.dilation[2]),
+        )
+        state_dict = conv3d_eq.state_dict()
+        state_dict["weight"] = state_dict["weight"].squeeze(2)
+        self.conv2d_eq.load_state_dict(state_dict)
+        self.input_THW_tuple = input_THW_tuple
+
+    def forward(self, x):
+        out_tensor_list = []
+        for idx in range(self.input_THW_tuple[0]):
+            cur_tensor = self.conv2d_eq(x[:, :, idx]).unsqueeze(2)
+            out_tensor_list.append(cur_tensor)
+        return torch.cat(out_tensor_list, 2)
