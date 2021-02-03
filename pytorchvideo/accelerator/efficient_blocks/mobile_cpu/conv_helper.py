@@ -31,6 +31,26 @@ class _Reshape(nn.Module):
         return torch.reshape(x, self.reshape_size)
 
 
+class _SkipConnectMul(nn.Module):
+    """
+    Helper class to implement skip multiplication.
+    Args:
+        layer (nn.Module): layer for skip multiplication. With input x, _SkipConnectMul
+            implements layer(x)*x.
+    """
+
+    def __init__(
+        self,
+        layer: nn.Module,
+    ):
+        super().__init__()
+        self.layer = layer
+        self.mul_func = nn.quantized.FloatFunctional()
+
+    def forward(self, x):
+        return self.mul_func.mul(x, self.layer(x))
+
+
 class _Conv3dTemporalKernel3Decomposed(nn.Module):
     """
     Helper class for decomposing conv3d with temporal kernel of 3 into equivalent conv2ds.

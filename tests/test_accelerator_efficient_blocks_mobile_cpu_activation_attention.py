@@ -8,9 +8,12 @@ import torch
 from pytorchvideo.accelerator.efficient_blocks.mobile_cpu.activation_functions import (
     supported_act_functions,
 )
+from pytorchvideo.accelerator.efficient_blocks.mobile_cpu.attention import (
+    SqueezeExcitation,
+)
 
 
-class TestActivationEquivalency(unittest.TestCase):
+class TestActivationAttentionEquivalency(unittest.TestCase):
     def test_activation_equivalency(self):
         # Input tensor
         input_tensor = torch.randn(1, 3, 4, 6, 6)
@@ -28,3 +31,27 @@ class TestActivationEquivalency(unittest.TestCase):
                 f"test_activation_equivalency: {iter_activation_name} max_err {max_err}"
             )
             self.assertTrue(max_err < 1e-3)
+
+    def test_squeeze_excite_equivalency(self):
+        # Input tensor
+        input_tensor = torch.randn(1, 16, 4, 6, 6)
+        # Instantiate ref and convert se modules.
+        se_ref = SqueezeExcitation(16, num_channels_reduced=2, is_3d=True)
+        se_ref.eval()
+        se_convert = deepcopy(se_ref)
+        se_convert.convert((1, 16, 4, 6, 6))
+        # Get output of both activations
+        out0 = se_ref(input_tensor)
+        out1 = se_convert(input_tensor)
+        # Check arithmetic equivalency
+        max_err = float(torch.max(torch.abs(out0 - out1)))
+        rel_err = torch.abs((out0 - out1) / out0)
+        max_rel_err = float(torch.max(rel_err))
+
+        logging.info(
+            (
+                "test_squeeze_excite_equivalency: "
+                f"max_err {max_err}, max_rel_err {max_rel_err}"
+            )
+        )
+        self.assertTrue(max_err < 1e-3)
