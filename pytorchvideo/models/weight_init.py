@@ -18,7 +18,7 @@ def init_net_weights(model: nn.Module, fc_init_std: float = 0.01) -> None:
         fc_init_std (float): the expected standard deviation for fully-connected layer.
     """
     for m in model.modules():
-        if isinstance(m, nn.Conv3d):
+        if isinstance(m, (nn.Conv2d, nn.Conv3d)):
             """
             Follow the initialization method proposed in:
             {He, Kaiming, et al.
@@ -37,5 +37,6 @@ def init_net_weights(model: nn.Module, fc_init_std: float = 0.01) -> None:
                 m.bias.data.zero_()
         if isinstance(m, nn.Linear):
             m.weight.data.normal_(mean=0.0, std=fc_init_std)
-            m.bias.data.zero_()
+            if m.bias is not None:
+                m.bias.data.zero_()
     return model
