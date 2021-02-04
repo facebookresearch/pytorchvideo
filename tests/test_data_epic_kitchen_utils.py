@@ -6,7 +6,7 @@ import unittest
 import unittest.mock
 from pathlib import Path
 
-from pytorchvideo.data.epic_kitchen import EncodedVideoInfo, VideoFrameInfo
+from pytorchvideo.data.dataset_manifest_utils import EncodedVideoInfo, VideoFrameInfo
 from pytorchvideo.data.epic_kitchen.utils import (
     build_encoded_manifest_from_nested_directory,
     build_frame_manifest_from_flat_directory,

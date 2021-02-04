@@ -8,14 +8,17 @@ from pathlib import Path
 
 import torch
 from parameterized import parameterized
-from pytorchvideo.data.epic_kitchen import (
-    ActionData,
+from pytorchvideo.data.dataset_manifest_utils import (
     EncodedVideoInfo,
-    EpicKitchenClip,
-    EpicKitchenDataset,
-    EpicKitchenDatasetType,
+    VideoClipInfo,
+    VideoDatasetType,
     VideoFrameInfo,
     VideoInfo,
+    VideoDataset,
+)
+from pytorchvideo.data.epic_kitchen import (
+    ActionData,
+    EpicKitchenDataset,
 )
 from pytorchvideo.data.utils import save_dataclass_objs_to_headered_csv
 from utils import temp_encoded_video
@@ -79,16 +82,16 @@ class TestEpicKitchenDataset(unittest.TestCase):
 
     VIDEO_INFOS_A = {
         "P02_001": VideoInfo(
-            video="P02_001", resolution="1080x1920", duration=100, fps=30
+            video_id="P02_001", resolution="1080x1920", duration=100, fps=30
         ),
         "P02_002": VideoInfo(
-            video="P02_002", resolution="1080x1920", duration=50, fps=60
+            video_id="P02_002", resolution="1080x1920", duration=50, fps=60
         ),
         "P02_005": VideoInfo(
-            video="P02_005", resolution="720x1280", duration=1000.09, fps=30
+            video_id="P02_005", resolution="720x1280", duration=1000.09, fps=30
         ),
         "P07_002": VideoInfo(
-            video="P07_002", resolution="720x1280", duration=17.001, fps=90
+            video_id="P07_002", resolution="720x1280", duration=17.001, fps=90
         ),
     }
     ACTIONS_DATAS = {
@@ -258,7 +261,7 @@ class TestEpicKitchenDataset(unittest.TestCase):
             # This is a key-mapping as the underlying epic-kitchen
             # annotation files are of these string columns
             **{
-                "video": "P01_01",
+                "video_id": "P01_01",
                 "resolution": "1000x200",
                 "duration": "123.45",
                 "fps": "59.9",
@@ -270,7 +273,7 @@ class TestEpicKitchenDataset(unittest.TestCase):
         self.assertEqual(video_info.fps, 59.9)
 
     def test_frame_number_to_filepath(self):
-        file_name_fn_P07_002 = EpicKitchenDataset._frame_number_to_filepath_generator(
+        file_name_fn_P07_002 = VideoDataset._frame_number_to_filepath_generator(
             "P07_002", get_flat_video_frames("testdirectory", "jpg"), self.VIDEO_INFOS_A
         )
         file_path = file_name_fn_P07_002(100)
@@ -280,7 +283,7 @@ class TestEpicKitchenDataset(unittest.TestCase):
         file_path = file_name_fn_P07_002(-1)
         self.assertIsNone(file_path)
 
-        file_name_fn_P02_002 = EpicKitchenDataset._frame_number_to_filepath_generator(
+        file_name_fn_P02_002 = VideoDataset._frame_number_to_filepath_generator(
             "P02_002",
             get_flat_video_frames("testdirectory2", "png"),
             self.VIDEO_INFOS_A,
@@ -298,7 +301,7 @@ class TestEpicKitchenDataset(unittest.TestCase):
         video_frames_a_copy = video_frames_a.copy()
 
         # No-Op
-        EpicKitchenDataset._remove_video_info_missing_or_incomplete_videos(
+        VideoDataset._remove_video_info_missing_or_incomplete_videos(
             video_frames_a, video_infos_a
         )
 
@@ -315,7 +318,7 @@ class TestEpicKitchenDataset(unittest.TestCase):
 
         # Unmatched video info, should be removed
         video_infos_b["P07_001"] = VideoInfo(
-            video="P07_001", resolution="720x1280", duration=17.001, fps=30
+            video_id="P07_001", resolution="720x1280", duration=17.001, fps=30
         )
 
         # Unmatched video frame entry, should be removed
@@ -330,10 +333,10 @@ class TestEpicKitchenDataset(unittest.TestCase):
         )
 
         video_infos_b["P08_001"] = VideoInfo(
-            video="P08_001", resolution="720x1280", duration=100, fps=60
+            video_id="P08_001", resolution="720x1280", duration=100, fps=60
         )
 
-        EpicKitchenDataset._remove_video_info_missing_or_incomplete_videos(
+        VideoDataset._remove_video_info_missing_or_incomplete_videos(
             video_frames_b, video_infos_b
         )
 
@@ -346,9 +349,7 @@ class TestEpicKitchenDataset(unittest.TestCase):
         for video_id in video_frames_b:
             self.assertEqual(video_frames_b[video_id], video_frames_a_copy[video_id])
 
-    @parameterized.expand(
-        [(EpicKitchenDatasetType.Frame,), (EpicKitchenDatasetType.EncodedVideo,)]
-    )
+    @parameterized.expand([(VideoDatasetType.Frame,), (VideoDatasetType.EncodedVideo,)])
     def test__len__(self, dataset_type):
         with tempfile.TemporaryDirectory(prefix=f"{TestEpicKitchenDataset}") as tempdir:
             tempdir = Path(tempdir)
@@ -368,9 +369,9 @@ class TestEpicKitchenDataset(unittest.TestCase):
                 tempdir / "video_data_manifest_file_path.json"
             )
             with ExitStack() as stack:
-                if dataset_type == EpicKitchenDatasetType.Frame:
+                if dataset_type == VideoDatasetType.Frame:
                     video_data_dict = get_flat_video_frames(tempdir, "jpg")
-                elif dataset_type == EpicKitchenDatasetType.EncodedVideo:
+                elif dataset_type == VideoDatasetType.EncodedVideo:
                     video_data_dict = get_encoded_video_infos(tempdir, stack)
 
                 save_dataclass_objs_to_headered_csv(
@@ -381,7 +382,7 @@ class TestEpicKitchenDataset(unittest.TestCase):
                     video_info_file_path=str(video_info_file),
                     actions_file_path=str(action_file),
                     clip_sampler=lambda x, y: [
-                        EpicKitchenClip(str(i), i * 2.0, i * 2.0 + 0.9)
+                        VideoClipInfo(str(i), i * 2.0, i * 2.0 + 0.9)
                         for i in range(0, 7)
                     ],
                     video_data_manifest_file_path=str(video_data_manifest_file_path),
@@ -390,9 +391,7 @@ class TestEpicKitchenDataset(unittest.TestCase):
 
                 self.assertEqual(len(dataset), 7)
 
-    @parameterized.expand(
-        [(EpicKitchenDatasetType.Frame,), (EpicKitchenDatasetType.EncodedVideo,)]
-    )
+    @parameterized.expand([(VideoDatasetType.Frame,), (VideoDatasetType.EncodedVideo,)])
     def test__getitem__(self, dataset_type):
         with tempfile.TemporaryDirectory(prefix=f"{TestEpicKitchenDataset}") as tempdir:
             tempdir = Path(tempdir)
@@ -412,9 +411,9 @@ class TestEpicKitchenDataset(unittest.TestCase):
                 tempdir / "video_data_manifest_file_path.json"
             )
             with ExitStack() as stack:
-                if dataset_type == EpicKitchenDatasetType.Frame:
+                if dataset_type == VideoDatasetType.Frame:
                     video_data_dict = get_flat_video_frames(tempdir, "jpg")
-                elif dataset_type == EpicKitchenDatasetType.EncodedVideo:
+                elif dataset_type == VideoDatasetType.EncodedVideo:
                     video_data_dict = get_encoded_video_infos(tempdir, stack)
 
                 save_dataclass_objs_to_headered_csv(
@@ -425,7 +424,7 @@ class TestEpicKitchenDataset(unittest.TestCase):
                     video_info_file_path=str(video_info_file),
                     actions_file_path=str(action_file),
                     clip_sampler=lambda x, y: [
-                        EpicKitchenClip(video_ids[i // 2], i * 2.0, i * 2.0 + 0.9)
+                        VideoClipInfo(video_ids[i // 2], i * 2.0, i * 2.0 + 0.9)
                         for i in range(0, 7)
                     ],
                     video_data_manifest_file_path=str(video_data_manifest_file_path),
@@ -434,7 +433,7 @@ class TestEpicKitchenDataset(unittest.TestCase):
 
                 get_clip_string = (
                     "pytorchvideo.data.frame_video.FrameVideo.get_clip"
-                    if dataset_type == EpicKitchenDatasetType.Frame
+                    if dataset_type == VideoDatasetType.Frame
                     else "pytorchvideo.data.encoded_video.EncodedVideo.get_clip"
                 )
                 with unittest.mock.patch(

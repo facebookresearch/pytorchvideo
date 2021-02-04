@@ -2,6 +2,7 @@
 
 from .charades import Charades  # noqa
 from .clip_sampling import make_clip_sampler
+from .domsev import DomsevDataset  # noqa
 from .encoded_video_dataset import EncodedVideoDataset  # noqa
 from .epic_kitchen_forecasting import EpicKitchenForecasting  # noqa
 from .epic_kitchen_recognition import EpicKitchenRecognition  # noqa
