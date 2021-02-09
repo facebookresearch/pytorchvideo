@@ -1,12 +1,12 @@
 # Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved.
-
+from functools import partial
 from typing import Callable, Tuple
 
 import torch.nn as nn
-from pytorchvideo.layers.convolutions import Conv2plus1d
+from pytorchvideo.layers.convolutions import create_conv_2plus1d
 from pytorchvideo.models.head import create_res_basic_head
 from pytorchvideo.models.net import Net
-from pytorchvideo.models.resnet import BottleneckBlock, create_res_stage
+from pytorchvideo.models.resnet import create_bottleneck_block, create_res_stage
 from pytorchvideo.models.stem import create_res_basic_stem
 
 
@@ -25,7 +25,7 @@ def create_2plus1d_bottleneck_block(
     conv_b_padding: Tuple[int] = (1, 1, 1),
     conv_b_num_groups: int = 1,
     conv_b_dilation: Tuple[int] = (1, 1, 1),
-    conv_b: Callable = nn.Conv3d,
+    conv_b: Callable = create_conv_2plus1d,
     conv_c: Callable = nn.Conv3d,
     # Norm configs.
     norm: Callable = nn.BatchNorm3d,
@@ -44,7 +44,7 @@ def create_2plus1d_bottleneck_block(
                                            ↓
                                    Activation (act_a)
                                            ↓
-                                    Conv3d (conv_b)
+                                  Conv(2+1)d (conv_b)
                                            ↓
                                  Normalization (norm_b)
                                            ↓
@@ -92,73 +92,31 @@ def create_2plus1d_bottleneck_block(
     Returns:
         (nn.Module): 2plus1d bottleneck block.
     """
-    # The first 1x1x1 Conv
-    conv_a = conv_a(
-        in_channels=dim_in,
-        out_channels=dim_inner,
-        kernel_size=conv_a_kernel_size,
-        stride=conv_a_stride,
-        padding=conv_a_padding,
-        bias=False,
-    )
-    norm_a = (
-        None
-        if norm is None
-        else norm(num_features=dim_inner, eps=norm_eps, momentum=norm_momentum)
-    )
-    act_a = None if activation is None else activation()
-
-    # The 2+1d Conv
-    conv_b = Conv2plus1d(
-        conv_t=nn.Conv3d(
-            in_channels=dim_inner,
-            out_channels=dim_inner,
-            kernel_size=(conv_b_kernel_size[0], 1, 1),
-            stride=(conv_b_stride[0], 1, 1),
-            padding=(conv_b_padding[0], 0, 0),
-            bias=False,
-        ),
-        norm=(
-            None
-            if norm is None
-            else norm(num_features=dim_inner, eps=norm_eps, momentum=norm_momentum)
-        ),
-        activation=None if activation is None else activation(),
-        conv_xy=nn.Conv3d(
-            in_channels=dim_inner,
-            out_channels=dim_inner,
-            kernel_size=(1, conv_b_kernel_size[1], conv_b_kernel_size[2]),
-            stride=(1, conv_b_stride[1], conv_b_stride[2]),
-            padding=(0, conv_b_padding[1], conv_b_padding[2]),
-            bias=False,
-        ),
-    )
-    norm_b = (
-        None
-        if norm is None
-        else norm(num_features=dim_inner, eps=norm_eps, momentum=norm_momentum)
-    )
-    act_b = None if activation is None else activation()
-
-    # The second 1x1x1 Conv
-    conv_c = conv_c(
-        in_channels=dim_inner, out_channels=dim_out, kernel_size=(1, 1, 1), bias=False
-    )
-    norm_c = (
-        None
-        if norm is None
-        else norm(num_features=dim_out, eps=norm_eps, momentum=norm_momentum)
-    )
-
-    return BottleneckBlock(
+    return create_bottleneck_block(
+        dim_in=dim_in,
+        dim_inner=dim_inner,
+        dim_out=dim_out,
+        conv_a_kernel_size=conv_a_kernel_size,
+        conv_a_stride=conv_a_stride,
+        conv_a_padding=conv_a_padding,
         conv_a=conv_a,
-        norm_a=norm_a,
-        act_a=act_a,
-        conv_b=conv_b,
-        norm_b=norm_b,
-        act_b=act_b,
+        conv_b_kernel_size=conv_b_kernel_size,
+        conv_b_stride=conv_b_stride,
+        conv_b_padding=conv_b_padding,
+        conv_b_num_groups=conv_b_num_groups,
+        conv_b_dilation=conv_b_dilation,
+        conv_b=partial(
+            create_conv_2plus1d,
+            norm=norm,
+            norm_eps=norm_eps,
+            norm_momentum=norm_momentum,
+            activation=activation,
+        ),
         conv_c=conv_c,
-        norm_c=norm_c,
+        norm=norm,
+        norm_eps=norm_eps,
+        norm_momentum=norm_momentum,
+        activation=activation,
     )
 
 
