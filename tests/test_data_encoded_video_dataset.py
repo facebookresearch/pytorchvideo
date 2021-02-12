@@ -2,6 +2,7 @@
 
 import collections
 import contextlib
+import itertools
 import math
 import multiprocessing
 import os
@@ -35,13 +36,20 @@ from torch.utils.data import (
 )
 from utils import create_dummy_video_frames, temp_encoded_video
 
+DECODER_LIST = [("pyav",), ("torchvision",)]
+
 
 class TestEncodedVideoDataset(unittest.TestCase):
     # Clip sampling is start time inclusive so we need to subtract _EPS from
     # total_duration / 2 to sample half of the frames of a video.
     _EPS = 1e-9
 
-    def test_single_clip_per_video_works(self):
+    def setUp(self):
+        # Fail fast for tests
+        EncodedVideoDataset._MAX_CONSECUTIVE_FAILURES = 1
+
+    @parameterized.expand(DECODER_LIST)
+    def test_single_clip_per_video_works(self, decoder):
         with mock_encoded_video_dataset_file() as (mock_csv, expected, total_duration):
             clip_sampler = make_clip_sampler("uniform", total_duration)
             dataset = labeled_encoded_video_dataset(
@@ -49,6 +57,7 @@ class TestEncodedVideoDataset(unittest.TestCase):
                 clip_sampler=clip_sampler,
                 video_sampler=SequentialSampler,
                 decode_audio=False,
+                decoder=decoder,
             )
             test_dataloader = DataLoader(dataset, batch_size=None, num_workers=2)
 
@@ -58,7 +67,8 @@ class TestEncodedVideoDataset(unittest.TestCase):
                 ]
                 assert_unordered_list_compare_true(self, expected, actual)
 
-    def test_video_name_with_whitespace_works(self):
+    @parameterized.expand(DECODER_LIST)
+    def test_video_name_with_whitespace_works(self, decoder):
         num_frames = 10
         fps = 5
         with temp_encoded_video(num_frames=num_frames, fps=fps, prefix="pre fix") as (
@@ -77,6 +87,7 @@ class TestEncodedVideoDataset(unittest.TestCase):
                 clip_sampler=clip_sampler,
                 video_sampler=SequentialSampler,
                 decode_audio=False,
+                decoder=decoder,
             )
 
             expected = [(0, data), (1, data)]
@@ -84,7 +95,8 @@ class TestEncodedVideoDataset(unittest.TestCase):
                 self.assertTrue(sample["video"].equal(expected[i][1]))
                 self.assertEqual(sample["label"], expected[i][0])
 
-    def test_random_clip_sampling_works(self):
+    @parameterized.expand(DECODER_LIST)
+    def test_random_clip_sampling_works(self, decoder):
         with mock_encoded_video_dataset_file() as (
             mock_csv,
             label_videos,
@@ -98,6 +110,7 @@ class TestEncodedVideoDataset(unittest.TestCase):
                 clip_sampler=clip_sampler,
                 video_sampler=SequentialSampler,
                 decode_audio=False,
+                decoder=decoder,
             )
 
             expected_labels = [label for label, _ in label_videos]
@@ -106,7 +119,8 @@ class TestEncodedVideoDataset(unittest.TestCase):
                 self.assertEqual(sample["video"].shape[1], expected_t_shape)
                 self.assertEqual(sample["label"], expected_labels[i])
 
-    def test_reading_from_directory_structure_hmdb51(self):
+    @parameterized.expand(DECODER_LIST)
+    def test_reading_from_directory_structure_hmdb51(self, decoder):
         # For an unknown reason this import has to be here for `buck test` to work.
         import torchvision.io as io
 
@@ -176,6 +190,7 @@ class TestEncodedVideoDataset(unittest.TestCase):
                     split_id=1,
                     split_type="train",
                     decode_audio=False,
+                    decoder=decoder,
                 )
 
                 # Videos are sorted alphabetically so "cleaning windows" (i.e. data_2)
@@ -199,8 +214,8 @@ class TestEncodedVideoDataset(unittest.TestCase):
                     sample_2["video"].equal(thwc_to_cthw(data_2).to(torch.float32))
                 )
 
-    def test_constant_clips_per_video_sampling_works(self):
-
+    @parameterized.expand(DECODER_LIST)
+    def test_constant_clips_per_video_sampling_works(self, decoder):
         # Make one video with 15 frames and one with 10 frames, producing 3 clips and 2
         # clips respectively.
         num_frames = 10
@@ -228,6 +243,7 @@ class TestEncodedVideoDataset(unittest.TestCase):
                     clip_sampler=clip_sampler,
                     video_sampler=SequentialSampler,
                     decode_audio=False,
+                    decoder=decoder,
                 )
 
                 # Dataset has 2 videos. Each video has two evenly spaced clips of size
@@ -242,12 +258,12 @@ class TestEncodedVideoDataset(unittest.TestCase):
                     (1, data_2[:, :clip_frames]),
                     (1, data_2[:, half_frames_2 : half_frames_2 + clip_frames]),
                 ]
-
                 for i, sample in enumerate(dataset):
                     self.assertTrue(sample["video"].equal(expected[i][1]))
                     self.assertEqual(sample["label"], expected[i][0])
 
-    def test_reading_from_directory_structure(self):
+    @parameterized.expand(DECODER_LIST)
+    def test_reading_from_directory_structure(self, decoder):
         # For an unknown reason this import has to be here for `buck test` to work.
         import torchvision.io as io
 
@@ -292,6 +308,7 @@ class TestEncodedVideoDataset(unittest.TestCase):
                     clip_sampler=clip_sampler,
                     video_sampler=SequentialSampler,
                     decode_audio=False,
+                    decoder=decoder,
                 )
 
                 # Videos are sorted alphabetically so "cleaning windows" (i.e. data_2)
@@ -308,27 +325,32 @@ class TestEncodedVideoDataset(unittest.TestCase):
                     sample_2["video"].equal(thwc_to_cthw(data_1).to(torch.float32))
                 )
 
-    def test_random_video_sampler(self):
+    @parameterized.expand(DECODER_LIST)
+    def test_random_video_sampler(self, decoder):
         with mock_encoded_video_dataset_file() as (mock_csv, expected, total_duration):
             clip_sampler = make_clip_sampler("uniform", total_duration)
             dataset = labeled_encoded_video_dataset(
                 data_path=mock_csv,
                 clip_sampler=clip_sampler,
                 video_sampler=RandomSampler,
+                decode_audio=False,
+                decoder=decoder,
             )
 
             for _ in range(2):
                 actual = [(sample["label"], sample["video"]) for sample in dataset]
                 assert_unordered_list_compare_true(self, expected, actual)
 
-    @parameterized.expand([(0,), (1,), (2,)])
-    def test_random_video_sampler_multiprocessing(self, num_workers):
+    @parameterized.expand(itertools.product([0, 1, 2], ["pyav", "torchvision"]))
+    def test_random_video_sampler_multiprocessing(self, num_workers, decoder):
         with mock_encoded_video_dataset_file() as (mock_csv, expected, total_duration):
             clip_sampler = make_clip_sampler("uniform", total_duration)
             dataset = labeled_encoded_video_dataset(
                 data_path=mock_csv,
                 clip_sampler=clip_sampler,
                 video_sampler=RandomSampler,
+                decode_audio=False,
+                decoder=decoder,
             )
             test_dataloader = DataLoader(
                 dataset, batch_size=None, num_workers=num_workers
@@ -340,7 +362,8 @@ class TestEncodedVideoDataset(unittest.TestCase):
                 ]
                 assert_unordered_list_compare_true(self, expected, actual)
 
-    def test_sampling_with_multiple_processes(self):
+    @parameterized.expand(DECODER_LIST)
+    def test_sampling_with_multiple_processes(self, decoder):
         with mock_encoded_video_dataset_file() as (
             mock_csv,
             label_videos,
@@ -354,6 +377,7 @@ class TestEncodedVideoDataset(unittest.TestCase):
                 clip_sampler=clip_sampler,
                 video_sampler=SequentialSampler,
                 decode_audio=False,
+                decoder=decoder,
             )
 
             # Split each full video into two clips.
@@ -370,7 +394,8 @@ class TestEncodedVideoDataset(unittest.TestCase):
             actual = [(sample["label"], sample["video"]) for sample in test_dataloader]
             assert_unordered_list_compare_true(self, expected, actual)
 
-    def test_sampling_with_non_divisible_processes_by_videos(self):
+    @parameterized.expand(DECODER_LIST)
+    def test_sampling_with_non_divisible_processes_by_videos(self, decoder):
         with mock_encoded_video_dataset_file() as (
             mock_csv,
             label_videos,
@@ -384,6 +409,7 @@ class TestEncodedVideoDataset(unittest.TestCase):
                 clip_sampler=clip_sampler,
                 video_sampler=SequentialSampler,
                 decode_audio=False,
+                decoder=decoder,
             )
 
             # Split each full video into two clips.
@@ -400,7 +426,8 @@ class TestEncodedVideoDataset(unittest.TestCase):
             actual = [(sample["label"], sample["video"]) for sample in test_dataloader]
             assert_unordered_list_compare_true(self, expected, actual)
 
-    def test_sampling_with_more_processes_than_videos(self):
+    @parameterized.expand(DECODER_LIST)
+    def test_sampling_with_more_processes_than_videos(self, decoder):
         with mock_encoded_video_dataset_file() as (
             mock_csv,
             label_videos,
@@ -414,6 +441,7 @@ class TestEncodedVideoDataset(unittest.TestCase):
                 clip_sampler=clip_sampler,
                 video_sampler=SequentialSampler,
                 decode_audio=False,
+                decoder=decoder,
             )
 
             # Split each full video into two clips.
@@ -430,7 +458,8 @@ class TestEncodedVideoDataset(unittest.TestCase):
             actual = [(sample["label"], sample["video"]) for sample in test_dataloader]
             assert_unordered_list_compare_true(self, expected, actual)
 
-    def test_sampling_with_non_divisible_processes_by_clips(self):
+    @parameterized.expand(DECODER_LIST)
+    def test_sampling_with_non_divisible_processes_by_clips(self, decoder):
 
         # Make one video with 15 frames and one with 10 frames, producing 3 clips and 2
         # clips respectively.
@@ -457,6 +486,7 @@ class TestEncodedVideoDataset(unittest.TestCase):
                     clip_sampler=clip_sampler,
                     video_sampler=SequentialSampler,
                     decode_audio=False,
+                    decoder=decoder,
                 )
 
                 half_frames = num_frames // 2
@@ -488,7 +518,8 @@ class TestEncodedVideoDataset(unittest.TestCase):
             # last 3 indices (7, 8, 9).
             self.assertEqual(list(sampler), [7, 8, 9])
 
-    def test_sampling_with_distributed_sampler(self):
+    @parameterized.expand(DECODER_LIST)
+    def test_sampling_with_distributed_sampler(self, decoder):
 
         # Make one video with 15 frames and one with 10 frames, producing 3 clips and 2
         # clips respectively.
@@ -518,7 +549,14 @@ class TestEncodedVideoDataset(unittest.TestCase):
                 for rank in range(num_processes):
                     p = Process(
                         target=run_distributed,
-                        args=(rank, num_processes, half_duration, f.name, return_dict),
+                        args=(
+                            rank,
+                            num_processes,
+                            decoder,
+                            half_duration,
+                            f.name,
+                            return_dict,
+                        ),
                     )
                     p.start()
                     processes.append(p)
@@ -586,7 +624,7 @@ def unordered_list_compare(
     return True
 
 
-def run_distributed(rank, size, clip_duration, data_name, return_dict):
+def run_distributed(rank, size, decoder, clip_duration, data_name, return_dict):
     """
     This function is run by each distributed process. It samples videos
     based on the distributed split (determined by the
@@ -602,6 +640,7 @@ def run_distributed(rank, size, clip_duration, data_name, return_dict):
         clip_sampler=clip_sampler,
         video_sampler=DistributedSampler,
         decode_audio=False,
+        decoder=decoder,
     )
     test_dataloader = DataLoader(dataset, batch_size=None, num_workers=1)
 

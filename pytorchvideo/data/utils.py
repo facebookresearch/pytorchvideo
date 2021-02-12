@@ -5,6 +5,7 @@ from __future__ import annotations
 import csv
 import itertools
 import logging
+import math
 import threading
 from collections import defaultdict
 from dataclasses import Field, field as dataclass_field, fields as dataclass_fields
@@ -24,6 +25,34 @@ def thwc_to_cthw(data: torch.Tensor) -> torch.Tensor:
     (channel, height, width, time).
     """
     return data.permute(3, 0, 1, 2)
+
+
+def secs_to_pts(time_in_seconds: float, time_base: float, start_pts: float) -> float:
+    """
+    Converts a time (in seconds) to the given time base and start_pts offset
+    presentation time.
+
+    Returns:
+        pts (float): The time in the given time base.
+    """
+    if time_in_seconds == math.inf:
+        return math.inf
+
+    time_base = float(time_base)
+    return int(time_in_seconds / time_base) + start_pts
+
+
+def pts_to_secs(time_in_seconds: float, time_base: float, start_pts: float) -> float:
+    """
+    Converts a present time with the given time base and start_pts offset to seconds.
+
+    Returns:
+        time_in_seconds (float): The corresponding time in seconds.
+    """
+    if time_in_seconds == math.inf:
+        return math.inf
+
+    return (time_in_seconds - start_pts) * float(time_base)
 
 
 class MultiProcessSampler(torch.utils.data.Sampler):
