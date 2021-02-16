@@ -1,7 +1,7 @@
 ---
-id: doc1
-title: Latin-ish
-sidebar_label: Example Page
+id: why_pytorchvideo
+title: Why PyTorchVideo
+sidebar_label: Overview
 ---
 
 Check the [documentation](https://docusaurus.io) for how to use Docusaurus.

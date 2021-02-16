@@ -34,29 +34,20 @@ class Footer extends React.Component {
           </a>
           <div>
             <h5>Docs</h5>
-            <a href={this.docUrl('about_spectrum', this.props.language)}>
+            <a href={this.docUrl('why_pytorchvideo', this.props.language)}>
               About PyTorchVideo
             </a>
-            <a href={this.docUrl('getting_started_android', this.props.language)}>
+            <a href={this.docUrl('tutorial_overview', this.props.language)}>
               Getting Started
-            </a>
-            <a href={this.docUrl('contributing_android', this.props.language)}>
-              Contributing
             </a>
           </div>
           <div>
             <h5>Community</h5>
             <a
-              href="https://www.facebook.com/libspectrum"
+              href="https://www.slack.com/TODO"
               target="_blank"
               rel="noreferrer noopener">
-              Facebook
-            </a>
-            <a
-              href="https://twitter.com/libspectrum"
-              target="_blank"
-              rel="noreferrer noopener">
-              Twitter
+              Slack
             </a>
           </div>
           <div>
@@ -87,7 +78,7 @@ class Footer extends React.Component {
               className="github-button"
               href={this.props.config.repoUrl}
               data-icon="octicon-star"
-              data-count-href="/facebookincubator/spectrum/stargazers"
+              data-count-href="/facebookresearch/pytorchvideo/stargazers"
               data-show-count="true"
               data-count-aria-label="# stargazers on GitHub"
               aria-label="Star this project on GitHub">

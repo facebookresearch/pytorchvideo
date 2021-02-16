@@ -22,7 +22,7 @@ const users = [
 
 const siteConfig = {
   title: 'PyTorchVideo', // Title for your website.
-  tagline: 'A video research platform',
+  tagline: 'A video research libary',
   url: 'https://your-docusaurus-test-site.com', // Your website URL
   baseUrl: '/', // Base URL for your project */
   // For github.io type URLs, you would set the url and baseUrl like:
@@ -38,8 +38,8 @@ const siteConfig = {
 
   // For no header links in the top nav bar -> headerLinks: [],
   headerLinks: [
-    {doc: 'doc1', label: 'Docs'},
-    {doc: 'doc4', label: 'Tutorials'},
+    {doc: 'why_pytorchvideo', label: 'Docs'},
+    {doc: 'tutorial_overview', label: 'Tutorials'},
     {href: "https://TODO.readthedocs.io/", label: 'API'},
     {href: "https://github.com/fairinternal/pytorchvideo", label: 'GitHub'},
     {page: 'help', label: 'Help'},
@@ -50,9 +50,9 @@ const siteConfig = {
   users,
 
   /* path to images for header/footer */
-  headerIcon: 'img/favicon.ico',
-  footerIcon: 'img/favicon.ico',
-  favicon: 'img/favicon.ico',
+  headerIcon: 'img/placeholder_logo.png',
+  footerIcon: 'img/placeholder_logo.png',
+  favicon: 'img/placeholder_logo.png',
 
   /* Colors for website */
   colors: {
@@ -79,7 +79,7 @@ const siteConfig = {
 
   highlight: {
     // Highlight.js theme to use for syntax highlighting in code blocks.
-    theme: 'default',
+    theme: 'atom-one-dark',
   },
 
   // Add custom scripts here that would be placed in <script> tags.
@@ -91,8 +91,8 @@ const siteConfig = {
   cleanUrl: true,
 
   // Open Graph and Twitter card images.
-  ogImage: 'img/undraw_online.svg',
-  twitterImage: 'img/undraw_tweetstorm.svg',
+  ogImage: 'img/placeholder_logo.png',
+  twitterImage: 'img/placeholder_logo.png',
 
   // For sites with a sizable amount of content, set collapsible to true.
   // Expand/collapse the links and subcategories under categories.

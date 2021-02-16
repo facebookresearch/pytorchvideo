@@ -1,9 +1,6 @@
 /**
- * Copyright (c) Facebook, Inc. and its affiliates.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- */
+ * Copyright (c) 2021-present, Facebook, Inc.
+**/
 
 const React = require('react');
 
@@ -12,16 +9,16 @@ const CompLibrary = require('../../core/CompLibrary.js');
 const MarkdownBlock = CompLibrary.MarkdownBlock; /* Used to read markdown */
 const Container = CompLibrary.Container;
 const GridBlock = CompLibrary.GridBlock;
-
+const bash = (...args) => `~~~bash\n${String.raw(...args)}\n~~~`;
 class HomeSplash extends React.Component {
   render() {
     const {siteConfig, language = ''} = this.props;
     const {baseUrl, docsUrl} = siteConfig;
     const docsPart = `${docsUrl ? `${docsUrl}/` : ''}`;
     const langPart = `${language ? `${language}/` : ''}`;
-    const docUrl = (doc) => `${baseUrl}${docsPart}${langPart}${doc}`;
+    const docUrl = doc => `${baseUrl}${docsPart}${langPart}${doc}`;
 
-    const SplashContainer = (props) => (
+    const SplashContainer = props => (
       <div className="homeContainer">
         <div className="homeSplashFade">
           <div className="wrapper homeWrapper">{props.children}</div>
@@ -29,20 +26,19 @@ class HomeSplash extends React.Component {
       </div>
     );
 
-    const Logo = (props) => (
-      <div className="projectLogo">
+    const Logo = props => (
+      <div className="splashLogo">
         <img src={props.img_src} alt="Project Logo" />
       </div>
     );
 
-    const ProjectTitle = (props) => (
+    const ProjectTitle = props => (
       <h2 className="projectTitle">
-        {props.title}
         <small>{props.tagline}</small>
       </h2>
     );
 
-    const PromoSection = (props) => (
+    const PromoSection = props => (
       <div className="section promoSection">
         <div className="promoRow">
           <div className="pluginRowBlock">{props.children}</div>
@@ -50,7 +46,7 @@ class HomeSplash extends React.Component {
       </div>
     );
 
-    const Button = (props) => (
+    const Button = props => (
       <div className="pluginWrapper buttonWrapper">
         <a className="button" href={props.href} target={props.target}>
           {props.children}
@@ -60,13 +56,12 @@ class HomeSplash extends React.Component {
 
     return (
       <SplashContainer>
-        <Logo img_src={`${baseUrl}img/undraw_monitor.svg`} />
+        <Logo img_src={baseUrl + 'img/placeholder_logo.png'} />
         <div className="inner">
           <ProjectTitle tagline={siteConfig.tagline} title={siteConfig.title} />
           <PromoSection>
-            <Button href="#try">Try It Out</Button>
-            <Button href={docUrl('doc1.html')}>Example Link</Button>
-            <Button href={docUrl('doc2.html')}>Example Link 2</Button>
+            <Button href={docUrl('why_pytorchvideo.html')}>Docs</Button>
+            <Button href={docUrl('tutorial_overview.html')}>Tutorials</Button>
           </PromoSection>
         </div>
       </SplashContainer>
@@ -79,7 +74,7 @@ class Index extends React.Component {
     const {config: siteConfig, language = ''} = this.props;
     const {baseUrl} = siteConfig;
 
-    const Block = (props) => (
+    const Block = props => (
       <Container
         padding={['bottom', 'top']}
         id={props.id}
@@ -92,38 +87,13 @@ class Index extends React.Component {
       </Container>
     );
 
-    const FeatureCallout = () => (
-      <div
-        className="productShowcaseSection paddingBottom"
-        style={{textAlign: 'center'}}>
-        <h2>Feature Callout</h2>
-        <MarkdownBlock>These are features of this project</MarkdownBlock>
-      </div>
-    );
-
-    const TryOut = () => (
-      <Block id="try">
-        {[
-          {
-            content:
-              'To make your landing page more attractive, use illustrations! Check out ' +
-              '[**unDraw**](https://undraw.co/) which provides you with customizable illustrations which are free to use. ' +
-              'The illustrations you see on this page are from unDraw.',
-            image: `${baseUrl}img/undraw_code_review.svg`,
-            imageAlign: 'left',
-            title: 'Wonderful SVG Illustrations',
-          },
-        ]}
-      </Block>
-    );
-
     const Description = () => (
-      <Block background="dark">
+      <Block background="light">
         {[
           {
             content:
               'This is another description of how this project is useful',
-            image: `${baseUrl}img/undraw_note_list.svg`,
+            image: `${baseUrl}img/placeholder.png`,
             imageAlign: 'right',
             title: 'Description',
           },
@@ -131,37 +101,85 @@ class Index extends React.Component {
       </Block>
     );
 
-    const LearnHow = () => (
-      <Block background="light">
-        {[
-          {
-            content:
-              'Each new Docusaurus project has **randomly-generated** theme colors.',
-            image: `${baseUrl}img/undraw_youtube_tutorial.svg`,
-            imageAlign: 'right',
-            title: 'Randomly Generated Theme Colors',
-          },
-        ]}
-      </Block>
+    const pre = '```';
+
+    const codeExample = `${pre}python
+from pytorchvideo import blah
+from pytorchvideo.models import foo
+    `;
+
+    const QuickStart = () => (
+      <div
+        className="productShowcaseSection"
+        id="quickstart"
+        style={{textAlign: 'center'}}>
+        <h2>Get Started</h2>
+        <Container>
+          <ol>
+            <li>
+              <strong>Install pytorchvideo  </strong> (following the instructions <a href="https://github.com/facebookresearch/pytorchvideo/INSTALL.md">here</a>)
+            </li>
+            <li>
+              <strong>Try a few video operations  </strong>
+              e.g. compute the chamfer loss between two meshes:
+              <MarkdownBlock>{codeExample}</MarkdownBlock>
+            </li>
+          </ol>
+        </Container>
+      </div>
+    );
+
+    const UseCases = () => (
+      <div className="productShowcaseSection" style={{textAlign: 'center'}}>
+        <h1>Some use cases</h1>
+        <div className="column">
+          <div className="row">
+            
+            <br></br>
+            <h3>Detection (Add GIF)</h3>
+          </div>
+          <div className="row">
+            
+            <br></br>
+            <h3>Tracking (Add GIF)</h3>
+          </div>
+          <div className="row">
+            
+            <br></br>
+            <h3>Classification (Add GIF)</h3>
+          </div>
+        </div>
+      </div>
     );
 
     const Features = () => (
-      <Block layout="fourColumn">
-        {[
-          {
-            content: 'This is the content of my feature',
-            image: `${baseUrl}img/undraw_react.svg`,
-            imageAlign: 'top',
-            title: 'Feature One',
-          },
-          {
-            content: 'The content of my second feature',
-            image: `${baseUrl}img/undraw_operating_system.svg`,
-            imageAlign: 'top',
-            title: 'Feature Two',
-          },
-        ]}
-      </Block>
+      <div className="productShowcaseSection" style={{textAlign: 'center'}}>
+        <Block layout="fourColumn">
+          {[
+            {
+              content:
+                'Explain the feature here',
+              image: `${baseUrl}img/placeholder.png`,
+              imageAlign: 'top',
+              title: 'Key Feature 1',
+            },
+            {
+              content:
+                'Explain the feature here',
+              image: `${baseUrl}img/placeholder.png`,
+              imageAlign: 'top',
+              title: 'Key Feature 2 (Ex: Models)',
+            },
+            {
+              content:
+                'Explain the feature here',
+              image: `${baseUrl}img/placeholder.png`,
+              imageAlign: 'top',
+              title: 'Key Feature 3 (Ex: Data)',
+            },
+          ]}
+        </Block>
+      </div>
     );
 
     const Showcase = () => {
@@ -170,15 +188,14 @@ class Index extends React.Component {
       }
 
       const showcase = siteConfig.users
-        .filter((user) => user.pinned)
-        .map((user) => (
+        .filter(user => user.pinned)
+        .map(user => (
           <a href={user.infoLink} key={user.infoLink}>
             <img src={user.image} alt={user.caption} title={user.caption} />
           </a>
         ));
 
-      const pageUrl = (page) =>
-        baseUrl + (language ? `${language}/` : '') + page;
+      const pageUrl = page => baseUrl + (language ? `${language}/` : '') + page;
 
       return (
         <div className="productShowcaseSection paddingBottom">
@@ -197,13 +214,9 @@ class Index extends React.Component {
     return (
       <div>
         <HomeSplash siteConfig={siteConfig} language={language} />
-        <div className="mainContainer">
+        <div className="landingPage mainContainer">
           <Features />
-          <FeatureCallout />
-          <LearnHow />
-          <TryOut />
-          <Description />
-          <Showcase />
+          <UseCases />
         </div>
       </div>
     );

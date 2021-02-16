@@ -1,10 +1,13 @@
 {
   "docs": {
-    "Docusaurus": ["doc1"],
-    "First Category": ["doc2"],
-    "Second Category": ["doc3"]
+    "Introduction": ["why_pytorchvideo"],
+    "Models": ["doc_models_somemodel"],
+    "Data": ["doc_data_somedataset"]
   },
   "docs-other": {
-    "First Category": ["doc4", "doc5"]
+    "Tutorials": ["tutorial_overview"],
+    "Classification": ["tutorial_classification"],
+    "Detection":["tutorial_detection"],
+    "Tracking": ["tutorial_tracking"]
   }
 }
