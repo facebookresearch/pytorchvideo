@@ -4,6 +4,7 @@ import unittest
 
 import torch
 from pytorchvideo.data.utils import thwc_to_cthw
+from pytorchvideo.tests.utils import create_dummy_video_frames
 from pytorchvideo.transforms import (
     ApplyTransformToKey,
     RandomShortSideScale,
@@ -20,7 +21,6 @@ from torchvision.transforms._transforms_video import (
     RandomCropVideo,
     RandomHorizontalFlipVideo,
 )
-from utils import create_dummy_video_frames
 
 
 class TestTransforms(unittest.TestCase):

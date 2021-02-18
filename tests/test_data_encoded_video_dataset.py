@@ -26,6 +26,10 @@ from pytorchvideo.data.encoded_video_dataset import (
 )
 from pytorchvideo.data.labeled_video_paths import LabeledVideoPaths
 from pytorchvideo.data.utils import MultiProcessSampler, thwc_to_cthw
+from pytorchvideo.tests.utils import (
+    create_dummy_video_frames,
+    temp_encoded_video,
+)
 from torch.multiprocessing import Process
 from torch.utils.data import (
     DataLoader,
@@ -34,7 +38,6 @@ from torch.utils.data import (
     SequentialSampler,
     TensorDataset,
 )
-from utils import create_dummy_video_frames, temp_encoded_video
 
 DECODER_LIST = [("pyav",), ("torchvision",)]
 
