@@ -99,7 +99,7 @@ class VideoDataset:
         )
         return {
             video_id: FrameVideo(
-                video_frame_to_path_fn=VideoDataset._frame_number_to_filepath_generator(
+                video_frame_paths=VideoDataset._frame_number_to_filepaths(
                     video_id, video_frames, video_infos
                 ),
                 duration=video_infos[video_id].duration,
@@ -127,7 +127,7 @@ class VideoDataset:
         }
 
     @staticmethod
-    def _frame_number_to_filepath_generator(
+    def _frame_number_to_filepaths(
         video_id: str,
         video_frames: Dict[str, VideoFrameInfo],
         video_infos: Dict[str, VideoInfo],
@@ -135,7 +135,11 @@ class VideoDataset:
         video_info = video_infos[video_id]
         video_frame_info = video_frames[video_info.video_id]
 
-        def frame_number_to_file_path(frame_index: int):
+        frame_filepaths = []
+        num_frames = (
+            video_frame_info.max_frame_number - video_frame_info.min_frame_number + 1
+        )
+        for frame_index in range(num_frames):
             frame_number = frame_index + video_frame_info.min_frame_number
             if (
                 frame_number < video_frame_info.min_frame_number
@@ -155,9 +159,8 @@ class VideoDataset:
                 f"{frame_prefix}{zero_padding}{frame_path_index}"
                 f".{video_frame_info.file_extension}"
             )
-            return f"{video_frame_info.location}/{frame_component}"
-
-        return frame_number_to_file_path
+            frame_filepaths.append(f"{video_frame_info.location}/{frame_component}")
+        return frame_filepaths
 
     @staticmethod
     def _remove_video_info_missing_or_incomplete_videos(

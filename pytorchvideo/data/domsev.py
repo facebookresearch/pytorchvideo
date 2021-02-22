@@ -159,12 +159,12 @@ class DomsevDataset(torch.utils.data.Dataset):
         clip_sampler = DomsevDataset._define_clip_structure_generator(
             seconds_per_clip, clip_sampling
         )
-        transform = DomsevDataset._transform_generator(transform)
 
         # Sample datapoints
         self._clips: List[VideoClipInfo] = clip_sampler(self._videos, self._activities)
 
-        self._transform = transform
+        self._user_transform = transform
+        self._transform = self._transform_clip
         self._frame_filter = frame_filter
 
     def __getitem__(self, index) -> Dict[str, Any]:
@@ -261,27 +261,21 @@ class DomsevDataset(torch.utils.data.Dataset):
 
         return define_clip_structure
 
-    @staticmethod
-    def _transform_generator(
-        transform: Callable[[Dict[str, Any]], Dict[str, Any]]
-    ) -> Callable[[Dict[str, Any]], Dict[str, Any]]:
-        """
+    def _transform_clip(self, clip: Dict[str, Any]) -> Dict[str, Any]:
+        """Transforms a given video clip, according to some pre-defined transforms
+        and an optional user transform function (self._user_transform).
+
         Args:
-            transform (Callable[[Dict[str, Any]], Dict[str, Any]]): A function that performs
-            any operation on a clip before it is returned in the default transform function.
+            clip (Dict[str, Any]): The clip that will be transformed.
 
         Returns:
-            A function that performs any operation on a clip and returns the transformed clip.
+            (Dict[str, Any]) The transformed clip.
         """
+        for key in clip:
+            if clip[key] is None:
+                clip[key] = torch.tensor([])
 
-        def transform_clip(clip: Dict[str, Any]) -> Dict[str, Any]:
-            for key in clip:
-                if clip[key] is None:
-                    clip[key] = torch.tensor([])
+        if self._user_transform:
+            clip = self._user_transform(clip)
 
-            if transform:
-                clip = transform(clip)
-
-            return clip
-
-        return transform_clip
+        return clip

@@ -273,27 +273,27 @@ class TestEpicKitchenDataset(unittest.TestCase):
         self.assertEqual(video_info.fps, 59.9)
 
     def test_frame_number_to_filepath(self):
-        file_name_fn_P07_002 = VideoDataset._frame_number_to_filepath_generator(
+        file_names_P07_002 = VideoDataset._frame_number_to_filepaths(
             "P07_002", get_flat_video_frames("testdirectory", "jpg"), self.VIDEO_INFOS_A
         )
-        file_path = file_name_fn_P07_002(100)
+        file_path = file_names_P07_002[100]
         self.assertEqual(file_path, "testdirectory/P07_002/frame_0000000101.jpg")
-        file_path = file_name_fn_P07_002(10000)
-        self.assertIsNone(file_path)
-        file_path = file_name_fn_P07_002(-1)
-        self.assertIsNone(file_path)
+        with self.assertRaises(IndexError):
+            file_path = file_names_P07_002[10000]
+        file_path = file_names_P07_002[-1]
+        self.assertEqual(file_path, "testdirectory/P07_002/frame_0000001530.jpg")
 
-        file_name_fn_P02_002 = VideoDataset._frame_number_to_filepath_generator(
+        file_names_P02_002 = VideoDataset._frame_number_to_filepaths(
             "P02_002",
             get_flat_video_frames("testdirectory2", "png"),
             self.VIDEO_INFOS_A,
         )
-        file_path = file_name_fn_P02_002(0)
+        file_path = file_names_P02_002[0]
         self.assertEqual(file_path, "testdirectory2/P02_002/frame_0000000002.png")
-        file_path = file_name_fn_P02_002(2999)
+        file_path = file_names_P02_002[2999]
         self.assertEqual(file_path, "testdirectory2/P02_002/frame_0000003001.png")
-        file_path = file_name_fn_P02_002(3000)
-        self.assertIsNone(file_path)
+        with self.assertRaises(IndexError):
+            file_path = file_names_P02_002[3000]
 
     def test_remove_video_info_missing_or_incomplete_videos(self):
         video_infos_a = self.VIDEO_INFOS_A.copy()
