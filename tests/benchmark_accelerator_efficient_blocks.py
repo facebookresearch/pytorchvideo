@@ -9,11 +9,11 @@ import torch.nn as nn
 
 # import torch.quantization.quantize_fx as quantize_fx
 from fvcore.common.benchmark import benchmark
-from pytorchvideo.accelerator.efficient_blocks.mobile_cpu.convolutions import (
+from pytorchvideo.layers.accelerator.mobile_cpu.convolutions import (
     Conv3d3x3x3DwBnAct,
     Conv3dPwBnAct,
 )
-from pytorchvideo.accelerator.efficient_blocks.mobile_cpu.residual_blocks import (
+from pytorchvideo.models.accelerator.mobile_cpu.residual_blocks import (
     X3dBottleneckBlock,
 )
 from torch.utils.mobile_optimizer import optimize_for_mobile

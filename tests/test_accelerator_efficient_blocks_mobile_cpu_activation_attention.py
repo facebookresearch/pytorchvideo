@@ -5,10 +5,10 @@ import unittest
 from copy import deepcopy
 
 import torch
-from pytorchvideo.accelerator.efficient_blocks.mobile_cpu.activation_functions import (
+from pytorchvideo.layers.accelerator.mobile_cpu.activation_functions import (
     supported_act_functions,
 )
-from pytorchvideo.accelerator.efficient_blocks.mobile_cpu.attention import (
+from pytorchvideo.layers.accelerator.mobile_cpu.attention import (
     SqueezeExcitation,
 )
 

@@ -12,7 +12,7 @@ from pytorchvideo.accelerator.deployment.mobile_cpu.utils.model_conversion impor
 from pytorchvideo.accelerator.efficient_blocks.efficient_block_base import (
     EfficientBlockBase,
 )
-from pytorchvideo.accelerator.efficient_blocks.mobile_cpu.residual_blocks import (
+from pytorchvideo.models.accelerator.mobile_cpu.residual_blocks import (
     X3dBottleneckBlock,
 )
 
