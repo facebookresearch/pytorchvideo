@@ -1,8 +1,8 @@
-pytorchvideo.models.slowfast 
+pytorchvideo.models.stem 
 =================================
 
 
-.. automodule:: pytorchvideo.models.slowfast
+.. automodule:: pytorchvideo.models.stem
     :members:
     :undoc-members:
     :show-inheritance:

@@ -1,8 +1,8 @@
-pytorchvideo.models.slowfast 
+pytorchvideo.models.csn
 =================================
 
 
-.. automodule:: pytorchvideo.models.slowfast
+.. automodule:: pytorchvideo.models.csn
     :members:
     :undoc-members:
     :show-inheritance:

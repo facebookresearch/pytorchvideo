@@ -1,8 +1,8 @@
-pytorchvideo.models.slowfast 
+pytorchvideo.models.memory_bank 
 =================================
 
 
-.. automodule:: pytorchvideo.models.slowfast
+.. automodule:: pytorchvideo.models.memory_bank
     :members:
     :undoc-members:
     :show-inheritance:

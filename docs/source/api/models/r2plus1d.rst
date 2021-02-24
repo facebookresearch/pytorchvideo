@@ -1,8 +1,8 @@
-pytorchvideo.models.slowfast 
+pytorchvideo.models.r2plus1d 
 =================================
 
 
-.. automodule:: pytorchvideo.models.slowfast
+.. automodule:: pytorchvideo.models.r2plus1d
     :members:
     :undoc-members:
     :show-inheritance:

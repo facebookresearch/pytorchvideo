@@ -1,9 +1,18 @@
-Epic Kitchen Forecasting Dataset
+pytorchvideo.data.epic_kitchen_forecasting
 =================================
 
-Dataset loaders and supporting classes for Epic Kitchen Forecasting Dataset
 
 .. automodule:: pytorchvideo.data.epic_kitchen_forecasting
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
+pytorchvideo.data.epic_kitchen_recognition
+=================================
+
+
+.. automodule:: pytorchvideo.data.epic_kitchen_recognition
     :members:
     :undoc-members:
     :show-inheritance:
