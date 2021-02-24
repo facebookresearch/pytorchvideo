@@ -1,0 +1,7 @@
+Models
+==================
+
+.. toctree::
+
+    resnet
+    slowfast
