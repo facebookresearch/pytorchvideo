@@ -11,9 +11,9 @@ from pytorchvideo.accelerator.efficient_blocks.efficient_block_base import (
 
 from .activation_functions import supported_act_functions
 from .conv_helper import (
-    _Reshape,
-    _Conv3dTemporalKernel3Decomposed,
     _Conv3dTemporalKernel1Decomposed,
+    _Conv3dTemporalKernel3Decomposed,
+    _Reshape,
 )
 
 

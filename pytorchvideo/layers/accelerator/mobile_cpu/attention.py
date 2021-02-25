@@ -12,10 +12,7 @@ from pytorchvideo.accelerator.efficient_blocks.efficient_block_base import (
     EfficientBlockBase,
 )
 
-from .conv_helper import (
-    _Reshape,
-    _SkipConnectMul,
-)
+from .conv_helper import _Reshape, _SkipConnectMul
 
 
 class SqueezeExcitation(EfficientBlockBase):

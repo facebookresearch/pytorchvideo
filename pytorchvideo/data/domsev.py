@@ -9,12 +9,13 @@ import torch
 from pytorchvideo.data.dataset_manifest_utils import (
     EncodedVideoInfo,
     VideoClipInfo,
-    VideoDatasetType,
     VideoDataset,
+    VideoDatasetType,
     VideoInfo,
 )
 from pytorchvideo.data.utils import DataclassFieldCaster, load_dataclass_dict_from_csv
 from pytorchvideo.data.video import Video
+
 
 USER_SCENE_MAP = {
     0: "none",

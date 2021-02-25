@@ -592,6 +592,8 @@ def create_resnet(
     stem_pool_kernel_size: Tuple[int] = (1, 3, 3),
     stem_pool_stride: Tuple[int] = (1, 2, 2),
     # Stage configs.
+    stage1_pool: Callable = None,
+    stage1_pool_kernel_size: Tuple[int] = (2, 1, 1),
     stage_conv_a_kernel_size: Tuple[Tuple[int]] = (
         (1, 1, 1),
         (1, 1, 1),
@@ -746,6 +748,15 @@ def create_resnet(
         blocks.append(stage)
         stage_dim_in = stage_dim_out
         stage_dim_out = stage_dim_out * 2
+
+        if idx == 0 and stage1_pool is not None:
+            blocks.append(
+                stage1_pool(
+                    kernel_size=stage1_pool_kernel_size,
+                    stride=stage1_pool_kernel_size,
+                    padding=(0, 0, 0),
+                )
+            )
 
     head = create_res_basic_head(
         in_features=stage_dim_in,

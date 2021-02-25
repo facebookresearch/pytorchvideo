@@ -8,15 +8,12 @@ from typing import Any, Callable, Dict, List, Optional
 import torch
 from pytorchvideo.data.dataset_manifest_utils import (
     EncodedVideoInfo,
-    VideoFrameInfo,
     VideoClipInfo,
-    VideoInfo,
     VideoDatasetType,
+    VideoFrameInfo,
+    VideoInfo,
 )
-from pytorchvideo.data.epic_kitchen import (
-    ActionData,
-    EpicKitchenDataset,
-)
+from pytorchvideo.data.epic_kitchen import ActionData, EpicKitchenDataset
 from pytorchvideo.data.video import Video
 
 
