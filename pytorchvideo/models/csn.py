@@ -24,6 +24,9 @@ def create_csn(
     stem_dim_out: int = 64,
     stem_conv_kernel_size: Tuple[int] = (3, 7, 7),
     stem_conv_stride: Tuple[int] = (1, 2, 2),
+    stem_pool: Callable = None,
+    stem_pool_kernel_size: Tuple[int] = (1, 3, 3),
+    stem_pool_stride: Tuple[int] = (1, 2, 2),
     # Stage configs.
     stage_conv_a_kernel_size: Tuple[int] = (1, 1, 1),
     stage_conv_b_kernel_size: Tuple[int] = (3, 3, 3),
@@ -83,6 +86,9 @@ def create_csn(
             stem_dim_out (int): output channel size to stem.
             stem_conv_kernel_size (tuple): convolutional kernel size(s) of stem.
             stem_conv_stride (tuple): convolutional stride size(s) of stem.
+            stem_pool (callable): a callable that constructs resnet head pooling layer.
+            stem_pool_kernel_size (tuple): pooling kernel size(s).
+            stem_pool_stride (tuple): pooling stride size(s).
 
         Stage configs:
             stage_conv_a_kernel_size (tuple): convolutional kernel size(s) for conv_a.
@@ -122,7 +128,10 @@ def create_csn(
         conv_kernel_size=stem_conv_kernel_size,
         conv_stride=stem_conv_stride,
         conv_padding=[size // 2 for size in stem_conv_kernel_size],
-        pool=None,
+        pool=stem_pool,
+        pool_kernel_size=stem_pool_kernel_size,
+        pool_stride=stem_pool_stride,
+        pool_padding=[size // 2 for size in stem_pool_kernel_size],
         norm=norm,
         activation=activation,
     )
