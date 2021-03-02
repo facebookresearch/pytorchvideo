@@ -3,7 +3,7 @@
 import io
 import pathlib
 from abc import ABC, abstractmethod
-from typing import Dict, BinaryIO, Optional
+from typing import BinaryIO, Dict, Optional
 
 import torch
 from iopath.common.file_io import g_pathmgr

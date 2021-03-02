@@ -6,7 +6,7 @@ from typing import BinaryIO, Dict, Optional
 import numpy as np
 import torch
 
-from .utils import thwc_to_cthw, secs_to_pts, pts_to_secs
+from .utils import pts_to_secs, secs_to_pts, thwc_to_cthw
 from .video import Video
 
 
