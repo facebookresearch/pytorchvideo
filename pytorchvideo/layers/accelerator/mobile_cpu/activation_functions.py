@@ -19,8 +19,12 @@ class _NaiveSwish(nn.Module):
     build network.
     """
 
+    def __init__(self):
+        super().__init__()
+        self.mul_func = nn.quantized.FloatFunctional()
+
     def forward(self, x):
-        return x * torch.sigmoid(x)
+        return self.mul_func.mul(x, torch.sigmoid(x))
 
 
 class Swish(EfficientBlockBase):

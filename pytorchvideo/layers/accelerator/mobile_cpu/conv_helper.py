@@ -194,7 +194,315 @@ class _Conv3dTemporalKernel3Decomposed(nn.Module):
             out_tensor_list.append(cur_tensor)
             return self._cat_func.cat(out_tensor_list, 2)
         else:  # Degenerated to simple conv2d
-            return self._conv2d_3_3_1(x[:, :, 0])
+            return self._conv2d_3_3_1(x[:, :, 0]).unsqueeze(2)
+
+
+class _Conv3dTemporalKernel5Decomposed(nn.Module):
+    """
+    Helper class for decomposing conv3d with kernel size of (5, k, k) into equivalent conv2ds.
+    In such conv3d and input I, for output temporal index of t (O[:,:,t,:,:]), the conv
+    can be expressed as:
+    O[:,:,t,:,:] = conv3d(I[:,:,t:t+5,:,:])
+                 = conv2d_0(I[:,:,t,:,:]) + conv2d_1(I[:,:,t+1,:,:]) + conv2d_2(I[:,:,t+2,:,:])
+                   + conv2d_3(I[:,:,t+3,:,:]) + conv2d_4(I[:,:,t+4,:,:])
+    If bias is considered:
+    O[:,:,t,:,:] = conv3d_w_bias(I[:,:,t:t+3,:,:])
+                 = conv2d_0_wo_bias(I[:,:,t,:,:])
+                   + conv2d_1_wo_bias(I[:,:,t+1,:,:]) + conv2d_2_w_bias(I[:,:,t+2,:,:])
+                   + conv2d_3_wo_bias(I[:,:,t+1,:,:]) + conv2d_4_wo_bias(I[:,:,t+2,:,:])
+    The input Conv3d also needs zero padding of size 2 in temporal dimension at begin and end.
+    """
+
+    def __init__(
+        self,
+        conv3d_in: nn.Conv3d,
+        thw_shape: Tuple[int, int, int],
+    ):
+        """
+        Args:
+            conv3d_in (nn.Module): input nn.Conv3d module to be converted
+                into equivalent conv2d.
+            thw_shape (tuple): input THW size for conv3d_in during forward.
+        """
+        super().__init__()
+        assert conv3d_in.padding[0] == 2, (
+            "_Conv3dTemporalKernel5Eq only support temporal padding of 2, "
+            f"but got {conv3d_in.padding[0]}"
+        )
+        assert conv3d_in.padding_mode == "zeros", (
+            "_Conv3dTemporalKernel5Eq only support zero padding, "
+            f"but got {conv3d_in.padding_mode}"
+        )
+        self._thw_shape = thw_shape
+        padding_2d = conv3d_in.padding[1:]
+        in_channels = conv3d_in.in_channels
+        out_channels = conv3d_in.out_channels
+        kernel_size = conv3d_in.kernel_size[1:]
+        groups = conv3d_in.groups
+        stride_2d = conv3d_in.stride[1:]
+        # Create 3 conv2d to emulate conv3d.
+        t, h, w = self._thw_shape
+        args_dict = {
+            "in_channels": in_channels,
+            "out_channels": out_channels,
+            "kernel_size": kernel_size,
+            "padding": padding_2d,
+            "stride": stride_2d,
+            "groups": groups,
+        }
+
+        for iter_idx in range(5):
+            if iter_idx != 2:
+                if t > 1:  # Those four conv2d are needed only when temporal input > 1.
+                    self.add_module(
+                        f"_conv2d_{iter_idx}", nn.Conv2d(**args_dict, bias=False)
+                    )
+            else:  # _conv2d_2 is needed for all circumstances.
+                self.add_module(
+                    f"_conv2d_{iter_idx}",
+                    nn.Conv2d(**args_dict, bias=(conv3d_in.bias is not None)),
+                )
+
+        # State dict for _conv2d_2
+        original_state_dict = conv3d_in.state_dict()
+        state_dict_to_load = deepcopy(original_state_dict)
+        state_dict_to_load["weight"] = original_state_dict["weight"][:, :, 2]
+        self._conv2d_2.load_state_dict(state_dict_to_load)
+
+        if t > 1:
+            if conv3d_in.bias is not None:
+                # Don't need bias for other conv2d instances to avoid duplicated
+                # addition of bias.
+                state_dict_to_load.pop("bias")
+            # State dict for _conv2d_0, _conv2d_1, _conv2d_3, _conv2d_4
+            state_dict_to_load["weight"] = original_state_dict["weight"][:, :, 0]
+            self._conv2d_0.load_state_dict(state_dict_to_load)
+
+            state_dict_to_load["weight"] = original_state_dict["weight"][:, :, 1]
+            self._conv2d_1.load_state_dict(state_dict_to_load)
+
+            state_dict_to_load["weight"] = original_state_dict["weight"][:, :, 3]
+            self._conv2d_3.load_state_dict(state_dict_to_load)
+
+            state_dict_to_load["weight"] = original_state_dict["weight"][:, :, 4]
+            self._conv2d_4.load_state_dict(state_dict_to_load)
+            # Elementwise add are needed in forward function, use nn.quantized.FloatFunctional()
+            # for better quantization support. One convolution needs at most 4 elementwise adds
+            # without zero padding; for boundary planes fewer elementwise adds are needed.
+            # See forward() for more details.
+            self._add_funcs = nn.ModuleList(
+                [nn.quantized.FloatFunctional() for _ in range(4 * t - 6)]
+            )
+            self._cat_func = nn.quantized.FloatFunctional()
+
+    def forward(self, x):
+        """
+        Use three conv2d to emulate conv3d.
+        Args:
+           x (torch.Tensor): 5D tensor of (B, C, T, H, W)
+        """
+        t, h, w = self._thw_shape
+        out_tensor_list = []
+        if (
+            t == 1
+        ):  # Degenerated to simple conv2d, but make sure output still has T dimension
+            return self._conv2d_2(x[:, :, 0]).unsqueeze(2)
+        elif t == 2:
+            # out_tensor_list[0]: conv2d_1_1_0, conv2d_1_1_1 and conv2d_1_1_4 are
+            # applied to zero padding.
+            cur_tensor = (
+                self._add_funcs[0]
+                .add(self._conv2d_2(x[:, :, 0]), self._conv2d_3(x[:, :, 1]))
+                .unsqueeze(2)
+            )
+            out_tensor_list.append(cur_tensor)
+            # out_tensor_list[1]: conv2d_1_1_0, conv2d_1_1_3 and conv2d_1_1_4 are
+            # applied to zero padding.
+
+            cur_tensor = (
+                self._add_funcs[1]
+                .add(self._conv2d_1(x[:, :, 0]), self._conv2d_2(x[:, :, 1]))
+                .unsqueeze(2)
+            )
+            out_tensor_list.append(cur_tensor)
+        elif t == 3:
+            # out_tensor_list[0]: conv2d_1_1_0, conv2d_1_1_1 are applied to zero padding.
+            cur_tensor = (
+                self._add_funcs[0]
+                .add(
+                    self._add_funcs[1].add(
+                        self._conv2d_2(x[:, :, 0]), self._conv2d_3(x[:, :, 1])
+                    ),
+                    self._conv2d_4(x[:, :, 2]),
+                )
+                .unsqueeze(2)
+            )
+            out_tensor_list.append(cur_tensor)
+            # out_tensor_list[1]: conv2d_1_1_0, conv2d_1_1_4 are applied to zero padding.
+            cur_tensor = (
+                self._add_funcs[2]
+                .add(
+                    self._add_funcs[3].add(
+                        self._conv2d_1(x[:, :, 0]), self._conv2d_2(x[:, :, 1])
+                    ),
+                    self._conv2d_3(x[:, :, 2]),
+                )
+                .unsqueeze(2)
+            )
+            out_tensor_list.append(cur_tensor)
+            # out_tensor_list[2]: conv2d_1_1_3, conv2d_1_1_4 are applied to zero padding.
+            cur_tensor = (
+                self._add_funcs[4]
+                .add(
+                    self._add_funcs[5].add(
+                        self._conv2d_0(x[:, :, 0]), self._conv2d_1(x[:, :, 1])
+                    ),
+                    self._conv2d_2(x[:, :, 2]),
+                )
+                .unsqueeze(2)
+            )
+            out_tensor_list.append(cur_tensor)
+        elif t == 4:
+            # out_tensor_list[0]: conv2d_1_1_0, conv2d_1_1_1 are applied to zero padding.
+            cur_tensor = (
+                self._add_funcs[0]
+                .add(
+                    self._add_funcs[1].add(
+                        self._conv2d_2(x[:, :, 0]), self._conv2d_3(x[:, :, 1])
+                    ),
+                    self._conv2d_4(x[:, :, 2]),
+                )
+                .unsqueeze(2)
+            )
+            out_tensor_list.append(cur_tensor)
+            # out_tensor_list[1]: conv2d_1_1_0 is applied to zero padding.
+            cur_tensor = (
+                self._add_funcs[2]
+                .add(
+                    self._add_funcs[3].add(
+                        self._add_funcs[4].add(
+                            self._conv2d_1(x[:, :, 0]),
+                            self._conv2d_2(x[:, :, 1]),
+                        ),
+                        self._conv2d_3(x[:, :, 2]),
+                    ),
+                    self._conv2d_4(x[:, :, 3]),
+                )
+                .unsqueeze(2)
+            )
+            out_tensor_list.append(cur_tensor)
+            # out_tensor_list[2]: conv2d_1_1_4 is applied to zero padding.
+            cur_tensor = (
+                self._add_funcs[5]
+                .add(
+                    self._add_funcs[6].add(
+                        self._add_funcs[7].add(
+                            self._conv2d_0(x[:, :, 0]),
+                            self._conv2d_1(x[:, :, 1]),
+                        ),
+                        self._conv2d_2(x[:, :, 2]),
+                    ),
+                    self._conv2d_3(x[:, :, 3]),
+                )
+                .unsqueeze(2)
+            )
+            out_tensor_list.append(cur_tensor)
+            # out_tensor_list[3]: conv2d_1_1_3, conv2d_1_1_4 are applied to zero padding.
+            cur_tensor = (
+                self._add_funcs[8]
+                .add(
+                    self._add_funcs[9].add(
+                        self._conv2d_0(x[:, :, 1]), self._conv2d_1(x[:, :, 2])
+                    ),
+                    self._conv2d_2(x[:, :, 3]),
+                )
+                .unsqueeze(2)
+            )
+            out_tensor_list.append(cur_tensor)
+        else:  # t >= 5
+            # out_tensor_list[0]: conv2d_1_1_0, conv2d_1_1_1 are applied to zero padding.
+            add_func_idx_base = 0
+            cur_tensor = (
+                self._add_funcs[add_func_idx_base]
+                .add(
+                    self._add_funcs[add_func_idx_base + 1].add(
+                        self._conv2d_2(x[:, :, 0]), self._conv2d_3(x[:, :, 1])
+                    ),
+                    self._conv2d_4(x[:, :, 2]),
+                )
+                .unsqueeze(2)
+            )
+            out_tensor_list.append(cur_tensor)
+            add_func_idx_base += 2
+            # out_tensor_list[1]: conv2d_1_1_0 is applied to zero padding.
+            cur_tensor = (
+                self._add_funcs[add_func_idx_base]
+                .add(
+                    self._add_funcs[add_func_idx_base + 1].add(
+                        self._add_funcs[add_func_idx_base + 2].add(
+                            self._conv2d_1(x[:, :, 0]),
+                            self._conv2d_2(x[:, :, 1]),
+                        ),
+                        self._conv2d_3(x[:, :, 2]),
+                    ),
+                    self._conv2d_4(x[:, :, 3]),
+                )
+                .unsqueeze(2)
+            )
+            out_tensor_list.append(cur_tensor)
+            add_func_idx_base += 3
+            # out_tensor_list[2:-2]: zero padding has no effect.
+            for idx in range(4, t):
+                cur_tensor = (
+                    self._add_funcs[add_func_idx_base]
+                    .add(
+                        self._add_funcs[add_func_idx_base + 1].add(
+                            self._add_funcs[add_func_idx_base + 2].add(
+                                self._add_funcs[add_func_idx_base + 3].add(
+                                    self._conv2d_0(x[:, :, idx - 4]),
+                                    self._conv2d_1(x[:, :, idx - 3]),
+                                ),
+                                self._conv2d_2(x[:, :, idx - 2]),
+                            ),
+                            self._conv2d_3(x[:, :, idx - 1]),
+                        ),
+                        self._conv2d_4(x[:, :, idx]),
+                    )
+                    .unsqueeze(2)
+                )
+                out_tensor_list.append(cur_tensor)
+                add_func_idx_base += 4
+            # out_tensor_list[-2]: conv2d_1_1_4 is applied to zero padding.
+            cur_tensor = (
+                self._add_funcs[add_func_idx_base]
+                .add(
+                    self._add_funcs[add_func_idx_base + 1].add(
+                        self._add_funcs[add_func_idx_base + 2].add(
+                            self._conv2d_0(x[:, :, -4]),
+                            self._conv2d_1(x[:, :, -3]),
+                        ),
+                        self._conv2d_2(x[:, :, -2]),
+                    ),
+                    self._conv2d_3(x[:, :, -1]),
+                )
+                .unsqueeze(2)
+            )
+            out_tensor_list.append(cur_tensor)
+            add_func_idx_base += 3
+            # out_tensor_list[-1]: conv2d_1_1_3, conv2d_1_1_4 are applied to zero padding.
+            cur_tensor = (
+                self._add_funcs[add_func_idx_base]
+                .add(
+                    self._add_funcs[add_func_idx_base + 1].add(
+                        self._conv2d_0(x[:, :, -3]),
+                        self._conv2d_1(x[:, :, -2]),
+                    ),
+                    self._conv2d_2(x[:, :, -1]),
+                )
+                .unsqueeze(2)
+            )
+            out_tensor_list.append(cur_tensor)
+        return self._cat_func.cat(out_tensor_list, 2)
 
 
 class _Conv3dTemporalKernel1Decomposed(nn.Module):

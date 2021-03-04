@@ -1,5 +1,6 @@
 # Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved.
 
+import logging
 from collections import OrderedDict
 from typing import Tuple
 
@@ -14,6 +15,7 @@ from .conv_helper import (
     _Conv3dTemporalKernel1Decomposed,
     _Conv3dTemporalKernel3Decomposed,
     _Reshape,
+    _Conv3dTemporalKernel5Decomposed,
 )
 
 
@@ -372,6 +374,217 @@ class Conv3dTemporalKernel1BnAct(EfficientBlockBase):
 
         self.convert_flag = True
         # Set new kernel in eval mode again
+        self.kernel.eval()
+
+    def forward(self, x):
+        x = self.kernel(x)
+        return x
+
+
+class Conv3d3x1x1BnAct(EfficientBlockBase):
+    """
+    Implements Conv3d (3x1x1) + (optional) Bn + Activation for pointwise layers.
+    The conv layer has fixed kernel of (3, 1, 1), zero padding size of
+    (1, 0, 0), stride = (1, 1, 1), dilation = 1.
+
+                      Input
+                        |
+                        ↓
+                    conv3d (3x1x1)
+                        ↓
+                    BatchNorm (optional)
+                        ↓
+                    Activation
+
+    For regular convolution (i.e., groups=1), current implementation of this layer in
+    QNNPACK is reasonably efficient.
+    For depthwise convolution (i.e., groups=out_channels), current implementation of this
+    layer in QNNPACK is not efficient as Conv3d3x3x3DwBnRelu, as QNNPACK does not have
+    optimization for 1x1 depthwise convolution. The latencies of fp32 operation are similar
+    for Conv3d3x1x1BnAct and Conv3d3x3x3DwBnRelu, while with int8 operation Conv3d3x1x1BnAct
+    is 1.5X slower than Conv3d3x3x3DwBnRelu.
+
+    self.convert_flag property records whether the Conv3d3x1x1BnAct instance has been
+    converted; Conv3d3x1x1BnAct is in original form if convert_flag is false, while it
+    is in deployable form if convert_flag is true.
+
+    Args:
+        in_channels (int): number of input channels for conv3d 3x1x1.
+        out_channels (int): number of output channels for conv3d 3x1x1.
+        groups (int): number of groups for conv.
+        bias (bool): if true, use bias for conv.
+        activation (str): applies selected activation from supported_act_functions.
+            See activation_functions.py for more info about supported activations.
+            Currently ReLU ('relu'), Swish ('swish'), Hardswish ('hswish'), Identity
+            ('identity') are supported.
+        use_bn (bool): if true, use batchnorm.
+        norm_eps (float): epsilon for batchnorm.
+        norm_momentum (float): momentum for batchnorm.
+
+    """
+
+    def __init__(
+        self,
+        in_channels: int,
+        out_channels: int,
+        groups: int = 1,
+        bias=False,
+        activation: str = "relu",
+        use_bn=True,
+        norm_eps=1e-5,
+        norm_momentum=0.1,
+    ):
+        super().__init__()
+        kernel = OrderedDict()
+        kernel["conv"] = nn.Conv3d(
+            in_channels,
+            out_channels,
+            kernel_size=(3, 1, 1),
+            groups=groups,
+            padding=(1, 0, 0),
+            bias=bias,
+        )
+
+        if groups == out_channels:
+            logging.warn(
+                (
+                    "Conv3d3x1x1BnAct has low efficiency for depthwise conv. "
+                    "Consider using Conv3d3x3x3DwBnRelu instead."
+                )
+            )
+
+        if use_bn:
+            kernel["bn"] = nn.BatchNorm3d(
+                in_channels, eps=norm_eps, momentum=norm_momentum
+            )
+        assert (
+            activation in supported_act_functions
+        ), f"Conv3d3x1x1BnAct: {activation} is not in supported_act_functions."
+        kernel["act"] = supported_act_functions[activation]()
+        self.kernel = nn.Sequential(kernel)
+        self.convert_flag = False
+
+    def convert(
+        self,
+        input_blob_size,
+        **kwargs,
+    ):
+        """
+        Converts Conv3d into equivalent Conv2d for Pytorch Mobile deployment
+
+        """
+        assert (
+            self.convert_flag is False
+        ), "Conv3d3x1x1BnAct: already converted, cannot be converted twice"
+        self.kernel.eval()
+        # Fuse conv and bn if bn exists.
+        if hasattr(self.kernel, "bn"):
+            self.kernel = torch.quantization.fuse_modules(self.kernel, ["conv", "bn"])
+        self.kernel.conv = _Conv3dTemporalKernel3Decomposed(
+            self.kernel.conv, input_blob_size[2:]
+        )
+        # Convert activation function
+        self.kernel.act.convert(input_blob_size, **kwargs)
+        # Since conv3d is converted into multiple conv2d, will not fuse conv with relu
+        # to keep arithmetic equivalency.
+        self.convert_flag = True
+        self.kernel.eval()
+
+    def forward(self, x):
+        x = self.kernel(x)
+        return x
+
+
+class Conv3d5x1x1BnAct(EfficientBlockBase):
+    """
+    Implements Conv3d (5x1x1) + (optional) Bn + Activation for pointwise layers.
+    The conv layer has fixed kernel of (5, 1, 1), zero padding size of
+    (2, 0, 0), stride = (1, 1, 1), dilation = 1.
+
+                      Input
+                        |
+                        ↓
+                    conv3d (5x1x1)
+                        ↓
+                    BatchNorm (optional)
+                        ↓
+                    Activation
+
+    For regular convolution (i.e., groups=1), current implementation of this layer in
+    QNNPACK is reasonably efficient.
+
+    self.convert_flag property records whether the Conv3d5x1x1BnAct instance has been
+    converted; Conv3d5x1x1BnAct is in original form if convert_flag is false, while it
+    is in deployable form if convert_flag is true.
+
+    Args:
+        in_channels (int): number of input channels for conv3d 3x1x1.
+        out_channels (int): number of output channels for conv3d 3x1x1.
+        groups (int): number of groups for conv.
+        bias (bool): if true, use bias for conv.
+        activation (str): applies selected activation from supported_act_functions.
+            See activation_functions.py for more info about supported activations.
+            Currently ReLU ('relu'), Swish ('swish'), Hardswish ('hswish'), Identity
+            ('identity') are supported.
+        use_bn (bool): if true, use batchnorm.
+        norm_eps (float): epsilon for batchnorm.
+        norm_momentum (float): momentum for batchnorm.
+
+    """
+
+    def __init__(
+        self,
+        in_channels: int,
+        out_channels: int,
+        groups: int = 1,
+        bias=False,
+        activation: str = "relu",
+        use_bn=True,
+        norm_eps=1e-5,
+        norm_momentum=0.1,
+    ):
+        super().__init__()
+        kernel = OrderedDict()
+        kernel["conv"] = nn.Conv3d(
+            in_channels,
+            out_channels,
+            kernel_size=(5, 1, 1),
+            groups=groups,
+            padding=(2, 0, 0),
+            bias=bias,
+        )
+
+        if use_bn:
+            kernel["bn"] = nn.BatchNorm3d(
+                in_channels, eps=norm_eps, momentum=norm_momentum
+            )
+        assert (
+            activation in supported_act_functions
+        ), f"Conv3d5x1x1BnAct: {activation} is not in supported_act_functions."
+        kernel["act"] = supported_act_functions[activation]()
+        self.kernel = nn.Sequential(kernel)
+        self.convert_flag = False
+
+    def convert(self, input_blob_size, **kwargs):
+        """
+        Converts Conv3d into equivalent Conv2d for Pytorch Mobile deployment
+
+        """
+        assert (
+            self.convert_flag is False
+        ), "Conv3d5x1x1BnAct: already converted, cannot be converted twice"
+        self.kernel.eval()
+        # Fuse conv and bn if bn exists.
+        if hasattr(self.kernel, "bn"):
+            self.kernel = torch.quantization.fuse_modules(self.kernel, ["conv", "bn"])
+        self.kernel.conv = _Conv3dTemporalKernel5Decomposed(
+            self.kernel.conv, input_blob_size[2:]
+        )
+        # Convert activatiopn function
+        self.kernel.act.convert(input_blob_size, **kwargs)
+        # Since conv3d is converted into multiple conv2d, will not fuse conv with relu
+        # to keep arithmetic equivalency.
+        self.convert_flag = True
         self.kernel.eval()
 
     def forward(self, x):
