@@ -1,9 +1,8 @@
 # Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved.
 
-import random
+import math
 from dataclasses import dataclass, fields as dataclass_fields
-from enum import Enum
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any, Callable, Dict, List, Optional, Tuple
 
 import torch
 from pytorchvideo.data.dataset_manifest_utils import (
@@ -63,9 +62,66 @@ class ActivityData(DataclassFieldCaster):
     activity_name: str
 
 
-class ClipSampling(Enum):
-    RandomOffsetUniform = 1
-    # TODO(T84168155): Switch to the action-based clip sampling in D25699256
+# Utility functions
+def seconds_to_frame_index(
+    time_in_seconds: float, fps: int, zero_indexed: Optional[bool] = True
+) -> int:
+    """Converts a point in time (in seconds) within a video clip to its closest
+    frame indexed (rounding down), based on a specified frame rate.
+
+    Args:
+        time_in_seconds (float): The point in time within the video.
+        fps (int): The frame rate (frames per second) of the video.
+        zero_indexed (Optional[bool]): Whether the returned frame should be
+            zero-indexed (if True) or one-indexed (if False).
+
+    Returns:
+        (int) The index of the nearest frame (rounding down to the nearest integer).
+    """
+    frame_idx = math.floor(time_in_seconds * fps)
+    if not zero_indexed:
+        frame_idx += 1
+    return frame_idx
+
+
+def frame_index_to_seconds(
+    frame_index: int, fps: int, zero_indexed: Optional[bool] = True
+) -> float:
+    """Converts a frame index within a video clip to the corresponding
+    point in time (in seconds) within the video, based on a specified frame rate.
+
+    Args:
+        frame_index (int): The index of the frame within the video.
+        fps (int): The frame rate (frames per second) of the video.
+        zero_indexed (Optional[bool]): Whether the specified frame is zero-indexed
+            (if True) or one-indexed (if False).
+
+    Returns:
+        (float) The point in time within the video.
+    """
+    if not zero_indexed:
+        frame_index -= 1
+    time_in_seconds = frame_index / fps
+    return time_in_seconds
+
+
+def get_overlap_for_time_range_pair(
+    t1_start: float, t1_stop: float, t2_start: float, t2_stop: float
+) -> Optional[Tuple[float, float]]:
+    """Calculates the overlap between two time ranges, if one exists.
+
+    Returns:
+        (Optional[Tuple]) A tuple of <overlap_start_time, overlap_stop_time> if
+        an overlap is found, or None otherwise.
+    """
+    # Check if there is an overlap
+    if (t1_start <= t2_stop) and (t2_start <= t1_stop):
+        # Calculate the overlap period
+        overlap_start_time = max(t1_start, t2_start)
+        overlap_stop_time = min(t1_stop, t2_stop)
+        return (overlap_start_time, overlap_stop_time)
+    else:
+        return None
 
 
 class DomsevDataset(torch.utils.data.Dataset):
@@ -83,9 +139,11 @@ class DomsevDataset(torch.utils.data.Dataset):
         video_data_manifest_file_path: str,
         video_info_file_path: str,
         activities_file_path: str,
-        clip_sampling: ClipSampling = ClipSampling.RandomOffsetUniform,
+        clip_sampler: Callable[
+            [Dict[str, Video], Dict[str, List[ActivityData]]], List[VideoClipInfo]
+        ],
         dataset_type: VideoDatasetType = VideoDatasetType.Frame,
-        seconds_per_clip: float = 10.0,
+        frames_per_second: int = 1,
         transform: Optional[Callable[[Dict[str, Any]], Any]] = None,
         frame_filter: Optional[Callable[[List[int]], List[int]]] = None,
         multithreaded_io: bool = False,
@@ -110,11 +168,17 @@ class DomsevDataset(torch.utils.data.Dataset):
                 File must be a csv (w/header) with columns:
                 {[f.name for f in dataclass_fields(ActivityData)]}
 
-            clip_sampling (ClipSampling):
-                The type of sampling to perform to perform on the videos of the dataset.
+            clip_sampler: Callable[
+                [Dict[str, Video], Dict[str, List[ActivityData]]], List[VideoClipInfo]
+            ],
 
             dataset_type (VideoDatasetType): The dataformat in which dataset
                 video data is store (e.g. video frames, encoded video etc).
+
+            frames_per_second (int): The FPS of the stored videos. (NOTE:
+                this is variable and may be different than the original FPS
+                reported on the DoMSEV dataset website -- it depends on the
+                subsampling and frame extraction done internally at Facebook).
 
             transform (Optional[Callable[[Dict[str, Any]], Any]]):
                 This callable is evaluated on the clip output before the clip is returned.
@@ -157,13 +221,10 @@ class DomsevDataset(torch.utils.data.Dataset):
             activities_file_path, ActivityData, "video_id", list_per_key=True
         )
 
-        clip_sampler = DomsevDataset._define_clip_structure_generator(
-            seconds_per_clip, clip_sampling
-        )
-
         # Sample datapoints
         self._clips: List[VideoClipInfo] = clip_sampler(self._videos, self._activities)
 
+        self._frames_per_second = frames_per_second
         self._user_transform = transform
         self._transform = self._transform_clip
         self._frame_filter = frame_filter
@@ -189,13 +250,30 @@ class DomsevDataset(torch.utils.data.Dataset):
         """
         clip = self._clips[index]
 
-        # Filter activities by only the ones that appear within the clip boundaries
+        # Filter activities by only the ones that appear within the clip boundaries,
+        # and unpack the activities so there is one per frame in the clip
         activities_in_video = self._activities[clip.video_id]
-        activities_in_clip = [
-            a
-            for a in activities_in_video
-            if (a.start_time <= clip.stop_time and a.stop_time >= clip.start_time)
-        ]
+        activities_in_clip = []
+        for activity in activities_in_video:
+            overlap_period = get_overlap_for_time_range_pair(
+                clip.start_time, clip.stop_time, activity.start_time, activity.stop_time
+            )
+            if overlap_period is not None:
+                overlap_start_time, overlap_stop_time = overlap_period
+
+                # Convert the overlapping period between clip and activity to
+                # 0-indexed start and stop frame indexes, so we can unpack 1
+                # activity label per frame.
+                overlap_start_frame = seconds_to_frame_index(
+                    overlap_start_time, self._frames_per_second
+                )
+                overlap_stop_frame = seconds_to_frame_index(
+                    overlap_stop_time, self._frames_per_second
+                )
+
+                # Append 1 activity label per frame
+                for _ in range(overlap_start_frame, overlap_stop_frame):
+                    activities_in_clip.append(activity)
 
         # Convert the list of ActivityData objects to a tensor of just the activity class IDs
         activity_class_ids = [
@@ -222,45 +300,6 @@ class DomsevDataset(torch.utils.data.Dataset):
             The number of video clips in the dataset.
         """
         return len(self._clips)
-
-    @staticmethod
-    def _define_clip_structure_generator(
-        seconds_per_clip: float, clip_sampling: ClipSampling
-    ) -> Callable[
-        [Dict[str, Video], Dict[str, List[ActivityData]]], List[VideoClipInfo]
-    ]:
-        """
-        Args:
-            seconds_per_clip (float): The length of each sampled clip in seconds.
-            clip_sampling (ClipSampling):
-                The type of sampling to perform to perform on the videos of the dataset.
-
-        Returns:
-            A function that takes a dictionary of videos and a dictionary of the activities
-            for each video and outputs a list of sampled clips.
-        """
-        if not clip_sampling == ClipSampling.RandomOffsetUniform:
-            raise NotImplementedError(
-                f"Only {ClipSampling.RandomOffsetUniform} is implemented. "
-                f"{clip_sampling} not implemented."
-            )
-
-        def define_clip_structure(
-            videos: Dict[str, Video], activities: Dict[str, List[ActivityData]]
-        ) -> List[VideoClipInfo]:
-            clips = []
-            for video_id, video in videos.items():
-                offset = random.random() * seconds_per_clip
-                num_clips = int((video.duration - offset) // seconds_per_clip)
-
-                for i in range(num_clips):
-                    start_time = i * seconds_per_clip + offset
-                    stop_time = start_time + seconds_per_clip
-                    clip = VideoClipInfo(video_id, start_time, stop_time)
-                    clips.append(clip)
-            return clips
-
-        return define_clip_structure
 
     def _transform_clip(self, clip: Dict[str, Any]) -> Dict[str, Any]:
         """Transforms a given video clip, according to some pre-defined transforms
