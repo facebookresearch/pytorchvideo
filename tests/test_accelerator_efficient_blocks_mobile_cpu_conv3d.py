@@ -87,7 +87,7 @@ class TestConv3dBlockEquivalency(unittest.TestCase):
             # Input tensor
             input_tensor = torch.randn(input_size)
             # A conv block
-            l0 = Conv3d3x1x1BnAct(3, 3)
+            l0 = Conv3d3x1x1BnAct(3, 6)
             l0.eval()
             out0 = l0(input_tensor)
             # Replicate the conv block
@@ -118,7 +118,7 @@ class TestConv3dBlockEquivalency(unittest.TestCase):
             # Input tensor
             input_tensor = torch.randn(input_size)
             # A conv block
-            l0 = Conv3d5x1x1BnAct(3, 3)
+            l0 = Conv3d5x1x1BnAct(3, 6)
             l0.eval()
             out0 = l0(input_tensor)
             # Replicate the conv block

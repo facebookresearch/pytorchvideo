@@ -455,7 +455,7 @@ class Conv3d3x1x1BnAct(EfficientBlockBase):
 
         if use_bn:
             kernel["bn"] = nn.BatchNorm3d(
-                in_channels, eps=norm_eps, momentum=norm_momentum
+                out_channels, eps=norm_eps, momentum=norm_momentum
             )
         assert (
             activation in supported_act_functions
@@ -556,7 +556,7 @@ class Conv3d5x1x1BnAct(EfficientBlockBase):
 
         if use_bn:
             kernel["bn"] = nn.BatchNorm3d(
-                in_channels, eps=norm_eps, momentum=norm_momentum
+                out_channels, eps=norm_eps, momentum=norm_momentum
             )
         assert (
             activation in supported_act_functions
