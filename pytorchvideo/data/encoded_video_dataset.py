@@ -33,6 +33,7 @@ class EncodedVideoDataset(torch.utils.data.IterableDataset):
         video_sampler: Type[torch.utils.data.Sampler] = torch.utils.data.RandomSampler,
         transform: Optional[Callable[[dict], Any]] = None,
         decode_audio: bool = True,
+        decoder: str = "pyav",
     ) -> None:
         """
         Args:
@@ -58,11 +59,14 @@ class EncodedVideoDataset(torch.utils.data.IterableDataset):
                     }
                 If transform is None, the raw clip output in the above format is
                 returned unmodified.
+
+            decoder (str): Defines what type of decoder used to decode a video.
         """
         self._decode_audio = decode_audio
         self._transform = transform
         self._clip_sampler = clip_sampler
         self._labeled_videos = labeled_video_paths
+        self._decoder = decoder
 
         # If a RandomSampler is used we need to pass in a custom random generator that
         # ensures all PyTorch multiprocess workers have the same random seed.
@@ -115,7 +119,9 @@ class EncodedVideoDataset(torch.utils.data.IterableDataset):
                 try:
                     video_path, info_dict = self._labeled_videos[video_index]
                     video = EncodedVideo.from_path(
-                        video_path, decode_audio=self._decode_audio
+                        video_path,
+                        decode_audio=self._decode_audio,
+                        decoder=self._decoder,
                     )
                     self._loaded_video_label = (video, info_dict, video_index)
                 except (RuntimeError, OSError) as e:
@@ -199,6 +205,7 @@ def labeled_encoded_video_dataset(
     transform: Optional[Callable[[dict], Any]] = None,
     video_path_prefix: str = "",
     decode_audio: bool = True,
+    decoder: str = "pyav",
 ) -> EncodedVideoDataset:
     """
     A helper function to create EncodedVideoDataset object for Ucf101 and Kinectis datasets.
@@ -237,6 +244,8 @@ def labeled_encoded_video_dataset(
                 loaded in EncodedVideoDataset. All the video paths before loading
                 are prefixed with this path.
 
+        decoder (str): Defines what type of decoder used to decode a video.
+
     """
     # PathManager may configure the multiprocessing context in a way that conflicts
     # with PyTorch DataLoader workers. To avoid this, we make sure the PathManager
@@ -255,5 +264,6 @@ def labeled_encoded_video_dataset(
         video_sampler,
         transform,
         decode_audio=decode_audio,
+        decoder=decoder,
     )
     return dataset

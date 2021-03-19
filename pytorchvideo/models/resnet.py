@@ -1,6 +1,6 @@
 # Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved.
 
-from typing import Callable, Tuple
+from typing import Callable, List, Tuple, Union
 
 import numpy as np
 import torch
@@ -465,14 +465,17 @@ def create_res_stage(
     dim_out: int,
     bottleneck: Callable,
     # Conv configs.
-    conv_a_kernel_size: Tuple[int] = (3, 1, 1),
+    conv_a_kernel_size: Union[Tuple[int], List[Tuple[int]]] = (3, 1, 1),
     conv_a_stride: Tuple[int] = (2, 1, 1),
-    conv_a_padding: Tuple[int] = (1, 0, 0),
+    conv_a_padding: Union[Tuple[int], List[Tuple[int]]] = (1, 0, 0),
+    conv_a: Callable = nn.Conv3d,
     conv_b_kernel_size: Tuple[int] = (1, 3, 3),
     conv_b_stride: Tuple[int] = (1, 2, 2),
     conv_b_padding: Tuple[int] = (0, 1, 1),
     conv_b_num_groups: int = 1,
     conv_b_dilation: Tuple[int] = (1, 1, 1),
+    conv_b: Callable = nn.Conv3d,
+    conv_c: Callable = nn.Conv3d,
     # Norm configs.
     norm: Callable = nn.BatchNorm3d,
     norm_eps: float = 1e-5,
@@ -511,15 +514,30 @@ def create_res_stage(
                 Examples include: create_bottleneck_block.
 
         Convolution related configs:
-            conv_a_kernel_size (tuple): convolutional kernel size(s) for conv_a.
+            conv_a_kernel_size (tuple or list of tuple): convolutional kernel size(s)
+                for conv_a. If conv_a_kernel_size is a tuple, use it for all blocks in
+                the stage. If conv_a_kernel_size is a list of tuple, the kernel sizes
+                will be repeated until having same length of depth in the stage. For
+                example, for conv_a_kernel_size = [(3, 1, 1), (1, 1, 1)], the kernel
+                size for the first 6 blocks would be [(3, 1, 1), (1, 1, 1), (3, 1, 1),
+                (1, 1, 1), (3, 1, 1)].
             conv_a_stride (tuple): convolutional stride size(s) for conv_a.
-            conv_a_padding (tuple): convolutional padding(s) for conv_a.
+            conv_a_padding (tuple or list of tuple): convolutional padding(s) for
+                conv_a. If conv_a_padding is a tuple, use it for all blocks in
+                the stage. If conv_a_padding is a list of tuple, the padding sizes
+                will be repeated until having same length of depth in the stage.
+            conv_a (callable): a callable that constructs the conv_a conv layer, examples
+                include nn.Conv3d, OctaveConv, etc
             conv_b_kernel_size (tuple): convolutional kernel size(s) for conv_b.
             conv_b_stride (tuple): convolutional stride size(s) for conv_b.
             conv_b_padding (tuple): convolutional padding(s) for conv_b.
             conv_b_num_groups (int): number of groups for groupwise convolution for
                 conv_b.
             conv_b_dilation (tuple): dilation for 3D convolution for conv_b.
+            conv_b (callable): a callable that constructs the conv_b conv layer, examples
+                include nn.Conv3d, OctaveConv, etc
+            conv_c (callable): a callable that constructs the conv_c conv layer, examples
+                include nn.Conv3d, OctaveConv, etc
 
         BN related configs:
             norm (callable): a callable that constructs normalization layer. Examples
@@ -536,20 +554,31 @@ def create_res_stage(
         (nn.Module): resnet basic stage layer.
     """
     res_blocks = []
+    if isinstance(conv_a_kernel_size[0], int):
+        conv_a_kernel_size = [conv_a_kernel_size]
+    if isinstance(conv_a_padding[0], int):
+        conv_a_padding = [conv_a_padding]
+    # Repeat conv_a kernels until having same length of depth in the stage.
+    conv_a_kernel_size = (conv_a_kernel_size * depth)[:depth]
+    conv_a_padding = (conv_a_padding * depth)[:depth]
+
     for ind in range(depth):
         block = create_res_block(
             dim_in=dim_in if ind == 0 else dim_out,
             dim_inner=dim_inner,
             dim_out=dim_out,
             bottleneck=bottleneck,
-            conv_a_kernel_size=conv_a_kernel_size,
+            conv_a_kernel_size=conv_a_kernel_size[ind],
             conv_a_stride=conv_a_stride if ind == 0 else (1, 1, 1),
-            conv_a_padding=conv_a_padding,
+            conv_a_padding=conv_a_padding[ind],
+            conv_a=conv_a,
             conv_b_kernel_size=conv_b_kernel_size,
             conv_b_stride=conv_b_stride if ind == 0 else (1, 1, 1),
             conv_b_padding=conv_b_padding,
             conv_b_num_groups=conv_b_num_groups,
             conv_b_dilation=conv_b_dilation,
+            conv_b=conv_b,
+            conv_c=conv_c,
             norm=norm,
             norm_eps=norm_eps,
             norm_momentum=norm_momentum,
@@ -580,7 +609,9 @@ def create_resnet(
     stem_pool_kernel_size: Tuple[int] = (1, 3, 3),
     stem_pool_stride: Tuple[int] = (1, 2, 2),
     # Stage configs.
-    stage_conv_a_kernel_size: Tuple[Tuple[int]] = (
+    stage1_pool: Callable = None,
+    stage1_pool_kernel_size: Tuple[int] = (2, 1, 1),
+    stage_conv_a_kernel_size: Tuple[Union[Tuple[int], List[Tuple[int]]]] = (
         (1, 1, 1),
         (1, 1, 1),
         (3, 1, 1),
@@ -710,7 +741,14 @@ def create_resnet(
         stage_dim_inner = stage_dim_out // 4
         depth = stage_depths[idx]
 
+        stage_conv_a_kernel = stage_conv_a_kernel_size[idx]
         stage_conv_a_stride = (stage_temporal_stride[idx], 1, 1)
+        stage_conv_a_padding = (
+            [size // 2 for size in stage_conv_a_kernel]
+            if isinstance(stage_conv_a_kernel[0], int)
+            else [[size // 2 for size in sizes] for sizes in stage_conv_a_kernel]
+        )
+
         stage_conv_b_stride = (1, stage_spatial_stride[idx], stage_spatial_stride[idx])
 
         stage = create_res_stage(
@@ -719,9 +757,9 @@ def create_resnet(
             dim_inner=stage_dim_inner,
             dim_out=stage_dim_out,
             bottleneck=bottleneck,
-            conv_a_kernel_size=stage_conv_a_kernel_size[idx],
+            conv_a_kernel_size=stage_conv_a_kernel,
             conv_a_stride=stage_conv_a_stride,
-            conv_a_padding=[size // 2 for size in stage_conv_a_kernel_size[idx]],
+            conv_a_padding=stage_conv_a_padding,
             conv_b_kernel_size=stage_conv_b_kernel_size[idx],
             conv_b_stride=stage_conv_b_stride,
             conv_b_padding=[size // 2 for size in stage_conv_b_kernel_size[idx]],
@@ -734,6 +772,15 @@ def create_resnet(
         blocks.append(stage)
         stage_dim_in = stage_dim_out
         stage_dim_out = stage_dim_out * 2
+
+        if idx == 0 and stage1_pool is not None:
+            blocks.append(
+                stage1_pool(
+                    kernel_size=stage1_pool_kernel_size,
+                    stride=stage1_pool_kernel_size,
+                    padding=(0, 0, 0),
+                )
+            )
 
     head = create_res_basic_head(
         in_features=stage_dim_in,
@@ -1123,10 +1170,10 @@ class ResBlock(nn.Module):
         if self.branch1_conv is None:
             x = self.branch_fusion(x, self.branch2(x))
         else:
-            residual = self.branch1_conv(x)
+            shortcut = self.branch1_conv(x)
             if self.branch1_norm is not None:
-                residual = self.branch1_norm(residual)
-            x = self.branch_fusion(residual, self.branch2(x))
+                shortcut = self.branch1_norm(shortcut)
+            x = self.branch_fusion(shortcut, self.branch2(x))
         if self.activation is not None:
             x = self.activation(x)
         return x

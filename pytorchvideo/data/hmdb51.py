@@ -174,6 +174,7 @@ def Hmdb51(
     split_id: int = 1,
     split_type: str = "train",
     decode_audio=True,
+    decoder: str = "pyav",
 ) -> EncodedVideoDataset:
     """
     A helper function to create EncodedVideoDataset object for HMDB51 dataset
@@ -211,6 +212,7 @@ def Hmdb51(
                 loaded in EncodedVideoDataset. All the video paths before loading
                 are prefixed with this path.
 
+        decoder (str): Defines which backend should be used to decode videos.
     """
     labeled_video_paths = Hmdb51LabeledVideoPaths.from_dir(
         data_path, split_id=split_id, split_type=split_type
@@ -222,6 +224,7 @@ def Hmdb51(
         video_sampler,
         transform,
         decode_audio=decode_audio,
+        decoder=decoder,
     )
 
     return dataset

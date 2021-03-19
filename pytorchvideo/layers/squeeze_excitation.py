@@ -1,6 +1,6 @@
 # (c) Facebook, Inc. and its affiliates. Confidential and proprietary.
 
-from typing import Optional, Callable
+from typing import Callable, Optional
 
 import torch
 import torch.nn as nn

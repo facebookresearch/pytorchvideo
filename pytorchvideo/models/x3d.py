@@ -517,7 +517,9 @@ def create_x3d_head(
         post_act=post_act_module,
     )
 
-    if activation == nn.Softmax:
+    if activation is None:
+        activation_module = None
+    elif activation == nn.Softmax:
         activation_module = activation(dim=1)
     elif activation == nn.Sigmoid:
         activation_module = activation()
@@ -579,6 +581,7 @@ def create_x3d(
     head_pool_act: Callable = nn.ReLU,
     head_bn_lin5_on: bool = False,
     head_activation: Callable = nn.Softmax,
+    head_output_with_global_average: bool = True,
 ) -> nn.Module:
     """
     X3D model builder. It builds a X3D network backbone, which is a ResNet.
@@ -646,6 +649,8 @@ def create_x3d(
             head_bn_lin5_on (bool): if True, perform normalization on the features
                 before the classifier.
             head_activation (callable): a callable that constructs activation layer.
+            head_output_with_global_average (bool): if True, perform global averaging on
+                the head output.
 
     Returns:
         (nn.Module): the X3D network.
@@ -736,6 +741,7 @@ def create_x3d(
         bn_lin5_on=head_bn_lin5_on,
         dropout_rate=dropout_rate,
         activation=head_activation,
+        output_with_global_average=head_output_with_global_average,
     )
     blocks.append(head)
     return Net(blocks=nn.ModuleList(blocks))

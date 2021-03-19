@@ -143,3 +143,20 @@ def repeat_temporal_frames_subsample(
         )
         frame_list.append(pathway)
     return frame_list
+
+
+def convert_to_one_hot(targets: torch.Tensor, num_class: int) -> torch.Tensor:
+    """
+    This function converts target class indices to one-hot vectors, given the number of classes.
+    """
+
+    assert (
+        torch.max(targets).item() < num_class
+    ), "Class Index must be less than number of classes"
+
+    one_hot_targets = torch.zeros(
+        (targets.shape[0], num_class), dtype=torch.long, device=targets.device
+    )
+    one_hot_targets.scatter_(1, targets.long(), 1)
+
+    return one_hot_targets

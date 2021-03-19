@@ -16,7 +16,7 @@ def set_attributes(self, params: List[object] = None) -> None:
                 setattr(self, k, v)
 
 
-def round_width(width, multiplier, min_width=8, divisor=8):
+def round_width(width, multiplier, min_width=8, divisor=8, ceil=False):
     """
     Round width of filters based on width multiplier
     Args:
@@ -24,13 +24,17 @@ def round_width(width, multiplier, min_width=8, divisor=8):
         multiplier (float): the multiplication factor.
         min_width (int): the minimum width after multiplication.
         divisor (int): the new width should be dividable by divisor.
+        ceil (bool): If True, use ceiling as the rounding method.
     """
     if not multiplier:
         return width
 
     width *= multiplier
     min_width = min_width or divisor
-    width_out = max(min_width, int(width + divisor / 2) // divisor * divisor)
+    if ceil:
+        width_out = max(min_width, int(math.ceil(width / divisor)) * divisor)
+    else:
+        width_out = max(min_width, int(width + divisor / 2) // divisor * divisor)
     if width_out < 0.9 * width:
         width_out += divisor
     return int(width_out)

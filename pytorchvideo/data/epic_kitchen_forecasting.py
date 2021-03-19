@@ -5,15 +5,14 @@ from enum import Enum
 from typing import Any, Callable, Dict, List, Optional
 
 import torch
-from pytorchvideo.data.epic_kitchen import (
-    ActionData,
+from pytorchvideo.data.dataset_manifest_utils import (
     EncodedVideoInfo,
-    EpicKitchenClip,
-    EpicKitchenDataset,
-    EpicKitchenDatasetType,
+    VideoClipInfo,
+    VideoDatasetType,
     VideoFrameInfo,
     VideoInfo,
 )
+from pytorchvideo.data.epic_kitchen import ActionData, EpicKitchenDataset
 from pytorchvideo.data.video import Video
 
 
@@ -35,7 +34,7 @@ class EpicKitchenForecasting(EpicKitchenDataset):
         actions_file_path: str,
         video_data_manifest_file_path: str,
         clip_sampling: ClipSampling = ClipSampling.Random,
-        dataset_type: EpicKitchenDatasetType = EpicKitchenDatasetType.Frame,
+        dataset_type: VideoDatasetType = VideoDatasetType.Frame,
         seconds_per_clip: float = 2.0,
         clip_time_stride: float = 10.0,
         num_input_clips: int = 1,
@@ -72,7 +71,7 @@ class EpicKitchenForecasting(EpicKitchenDataset):
             clip_sampling (ClipSampling):
                 The type of sampling to perform to perform on the videos of the dataset.
 
-            dataset_type (EpicKitchenDatasetType): The dataformat in which dataset
+            dataset_type (VideoDatasetType): The dataformat in which dataset
                 video data is store (e.g. video frames, encoded video etc).
 
             seconds_per_clip (float): The length of each sampled subclip in seconds.
@@ -241,9 +240,7 @@ class EpicKitchenForecasting(EpicKitchenDataset):
         clip_time_stride: float,
         num_input_clips: int,
         num_forecast_actions: int,
-    ) -> Callable[
-        [Dict[str, Video], Dict[str, List[ActionData]]], List[EpicKitchenClip]
-    ]:
+    ) -> Callable[[Dict[str, Video], Dict[str, List[ActionData]]], List[VideoClipInfo]]:
         """
         Args:
             clip_sampling (ClipSampling):
@@ -270,7 +267,7 @@ class EpicKitchenForecasting(EpicKitchenDataset):
 
         def define_clip_structure(
             videos: Dict[str, Video], video_actions: Dict[str, List[ActionData]]
-        ) -> List[EpicKitchenClip]:
+        ) -> List[VideoClipInfo]:
             candidate_sample_clips = []
             for video_id, actions in video_actions.items():
                 for i, action in enumerate(actions[: (-1 * num_forecast_actions)]):
@@ -286,7 +283,7 @@ class EpicKitchenForecasting(EpicKitchenDataset):
                                 action.start_time - time_window_length >= 0
                             ):  # Only add clips that have the full input video available
                                 candidate_sample_clips.append(
-                                    EpicKitchenClip(
+                                    VideoClipInfo(
                                         video_id,
                                         action.stop_time - time_window_length,
                                         action.stop_time,

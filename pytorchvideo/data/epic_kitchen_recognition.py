@@ -6,15 +6,14 @@ from enum import Enum
 from typing import Any, Callable, Dict, List, Optional
 
 import torch
-from pytorchvideo.data.epic_kitchen import (
-    ActionData,
+from pytorchvideo.data.dataset_manifest_utils import (
     EncodedVideoInfo,
-    EpicKitchenClip,
-    EpicKitchenDataset,
-    EpicKitchenDatasetType,
+    VideoClipInfo,
+    VideoDatasetType,
     VideoFrameInfo,
     VideoInfo,
 )
+from pytorchvideo.data.epic_kitchen import ActionData, EpicKitchenDataset
 from pytorchvideo.data.video import Video
 
 
@@ -36,7 +35,7 @@ class EpicKitchenRecognition(EpicKitchenDataset):
         actions_file_path: str,
         video_data_manifest_file_path: str,
         clip_sampling: ClipSampling = ClipSampling.RandomOffsetUniform,
-        dataset_type: EpicKitchenDatasetType = EpicKitchenDatasetType.Frame,
+        dataset_type: VideoDatasetType = VideoDatasetType.Frame,
         seconds_per_clip: float = 2.0,
         frames_per_clip: Optional[int] = None,
         transform: Callable[[Dict[str, Any]], Any] = None,
@@ -70,7 +69,7 @@ class EpicKitchenRecognition(EpicKitchenDataset):
             clip_sampling (ClipSampling):
                 The type of sampling to perform to perform on the videos of the dataset.
 
-            dataset_type (EpicKitchenDatasetType): The dataformat in which dataset
+            dataset_type (VideoDatasetType): The dataformat in which dataset
                 video data is store (e.g. video frames, encoded video etc).
 
             seconds_per_clip (float): The length of each sampled clip in seconds.
@@ -178,9 +177,7 @@ class EpicKitchenRecognition(EpicKitchenDataset):
     @staticmethod
     def _define_clip_structure_generator(
         seconds_per_clip: float, clip_sampling: ClipSampling
-    ) -> Callable[
-        [Dict[str, Video], Dict[str, List[ActionData]]], List[EpicKitchenClip]
-    ]:
+    ) -> Callable[[Dict[str, Video], Dict[str, List[ActionData]]], List[VideoClipInfo]]:
         """
         Args:
             seconds_per_clip (float): The length of each sampled clip in seconds.
@@ -199,7 +196,7 @@ class EpicKitchenRecognition(EpicKitchenDataset):
 
         def define_clip_structure(
             videos: Dict[str, Video], actions: Dict[str, List[ActionData]]
-        ) -> List[EpicKitchenClip]:
+        ) -> List[VideoClipInfo]:
             clips = []
             for video_id, video in videos.items():
                 offset = random.random() * seconds_per_clip
@@ -208,7 +205,7 @@ class EpicKitchenRecognition(EpicKitchenDataset):
                 for i in range(num_clips):
                     start_time = i * seconds_per_clip + offset
                     stop_time = start_time + seconds_per_clip
-                    clip = EpicKitchenClip(video_id, start_time, stop_time)
+                    clip = VideoClipInfo(video_id, start_time, stop_time)
                     clips.append(clip)
             return clips
 

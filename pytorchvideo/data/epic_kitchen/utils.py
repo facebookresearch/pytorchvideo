@@ -1,10 +1,9 @@
 # Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved.
 
-import os
 from typing import Dict
 
 from iopath.common.file_io import g_pathmgr
-from pytorchvideo.data.epic_kitchen import EncodedVideoInfo, VideoFrameInfo
+from pytorchvideo.data.dataset_manifest_utils import EncodedVideoInfo, VideoFrameInfo
 from pytorchvideo.data.utils import (
     optional_threaded_foreach,
     save_dataclass_objs_to_headered_csv,
@@ -197,51 +196,3 @@ def build_encoded_manifest_from_nested_directory(
             video_full_path = f"{participant_folder_path}/{video_file_name}"
             encoded_video_infos[video_id] = EncodedVideoInfo(video_id, video_full_path)
     return encoded_video_infos
-
-
-def save_encoded_video_manifest(
-    encoded_video_infos: Dict[str, EncodedVideoInfo], file_name: str = None
-) -> str:
-    """
-    Saves the encoded video dictionary as a csv file that can be read for future usage.
-
-    Args:
-        video_frames (Dict[str, EncodedVideoInfo]):
-            Dictionary mapping video_ids to metadata about the location of
-            their video data.
-
-        file_name (str):
-            location to save file (will be automatically generated if None).
-
-    Returns:
-        string of the filename where the video info is stored.
-    """
-    file_name = (
-        f"{os.getcwd()}/encoded_video_manifest.csv" if file_name is None else file_name
-    )
-    save_dataclass_objs_to_headered_csv(list(encoded_video_infos.values()), file_name)
-    return file_name
-
-
-def save_video_frame_info(
-    video_frames: Dict[str, VideoFrameInfo], file_name: str = None
-) -> str:
-    """
-    Saves the video frame dictionary as a csv file that can be read for future usage.
-
-    Args:
-        video_frames (Dict[str, VideoFrameInfo]):
-            Dictionary mapping video_ids to metadata about the location of
-            their video frame files.
-
-        file_name (str):
-            location to save file (will be automatically generated if None).
-
-    Returns:
-        string of the filename where the video info is stored.
-    """
-    file_name = (
-        f"{os.getcwd()}/video_frame_metadata.csv" if file_name is None else file_name
-    )
-    save_dataclass_objs_to_headered_csv(list(video_frames.values()), file_name)
-    return file_name
