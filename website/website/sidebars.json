@@ -6,8 +6,6 @@
   },
   "docs-other": {
     "Tutorials": ["tutorial_overview"],
-    "Classification": ["tutorial_classification"],
-    "Detection":["tutorial_detection"],
-    "Tracking": ["tutorial_tracking"]
+    "Classification": ["tutorial_classification"]
   }
 }
