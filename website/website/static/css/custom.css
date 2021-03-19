@@ -9,7 +9,7 @@ html body {
 }
 
 .fixedHeaderContainer {
-  background-color: #180191;
+  background-color: #222222;
 }
 
 
@@ -40,11 +40,11 @@ html body {
 }
 
 .navigationSlider .slidingNav ul {
-  background: #180191;
+  background: #222222;
 }
 
 .navigationSlider .slidingNav ul li a {
-  color: #ffffff;
+  color: #c7d4fd;
 }
 
 .navigationSlider .slidingNav ul li a:hover,
@@ -59,7 +59,10 @@ html body {
 }
 
 .homeContainer {
-  background-color: #100065;
+  background: linear-gradient(
+    rgba(129, 44, 229, 1) 0%,
+    rgba(204, 51, 204, 1) 150%
+  );
   padding: 25px 0px;
 }
 

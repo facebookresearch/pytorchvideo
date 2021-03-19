@@ -8,17 +8,6 @@
 // See https://docusaurus.io/docs/site-config for all the possible
 // site configuration options.
 
-// List of projects/orgs using your project for the users page.
-const users = [
-  {
-    caption: 'User1',
-    // You will need to prepend the image path with your baseUrl
-    // if it is not '/', like: '/test-site/img/image.jpg'.
-    image: '/img/undraw_open_source.svg',
-    infoLink: 'https://www.facebook.com',
-    pinned: true,
-  },
-];
 
 const siteConfig = {
   title: 'PyTorchVideo', // Title for your website.
@@ -40,24 +29,20 @@ const siteConfig = {
   headerLinks: [
     {doc: 'why_pytorchvideo', label: 'Docs'},
     {doc: 'tutorial_overview', label: 'Tutorials'},
-    {href: "https://TODO.readthedocs.io/", label: 'API'},
+    {href: "file:///Users/kalyanv/pytorchvideo/docs/build/html/index.html", label: 'API'},
     {href: "https://github.com/fairinternal/pytorchvideo", label: 'GitHub'},
-    {page: 'help', label: 'Help'},
-    {blog: true, label: 'Blog'},
   ],
 
-  // If you have users set above, you add it here:
-  users,
 
   /* path to images for header/footer */
-  headerIcon: 'img/placeholder_logo.png',
-  footerIcon: 'img/placeholder_logo.png',
-  favicon: 'img/placeholder_logo.png',
+  headerIcon: 'img/logo.svg',
+  footerIcon: 'img/logo.svg',
+  favicon: 'img/logo.svg',
 
   /* Colors for website */
   colors: {
-    primaryColor: '#180191',
-    secondaryColor: '#100065',
+    primaryColor: '#812ce5',
+    secondaryColor: '#cc33cc',
   },
 
   /* Custom fonts for website */
@@ -91,8 +76,8 @@ const siteConfig = {
   cleanUrl: true,
 
   // Open Graph and Twitter card images.
-  ogImage: 'img/placeholder_logo.png',
-  twitterImage: 'img/placeholder_logo.png',
+  ogImage: 'img/logo.svg',
+  twitterImage: 'img/logo.svg',
 
   // For sites with a sizable amount of content, set collapsible to true.
   // Expand/collapse the links and subcategories under categories.

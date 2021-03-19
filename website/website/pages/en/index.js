@@ -56,7 +56,7 @@ class HomeSplash extends React.Component {
 
     return (
       <SplashContainer>
-        <Logo img_src={baseUrl + 'img/placeholder_logo.png'} />
+        <Logo img_src={baseUrl + 'img/logo_white.svg'} />
         <div className="inner">
           <ProjectTitle tagline={siteConfig.tagline} title={siteConfig.title} />
           <PromoSection>
@@ -216,7 +216,6 @@ from pytorchvideo.models import foo
         <HomeSplash siteConfig={siteConfig} language={language} />
         <div className="landingPage mainContainer">
           <Features />
-          <UseCases />
         </div>
       </div>
     );
