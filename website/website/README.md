@@ -1,13 +1,18 @@
 This website was created with [Docusaurus](https://docusaurus.io/).
 
+# Building the PyTorch3D website
 
-# Get Started in 5 Minutes
+## Install
 
 1. Make sure all the dependencies for the website are installed:
 
 ```sh
 # Install dependencies
 $ yarn
+
+or
+
+$ npm install docusaurus-init
 ```
 
 2. Run your dev server:
@@ -15,7 +20,27 @@ $ yarn
 ```sh
 # Start the site
 $ yarn start
+
+or
+$ ./node_modules/docusaurus/lib/start-server.js
 ```
+
+
+## Edit the landing page
+
+To change the content of the landing page modify: `website/pages/en/index.js`.
+
+
+---------------------------------------------------------
+
+## Docusaurus docs
+
+- [Get Started in 5 Minutes](#get-started-in-5-minutes)
+- [Directory Structure](#directory-structure)
+- [Editing Content](#editing-content)
+- [Adding Content](#adding-content)
+- [Full Documentation](#full-documentation)
+
 
 ## Directory Structure
 
