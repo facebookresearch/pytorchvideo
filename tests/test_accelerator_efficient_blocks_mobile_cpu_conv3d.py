@@ -6,9 +6,11 @@ from copy import deepcopy
 
 import torch
 import torch.nn as nn
-from pytorchvideo.accelerator.efficient_blocks.mobile_cpu.convolutions import (
+from pytorchvideo.layers.accelerator.mobile_cpu.convolutions import (
     Conv3d3x3x3DwBnAct,
     Conv3dPwBnAct,
+    Conv3d3x1x1BnAct,
+    Conv3d5x1x1BnAct,
 )
 
 
@@ -78,3 +80,65 @@ class TestConv3dBlockEquivalency(unittest.TestCase):
             )
         )
         self.assertTrue(max_err < 1e-3)
+
+    def test_Conv3d3x1x1BnAct_equivalency(self):
+        for input_temporal in range(3):
+            input_size = (1, 3, input_temporal + 1, 6, 6)
+            # Input tensor
+            input_tensor = torch.randn(input_size)
+            # A conv block
+            l0 = Conv3d3x1x1BnAct(3, 6)
+            l0.eval()
+            out0 = l0(input_tensor)
+            # Replicate the conv block
+            l0_1 = deepcopy(l0)
+            # Convert into deployment mode
+            l0_1.convert(input_size)  # Input tensor size is (1,3,4,6,6)
+            out1 = l0_1(input_tensor)
+            # Check output size
+            assert (
+                out0.size() == out1.size()
+            ), f"Sizes of out0 {out0.size()} and out1 {out1.size()} are different."
+            # Check arithmetic equivalency
+            max_err = float(torch.max(torch.abs(out0 - out1)))
+            rel_err = torch.abs((out0 - out1) / out0)
+            max_rel_err = float(torch.max(rel_err))
+            logging.info(
+                (
+                    "test_Conv3d3x1x1BnAct_equivalency: "
+                    f"input tensor size: {input_size}"
+                    f"max_err {max_err}, max_rel_err {max_rel_err}"
+                )
+            )
+            self.assertTrue(max_err < 1e-3)
+
+    def test_Conv3d5x1x1BnAct_equivalency(self):
+        for input_temporal in range(5):
+            input_size = (1, 3, input_temporal + 1, 6, 6)
+            # Input tensor
+            input_tensor = torch.randn(input_size)
+            # A conv block
+            l0 = Conv3d5x1x1BnAct(3, 6)
+            l0.eval()
+            out0 = l0(input_tensor)
+            # Replicate the conv block
+            l0_1 = deepcopy(l0)
+            # Convert into deployment mode
+            l0_1.convert(input_size)  # Input tensor size is (1,3,4,6,6)
+            out1 = l0_1(input_tensor)
+            # Check output size
+            assert (
+                out0.size() == out1.size()
+            ), f"Sizes of out0 {out0.size()} and out1 {out1.size()} are different."
+            # Check arithmetic equivalency
+            max_err = float(torch.max(torch.abs(out0 - out1)))
+            rel_err = torch.abs((out0 - out1) / out0)
+            max_rel_err = float(torch.max(rel_err))
+            logging.info(
+                (
+                    "test_Conv3d5x1x1BnAct_equivalency: "
+                    f"input tensor size: {input_size}"
+                    f"max_err {max_err}, max_rel_err {max_rel_err}"
+                )
+            )
+            self.assertTrue(max_err < 1e-3)

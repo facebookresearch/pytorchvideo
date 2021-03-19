@@ -9,93 +9,26 @@ from pathlib import Path
 import torch
 from parameterized import parameterized
 from pytorchvideo.data.dataset_manifest_utils import (
-    EncodedVideoInfo,
     VideoClipInfo,
     VideoDatasetType,
-    VideoFrameInfo,
-    VideoInfo,
-    VideoDataset,
 )
 from pytorchvideo.data.epic_kitchen import (
     ActionData,
     EpicKitchenDataset,
 )
 from pytorchvideo.data.utils import save_dataclass_objs_to_headered_csv
-from pytorchvideo.tests.utils import temp_encoded_video
-
-
-def get_flat_video_frames(directory, file_extension):
-    return {
-        "P02_001": VideoFrameInfo(
-            video_id="P02_001",
-            location=f"{directory}/P02_001",
-            frame_file_stem="frame_",
-            frame_string_length=16,
-            min_frame_number=1,
-            max_frame_number=3000,
-            file_extension=file_extension,
-        ),
-        "P02_002": VideoFrameInfo(
-            video_id="P02_002",
-            location=f"{directory}/P02_002",
-            frame_file_stem="frame_",
-            frame_string_length=16,
-            min_frame_number=2,
-            max_frame_number=3001,
-            file_extension=file_extension,
-        ),
-        "P02_005": VideoFrameInfo(
-            video_id="P02_005",
-            location=f"{directory}/P02_005",
-            frame_file_stem="frame_",
-            frame_string_length=16,
-            min_frame_number=1,
-            max_frame_number=30003,
-            file_extension=file_extension,
-        ),
-        "P07_002": VideoFrameInfo(
-            video_id="P07_002",
-            location=f"{directory}/P07_002",
-            frame_file_stem="frame_",
-            frame_string_length=16,
-            min_frame_number=1,
-            max_frame_number=1530,
-            file_extension=file_extension,
-        ),
-    }
-
-
-def get_encoded_video_infos(directory, exit_stack=None):
-    video_ids = ["P02_001", "P02_002", "P02_005", "P07_002"]
-    encoded_video_infos = {}
-    for video_id in video_ids:
-        file_path, _ = (
-            exit_stack.enter_context(temp_encoded_video(10, 10))
-            if exit_stack
-            else (f"{directory}/{video_id}.mp4", None)
-        )
-        encoded_video_infos[video_id] = EncodedVideoInfo(video_id, file_path)
-    return encoded_video_infos
+from pytorchvideo.tests.utils import (
+    get_encoded_video_infos,
+    get_flat_video_frames,
+    MOCK_VIDEO_INFOS,
+    MOCK_VIDEO_IDS,
+)
 
 
 class TestEpicKitchenDataset(unittest.TestCase):
 
-    VIDEO_INFOS_A = {
-        "P02_001": VideoInfo(
-            video_id="P02_001", resolution="1080x1920", duration=100, fps=30
-        ),
-        "P02_002": VideoInfo(
-            video_id="P02_002", resolution="1080x1920", duration=50, fps=60
-        ),
-        "P02_005": VideoInfo(
-            video_id="P02_005", resolution="720x1280", duration=1000.09, fps=30
-        ),
-        "P07_002": VideoInfo(
-            video_id="P07_002", resolution="720x1280", duration=17.001, fps=90
-        ),
-    }
     ACTIONS_DATAS = {
-        "P02_001": [
+        MOCK_VIDEO_IDS[0]: [
             ActionData(
                 "P01",
                 "P01_01",
@@ -142,7 +75,7 @@ class TestEpicKitchenDataset(unittest.TestCase):
                 "[10]",
             ),
         ],
-        "P02_002": [
+        MOCK_VIDEO_IDS[1]: [
             ActionData(
                 "P02",
                 "P02_002",
@@ -159,7 +92,7 @@ class TestEpicKitchenDataset(unittest.TestCase):
                 "[113]",
             )
         ],
-        "P02_005": [
+        MOCK_VIDEO_IDS[2]: [
             ActionData(
                 "P02",
                 "P02_005",
@@ -176,7 +109,7 @@ class TestEpicKitchenDataset(unittest.TestCase):
                 "[113]",
             )
         ],
-        "P07_002": [
+        MOCK_VIDEO_IDS[3]: [
             ActionData(
                 "P07",
                 "P07_002",
@@ -225,130 +158,6 @@ class TestEpicKitchenDataset(unittest.TestCase):
 
         self.assertEqual(action.all_noun_classes, [113, 1232, 1])
 
-    def test_VideoFrameInfo(self):
-        video_frame_info = VideoFrameInfo(
-            # This is a key-mapping as the underlying epic-kitchen
-            # annotation files are of these string columns
-            **{
-                "video_id": "P01_012",
-                "location": "c:/",
-                "frame_file_stem": "P01_012_",
-                "frame_string_length": "20",
-                "min_frame_number": "0",
-                "max_frame_number": "22",
-                "file_extension": "png",
-            }
-        )
-        self.assertEqual(video_frame_info.video_id, "P01_012")
-        self.assertEqual(video_frame_info.location, "c:/")
-        self.assertEqual(video_frame_info.frame_file_stem, "P01_012_")
-        self.assertEqual(video_frame_info.frame_string_length, 20)
-        self.assertEqual(video_frame_info.min_frame_number, 0)
-        self.assertEqual(video_frame_info.max_frame_number, 22)
-        self.assertEqual(video_frame_info.file_extension, "png")
-
-    def test_EncodedVideoInfo(self):
-        encoded_video_info = EncodedVideoInfo(
-            # This is a key-mapping as the underlying epic-kitchen
-            # annotation files are of these string columns
-            **{"video_id": "P01_12", "file_path": "c:/P01_12.mp4"}
-        )
-        self.assertEqual(encoded_video_info.video_id, "P01_12")
-        self.assertEqual(encoded_video_info.file_path, "c:/P01_12.mp4")
-
-    def test_VideoInfo(self):
-        video_info = VideoInfo(
-            # This is a key-mapping as the underlying epic-kitchen
-            # annotation files are of these string columns
-            **{
-                "video_id": "P01_01",
-                "resolution": "1000x200",
-                "duration": "123.45",
-                "fps": "59.9",
-            }
-        )
-        self.assertEqual(video_info.video_id, "P01_01")
-        self.assertEqual(video_info.resolution, "1000x200")
-        self.assertEqual(video_info.duration, 123.45)
-        self.assertEqual(video_info.fps, 59.9)
-
-    def test_frame_number_to_filepath(self):
-        file_names_P07_002 = VideoDataset._frame_number_to_filepaths(
-            "P07_002", get_flat_video_frames("testdirectory", "jpg"), self.VIDEO_INFOS_A
-        )
-        file_path = file_names_P07_002[100]
-        self.assertEqual(file_path, "testdirectory/P07_002/frame_0000000101.jpg")
-        with self.assertRaises(IndexError):
-            file_path = file_names_P07_002[10000]
-        file_path = file_names_P07_002[-1]
-        self.assertEqual(file_path, "testdirectory/P07_002/frame_0000001530.jpg")
-
-        file_names_P02_002 = VideoDataset._frame_number_to_filepaths(
-            "P02_002",
-            get_flat_video_frames("testdirectory2", "png"),
-            self.VIDEO_INFOS_A,
-        )
-        file_path = file_names_P02_002[0]
-        self.assertEqual(file_path, "testdirectory2/P02_002/frame_0000000002.png")
-        file_path = file_names_P02_002[2999]
-        self.assertEqual(file_path, "testdirectory2/P02_002/frame_0000003001.png")
-        with self.assertRaises(IndexError):
-            file_path = file_names_P02_002[3000]
-
-    def test_remove_video_info_missing_or_incomplete_videos(self):
-        video_infos_a = self.VIDEO_INFOS_A.copy()
-        video_frames_a = get_flat_video_frames("testdirectory2", "jpg")
-        video_frames_a_copy = video_frames_a.copy()
-
-        # No-Op
-        VideoDataset._remove_video_info_missing_or_incomplete_videos(
-            video_frames_a, video_infos_a
-        )
-
-        self.assertEqual(len(video_infos_a), len(self.VIDEO_INFOS_A))
-        for video_id in video_infos_a:
-            self.assertEqual(video_infos_a[video_id], self.VIDEO_INFOS_A[video_id])
-
-        self.assertEqual(len(video_frames_a), len(video_frames_a_copy))
-        for video_id in video_frames_a:
-            self.assertEqual(video_frames_a[video_id], video_frames_a_copy[video_id])
-
-        video_infos_b = self.VIDEO_INFOS_A.copy()
-        video_frames_b = video_frames_a_copy.copy()
-
-        # Unmatched video info, should be removed
-        video_infos_b["P07_001"] = VideoInfo(
-            video_id="P07_001", resolution="720x1280", duration=17.001, fps=30
-        )
-
-        # Unmatched video frame entry, should be removed
-        video_frames_b["P07_002"]: VideoFrameInfo(
-            min_frame_number=1, max_frame_number=1530, frame_string_length=8
-        )
-
-        # Video info that defines approximately 6000 frames with 600 present from frame manifest
-        # Should be dropped
-        video_frames_b["P08_001"]: VideoFrameInfo(
-            min_frame_number=1, max_frame_number=600, frame_string_length=8
-        )
-
-        video_infos_b["P08_001"] = VideoInfo(
-            video_id="P08_001", resolution="720x1280", duration=100, fps=60
-        )
-
-        VideoDataset._remove_video_info_missing_or_incomplete_videos(
-            video_frames_b, video_infos_b
-        )
-
-        # All newly added fields should be removed
-        self.assertEqual(len(video_infos_b), len(self.VIDEO_INFOS_A))
-        for video_id in video_infos_b:
-            self.assertEqual(video_infos_b[video_id], self.VIDEO_INFOS_A[video_id])
-
-        self.assertEqual(len(video_frames_b), len(video_frames_a_copy))
-        for video_id in video_frames_b:
-            self.assertEqual(video_frames_b[video_id], video_frames_a_copy[video_id])
-
     @parameterized.expand([(VideoDatasetType.Frame,), (VideoDatasetType.EncodedVideo,)])
     def test__len__(self, dataset_type):
         with tempfile.TemporaryDirectory(prefix=f"{TestEpicKitchenDataset}") as tempdir:
@@ -356,7 +165,7 @@ class TestEpicKitchenDataset(unittest.TestCase):
 
             video_info_file = tempdir / "test_video_info.csv"
             save_dataclass_objs_to_headered_csv(
-                list(self.VIDEO_INFOS_A.values()), video_info_file
+                list(MOCK_VIDEO_INFOS.values()), video_info_file
             )
             action_file = tempdir / "action_video_info.csv"
             actions = []
@@ -398,7 +207,7 @@ class TestEpicKitchenDataset(unittest.TestCase):
 
             video_info_file = tempdir / "test_video_info.csv"
             save_dataclass_objs_to_headered_csv(
-                list(self.VIDEO_INFOS_A.values()), video_info_file
+                list(MOCK_VIDEO_INFOS.values()), video_info_file
             )
             action_file = tempdir / "action_video_info.csv"
             actions = []
@@ -445,11 +254,11 @@ class TestEpicKitchenDataset(unittest.TestCase):
                         self.assertEqual(a, self.ACTIONS_DATAS[video_ids[0]][i])
                     self.assertEqual(clip_1["start_time"], 2.0)
                     self.assertEqual(clip_1["stop_time"], 2.9)
-                    self.assertEqual(clip_1["video_id"], "P02_001")
+                    self.assertEqual(clip_1["video_id"], MOCK_VIDEO_IDS[0])
 
                     clip_2 = dataset.__getitem__(2)
                     for i, a in enumerate(clip_2["actions"]):
                         self.assertEqual(a, self.ACTIONS_DATAS[video_ids[1]][i])
                     self.assertEqual(clip_2["start_time"], 4.0)
                     self.assertEqual(clip_2["stop_time"], 4.9)
-                    self.assertEqual(clip_2["video_id"], "P02_002")
+                    self.assertEqual(clip_2["video_id"], MOCK_VIDEO_IDS[1])

@@ -28,7 +28,8 @@ def _add_input_tensor_size_lut_hook(
     """
 
     def hook_fn(_, _in, _out):
-        input_tensor_size_lut[base_name] = tuple(_in[0].size())
+        if isinstance(_in[0], torch.Tensor):
+            input_tensor_size_lut[base_name] = tuple(_in[0].size())
         return
 
     handle = module.register_forward_hook(hook_fn)

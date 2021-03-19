@@ -5,7 +5,7 @@ import unittest
 from copy import deepcopy
 
 import torch
-from pytorchvideo.accelerator.efficient_blocks.mobile_cpu.residual_blocks import (
+from pytorchvideo.models.accelerator.mobile_cpu.residual_blocks import (
     X3dBottleneckBlock,
 )
 

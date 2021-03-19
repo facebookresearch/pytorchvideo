@@ -10,6 +10,11 @@ import numpy as np
 import torch
 import torchvision.io as io
 import torchvision.transforms as transforms
+from pytorchvideo.data.dataset_manifest_utils import (
+    EncodedVideoInfo,
+    VideoFrameInfo,
+    VideoInfo,
+)
 from pytorchvideo.data.utils import thwc_to_cthw
 
 
@@ -139,3 +144,74 @@ def write_audio_video(path, video, audio, fps=30, audio_rate=48000):
 
         for packet in video_stream.encode(None):
             container.mux(packet)
+
+
+MOCK_VIDEO_IDS = ["vid1", "vid2", "vid3", "vid4"]
+MOCK_VIDEO_INFOS = {
+    MOCK_VIDEO_IDS[0]: VideoInfo(
+        video_id=MOCK_VIDEO_IDS[0], resolution="1080x1920", duration=100, fps=30
+    ),
+    MOCK_VIDEO_IDS[1]: VideoInfo(
+        video_id=MOCK_VIDEO_IDS[1], resolution="1080x1920", duration=50, fps=60
+    ),
+    MOCK_VIDEO_IDS[2]: VideoInfo(
+        video_id=MOCK_VIDEO_IDS[2], resolution="720x1280", duration=1000.09, fps=30
+    ),
+    MOCK_VIDEO_IDS[3]: VideoInfo(
+        video_id=MOCK_VIDEO_IDS[3], resolution="720x1280", duration=17.001, fps=90
+    ),
+}
+
+
+def get_flat_video_frames(directory, file_extension):
+    frame_file_stem = "frame_"
+    return {
+        MOCK_VIDEO_IDS[0]: VideoFrameInfo(
+            video_id=MOCK_VIDEO_IDS[0],
+            location=f"{directory}/{MOCK_VIDEO_IDS[0]}",
+            frame_file_stem=frame_file_stem,
+            frame_string_length=16,
+            min_frame_number=1,
+            max_frame_number=3000,
+            file_extension=file_extension,
+        ),
+        MOCK_VIDEO_IDS[1]: VideoFrameInfo(
+            video_id=MOCK_VIDEO_IDS[1],
+            location=f"{directory}/{MOCK_VIDEO_IDS[1]}",
+            frame_file_stem=frame_file_stem,
+            frame_string_length=16,
+            min_frame_number=2,
+            max_frame_number=3001,
+            file_extension=file_extension,
+        ),
+        MOCK_VIDEO_IDS[2]: VideoFrameInfo(
+            video_id=MOCK_VIDEO_IDS[2],
+            location=f"{directory}/{MOCK_VIDEO_IDS[2]}",
+            frame_file_stem=frame_file_stem,
+            frame_string_length=16,
+            min_frame_number=1,
+            max_frame_number=30003,
+            file_extension=file_extension,
+        ),
+        MOCK_VIDEO_IDS[3]: VideoFrameInfo(
+            video_id=MOCK_VIDEO_IDS[3],
+            location=f"{directory}/{MOCK_VIDEO_IDS[3]}",
+            frame_file_stem=frame_file_stem,
+            frame_string_length=16,
+            min_frame_number=1,
+            max_frame_number=1530,
+            file_extension=file_extension,
+        ),
+    }
+
+
+def get_encoded_video_infos(directory, exit_stack=None):
+    encoded_video_infos = {}
+    for video_id in MOCK_VIDEO_IDS:
+        file_path, _ = (
+            exit_stack.enter_context(temp_encoded_video(10, 10))
+            if exit_stack
+            else (f"{directory}/{video_id}.mp4", None)
+        )
+        encoded_video_infos[video_id] = EncodedVideoInfo(video_id, file_path)
+    return encoded_video_infos

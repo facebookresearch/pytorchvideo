@@ -13,6 +13,7 @@ from .encoded_video_pyav import EncodedVideoPyAV
 from .encoded_video_torchvision import EncodedVideoTorchVision
 from .video import Video
 
+
 logger = logging.getLogger(__name__)
 
 

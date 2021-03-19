@@ -5,15 +5,16 @@ import torch.nn as nn
 from pytorchvideo.accelerator.efficient_blocks.efficient_block_base import (
     EfficientBlockBase,
 )
-from pytorchvideo.layers.utils import round_width
-
-from .activation_functions import supported_act_functions
-from .attention import SqueezeExcitation
-from .convolutions import (
+from pytorchvideo.layers.accelerator.mobile_cpu.activation_functions import (
+    supported_act_functions,
+)
+from pytorchvideo.layers.accelerator.mobile_cpu.attention import SqueezeExcitation
+from pytorchvideo.layers.accelerator.mobile_cpu.convolutions import (
     Conv3dPwBnAct,
     Conv3d3x3x3DwBnAct,
     Conv3dTemporalKernel1BnAct,
 )
+from pytorchvideo.layers.utils import round_width
 
 
 class X3dBottleneckBlock(EfficientBlockBase):

@@ -7,10 +7,10 @@ from typing import Any, Callable, Dict, List, Optional
 import torch
 from pytorchvideo.data.dataset_manifest_utils import (
     EncodedVideoInfo,
-    VideoFrameInfo,
     VideoClipInfo,
-    VideoDatasetType,
     VideoDataset,
+    VideoDatasetType,
+    VideoFrameInfo,
     VideoInfo,
     get_seconds_from_hms_time,
 )
