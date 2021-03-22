@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved.
 
+import os
 from setuptools import find_packages, setup, find_namespace_packages
 
 
@@ -17,9 +18,9 @@ def get_version():
 setup(
     name="pytorchvideo",
     version=get_version(),
-    license='Apache 2.0'
+    license='Apache 2.0',
     author="Facebook AI",
-    url="https://github.com/facebookresearch/pytorchvideo"
+    url="https://github.com/facebookresearch/pytorchvideo",
     description="A video research library providing pytorch-based components.",
     python_requires=">=3.7",
     install_requires=[
@@ -43,6 +44,7 @@ setup(
             "pre-commit",
             "nbconvert",
             "bs4",
-    ]
+        ]
+    },
     packages=find_packages(exclude=("scripts", "tests")),
 )
