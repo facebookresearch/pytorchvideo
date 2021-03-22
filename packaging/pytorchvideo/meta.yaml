@@ -1,0 +1,30 @@
+package:
+  name: pytorchvideo
+  version: "{{ environ.get('BUILD_VERSION') }}"
+
+source:
+ path: ../..
+
+requirements:
+
+  host:
+    - python
+    - setuptools
+    {{ environ.get('CONDA_PYTORCH_CONSTRAINT') }}
+
+  run:
+    - python
+    - numpy >=1.11
+    - torchvision >=0.5
+    - fvcore
+    {{ environ.get('CONDA_PYTORCH_CONSTRAINT') }}
+
+build:
+  string: py{{py}}_pyt{{ environ['PYTORCH_VERSION_NODOT']}}
+  script: BUILD_NIGHTLY=1 python setup.py install --single-version-externally-managed --record=record.txt # [not win]
+
+about:
+  home: https://github.com/facebookresearch/pytorchvideo
+  license: Apache 2.0
+  license_file: LICENSE
+  summary: "Provides common components for video research with PyTorch."
