@@ -2,7 +2,8 @@
 # Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved.
 
 import os
-from setuptools import find_packages, setup, find_namespace_packages
+
+from setuptools import find_namespace_packages, find_packages, setup
 
 
 def get_version():
@@ -35,7 +36,7 @@ setup(
     ],
     extras_require={
         "dev": [
-            "black==19.3b0",
+            "black==20.8b1",
             "sphinx",
             "isort==4.3.21",
             "flake8==3.8.1",
@@ -44,6 +45,7 @@ setup(
             "pre-commit",
             "nbconvert",
             "bs4",
+            "autoflake==1.4",
         ]
     },
     packages=find_packages(exclude=("scripts", "tests")),
