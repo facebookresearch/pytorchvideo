@@ -1,0 +1,11 @@
+{
+  "docs": {
+    "Introduction": ["why_pytorchvideo"],
+    "Models": ["doc_models_somemodel"],
+    "Data": ["doc_data_somedataset"]
+  },
+  "docs-other": {
+    "Tutorials": ["tutorial_overview"],
+    "Classification": ["tutorial_classification"]
+  }
+}
