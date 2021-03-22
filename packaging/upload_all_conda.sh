@@ -5,13 +5,13 @@ set -e
 # This is fvcore's API token to anaconda-cloud
 TOKEN=${PTV_CONDA_TOKEN:?NO_TOKEN}
 
-ls -lhR
+ls -Rl packaging/output_files
 
 if [[ -f SKIP ]]
 then
    echo NOTHING TO DO
 else
-    for file in linux-64/*.bz2
+    for file in output_files/linux-64/*.bz2
     do
         anaconda --verbose -t ${PTV_CONDA_TOKEN} upload --force ${file}
     done
