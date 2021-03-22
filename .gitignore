@@ -1,5 +1,9 @@
 build/
-dist/
+_ext
+*.pyc
+*.pyd
+*.so
+*.dll
 *.egg-info/
 **/__pycache__/
 *-checkpoint.ipynb
@@ -21,6 +25,8 @@ website/pages/tutorials/*
 !website/pages/tutorials/index.js
 
 
-## Conda builds
+## Conda and pip builds
 packaging/out/
 packaging/output_files/
+dist/
+wheels/

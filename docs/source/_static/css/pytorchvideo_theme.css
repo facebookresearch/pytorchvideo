@@ -1,0 +1,134 @@
+/* Copyright (c) Facebook, Inc. and its affiliates. All rights reserved. */
+/*
+ * some extra css to make markdown look similar between github/sphinx
+ */
+
+/*
+ * Below is for install.md:
+ */
+.rst-content code {
+  white-space: pre;
+  border: 0px;
+}
+
+th {
+  border: 1px solid #e1e4e5;
+}
+
+div.section > details {
+  padding-bottom: 1em;
+}
+
+body {
+    font-family: "Lato","proxima-nova","Helvetica Neue",Arial,sans-serif;
+}
+
+/* Default header fonts are ugly */
+h1, h2, .rst-content .toctree-wrapper p.caption, h3, h4, h5, h6, legend, p.caption {
+    font-family: "Lato","proxima-nova","Helvetica Neue",Arial,sans-serif;
+}
+
+
+/* Settings for the top left section for logo */
+.wy-side-nav-search {
+    background-color: #fff;
+}
+
+.wy-nav-content-wrap, .wy-menu li.current > a  {
+    background-color: #fff;
+}
+
+@media screen and (min-width: 1400px) {
+    .wy-nav-content-wrap {
+        background-color: rgba(0, 0, 0, 0.0470588);
+    }
+
+    .wy-nav-content {
+        background-color: #fff;
+    }
+}
+
+/* Make sure that the logo fits nicely and takes the space available */
+@media screen and (max-width: 1000px) {
+    .wy-side-nav-search>a img.logo {
+        height: 60px;
+    }
+}
+
+.wy-side-nav-search a {
+    display: block;
+}
+
+.wy-side-nav-search>div.version {
+    color: #000;
+}
+
+/* This is needed otherwise the home icon disappears */
+a {
+    color: #0B1BE8;
+}
+
+a:hover {
+    color: #0B1BE8;
+}
+
+a:visited {
+    color: #0B1BE8;
+}
+
+/*a.icon.icon-home {
+    color: #f0327a;
+}
+.version{
+    color: #f0327a !important;
+}*/
+
+.wy-menu a {
+    color: #b3b3b3;
+}
+
+.wy-menu a:hover {
+    color: #b3b3b3;
+}
+
+.rst-content tt.literal, .rst-content tt.literal, .rst-content code.literal {
+    color: #0B1BE8;
+}
+
+.rst-content dl:not(.docutils) dt {
+    display: table;
+}
+
+/* footer settings */
+footer {
+    font-size: 80%;
+}
+
+footer .rst-footer-buttons {
+    font-size: 125%; /* revert footer settings - 1/80% = 125% */
+}
+
+footer p {
+    font-size: 100%;
+}
+
+/* Fixes for mobile - adopted from pytorch theme*/
+.wy-nav-top {
+    background-color: #fff;
+    background-image: url('../img/pytorchvideo-logo.png');
+    background-repeat: no-repeat;
+    background-position: center;
+    padding: 0;
+    margin: 0.4045em 0.809em;
+    color: #333;
+}
+
+.wy-nav-top > a {
+    display: none;
+}
+
+@media screen and (max-width: 768px) {
+    .wy-side-nav-search>a img.logo {
+        height: 60px;
+    }
+}
