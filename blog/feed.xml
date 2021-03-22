@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rss version="2.0">
+    <channel>
+        <title>PyTorchVideo Blog</title>
+        <link>https://your-docusaurus-test-site.com/blog</link>
+        <description>The best place to stay up-to-date with the latest PyTorchVideo news and events.</description>
+        <lastBuildDate>Fri, 11 Mar 2016 06:00:00 GMT</lastBuildDate>
+        <docs>https://validator.w3.org/feed/docs/rss2.html</docs>
+        <generator>https://github.com/jpmonette/feed</generator>
+        <image>
+            <title>PyTorchVideo Blog</title>
+            <url>https://your-docusaurus-test-site.com/img/logo.svg</url>
+            <link>https://your-docusaurus-test-site.com/blog</link>
+        </image>
+        <copyright>Copyright © 2021 Facebook, Inc</copyright>
+        <item>
+            <title><![CDATA[Example Blog]]></title>
+            <link>https://your-docusaurus-test-site.com/blog/2016/03/11/blog-post.html</link>
+            <guid>https://your-docusaurus-test-site.com/blog/2016/03/11/blog-post.html</guid>
+            <pubDate>Fri, 11 Mar 2016 06:00:00 GMT</pubDate>
+            <description><![CDATA[<p>TODO</p> ]]></description>
+        </item>
+    </channel>
+</rss>

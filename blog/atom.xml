@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+    <id>https://your-docusaurus-test-site.com/blog</id>
+    <title>PyTorchVideo Blog</title>
+    <updated>2016-03-11T06:00:00.000Z</updated>
+    <generator>https://github.com/jpmonette/feed</generator>
+    <link rel="alternate" href="https://your-docusaurus-test-site.com/blog"/>
+    <subtitle>The best place to stay up-to-date with the latest PyTorchVideo news and events.</subtitle>
+    <logo>https://your-docusaurus-test-site.com/img/logo.svg</logo>
+    <rights>Copyright © 2021 Facebook, Inc</rights>
+    <entry>
+        <title type="html"><![CDATA[Example Blog]]></title>
+        <id>https://your-docusaurus-test-site.com/blog/2016/03/11/blog-post.html</id>
+        <link href="https://your-docusaurus-test-site.com/blog/2016/03/11/blog-post.html"/>
+        <updated>2016-03-11T06:00:00.000Z</updated>
+        <summary type="html"><![CDATA[<p>TODO</p> ]]></summary>
+        <author>
+            <name>Example</name>
+            <uri>http://example.com/</uri>
+        </author>
+    </entry>
+</feed>
