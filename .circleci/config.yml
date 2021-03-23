@@ -7,20 +7,85 @@
 
 version: 2.1
 
+# -------------------------------------------------------------------------------------
+# Environments to run the jobs in
+# -------------------------------------------------------------------------------------
+cpu: &cpu
+  docker:
+    - image: circleci/python:3.7
+      auth:
+        username: $DOCKERHUB_USERNAME
+        password: $DOCKERHUB_TOKEN
+  resource_class: medium
+
+gpu: &gpu
+  environment:
+      CUDA_VERSION: "10.2"
+      TORCH_CUDA_ARCH_LIST: "5.0;5.2;5.3"
+  machine:
+    image: ubuntu-1604:201903-01
+  resource_class: gpu.medium # tesla m60
+
+
+# -------------------------------------------------------------------------------------
+# Re-usable commands
+# -------------------------------------------------------------------------------------
+setup_venv: &setup_venv
+  - run:
+      name: Setup Virtual Env
+      working_directory: ~/
+      command: |
+        python -m venv ~/venv
+        echo ". ~/venv/bin/activate" >> $BASH_ENV
+        . ~/venv/bin/activate
+        python --version
+        which python
+        which pip
+        pip install --upgrade pip
+        pip install -U setuptools
+
+install_torch_torchvision: &install_torch_torchvision
+  - run:
+      name: Install Dependencies
+      command: |
+        pip install --progress-bar off torch==1.8.0 torchvision==0.9.0
+
+install_pytorchvideo: &install_pytorchvideo
+  - run:
+      environment:
+        BUILD_NIGHTLY: 1
+      name: Install PyTorchVideo
+      command: |
+        pip install -U --progress-bar off -e .[dev]
+        python -c 'import pytorchvideo; print(pytorchvideo.__version__)'
+
+run_unittests: &run_unittests
+  - run:
+      name: Run Unit Tests
+      command: |
+        python -m unittest discover -v -s tests
+
 setupcuda: &setupcuda
   run:
-    name: Setup CUDA
+    name: Setup CUDA and NVIDIA driver
     working_directory: ~/
     command: |
-      # Download and install nvidia drivers, cuda, etc...
+      # download and install nvidia drivers, cuda, etc
       wget --no-verbose --no-clobber -P ~/nvidia-downloads 'https://s3.amazonaws.com/ossci-linux/nvidia_driver/NVIDIA-Linux-x86_64-430.40.run'
       wget --no-verbose --no-clobber -P ~/nvidia-downloads http://developer.download.nvidia.com/compute/cuda/10.2/Prod/local_installers/cuda_10.2.89_440.33.01_linux.run
       sudo /bin/bash ~/nvidia-downloads/NVIDIA-Linux-x86_64-430.40.run --no-drm -q --ui=none
       sudo sh ~/nvidia-downloads/cuda_10.2.89_440.33.01_linux.run --silent
       echo "Done installing CUDA."
-      pyenv versions
       nvidia-smi
-      pyenv global 3.7.0
+    
+install_python: &install_python
+  - run:
+      name: Install Python
+      working_directory: ~/
+      command: |
+        pyenv versions
+        pyenv install 3.7.0
+        pyenv global 3.7.0
 
 installconda: &installconda
   run:
@@ -29,30 +94,84 @@ installconda: &installconda
       curl --retry 3 -o conda.sh https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
       sh conda.sh -b -p $HOME/miniconda3
 
+
+# -------------------------------------------------------------------------------------
+# Jobs to run
+# -------------------------------------------------------------------------------------
 jobs:
-  setup_and_test:
-    environment:
-      CUDA_VERSION: "10.2"
-    resource_class: gpu.medium # tesla m60
-    machine:
-      image: ubuntu-1604:201903-01
+
+  # cpu_tests:
+  #   <<: *cpu
+  #   working_directory: ~/pytorchvideo
+
+  #   steps:
+  #     - checkout
+  #     - <<: *setup_venv
+  #     - <<: *install_dep
+  #     - <<: *install_pytorchvideo
+  #     - <<: *run_unittests
+  #     - store_artifacts:
+  #         path: ~/pytorchvideo/dist
+  #     - persist_to_workspace:
+  #         root: ~/pytorchvideo/dist
+  #         paths:
+  #           - "*"
+
+  gpu_tests:
+    working_directory: ~/pytorchvideo
+    <<: *gpu
     steps:
       - checkout
       - <<: *setupcuda
-      - <<: *installconda
+      - <<: *install_python
+      - <<: *setup_venv
+      - <<: *install_torch_torchvision
+      - <<: *install_pytorchvideo
       - run:
-          name: Run Tests
-          command: |
-            export PATH="$HOME/miniconda3/bin:$PATH"
-            conda update -y conda
-            conda env create --file environment.yml
-            source activate pytorchvideo
-            LD_LIBRARY_PATH=$LD_LIBARY_PATH:/usr/local/cuda-10.2/lib64 python3 setup.py build_ext --inplace
-            LD_LIBRARY_PATH=$LD_LIBARY_PATH:/usr/local/cuda-10.2/lib64 python -m unittest discover -v -s tests
-            python3 setup.py bdist_wheel
+          name: Check CUDA Available
+          command: python -c "import torch; assert torch.cuda.is_available(), 'CUDA not available'"
+      - <<: *run_unittests
 
+
+# -------------------------------------------------------------------------------------
+# Workflows to launch
+# -------------------------------------------------------------------------------------
 workflows:
   version: 2
-  main:
+  regular_test:
     jobs:
-      - setup_and_test
+      # - cpu_tests:
+      #     context:
+      #       - DOCKERHUB_TOKEN
+      - gpu_tests:
+          context:
+            - DOCKERHUB_TOKEN
+
+  # nightly:
+  #   jobs:
+  #     # https://circleci.com/docs/2.0/contexts/#creating-and-using-a-context
+  #     - cpu_tests:
+  #         context:
+  #           - DOCKERHUB_TOKEN
+  #     - gpu_tests:
+  #         context:
+  #           - DOCKERHUB_TOKEN
+  #     - build_conda:
+  #         requires:
+  #           - cpu_tests
+  #           - gpu_tests
+  #         context:
+  #           - DOCKERHUB_TOKEN
+  #     - upload_wheel:
+  #         requires:
+  #           - cpu_tests
+  #           - gpu_tests
+  #         context:
+  #           - DOCKERHUB_TOKEN
+  #   triggers:
+  #     - schedule:
+  #         cron: "0 0 * * *"
+  #         filters:
+  #           branches:
+  #             only:
+  #               - master
