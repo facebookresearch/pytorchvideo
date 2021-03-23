@@ -1,0 +1,25 @@
+#!/usr/bin/env python
+# Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved.
+
+from setuptools import find_packages, setup
+
+
+setup(
+    name="pytorchvideo",
+    version="0.1",
+    author="Facebook AI",
+    url="unknown",  # https://github.com/facebookresearch/pytorchvideo
+    description="",
+    python_requires=">=3.6",
+    install_requires=[
+        "fvcore",
+        "torch",
+        "torchvision",
+        "pytest",
+        "av",
+        "parameterized",
+        "opencv-python",
+        "iopath",
+    ],
+    packages=find_packages(exclude=("scripts", "tests")),
+)
