@@ -6,7 +6,7 @@ import unittest
 import av
 import pytest
 from pytorchvideo.data.encoded_video import EncodedVideo
-from pytorchvideo.tests.utils import temp_encoded_video, temp_encoded_video_with_audio
+from utils import temp_encoded_video, temp_encoded_video_with_audio
 
 
 class TestEncodedVideo(unittest.TestCase):

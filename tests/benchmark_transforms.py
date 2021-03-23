@@ -6,8 +6,8 @@ from typing import Callable
 import torch
 from fvcore.common.benchmark import benchmark
 from pytorchvideo.data.utils import thwc_to_cthw
-from pytorchvideo.tests.utils import create_dummy_video_frames
 from pytorchvideo.transforms.functional import short_side_scale
+from utils import create_dummy_video_frames
 
 
 class TestBenchmarkTransforms(unittest.TestCase):

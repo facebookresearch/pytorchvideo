@@ -4,7 +4,7 @@ import unittest
 
 import pytest
 from pytorchvideo.data.frame_video import FrameVideo
-from pytorchvideo.tests.utils import temp_frame_video
+from utils import temp_frame_video
 
 
 class TestFrameVideo(unittest.TestCase):

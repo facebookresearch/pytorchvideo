@@ -6,7 +6,7 @@ import unittest
 import numpy as np
 import torch
 import torch.distributed as dist
-from pytorchvideo.layers.distributed import AllGatherWithGradient
+from pytorchvideo.layers.distributed import DifferentiableAllGather
 from torch.multiprocessing import Process
 
 
@@ -30,7 +30,7 @@ class TestDistributedOps(unittest.TestCase):
             os.environ["MASTER_ADDR"] = "127.0.0.1"
             os.environ["MASTER_PORT"] = "29501"
             dist.init_process_group("gloo", rank=rank, world_size=size)
-            output = AllGatherWithGradient.forward(tensor_list[rank])
+            output = DifferentiableAllGather.forward(tensor_list[rank])
             self.assertTrue(
                 np.allclose(
                     output.numpy(), expected_output.numpy(), rtol=1e-1, atol=1e-1

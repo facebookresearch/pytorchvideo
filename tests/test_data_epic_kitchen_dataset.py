@@ -17,7 +17,7 @@ from pytorchvideo.data.epic_kitchen import (
     EpicKitchenDataset,
 )
 from pytorchvideo.data.utils import save_dataclass_objs_to_headered_csv
-from pytorchvideo.tests.utils import (
+from utils import (
     get_encoded_video_infos,
     get_flat_video_frames,
     MOCK_VIDEO_INFOS,
