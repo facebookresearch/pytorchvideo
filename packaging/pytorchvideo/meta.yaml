@@ -14,8 +14,8 @@ requirements:
   run:
     - python
     - fvcore
-    - opencv
-    - pytest
+    # - opencv
+    # - pytest
     - iopath
     - av
     - parameterized
