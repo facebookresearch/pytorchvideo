@@ -10,13 +10,26 @@ requirements:
   host:
     - python
     - setuptools
+    - numpy
+    - torchvision
+    - fvcore
+    - opencv
+    - pytest
+    - iopath
+    - av
+    - pytorch
     #{{ environ.get('CONDA_PYTORCH_CONSTRAINT') }}
 
   run:
     - python
-    - numpy >=1.11
-    - torchvision >=0.9
+    - pytorch
+    - torchvision
     - fvcore
+    - opencv
+    - pytest
+    - iopath
+    - av
+    
     #{{ environ.get('CONDA_PYTORCH_CONSTRAINT') }}
 
 build:

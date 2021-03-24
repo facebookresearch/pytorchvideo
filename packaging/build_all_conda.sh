@@ -13,7 +13,7 @@ do
     do
         export CONDA_PYTORCH_CONSTRAINT="- pytorch==$PYTORCH_VERSION"
         export PYTORCH_VERSION_NODOT=${PYTORCH_VERSION//./}
-        conda build -c pytorchvideo_fair -c pytorch -c defaults -c conda-forge -c fvcore -c iopath --no-anaconda-upload --no-anaconda-upload --python "$PYTHON_VERSION" --output-folder packaging/out packaging/pytorchvideo
+        conda build -c pytorchvideo_fair -c pytorch -c defaults -c conda-forge -c fvcore -c iopath -c ananconda --no-anaconda-upload --python "$PYTHON_VERSION" --output-folder packaging/out packaging/pytorchvideo
     done
 done
 
