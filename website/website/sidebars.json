@@ -5,6 +5,7 @@
     "Data": ["doc_data_somedataset"]
   },
   "docs-other": {
+  	"Tutorials Example Template": ["tutorial_example_template"],
     "Tutorials": ["tutorial_overview"],
     "Classification": ["tutorial_classification"]
   }
