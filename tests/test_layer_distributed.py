@@ -16,7 +16,7 @@ class TestDistributedOps(unittest.TestCase):
         torch.set_rng_state(torch.manual_seed(42).get_state())
 
     @unittest.skipIf(
-        torch.cuda.device_count() >= 2,
+        not (torch.cuda.is_available() and torch.cuda.device_count() >= 2),
         "The current machine does not has more than two devices to perform all gather",
     )
     def test_all_gather_with_gradient(self):
@@ -30,7 +30,7 @@ class TestDistributedOps(unittest.TestCase):
             os.environ["MASTER_ADDR"] = "127.0.0.1"
             os.environ["MASTER_PORT"] = "29501"
             dist.init_process_group("gloo", rank=rank, world_size=size)
-            output = DifferentiableAllGather.forward(tensor_list[rank])
+            output = DifferentiableAllGather.apply(tensor_list[rank])
             self.assertTrue(
                 np.allclose(
                     output.numpy(), expected_output.numpy(), rtol=1e-1, atol=1e-1
