@@ -10,8 +10,8 @@ from pytorchvideo.layers.accelerator.mobile_cpu.activation_functions import (
 )
 from pytorchvideo.layers.accelerator.mobile_cpu.attention import SqueezeExcitation
 from pytorchvideo.layers.accelerator.mobile_cpu.convolutions import (
-    Conv3dPwBnAct,
     Conv3d3x3x3DwBnAct,
+    Conv3dPwBnAct,
     Conv3dTemporalKernel1BnAct,
 )
 from pytorchvideo.layers.utils import round_width

@@ -5,9 +5,7 @@ from typing import Optional
 
 import torch
 import torch.nn as nn
-from fvcore.layers.squeeze_excitation import (
-    SqueezeExcitation as SqueezeExcitationFVCore,
-)
+from fvcore.nn.squeeze_excitation import SqueezeExcitation as SqueezeExcitationFVCore
 from pytorchvideo.accelerator.efficient_blocks.efficient_block_base import (
     EfficientBlockBase,
 )

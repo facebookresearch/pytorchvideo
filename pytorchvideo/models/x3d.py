@@ -5,7 +5,7 @@ from typing import Callable, Tuple
 import numpy as np
 import torch
 import torch.nn as nn
-from fvcore.layers.squeeze_excitation import SqueezeExcitation
+from fvcore.nn.squeeze_excitation import SqueezeExcitation
 from pytorchvideo.layers.convolutions import Conv2plus1d
 from pytorchvideo.layers.swish import Swish
 from pytorchvideo.layers.utils import round_repeats, round_width, set_attributes

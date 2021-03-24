@@ -7,10 +7,10 @@ from copy import deepcopy
 import torch
 from pytorchvideo.layers.accelerator.mobile_cpu.fully_connected import FullyConnected
 from pytorchvideo.layers.accelerator.mobile_cpu.pool import (
-    AdaptiveAvgPool3dOutSize1,
+    AdaptiveAvgPool2d,
     AdaptiveAvgPool2dOutSize1,
     AdaptiveAvgPool3d,
-    AdaptiveAvgPool2d,
+    AdaptiveAvgPool3dOutSize1,
 )
 
 

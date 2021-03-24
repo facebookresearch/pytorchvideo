@@ -8,23 +8,20 @@ from pathlib import Path
 
 import torch
 from parameterized import parameterized
-from pytorchvideo.data.dataset_manifest_utils import (
-    VideoDatasetType,
-    VideoClipInfo,
-)
+from pytorchvideo.data.dataset_manifest_utils import VideoClipInfo, VideoDatasetType
 from pytorchvideo.data.domsev import (
-    seconds_to_frame_index,
+    ActivityData,
+    DomsevDataset,
     frame_index_to_seconds,
     get_overlap_for_time_range_pair,
-    DomsevDataset,
-    ActivityData,
+    seconds_to_frame_index,
 )
 from pytorchvideo.data.utils import save_dataclass_objs_to_headered_csv
 from utils import (
+    MOCK_VIDEO_IDS,
+    MOCK_VIDEO_INFOS,
     get_encoded_video_infos,
     get_flat_video_frames,
-    MOCK_VIDEO_INFOS,
-    MOCK_VIDEO_IDS,
 )
 
 
