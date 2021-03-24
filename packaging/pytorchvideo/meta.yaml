@@ -17,20 +17,19 @@ requirements:
     - pytest
     - iopath
     - av
-    - pytorch
-    #{{ environ.get('CONDA_PYTORCH_CONSTRAINT') }}
+    #- pytorch
+    {{ environ.get('CONDA_PYTORCH_CONSTRAINT') }}
 
   run:
     - python
-    - pytorch
+    #- pytorch
     - torchvision
     - fvcore
     - opencv
     - pytest
     - iopath
     - av
-    
-    #{{ environ.get('CONDA_PYTORCH_CONSTRAINT') }}
+    {{ environ.get('CONDA_PYTORCH_CONSTRAINT') }}
 
 build:
   string: py{{py}}_pyt{{ environ['PYTORCH_VERSION_NODOT']}}
