@@ -9,6 +9,7 @@ requirements:
 
   host:
     - python
+    - pip
     - setuptools
     - numpy
     - torchvision
