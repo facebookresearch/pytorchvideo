@@ -127,7 +127,7 @@ jobs:
               echo "No commits in the last day."
               exit 0
             fi
-            conda install conda-build
+            conda install anaconda-client conda-build
             bash packaging/build_all_conda.sh
       - run:
           name: Upload Conda Packages
