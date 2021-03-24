@@ -9,32 +9,22 @@ requirements:
 
   host:
     - python
-    - pip
     - setuptools
-    - numpy
-    - torchvision
-    - fvcore
-    - opencv
-    - pytest
-    - iopath
-    - av
-    #- pytorch
-    {{ environ.get('CONDA_PYTORCH_CONSTRAINT') }}
 
   run:
     - python
-    #- pytorch
-    - torchvision
     - fvcore
     - opencv
     - pytest
     - iopath
     - av
-    {{ environ.get('CONDA_PYTORCH_CONSTRAINT') }}
+    - parameterized
+    #- torchvision
+    #{{ environ.get('CONDA_PYTORCH_CONSTRAINT') }}
 
 build:
-  string: py{{py}}_pyt{{ environ['PYTORCH_VERSION_NODOT']}}
-  script: BUILD_NIGHTLY=1 python setup.py install --single-version-externally-managed --record=record.txt # [not win]
+  string: py{{py}} #_pyt{{ environ['PYTORCH_VERSION_NODOT']}}
+  script: python setup.py install --single-version-externally-managed --record=record.txt # [not win]
 
 about:
   home: https://github.com/facebookresearch/pytorchvideo

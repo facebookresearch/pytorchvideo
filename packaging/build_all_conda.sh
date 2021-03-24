@@ -4,16 +4,13 @@ set -ex
 
 mkdir -p packaging/out
 
-version=$(python -c "exec(open('pytorchvideo/__init__.py').read()); print(__version__)")
-export BUILD_VERSION=$version
-
 for PYTORCH_VERSION in 1.8.0
 do
-    for PYTHON_VERSION in 3.7 3.8 3.9
+    for PV in 3.7 3.8 3.9
     do
-        export CONDA_PYTORCH_CONSTRAINT="- pytorch==$PYTORCH_VERSION"
-        export PYTORCH_VERSION_NODOT=${PYTORCH_VERSION//./}
-        conda build -c pytorchvideo_fair -c pytorch -c defaults -c conda-forge -c fvcore -c iopath -c anaconda --no-anaconda-upload --python "$PYTHON_VERSION" --output-folder packaging/out packaging/pytorchvideo
+        #export CONDA_PYTORCH_CONSTRAINT="- pytorch==$PYTORCH_VERSION"
+        #export PYTORCH_VERSION_NODOT=${PYTORCH_VERSION//./}
+        PYTHON_VERSION=$PV bash packaging/build_conda.sh
     done
 done
 
