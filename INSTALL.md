@@ -44,22 +44,13 @@ For the precise versions of these additional dependecies, we recommend looking a
 After installing the above dependencies, run one of the following commands:
 
 ### 1. Install from Anaconda Cloud, on Linux only
-The builds are updated nightly,
+The builds are updated **nightly**,
 ```
 # Anaconda Cloud
 conda install -c pytorchvideo -c defaults -c conda-forge -c iopath -c fvcore pytorchvideo
 ```
 
-### 2. Install from PyPI
-The wheels are updated nightly,
-```
-pip install pytorchvideo
-
-# For developing and testing
-pip install pytorchvideo[test,dev]
-```
-
-### 3. Install from GitHub
+### 2. Install from GitHub using pip
 ```
 pip install "git+https://github.com/facebookresearch/pytorchvideo.git"
 ```
@@ -68,7 +59,16 @@ To install using the code of the released version instead of from the main branc
 pip install "git+https://github.com/facebookresearch/pytorchvideo.git@stable"
 ```
 
-### 5. Install from a local clone
+### 3. Install from PyPI
+The wheels are updated only on **stable releases**,
+```
+pip install pytorchvideo
+
+# For developing and testing
+pip install pytorchvideo[test,dev]
+```
+
+### 4. Install from a local clone
 ```
 git clone https://github.com/facebookresearch/pytorchvideo.git
 cd pytorchvideo && pip install -e .
