@@ -30,6 +30,7 @@ setup(
         "parameterized",
         "opencv-python",
         "iopath",
+        "pytest",
     ],
     extras_require={
         "dev": [
