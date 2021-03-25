@@ -8,20 +8,14 @@ from pathlib import Path
 
 import torch
 from parameterized import parameterized
-from pytorchvideo.data.dataset_manifest_utils import (
-    VideoClipInfo,
-    VideoDatasetType,
-)
-from pytorchvideo.data.epic_kitchen import (
-    ActionData,
-    EpicKitchenDataset,
-)
+from pytorchvideo.data.dataset_manifest_utils import VideoClipInfo, VideoDatasetType
+from pytorchvideo.data.epic_kitchen import ActionData, EpicKitchenDataset
 from pytorchvideo.data.utils import save_dataclass_objs_to_headered_csv
 from utils import (
+    MOCK_VIDEO_IDS,
+    MOCK_VIDEO_INFOS,
     get_encoded_video_infos,
     get_flat_video_frames,
-    MOCK_VIDEO_INFOS,
-    MOCK_VIDEO_IDS,
 )
 
 

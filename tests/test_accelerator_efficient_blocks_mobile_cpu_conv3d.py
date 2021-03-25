@@ -7,10 +7,10 @@ from copy import deepcopy
 import torch
 import torch.nn as nn
 from pytorchvideo.layers.accelerator.mobile_cpu.convolutions import (
-    Conv3d3x3x3DwBnAct,
-    Conv3dPwBnAct,
     Conv3d3x1x1BnAct,
+    Conv3d3x3x3DwBnAct,
     Conv3d5x1x1BnAct,
+    Conv3dPwBnAct,
 )
 
 

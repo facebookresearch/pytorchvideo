@@ -14,8 +14,8 @@ from .activation_functions import supported_act_functions
 from .conv_helper import (
     _Conv3dTemporalKernel1Decomposed,
     _Conv3dTemporalKernel3Decomposed,
-    _Reshape,
     _Conv3dTemporalKernel5Decomposed,
+    _Reshape,
 )
 
 

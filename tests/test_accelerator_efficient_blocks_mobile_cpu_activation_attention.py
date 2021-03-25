@@ -8,9 +8,7 @@ import torch
 from pytorchvideo.layers.accelerator.mobile_cpu.activation_functions import (
     supported_act_functions,
 )
-from pytorchvideo.layers.accelerator.mobile_cpu.attention import (
-    SqueezeExcitation,
-)
+from pytorchvideo.layers.accelerator.mobile_cpu.attention import SqueezeExcitation
 
 
 class TestActivationAttentionEquivalency(unittest.TestCase):
