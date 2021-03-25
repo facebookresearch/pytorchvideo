@@ -1,5 +1,5 @@
 <p align="center">
- <img width="70%" src="TODO.png" />
+ <img width="70%" src="./.github/logo_horizontal_color.png" />
 </p>
 
 <p align="center">
@@ -40,7 +40,7 @@ PyTorchVideo is released under the [Apache 2.0 License](LICENSE).
 TODO
 
 ## Model Zoo and Baselines
-We provide a large set of baseline results and trained models available for download in the [PyTorchVIdeo Model Zoo](https://github.com/facebookresearch/pytorchvideo/blob/master/MODEL_ZOO.md).
+We provide a large set of baseline results and trained models available for download in the [PyTorchVideo Model Zoo](https://github.com/facebookresearch/pytorchvideo/blob/master/MODEL_ZOO.md).
 
 ## Contributors
 
