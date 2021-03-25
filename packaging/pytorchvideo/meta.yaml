@@ -10,11 +10,11 @@ requirements:
   host:
     - python
     - setuptools
+    - pip
 
   run:
     - python
-    - fvcore
-    # - opencv
+    - fvcore>=0.1.4
     - iopath
     - av
     - parameterized

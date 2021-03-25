@@ -30,9 +30,9 @@ setup(
         "parameterized",
         "opencv-python",
         "iopath",
-        "pytest",
     ],
     extras_require={
+        "test": ["coverage", "pytest"],
         "dev": [
             "black==20.8b1",
             "sphinx",

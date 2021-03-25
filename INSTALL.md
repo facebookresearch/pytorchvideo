@@ -47,7 +47,7 @@ After installing the above dependencies, run one of the following commands:
 The builds are updated nightly,
 ```
 # Anaconda Cloud
-conda install -c pytorchvideo_fair -c defaults -c conda-forge -c iopath -c fvcore pytorchvideo
+conda install -c pytorchvideo -c defaults -c conda-forge -c iopath -c fvcore pytorchvideo
 ```
 
 ### 2. Install from PyPI

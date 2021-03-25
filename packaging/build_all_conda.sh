@@ -6,7 +6,7 @@ mkdir -p packaging/out
 
 for PYTORCH_VERSION in 1.8.0
 do
-    for PV in 3.7 3.8 3.9
+    for PV in 3.7 3.8
     do
         export CONDA_PYTORCH_CONSTRAINT="- pytorch>=$PYTORCH_VERSION"
         export PYTORCH_VERSION_NODOT=${PYTORCH_VERSION//./}
