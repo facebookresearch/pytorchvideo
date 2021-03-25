@@ -13,10 +13,9 @@ requirements:
 
   run:
     - python
-    - iopath
-    - fvcore>=0.1.4
+    - fvcore
     # - opencv
-    - pytest
+    - iopath
     - av
     - parameterized
     - torchvision>=0.9.0

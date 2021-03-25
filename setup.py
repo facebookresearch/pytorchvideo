@@ -26,7 +26,6 @@ setup(
     python_requires=">=3.7",
     install_requires=[
         "fvcore>=0.1.4",
-        "pytest",
         "av",
         "parameterized",
         "opencv-python",

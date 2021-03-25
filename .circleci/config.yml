@@ -161,7 +161,7 @@ jobs:
             fi
             pip install --progress-bar off --user twine
             for pkg in ~/workspace/*.tar.gz; do
-              twine upload --verbose --username __token__ --password $PTV_PYPI_TOKEN dist/*.whl
+              twine upload --verbose --username __token__ --password $PTV_PYPI_TOKEN $pkg
             done
 # -------------------------------------------------------------------------------------
 # Workflows to launch
