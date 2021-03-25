@@ -74,6 +74,7 @@ install_pytorchvideo: &install_pytorchvideo
         export PATH="$HOME/miniconda3/bin:$PATH"
         conda activate pytorchvideo
         pip install -U --progress-bar off -e .
+        python setup.py sdist
         python -c 'import pytorchvideo; print(pytorchvideo.__version__)'
 
 run_unittests: &run_unittests
