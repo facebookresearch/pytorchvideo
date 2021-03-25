@@ -7,7 +7,8 @@ mkdir -p packaging/out
 version=$(python -c "exec(open('pytorchvideo/__init__.py').read()); print(__version__)")
 export BUILD_VERSION=$version
 
-conda build -c defaults \
+conda build -c pytorch \
+            -c defaults \
             -c conda-forge \
             -c fvcore \
             -c iopath \

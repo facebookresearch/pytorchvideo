@@ -8,8 +8,8 @@ for PYTORCH_VERSION in 1.8.0
 do
     for PV in 3.7 3.8 3.9
     do
-        #export CONDA_PYTORCH_CONSTRAINT="- pytorch==$PYTORCH_VERSION"
-        #export PYTORCH_VERSION_NODOT=${PYTORCH_VERSION//./}
+        export CONDA_PYTORCH_CONSTRAINT="- pytorch>=$PYTORCH_VERSION"
+        export PYTORCH_VERSION_NODOT=${PYTORCH_VERSION//./}
         PYTHON_VERSION=$PV bash packaging/build_conda.sh
     done
 done

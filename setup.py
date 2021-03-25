@@ -25,7 +25,7 @@ setup(
     description="A video research library providing pytorch-based components.",
     python_requires=">=3.7",
     install_requires=[
-        "fvcore",
+        "fvcore>=0.1.4",
         "pytest",
         "av",
         "parameterized",

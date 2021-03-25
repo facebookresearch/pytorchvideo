@@ -98,6 +98,12 @@ jobs:
       - <<: *install_pytorch
       - <<: *install_pytorchvideo
       - <<: *run_unittests
+      - store_artifacts:
+          path: ~/pytorchvideo/dist
+      - persist_to_workspace:
+          root: ~/pytorchvideo/dist
+          paths:
+            - "*"
 
   gpu_tests:
     working_directory: ~/pytorchvideo
@@ -134,6 +140,28 @@ jobs:
           command: |
             bash packaging/upload_all_conda.sh
 
+  upload_wheel:
+    docker:
+      - image: circleci/python:3.7
+        auth:
+          username: $DOCKERHUB_USERNAME
+          password: $DOCKERHUB_TOKEN
+    working_directory: ~/pytorchvideo
+    steps:
+      - checkout
+      - attach_workspace:
+          at: ~/workspace
+      - run:
+          command: |
+            # no commits in the last 25 hours
+            if [[ -z $(git log --since="25 hours ago") ]]; then
+              echo "No commits in the last day."
+              exit 0
+            fi
+            pip install --progress-bar off --user twine
+            for pkg in ~/workspace/*.tar.gz; do
+              twine upload --verbose --username __token__ --password $PTV_PYPI_TOKEN dist/*.whl
+            done
 # -------------------------------------------------------------------------------------
 # Workflows to launch
 # -------------------------------------------------------------------------------------
@@ -163,12 +191,12 @@ workflows:
             - gpu_tests
           context:
             - DOCKERHUB_TOKEN
-    #   - upload_wheel:
-    #       requires:
-    #         - cpu_tests
-    #         - gpu_tests
-    #       context:
-    #         - DOCKERHUB_TOKEN
+      - upload_wheel:
+          requires:
+            - cpu_tests
+            - gpu_tests
+          context:
+            - DOCKERHUB_TOKEN
     # triggers:
     #   - schedule:
     #       cron: "0 0 * * *"

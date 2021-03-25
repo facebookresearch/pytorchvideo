@@ -13,17 +13,17 @@ requirements:
 
   run:
     - python
-    - fvcore
-    # - opencv
-    # - pytest
     - iopath
+    - fvcore>=0.1.4
+    # - opencv
+    - pytest
     - av
     - parameterized
-    #- torchvision
-    #{{ environ.get('CONDA_PYTORCH_CONSTRAINT') }}
+    - torchvision>=0.9.0
+    {{ environ.get('CONDA_PYTORCH_CONSTRAINT') }}
 
 build:
-  string: py{{py}} #_pyt{{ environ['PYTORCH_VERSION_NODOT']}}
+  string: py{{py}}_pyt{{ environ['PYTORCH_VERSION_NODOT']}}
   script: python setup.py install --single-version-externally-managed --record=record.txt # [not win]
 
 about:
