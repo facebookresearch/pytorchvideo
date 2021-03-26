@@ -159,23 +159,30 @@ from pytorchvideo.models import foo
             {
               content:
                 'Explain the feature here',
-              image: `${baseUrl}img/placeholder.png`,
+              image: `${baseUrl}img/pytorch.svg`,
               imageAlign: 'top',
-              title: 'Key Feature 1',
+              title: 'Build on PyTorch',
             },
             {
               content:
                 'Explain the feature here',
-              image: `${baseUrl}img/placeholder.png`,
+              image: `${baseUrl}img/modelzoo.svg`,
               imageAlign: 'top',
-              title: 'Key Feature 2 (Ex: Models)',
+              title: 'Extensive Model Zoo',
             },
             {
               content:
                 'Explain the feature here',
-              image: `${baseUrl}img/placeholder.png`,
+              image: `${baseUrl}img/reproducible.svg`,
               imageAlign: 'top',
-              title: 'Key Feature 3 (Ex: Data)',
+              title: 'Reproducible Benchmarks',
+            },
+            {
+              content:
+                'Explain the feature here',
+              image: `${baseUrl}img/efficient.svg`,
+              imageAlign: 'top',
+              title: 'Efficient Video Components',
             },
           ]}
         </Block>
