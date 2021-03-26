@@ -158,28 +158,28 @@ from pytorchvideo.models import foo
           {[
             {
               content:
-                'Explain the feature here',
+                'Built using PyTorch. Makes it easy to use all the PyTorch-ecosystem components.',
               image: `${baseUrl}img/pytorch.svg`,
               imageAlign: 'top',
-              title: 'Build on PyTorch',
+              title: 'Based on PyTorch',
             },
             {
               content:
-                'Explain the feature here',
+                'Variety of state of the art pretrained video models that are ready to use.',
               image: `${baseUrl}img/modelzoo.svg`,
               imageAlign: 'top',
               title: 'Extensive Model Zoo',
             },
             {
               content:
-                'Explain the feature here',
+                'Variety of benchmark tasks available to evaluate the models.',
               image: `${baseUrl}img/reproducible.svg`,
               imageAlign: 'top',
               title: 'Reproducible Benchmarks',
             },
             {
               content:
-                'Explain the feature here',
+                'Video-focused fast and efficient components that are easy to use.',
               image: `${baseUrl}img/efficient.svg`,
               imageAlign: 'top',
               title: 'Efficient Video Components',

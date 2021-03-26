@@ -11,7 +11,7 @@
 
 const siteConfig = {
   title: 'PyTorchVideo', // Title for your website.
-  tagline: 'A video research libary',
+  tagline: 'A library for accelerating video research',
   url: 'https://your-docusaurus-test-site.com', // Your website URL
   baseUrl: '/', // Base URL for your project */
   // For github.io type URLs, you would set the url and baseUrl like:
