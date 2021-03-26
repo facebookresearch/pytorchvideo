@@ -2,7 +2,8 @@
 
 import torch
 import torch.distributed as dist
-from pytorchvideo.layers.distributed import DifferentiableAllReduce, get_world_size
+from fvcore.nn.distributed import differentiable_all_reduce
+from pytorchvideo.layers.distributed import get_world_size
 from torch import nn
 
 
@@ -24,7 +25,7 @@ class NaiveSyncBatchNorm1d(nn.BatchNorm1d):
         assert B > 0, "SyncBatchNorm does not support zero batch size."
 
         vec = torch.cat([mean, meansqr], dim=0)
-        vec = DifferentiableAllReduce.apply(vec) * (1.0 / dist.get_world_size())
+        vec = differentiable_all_reduce(vec) * (1.0 / dist.get_world_size())
         mean, meansqr = torch.split(vec, C)
         var = meansqr - mean * mean
 
@@ -68,7 +69,7 @@ class NaiveSyncBatchNorm2d(nn.BatchNorm2d):
         assert B > 0, "SyncBatchNorm does not support zero batch size."
 
         vec = torch.cat([mean, meansqr], dim=0)
-        vec = DifferentiableAllReduce.apply(vec) * (1.0 / dist.get_world_size())
+        vec = differentiable_all_reduce(vec) * (1.0 / dist.get_world_size())
         mean, meansqr = torch.split(vec, C)
         var = meansqr - mean * mean
 
@@ -103,7 +104,7 @@ class NaiveSyncBatchNorm3d(nn.BatchNorm3d):
         assert B > 0, "SyncBatchNorm does not support zero batch size."
 
         vec = torch.cat([mean, meansqr], dim=0)
-        vec = DifferentiableAllReduce.apply(vec) * (1.0 / dist.get_world_size())
+        vec = differentiable_all_reduce(vec) * (1.0 / dist.get_world_size())
         mean, meansqr = torch.split(vec, C)
         var = meansqr - mean * mean
 

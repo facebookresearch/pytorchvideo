@@ -6,7 +6,7 @@ import torch
 import torch.distributed as dist
 import torch.nn as nn
 import torch.nn.functional as F
-from pytorchvideo.layers.distributed import DifferentiableAllGather
+from fvcore.nn.distributed import differentiable_all_gather
 from pytorchvideo.layers.utils import set_attributes
 
 
@@ -43,7 +43,7 @@ class SimCLR(nn.Module):
             x2 = self.backbone(x2)
         x2 = self.mlp(x2)
         x2 = F.normalize(x2, p=2, dim=1)
-        x2 = DifferentiableAllGather.apply(x2)
+        x2 = torch.cat(differentiable_all_gather(x2), dim=0)
 
         prod = torch.einsum("nc,kc->nk", [x1, x2])
         prod = prod.div(self.temperature)
