@@ -2,11 +2,13 @@
   "docs": {
     "Introduction": ["why_pytorchvideo"],
     "Models": ["doc_models_somemodel"],
-    "Data": ["doc_data_somedataset"]
+    "Data": ["doc_data_somedataset"],
+    "Accelerator": ["doc_accelerator_overview"]
   },
   "docs-other": {
   	"Tutorials Example Template": ["tutorial_example_template"],
     "Tutorials": ["tutorial_overview"],
-    "Classification": ["tutorial_classification"]
+    "Classification": ["tutorial_classification"],
+    "Accelerator": ["tutorial_accelerator_build_your_model", "tutorial_accelerator_use_accelerator_model_zoo", "tutorial_accelerator_use_model_transmuter"]
   }
 }
