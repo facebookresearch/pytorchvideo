@@ -63,7 +63,8 @@ copyright = "2021, PyTorchVideo contributors"
 author = "PyTorchVideo contributors"
 
 # The full version, including alpha/beta/rc tags
-version = '0.1'
+import pytorchvideo
+version = pytorchvideo.__version__
 # The full version, including alpha/beta/rc tags
 release = version
 
@@ -165,10 +166,10 @@ html_theme_options = {
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ["_static"]
 
-html_logo = "_static/img/pytorchvideo-logo.png"
+html_logo = "_static/img/ptv_logo.png"
 
 # setting custom stylesheets https://stackoverflow.com/a/34420612
-# html_context = {"css_files": ["_static/css/pytorchvideo_theme.css"]}
+html_context = {"css_files": ["_static/css/pytorchvideo_theme.css"]}
 
 # -- Options for HTMLHelp output ------------------------------------------
 
