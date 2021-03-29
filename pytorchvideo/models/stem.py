@@ -34,6 +34,8 @@ def create_res_basic_stem(
     Creates the basic resnet stem layer. It performs spatiotemporal Convolution, BN, and
     Relu following by a spatiotemporal pooling.
 
+    ::
+
                                         Conv3d
                                            ↓
                                      Normalization
@@ -47,33 +49,30 @@ def create_res_basic_stem(
     Pool3d options include: AvgPool3d, MaxPool3d, and None (no pooling).
 
     Args:
-        Convolution related configs:
-            in_channels (int): input channel size of the convolution.
-            out_channels (int): output channel size of the convolution.
-            conv_kernel_size (tuple): convolutional kernel size(s).
-            conv_stride (tuple): convolutional stride size(s).
-            conv_padding (tuple): convolutional padding size(s).
-            conv_bias (bool): convolutional bias. If true, adds a learnable bias to the
-                output.
-            conv (callable): Callable used to build the convolution layer.
 
-        Pooling related configs:
-            pool (callable): a callable that constructs pooling layer, options include:
-                nn.AvgPool3d, nn.MaxPool3d, and None (not performing pooling).
-            pool_kernel_size (tuple): pooling kernel size(s).
-            pool_stride (tuple): pooling stride size(s).
-            pool_padding (tuple): pooling padding size(s).
+        in_channels (int): input channel size of the convolution.
+        out_channels (int): output channel size of the convolution.
+        conv_kernel_size (tuple): convolutional kernel size(s).
+        conv_stride (tuple): convolutional stride size(s).
+        conv_padding (tuple): convolutional padding size(s).
+        conv_bias (bool): convolutional bias. If true, adds a learnable bias to the
+            output.
+        conv (callable): Callable used to build the convolution layer.
 
-        BN related configs:
-            norm (callable): a callable that constructs normalization layer, options
-                include nn.BatchNorm3d, None (not performing normalization).
-            norm_eps (float): normalization epsilon.
-            norm_momentum (float): normalization momentum.
+        pool (callable): a callable that constructs pooling layer, options include:
+            nn.AvgPool3d, nn.MaxPool3d, and None (not performing pooling).
+        pool_kernel_size (tuple): pooling kernel size(s).
+        pool_stride (tuple): pooling stride size(s).
+        pool_padding (tuple): pooling padding size(s).
 
-        Activation related configs:
-            activation (callable): a callable that constructs activation layer, options
-                include: nn.ReLU, nn.Softmax, nn.Sigmoid, and None (not performing
-                activation).
+        norm (callable): a callable that constructs normalization layer, options
+            include nn.BatchNorm3d, None (not performing normalization).
+        norm_eps (float): normalization epsilon.
+        norm_momentum (float): normalization momentum.
+
+        activation (callable): a callable that constructs activation layer, options
+            include: nn.ReLU, nn.Softmax, nn.Sigmoid, and None (not performing
+            activation).
 
     Returns:
         (nn.Module): resnet basic stem layer.
@@ -134,6 +133,8 @@ def create_acoustic_res_basic_stem(
     Convolution in parallel, then performs, BN, and Relu following by a spatiotemporal
     pooling.
 
+    ::
+
                                     Conv3d   Conv3d
                                            ↓
                                      Normalization
@@ -147,34 +148,30 @@ def create_acoustic_res_basic_stem(
     Pool3d options include: AvgPool3d, MaxPool3d, and None (no pooling).
 
     Args:
-        Convolution related configs:
-            in_channels (int): input channel size of the convolution.
-            out_channels (int): output channel size of the convolution.
-            conv_kernel_size (tuple): convolutional kernel size(s).
-            conv_stride (tuple): convolutional stride size(s), it will be performed as
-                temporal and spatial convolution in parallel.
-            conv_padding (tuple): convolutional padding size(s), it  will be performed
-                as temporal and spatial convolution in parallel.
-            conv_bias (bool): convolutional bias. If true, adds a learnable bias to the
-                output.
+        in_channels (int): input channel size of the convolution.
+        out_channels (int): output channel size of the convolution.
+        conv_kernel_size (tuple): convolutional kernel size(s).
+        conv_stride (tuple): convolutional stride size(s), it will be performed as
+            temporal and spatial convolution in parallel.
+        conv_padding (tuple): convolutional padding size(s), it  will be performed
+            as temporal and spatial convolution in parallel.
+        conv_bias (bool): convolutional bias. If true, adds a learnable bias to the
+            output.
 
-        Pooling related configs:
-            pool (callable): a callable that constructs pooling layer, options include:
-                nn.AvgPool3d, nn.MaxPool3d, and None (not performing pooling).
-            pool_kernel_size (tuple): pooling kernel size(s).
-            pool_stride (tuple): pooling stride size(s).
-            pool_padding (tuple): pooling padding size(s).
+        pool (callable): a callable that constructs pooling layer, options include:
+            nn.AvgPool3d, nn.MaxPool3d, and None (not performing pooling).
+        pool_kernel_size (tuple): pooling kernel size(s).
+        pool_stride (tuple): pooling stride size(s).
+        pool_padding (tuple): pooling padding size(s).
 
-        BN related configs:
-            norm (callable): a callable that constructs normalization layer, options
-                include nn.BatchNorm3d, None (not performing normalization).
-            norm_eps (float): normalization epsilon.
-            norm_momentum (float): normalization momentum.
+        norm (callable): a callable that constructs normalization layer, options
+            include nn.BatchNorm3d, None (not performing normalization).
+        norm_eps (float): normalization epsilon.
+        norm_momentum (float): normalization momentum.
 
-        Activation related configs:
-            activation (callable): a callable that constructs activation layer, options
-                include: nn.ReLU, nn.Softmax, nn.Sigmoid, and None (not performing
-                activation).
+        activation (callable): a callable that constructs activation layer, options
+            include: nn.ReLU, nn.Softmax, nn.Sigmoid, and None (not performing
+            activation).
 
     Returns:
         (nn.Module): resnet basic stem layer.
@@ -219,6 +216,8 @@ class ResNetBasicStem(nn.Module):
     """
     ResNet basic 3D stem module. Performs spatiotemporal Convolution, BN, and activation
     following by a spatiotemporal pooling.
+
+    ::
 
                                         Conv3d
                                            ↓

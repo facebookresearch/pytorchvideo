@@ -12,6 +12,8 @@ class Net(nn.Module):
     """
     Build a general Net models with a list of blocks for video recognition.
 
+    ::
+
                                          Input
                                            ↓
                                          Block 1
@@ -46,6 +48,8 @@ class MultiPathWayWithFuse(nn.Module):
     """
     Build multi-pathway block with fusion for video recognition, each of the pathway
     contains its own Blocks and Fusion layers across different pathways.
+
+    ::
 
                             Pathway 1  ... Pathway N
                                 ↓              ↓

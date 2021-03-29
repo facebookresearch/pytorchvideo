@@ -41,9 +41,9 @@ class MaskedTemporalPooling(torch.nn.Module):
     def __init__(self, method: str):
         """
         method (str): the method of pooling to use. Options:
-            - 'max': reduces temporal dimension to each valid max value.
-            - 'avg': averages valid values in the temporal dimension.
-            - 'sum': sums valid values in the temporal dimension.
+            'max': reduces temporal dimension to each valid max value.
+            'avg': averages valid values in the temporal dimension.
+            'sum': sums valid values in the temporal dimension.
             Note if all batch row elements are invalid, the temporal dimension is
             pooled to 0 values.
         """
@@ -167,8 +167,8 @@ class LearnMaskedDefault(nn.Module):
             feature_dim (int): the size of the default value parameter, this must match the
                 input tensor size.
             init_method (str): the initial default value parameter. Options:
-                - 'guassian'
-                - 'zeros'
+                'guassian'
+                'zeros'
             freeze (bool): If True, the learned default parameter weights are frozen.
         """
         super().__init__()
@@ -349,6 +349,8 @@ class MaskedMultiPathWay(nn.Module):
     Masked multi-pathway is composed of a list of stream nn.Modules followed by a
     fusion nn.Module that reduces these streams. Each stream module takes a mask
     and input tensor.
+
+    ::
 
                             Pathway 1  ... Pathway N
                                 ↓              ↓

@@ -42,6 +42,8 @@ def create_bottleneck_block(
     Bottleneck block: a sequence of spatiotemporal Convolution, Normalization,
     and Activations repeated in the following order:
 
+    ::
+
                                     Conv3d (conv_a)
                                            ↓
                                  Normalization (norm_a)
@@ -57,41 +59,38 @@ def create_bottleneck_block(
                                     Conv3d (conv_c)
                                            ↓
                                  Normalization (norm_c)
-
+    
     Normalization examples include: BatchNorm3d and None (no normalization).
     Activation examples include: ReLU, Softmax, Sigmoid, and None (no activation).
 
     Args:
-        Convolution related configs:
-            dim_in (int): input channel size to the bottleneck block.
-            dim_inner (int): intermediate channel size of the bottleneck.
-            dim_out (int): output channel size of the bottleneck.
-            conv_a_kernel_size (tuple): convolutional kernel size(s) for conv_a.
-            conv_a_stride (tuple): convolutional stride size(s) for conv_a.
-            conv_a_padding (tuple): convolutional padding(s) for conv_a.
-            conv_a (callable): a callable that constructs the conv_a conv layer, examples
-                include nn.Conv3d, OctaveConv, etc
-            conv_b_kernel_size (tuple): convolutional kernel size(s) for conv_b.
-            conv_b_stride (tuple): convolutional stride size(s) for conv_b.
-            conv_b_padding (tuple): convolutional padding(s) for conv_b.
-            conv_b_num_groups (int): number of groups for groupwise convolution for
-                conv_b.
-            conv_b_dilation (tuple): dilation for 3D convolution for conv_b.
-            conv_b (callable): a callable that constructs the conv_b conv layer, examples
-                include nn.Conv3d, OctaveConv, etc
-            conv_c (callable): a callable that constructs the conv_c conv layer, examples
-                include nn.Conv3d, OctaveConv, etc
+        dim_in (int): input channel size to the bottleneck block.
+        dim_inner (int): intermediate channel size of the bottleneck.
+        dim_out (int): output channel size of the bottleneck.
+        conv_a_kernel_size (tuple): convolutional kernel size(s) for conv_a.
+        conv_a_stride (tuple): convolutional stride size(s) for conv_a.
+        conv_a_padding (tuple): convolutional padding(s) for conv_a.
+        conv_a (callable): a callable that constructs the conv_a conv layer, examples
+            include nn.Conv3d, OctaveConv, etc
+        conv_b_kernel_size (tuple): convolutional kernel size(s) for conv_b.
+        conv_b_stride (tuple): convolutional stride size(s) for conv_b.
+        conv_b_padding (tuple): convolutional padding(s) for conv_b.
+        conv_b_num_groups (int): number of groups for groupwise convolution for
+            conv_b.
+        conv_b_dilation (tuple): dilation for 3D convolution for conv_b.
+        conv_b (callable): a callable that constructs the conv_b conv layer, examples
+            include nn.Conv3d, OctaveConv, etc
+        conv_c (callable): a callable that constructs the conv_c conv layer, examples
+            include nn.Conv3d, OctaveConv, etc
 
-        Normalization related configs:
-            norm (callable): a callable that constructs normalization layer, examples
-                include nn.BatchNorm3d, None (not performing normalization).
-            norm_eps (float): normalization epsilon.
-            norm_momentum (float): normalization momentum.
+        norm (callable): a callable that constructs normalization layer, examples
+            include nn.BatchNorm3d, None (not performing normalization).
+        norm_eps (float): normalization epsilon.
+        norm_momentum (float): normalization momentum.
 
-        Activation related configs:
-            activation (callable): a callable that constructs activation layer, examples
-                include: nn.ReLU, nn.Softmax, nn.Sigmoid, and None (not performing
-                activation).
+        activation (callable): a callable that constructs activation layer, examples
+            include: nn.ReLU, nn.Softmax, nn.Sigmoid, and None (not performing
+            activation).
 
     Returns:
         (nn.Module): resnet bottleneck block.
@@ -178,6 +177,8 @@ def create_acoustic_bottleneck_block(
     Acoustic Bottleneck block: a sequence of spatiotemporal Convolution, Normalization,
     and Activations repeated in the following order:
 
+    ::
+
                                     Conv3d (conv_a)
                                            ↓
                                  Normalization (norm_a)
@@ -202,36 +203,33 @@ def create_acoustic_bottleneck_block(
     Activation examples include: ReLU, Softmax, Sigmoid, and None (no activation).
 
     Args:
-        Convolution related configs:
-            dim_in (int): input channel size to the bottleneck block.
-            dim_inner (int): intermediate channel size of the bottleneck.
-            dim_out (int): output channel size of the bottleneck.
-            conv_a_kernel_size (tuple): convolutional kernel size(s) for conv_a.
-            conv_a_stride (tuple): convolutional stride size(s) for conv_a.
-            conv_a_padding (tuple): convolutional padding(s) for conv_a.
-            conv_a (callable): a callable that constructs the conv_a conv layer, examples
-                include nn.Conv3d, OctaveConv, etc
-            conv_b_kernel_size (tuple): convolutional kernel size(s) for conv_b.
-            conv_b_stride (tuple): convolutional stride size(s) for conv_b.
-            conv_b_padding (tuple): convolutional padding(s) for conv_b.
-            conv_b_num_groups (int): number of groups for groupwise convolution for
-                conv_b.
-            conv_b_dilation (tuple): dilation for 3D convolution for conv_b.
-            conv_b (callable): a callable that constructs the conv_b conv layer, examples
-                include nn.Conv3d, OctaveConv, etc
-            conv_c (callable): a callable that constructs the conv_c conv layer, examples
-                include nn.Conv3d, OctaveConv, etc
+        dim_in (int): input channel size to the bottleneck block.
+        dim_inner (int): intermediate channel size of the bottleneck.
+        dim_out (int): output channel size of the bottleneck.
+        conv_a_kernel_size (tuple): convolutional kernel size(s) for conv_a.
+        conv_a_stride (tuple): convolutional stride size(s) for conv_a.
+        conv_a_padding (tuple): convolutional padding(s) for conv_a.
+        conv_a (callable): a callable that constructs the conv_a conv layer, examples
+            include nn.Conv3d, OctaveConv, etc
+        conv_b_kernel_size (tuple): convolutional kernel size(s) for conv_b.
+        conv_b_stride (tuple): convolutional stride size(s) for conv_b.
+        conv_b_padding (tuple): convolutional padding(s) for conv_b.
+        conv_b_num_groups (int): number of groups for groupwise convolution for
+            conv_b.
+        conv_b_dilation (tuple): dilation for 3D convolution for conv_b.
+        conv_b (callable): a callable that constructs the conv_b conv layer, examples
+            include nn.Conv3d, OctaveConv, etc
+        conv_c (callable): a callable that constructs the conv_c conv layer, examples
+            include nn.Conv3d, OctaveConv, etc
 
-        Normalization related configs:
-            norm (callable): a callable that constructs normalization layer, examples
-                include nn.BatchNorm3d, None (not performing normalization).
-            norm_eps (float): normalization epsilon.
-            norm_momentum (float): normalization momentum.
+        norm (callable): a callable that constructs normalization layer, examples
+            include nn.BatchNorm3d, None (not performing normalization).
+        norm_eps (float): normalization epsilon.
+        norm_momentum (float): normalization momentum.
 
-        Activation related configs:
-            activation (callable): a callable that constructs activation layer, examples
-                include: nn.ReLU, nn.Softmax, nn.Sigmoid, and None (not performing
-                activation).
+        activation (callable): a callable that constructs activation layer, examples
+            include: nn.ReLU, nn.Softmax, nn.Sigmoid, and None (not performing
+            activation).
 
     Returns:
         (nn.Module): resnet acoustic bottleneck block.
@@ -353,6 +351,9 @@ def create_res_block(
     main block in branch2. When the input and output dimensions are different, a
     convolution followed by a normalization will be performed.
 
+    ::
+
+
                                          Input
                                            |-------+
                                            ↓       |
@@ -367,47 +368,44 @@ def create_res_block(
     Transform examples include: BottleneckBlock.
 
     Args:
-        Bottleneck block related configs:
-            dim_in (int): input channel size to the bottleneck block.
-            dim_inner (int): intermediate channel size of the bottleneck.
-            dim_out (int): output channel size of the bottleneck.
-            bottleneck (callable): a callable that constructs bottleneck block layer.
-                Examples include: create_bottleneck_block.
-            use_shortcut (bool): If true, use conv and norm layers in skip connection.
-            branch_fusion (callable): a callable that constructs summation layer.
-                Examples include: lambda x, y: x + y, OctaveSum.
-        Convolution related configs:
-            conv_a_kernel_size (tuple): convolutional kernel size(s) for conv_a.
-            conv_a_stride (tuple): convolutional stride size(s) for conv_a.
-            conv_a_padding (tuple): convolutional padding(s) for conv_a.
-            conv_a (callable): a callable that constructs the conv_a conv layer, examples
-                include nn.Conv3d, OctaveConv, etc
-            conv_b_kernel_size (tuple): convolutional kernel size(s) for conv_b.
-            conv_b_stride (tuple): convolutional stride size(s) for conv_b.
-            conv_b_padding (tuple): convolutional padding(s) for conv_b.
-            conv_b_num_groups (int): number of groups for groupwise convolution for
-                conv_b.
-            conv_b_dilation (tuple): dilation for 3D convolution for conv_b.
-            conv_b (callable): a callable that constructs the conv_b conv layer, examples
-                include nn.Conv3d, OctaveConv, etc
-            conv_c (callable): a callable that constructs the conv_c conv layer, examples
-                include nn.Conv3d, OctaveConv, etc
-            conv_skip (callable): a callable that constructs the conv_skip conv layer,
-            examples include nn.Conv3d, OctaveConv, etc
+        dim_in (int): input channel size to the bottleneck block.
+        dim_inner (int): intermediate channel size of the bottleneck.
+        dim_out (int): output channel size of the bottleneck.
+        bottleneck (callable): a callable that constructs bottleneck block layer.
+            Examples include: create_bottleneck_block.
+        use_shortcut (bool): If true, use conv and norm layers in skip connection.
+        branch_fusion (callable): a callable that constructs summation layer.
+            Examples include: lambda x, y: x + y, OctaveSum.
 
-        Normalization related configs:
-            norm (callable): a callable that constructs normalization layer. Examples
-                include nn.BatchNorm3d, None (not performing normalization).
-            norm_eps (float): normalization epsilon.
-            norm_momentum (float): normalization momentum.
+        conv_a_kernel_size (tuple): convolutional kernel size(s) for conv_a.
+        conv_a_stride (tuple): convolutional stride size(s) for conv_a.
+        conv_a_padding (tuple): convolutional padding(s) for conv_a.
+        conv_a (callable): a callable that constructs the conv_a conv layer, examples
+            include nn.Conv3d, OctaveConv, etc
+        conv_b_kernel_size (tuple): convolutional kernel size(s) for conv_b.
+        conv_b_stride (tuple): convolutional stride size(s) for conv_b.
+        conv_b_padding (tuple): convolutional padding(s) for conv_b.
+        conv_b_num_groups (int): number of groups for groupwise convolution for
+            conv_b.
+        conv_b_dilation (tuple): dilation for 3D convolution for conv_b.
+        conv_b (callable): a callable that constructs the conv_b conv layer, examples
+            include nn.Conv3d, OctaveConv, etc
+        conv_c (callable): a callable that constructs the conv_c conv layer, examples
+            include nn.Conv3d, OctaveConv, etc
+        conv_skip (callable): a callable that constructs the conv_skip conv layer,
+        examples include nn.Conv3d, OctaveConv, etc
 
-        Activation related configs:
-            activation_bottleneck (callable): a callable that constructs activation layer in
-                bottleneck. Examples include: nn.ReLU, nn.Softmax, nn.Sigmoid, and None
-                (not performing activation).
-            activation_block (callable): a callable that constructs activation layer used
-                at the end of the block. Examples include: nn.ReLU, nn.Softmax, nn.Sigmoid,
-                and None (not performing activation).
+        norm (callable): a callable that constructs normalization layer. Examples
+            include nn.BatchNorm3d, None (not performing normalization).
+        norm_eps (float): normalization epsilon.
+        norm_momentum (float): normalization momentum.
+
+        activation_bottleneck (callable): a callable that constructs activation layer in
+            bottleneck. Examples include: nn.ReLU, nn.Softmax, nn.Sigmoid, and None
+            (not performing activation).
+        activation_block (callable): a callable that constructs activation layer used
+            at the end of the block. Examples include: nn.ReLU, nn.Softmax, nn.Sigmoid,
+            and None (not performing activation).
 
     Returns:
         (nn.Module): resnet basic block layer.
@@ -488,6 +486,8 @@ def create_res_stage(
     blocks could be, for example, Residual blocks, Non-Local layers, or
     Squeeze-Excitation layers.
 
+    ::
+
 
                                         Input
                                            ↓
@@ -504,51 +504,47 @@ def create_res_stage(
     Bottleneck examples include: create_bottleneck_block.
 
     Args:
-        Stage related configs:
-            depth (init): number of blocks to create.
-        Bottleneck block related configs:
-            dim_in (int): input channel size to the bottleneck block.
-            dim_inner (int): intermediate channel size of the bottleneck.
-            dim_out (int): output channel size of the bottleneck.
-            bottleneck (callable): a callable that constructs bottleneck block layer.
-                Examples include: create_bottleneck_block.
+        depth (init): number of blocks to create.
 
-        Convolution related configs:
-            conv_a_kernel_size (tuple or list of tuple): convolutional kernel size(s)
-                for conv_a. If conv_a_kernel_size is a tuple, use it for all blocks in
-                the stage. If conv_a_kernel_size is a list of tuple, the kernel sizes
-                will be repeated until having same length of depth in the stage. For
-                example, for conv_a_kernel_size = [(3, 1, 1), (1, 1, 1)], the kernel
-                size for the first 6 blocks would be [(3, 1, 1), (1, 1, 1), (3, 1, 1),
-                (1, 1, 1), (3, 1, 1)].
-            conv_a_stride (tuple): convolutional stride size(s) for conv_a.
-            conv_a_padding (tuple or list of tuple): convolutional padding(s) for
-                conv_a. If conv_a_padding is a tuple, use it for all blocks in
-                the stage. If conv_a_padding is a list of tuple, the padding sizes
-                will be repeated until having same length of depth in the stage.
-            conv_a (callable): a callable that constructs the conv_a conv layer, examples
-                include nn.Conv3d, OctaveConv, etc
-            conv_b_kernel_size (tuple): convolutional kernel size(s) for conv_b.
-            conv_b_stride (tuple): convolutional stride size(s) for conv_b.
-            conv_b_padding (tuple): convolutional padding(s) for conv_b.
-            conv_b_num_groups (int): number of groups for groupwise convolution for
-                conv_b.
-            conv_b_dilation (tuple): dilation for 3D convolution for conv_b.
-            conv_b (callable): a callable that constructs the conv_b conv layer, examples
-                include nn.Conv3d, OctaveConv, etc
-            conv_c (callable): a callable that constructs the conv_c conv layer, examples
-                include nn.Conv3d, OctaveConv, etc
+        dim_in (int): input channel size to the bottleneck block.
+        dim_inner (int): intermediate channel size of the bottleneck.
+        dim_out (int): output channel size of the bottleneck.
+        bottleneck (callable): a callable that constructs bottleneck block layer.
+            Examples include: create_bottleneck_block.
 
-        BN related configs:
-            norm (callable): a callable that constructs normalization layer. Examples
-                include nn.BatchNorm3d, and None (not performing normalization).
-            norm_eps (float): normalization epsilon.
-            norm_momentum (float): normalization momentum.
+        conv_a_kernel_size (tuple or list of tuple): convolutional kernel size(s)
+            for conv_a. If conv_a_kernel_size is a tuple, use it for all blocks in
+            the stage. If conv_a_kernel_size is a list of tuple, the kernel sizes
+            will be repeated until having same length of depth in the stage. For
+            example, for conv_a_kernel_size = [(3, 1, 1), (1, 1, 1)], the kernel
+            size for the first 6 blocks would be [(3, 1, 1), (1, 1, 1), (3, 1, 1),
+            (1, 1, 1), (3, 1, 1)].
+        conv_a_stride (tuple): convolutional stride size(s) for conv_a.
+        conv_a_padding (tuple or list of tuple): convolutional padding(s) for
+            conv_a. If conv_a_padding is a tuple, use it for all blocks in
+            the stage. If conv_a_padding is a list of tuple, the padding sizes
+            will be repeated until having same length of depth in the stage.
+        conv_a (callable): a callable that constructs the conv_a conv layer, examples
+            include nn.Conv3d, OctaveConv, etc
+        conv_b_kernel_size (tuple): convolutional kernel size(s) for conv_b.
+        conv_b_stride (tuple): convolutional stride size(s) for conv_b.
+        conv_b_padding (tuple): convolutional padding(s) for conv_b.
+        conv_b_num_groups (int): number of groups for groupwise convolution for
+            conv_b.
+        conv_b_dilation (tuple): dilation for 3D convolution for conv_b.
+        conv_b (callable): a callable that constructs the conv_b conv layer, examples
+            include nn.Conv3d, OctaveConv, etc
+        conv_c (callable): a callable that constructs the conv_c conv layer, examples
+            include nn.Conv3d, OctaveConv, etc
 
-        Activation related configs:
-            activation (callable): a callable that constructs activation layer. Examples
-                include: nn.ReLU, nn.Softmax, nn.Sigmoid, and None (not performing
-                activation).
+        norm (callable): a callable that constructs normalization layer. Examples
+            include nn.BatchNorm3d, and None (not performing normalization).
+        norm_eps (float): normalization epsilon.
+        norm_momentum (float): normalization momentum.
+
+        activation (callable): a callable that constructs activation layer. Examples
+            include: nn.ReLU, nn.Softmax, nn.Sigmoid, and None (not performing
+            activation).
 
     Returns:
         (nn.Module): resnet basic stage layer.
@@ -648,6 +644,8 @@ def create_resnet(
     may include pooling, dropout, a fully-connected layer and global spatial
     temporal averaging. The three parts are assembled in the following order:
 
+    ::
+
                                          Input
                                            ↓
                                          Stem
@@ -663,46 +661,41 @@ def create_resnet(
                                          Head
 
     Args:
-        Input clip configs:
-            input_channel (int): number of channels for the input video clip.
 
-        Model configs:
-            model_depth (int): the depth of the resnet. Options include: 50, 101, 152.
-            model_num_class (int): the number of classes for the video dataset.
-            dropout_rate (float): dropout rate.
+        input_channel (int): number of channels for the input video clip.
 
-        Normalization configs:
-            norm (callable): a callable that constructs normalization layer.
+        model_depth (int): the depth of the resnet. Options include: 50, 101, 152.
+        model_num_class (int): the number of classes for the video dataset.
+        dropout_rate (float): dropout rate.
 
-        Activation configs:
-            activation (callable): a callable that constructs activation layer.
 
-        Stem configs:
-            stem_dim_out (int): output channel size to stem.
-            stem_conv_kernel_size (tuple): convolutional kernel size(s) of stem.
-            stem_conv_stride (tuple): convolutional stride size(s) of stem.
-            stem_pool (callable): a callable that constructs resnet head pooling layer.
-            stem_pool_kernel_size (tuple): pooling kernel size(s).
-            stem_pool_stride (tuple): pooling stride size(s).
+        norm (callable): a callable that constructs normalization layer.
 
-        Stage configs:
-            stage_conv_a_kernel_size (tuple): convolutional kernel size(s) for conv_a.
-            stage_conv_b_kernel_size (tuple): convolutional kernel size(s) for conv_b.
-            stage_conv_b_num_groups (tuple): number of groups for groupwise convolution
-                for conv_b. 1 for ResNet, and larger than 1 for ResNeXt.
-            stage_conv_b_dilation (tuple): dilation for 3D convolution for conv_b.
-            stage_spatial_stride (tuple): the spatial stride for each stage.
-            stage_temporal_stride (tuple): the temporal stride for each stage.
-            bottleneck (callable): a callable that constructs bottleneck block layer.
-                Examples include: create_bottleneck_block.
+        activation (callable): a callable that constructs activation layer.
 
-        Head configs:
-            head_pool (callable): a callable that constructs resnet head pooling layer.
-            head_pool_kernel_size (tuple): the pooling kernel size.
-            head_output_size (tuple): the size of output tensor for head.
-            head_activation (callable): a callable that constructs activation layer.
-            head_output_with_global_average (bool): if True, perform global averaging on
-                the head output.
+        stem_dim_out (int): output channel size to stem.
+        stem_conv_kernel_size (tuple): convolutional kernel size(s) of stem.
+        stem_conv_stride (tuple): convolutional stride size(s) of stem.
+        stem_pool (callable): a callable that constructs resnet head pooling layer.
+        stem_pool_kernel_size (tuple): pooling kernel size(s).
+        stem_pool_stride (tuple): pooling stride size(s).
+
+        stage_conv_a_kernel_size (tuple): convolutional kernel size(s) for conv_a.
+        stage_conv_b_kernel_size (tuple): convolutional kernel size(s) for conv_b.
+        stage_conv_b_num_groups (tuple): number of groups for groupwise convolution
+            for conv_b. 1 for ResNet, and larger than 1 for ResNeXt.
+        stage_conv_b_dilation (tuple): dilation for 3D convolution for conv_b.
+        stage_spatial_stride (tuple): the spatial stride for each stage.
+        stage_temporal_stride (tuple): the temporal stride for each stage.
+        bottleneck (callable): a callable that constructs bottleneck block layer.
+            Examples include: create_bottleneck_block.
+
+        head_pool (callable): a callable that constructs resnet head pooling layer.
+        head_pool_kernel_size (tuple): the pooling kernel size.
+        head_output_size (tuple): the size of output tensor for head.
+        head_activation (callable): a callable that constructs activation layer.
+        head_output_with_global_average (bool): if True, perform global averaging on
+            the head output.
 
     Returns:
         (nn.Module): basic resnet.
@@ -825,6 +818,9 @@ def create_acoustic_building_block(
     Acoustic building block: a sequence of spatiotemporal Convolution, Normalization,
     and Activations repeated in the following order:
 
+    ::
+
+
                                     Conv3d (conv_a)
                                            ↓
                                  Normalization (norm_a)
@@ -849,36 +845,34 @@ def create_acoustic_building_block(
     Activation examples include: ReLU, Softmax, Sigmoid, and None (no activation).
 
     Args:
-        Convolution related configs:
-            dim_in (int): input channel size to the bottleneck block.
-            dim_inner (int): intermediate channel size of the bottleneck.
-            dim_out (int): output channel size of the bottleneck.
-            conv_a_kernel_size (tuple): convolutional kernel size(s) for conv_a.
-            conv_a_stride (tuple): convolutional stride size(s) for conv_a.
-            conv_a_padding (tuple): convolutional padding(s) for conv_a.
-            conv_a (callable): a callable that constructs the conv_a conv layer, examples
-                include nn.Conv3d, OctaveConv, etc
-            conv_b_kernel_size (tuple): convolutional kernel size(s) for conv_b.
-            conv_b_stride (tuple): convolutional stride size(s) for conv_b.
-            conv_b_padding (tuple): convolutional padding(s) for conv_b.
-            conv_b_num_groups (int): number of groups for groupwise convolution for
-                conv_b.
-            conv_b_dilation (tuple): dilation for 3D convolution for conv_b.
-            conv_b (callable): a callable that constructs the conv_b conv layer, examples
-                include nn.Conv3d, OctaveConv, etc
-            conv_c (callable): a callable that constructs the conv_c conv layer, examples
-                include nn.Conv3d, OctaveConv, etc
 
-        Normalization related configs:
-            norm (callable): a callable that constructs normalization layer, examples
-                include nn.BatchNorm3d, None (not performing normalization).
-            norm_eps (float): normalization epsilon.
-            norm_momentum (float): normalization momentum.
+        dim_in (int): input channel size to the bottleneck block.
+        dim_inner (int): intermediate channel size of the bottleneck.
+        dim_out (int): output channel size of the bottleneck.
+        conv_a_kernel_size (tuple): convolutional kernel size(s) for conv_a.
+        conv_a_stride (tuple): convolutional stride size(s) for conv_a.
+        conv_a_padding (tuple): convolutional padding(s) for conv_a.
+        conv_a (callable): a callable that constructs the conv_a conv layer, examples
+            include nn.Conv3d, OctaveConv, etc
+        conv_b_kernel_size (tuple): convolutional kernel size(s) for conv_b.
+        conv_b_stride (tuple): convolutional stride size(s) for conv_b.
+        conv_b_padding (tuple): convolutional padding(s) for conv_b.
+        conv_b_num_groups (int): number of groups for groupwise convolution for
+            conv_b.
+        conv_b_dilation (tuple): dilation for 3D convolution for conv_b.
+        conv_b (callable): a callable that constructs the conv_b conv layer, examples
+            include nn.Conv3d, OctaveConv, etc
+        conv_c (callable): a callable that constructs the conv_c conv layer, examples
+            include nn.Conv3d, OctaveConv, etc
 
-        Activation related configs:
-            activation (callable): a callable that constructs activation layer, examples
-                include: nn.ReLU, nn.Softmax, nn.Sigmoid, and None (not performing
-                activation).
+        norm (callable): a callable that constructs normalization layer, examples
+            include nn.BatchNorm3d, None (not performing normalization).
+        norm_eps (float): normalization epsilon.
+        norm_momentum (float): normalization momentum.
+
+        activation (callable): a callable that constructs activation layer, examples
+            include: nn.ReLU, nn.Softmax, nn.Sigmoid, and None (not performing
+            activation).
 
     Returns:
         (nn.Module): resnet acoustic bottleneck block.
@@ -997,6 +991,8 @@ def create_acoustic_resnet(
     Build ResNet style models for acoustic recognition. ResNet has three parts:
     Stem, Stages and Head. The three parts are assembled in the following order:
 
+    ::
+
                                          Input
                                            ↓
                                          Stem
@@ -1012,48 +1008,42 @@ def create_acoustic_resnet(
                                          Head
 
     Args:
-        Input clip configs:
-            input_channel (int): number of channels for the input video clip.
-            input_clip_length (int): length of the input video clip.
-            input_crop_size (int): spatial resolution of the input video clip.
 
-        Model configs:
-            model_depth (int): the depth of the resnet.
-            model_num_class (int): the number of classes for the video dataset.
-            dropout_rate (float): dropout rate.
+        input_channel (int): number of channels for the input video clip.
+        input_clip_length (int): length of the input video clip.
+        input_crop_size (int): spatial resolution of the input video clip.
 
-        Normalization configs:
-            norm (callable): a callable that constructs normalization layer.
+        model_depth (int): the depth of the resnet.
+        model_num_class (int): the number of classes for the video dataset.
+        dropout_rate (float): dropout rate.
 
-        Activation configs:
-            activation (callable): a callable that constructs activation layer.
+        norm (callable): a callable that constructs normalization layer.
 
-        Stem configs:
-            stem_dim_out (int): output channel size to stem.
-            stem_conv_kernel_size (tuple): convolutional kernel size(s) of stem.
-            stem_conv_stride (tuple): convolutional stride size(s) of stem.
-            stem_pool (callable): a callable that constructs resnet head pooling layer.
-            stem_pool_kernel_size (tuple): pooling kernel size(s).
-            stem_pool_stride (tuple): pooling stride size(s).
-            stem (callable): a callable that constructs stem layer.
-                Examples include: create_res_video_stem.
+        activation (callable): a callable that constructs activation layer.
 
-        Stage configs:
-            stage_conv_a_kernel_size (tuple): convolutional kernel size(s) for conv_a.
-            stage_conv_b_kernel_size (tuple): convolutional kernel size(s) for conv_b.
-            stage_conv_b_num_groups (int): number of groups for groupwise convolution
-                for conv_b. 1 for ResNet, and larger than 1 for ResNeXt.
-            stage_conv_b_dilation (tuple): dilation for 3D convolution for conv_b.
-            stage_spatial_stride (tuple): the spatial stride for each stage.
-            stage_temporal_stride (tuple): the temporal stride for each stage.
-            bottleneck (callable): a callable that constructs bottleneck block
-                layer.
-                Examples include: create_bottleneck_block.
+        stem_dim_out (int): output channel size to stem.
+        stem_conv_kernel_size (tuple): convolutional kernel size(s) of stem.
+        stem_conv_stride (tuple): convolutional stride size(s) of stem.
+        stem_pool (callable): a callable that constructs resnet head pooling layer.
+        stem_pool_kernel_size (tuple): pooling kernel size(s).
+        stem_pool_stride (tuple): pooling stride size(s).
+        stem (callable): a callable that constructs stem layer.
+            Examples include: create_res_video_stem.
 
-        Head configs:
-            head_pool (callable): a callable that constructs resnet head pooling layer.
-            head_output_size (tuple): the size of output tensor for head.
-            head_activation (callable): a callable that constructs activation layer.
+        stage_conv_a_kernel_size (tuple): convolutional kernel size(s) for conv_a.
+        stage_conv_b_kernel_size (tuple): convolutional kernel size(s) for conv_b.
+        stage_conv_b_num_groups (int): number of groups for groupwise convolution
+            for conv_b. 1 for ResNet, and larger than 1 for ResNeXt.
+        stage_conv_b_dilation (tuple): dilation for 3D convolution for conv_b.
+        stage_spatial_stride (tuple): the spatial stride for each stage.
+        stage_temporal_stride (tuple): the temporal stride for each stage.
+        bottleneck (callable): a callable that constructs bottleneck block
+            layer.
+            Examples include: create_bottleneck_block.
+
+        head_pool (callable): a callable that constructs resnet head pooling layer.
+        head_output_size (tuple): the size of output tensor for head.
+        head_activation (callable): a callable that constructs activation layer.
 
     Returns:
         (nn.Module): acoustic resnet that takes audio inputs in log-mel-spectrogram of
@@ -1133,6 +1123,9 @@ class ResBlock(nn.Module):
     main block in branch2. When the input and output dimensions are different, a
     convolution followed by a normalization will be performed.
 
+    ::
+
+
                                          Input
                                            |-------+
                                            ↓       |
@@ -1185,6 +1178,9 @@ class SeparableBottleneckBlock(nn.Module):
     and Activations repeated in the following order. Requires a tuple of models to be
     provided to conv_b, norm_b, act_b to perform Convolution, Normalization, and
     Activations in parallel Separably.
+
+    ::
+
 
                                     Conv3d (conv_a)
                                            ↓
@@ -1277,6 +1273,9 @@ class BottleneckBlock(nn.Module):
     Bottleneck block: a sequence of spatiotemporal Convolution, Normalization,
     and Activations repeated in the following order:
 
+    ::
+
+
                                     Conv3d (conv_a)
                                            ↓
                                  Normalization (norm_a)
@@ -1353,6 +1352,9 @@ class ResStage(nn.Module):
     """
     ResStage composes sequential blocks that make up a ResNet. These blocks could be,
     for example, Residual blocks, Non-Local layers, or Squeeze-Excitation layers.
+
+    ::
+
 
                                         Input
                                            ↓

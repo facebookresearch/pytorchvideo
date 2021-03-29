@@ -30,6 +30,9 @@ def create_res_basic_head(
     followed by an optional dropout, a fully-connected projection, an activation layer
     and a global spatiotemporal averaging.
 
+    ::
+
+
                                         Pooling
                                            ↓
                                         Dropout
@@ -44,33 +47,29 @@ def create_res_basic_head(
     Pool3d examples include: AvgPool3d, MaxPool3d, AdaptiveAvgPool3d, and None.
 
     Args:
-        Projection related configs:
-            in_features: input channel size of the resnet head.
-            out_features: output channel size of the resnet head.
+        
+        in_features: input channel size of the resnet head.
+        out_features: output channel size of the resnet head.
 
-        Pooling related configs:
-            pool (callable): a callable that constructs resnet head pooling layer,
-                examples include: nn.AvgPool3d, nn.MaxPool3d, nn.AdaptiveAvgPool3d, and
-                None (not applying pooling).
-            pool_kernel_size (tuple): pooling kernel size(s) when not using adaptive
-                pooling.
-            pool_stride (tuple): pooling stride size(s) when not using adaptive pooling.
-            pool_padding (tuple): pooling padding size(s) when not using adaptive
-                pooling.
-            output_size (tuple): spatial temporal output size when using adaptive
-                pooling.
+        pool (callable): a callable that constructs resnet head pooling layer,
+            examples include: nn.AvgPool3d, nn.MaxPool3d, nn.AdaptiveAvgPool3d, and
+            None (not applying pooling).
+        pool_kernel_size (tuple): pooling kernel size(s) when not using adaptive
+            pooling.
+        pool_stride (tuple): pooling stride size(s) when not using adaptive pooling.
+        pool_padding (tuple): pooling padding size(s) when not using adaptive
+            pooling.
+        output_size (tuple): spatial temporal output size when using adaptive
+            pooling.
 
-        Activation related configs:
-            activation (callable): a callable that constructs resnet head activation
-                layer, examples include: nn.ReLU, nn.Softmax, nn.Sigmoid, and None (not
-                applying activation).
+        activation (callable): a callable that constructs resnet head activation
+            layer, examples include: nn.ReLU, nn.Softmax, nn.Sigmoid, and None (not
+            applying activation).
 
-        Dropout related configs:
-            dropout_rate (float): dropout rate.
+        dropout_rate (float): dropout rate.
 
-        Output related configs:
-            output_with_global_average (bool): if True, perform global averaging on temporal
-                and spatial dimensions and reshape output to batch_size x out_features.
+        output_with_global_average (bool): if True, perform global averaging on temporal
+            and spatial dimensions and reshape output to batch_size x out_features.
     """
     if activation is None:
         activation_model = None
@@ -107,6 +106,8 @@ class ResNetBasicHead(nn.Module):
     ResNet basic head. This layer performs an optional pooling operation followed by an
     optional dropout, a fully-connected projection, an optional activation layer and a
     global spatiotemporal averaging.
+
+    ::
 
                                         Pool3d
                                            ↓
