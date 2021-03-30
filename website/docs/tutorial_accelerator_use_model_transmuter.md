@@ -71,7 +71,7 @@ Note that once the model is converted into deploy form, the input size should be
 
 ```python
 # Define example input tensor
-input_blob_size = (1, 3, 2, 6, 6)
+input_blob_size = (1, 3, 4, 6, 6)
 input_tensor = torch.randn(input_blob_size)
 ```
 
