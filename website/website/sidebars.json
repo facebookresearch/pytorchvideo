@@ -3,6 +3,7 @@
     "Introduction": ["why_pytorchvideo"],
     "Models": ["doc_models_somemodel"],
     "Data": ["doc_data_somedataset"],
+    "Model Zoo": ["doc_model_zoo_data", "doc_model_zoo", "doc_model_zoo_accelerator"],
     "Accelerator": ["doc_accelerator_overview"]
   },
   "docs-other": {
