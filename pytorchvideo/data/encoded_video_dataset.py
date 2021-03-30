@@ -52,10 +52,12 @@ class EncodedVideoDataset(torch.utils.data.IterableDataset):
                 augmentations to the clips. The clip output is a dictionary with the
                 following format:
                     {
-                        'video': <video_tensor>,
-                        'label': <index_label>,
+                        'video': <video_tensor>
+                        'label': <index_label>
                         'video_index': <video_index>
                         'clip_index': <clip_index>
+                        'aug_index': <aug_index>, augmentation index as augmentations
+                            might generate multiple views for one clip.
                     }
                 If transform is None, the raw clip output in the above format is
                 returned unmodified.
@@ -85,6 +87,7 @@ class EncodedVideoDataset(torch.utils.data.IterableDataset):
         # from one video. In that case, we keep the store video, label and previous sampled
         # clip time in these variables.
         self._loaded_video_label = None
+        self._loaded_clip = None
         self._next_clip_start_time = 0.0
 
     @property
@@ -102,6 +105,8 @@ class EncodedVideoDataset(torch.utils.data.IterableDataset):
                     'label': <index_label>,
                     'video_index': <video_index>
                     'clip_index': <clip_index>
+                    'aug_index': <aug_index>, augmentation index as augmentations
+                        might generate multiple views for one clip.
                 }
             Otherwise, the transform defines the clip output.
         """
@@ -134,16 +139,23 @@ class EncodedVideoDataset(torch.utils.data.IterableDataset):
                     )
                     continue
 
-            clip_start, clip_end, clip_index, is_last_clip = self._clip_sampler(
-                self._next_clip_start_time, video.duration
-            )
-            clip_data = video.get_clip(clip_start, clip_end)
+            (
+                clip_start,
+                clip_end,
+                clip_index,
+                aug_index,
+                is_last_clip,
+            ) = self._clip_sampler(self._next_clip_start_time, video.duration)
+            # Only load the clip once and reuse previously stored clip if there are multiple
+            # views for augmentations to perform on the same clip.
+            if aug_index == 0:
+                self._loaded_clip = video.get_clip(clip_start, clip_end)
             self._next_clip_start_time = clip_end
 
             clip_is_null = (
-                clip_data is None
-                or clip_data["video"] is None
-                or (clip_data["audio"] is None and self._decode_audio)
+                self._loaded_clip is None
+                or self._loaded_clip["video"] is None
+                or (self._loaded_clip["audio"] is None and self._decode_audio)
             )
             if is_last_clip or clip_is_null:
                 # Close the loaded encoded video and reset the last sampled clip time ready
@@ -160,13 +172,14 @@ class EncodedVideoDataset(torch.utils.data.IterableDataset):
                     )
                     continue
 
-            frames = clip_data["video"]
-            audio_samples = clip_data["audio"]
+            frames = self._loaded_clip["video"]
+            audio_samples = self._loaded_clip["audio"]
             sample_dict = {
                 "video": frames,
                 "video_name": video.name,
                 "video_index": video_index,
                 "clip_index": clip_index,
+                "aug_index": aug_index,
                 **info_dict,
                 **({"audio": audio_samples} if audio_samples is not None else {}),
             }
@@ -236,6 +249,8 @@ def labeled_encoded_video_dataset(
                         'label': <index_label>,
                         'video_index': <video_index>
                         'clip_index': <clip_index>
+                        'aug_index': <aug_index>, augmentation index as augmentations
+                            might generate multiple views for one clip.
                     }
                 If transform is None, the raw clip output in the above format is
                 returned unmodified.

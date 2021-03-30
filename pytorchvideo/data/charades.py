@@ -61,6 +61,8 @@ class Charades(torch.utils.data.IterableDataset):
                         'video_label': <index_label> for video-level label,
                         'video_index': <video_index>,
                         'clip_index': <clip_index>,
+                        'aug_index': <aug_index>, augmentation index as augmentations
+                            might generate multiple views for one clip.
                     }
                 If transform is None, the raw clip output in the above format is
                 returned unmodified.
@@ -89,6 +91,7 @@ class Charades(torch.utils.data.IterableDataset):
         # from one video. In that case, we keep the store video, label and previous sampled
         # clip time in these variables.
         self._loaded_video = None
+        self._loaded_clip = None
         self._next_clip_start_time = 0.0
 
     @staticmethod
@@ -125,6 +128,8 @@ class Charades(torch.utils.data.IterableDataset):
                     'video_label': <index_label> for video-level label,
                     'video_index': <video_index>,
                     'clip_index': <clip_index>,
+                    'aug_index': <aug_index>, augmentation index as augmentations
+                        might generate multiple views for one clip.
                 }
             Otherwise, the transform defines the clip output.
         """
@@ -140,11 +145,17 @@ class Charades(torch.utils.data.IterableDataset):
             video = FrameVideo.from_frame_paths(path_to_video_frames)
             self._loaded_video = (video, video_index)
 
-        clip_start, clip_end, clip_index, is_last_clip = self._clip_sampler(
+        clip_start, clip_end, clip_index, aug_index, is_last_clip = self._clip_sampler(
             self._next_clip_start_time, video.duration
         )
-        clip = video.get_clip(clip_start, clip_end, self._frame_filter)
-        frames, frame_indices = clip["video"], clip["frame_indices"]
+        # Only load the clip once and reuse previously stored clip if there are multiple
+        # views for augmentations to perform on the same clip.
+        if aug_index == 0:
+            self._loaded_clip = video.get_clip(clip_start, clip_end, self._frame_filter)
+        frames, frame_indices = (
+            self._loaded_clip["video"],
+            self._loaded_clip["frame_indices"],
+        )
         self._next_clip_start_time = clip_end
 
         if is_last_clip:
@@ -163,6 +174,7 @@ class Charades(torch.utils.data.IterableDataset):
             "video_name": str(video_index),
             "video_index": video_index,
             "clip_index": clip_index,
+            "aug_index": aug_index,
         }
         if self._transform is not None:
             sample_dict = self._transform(sample_dict)

@@ -160,3 +160,40 @@ def convert_to_one_hot(targets: torch.Tensor, num_class: int) -> torch.Tensor:
     one_hot_targets.scatter_(1, targets.long(), 1)
 
     return one_hot_targets
+
+
+def uniform_crop(frames: torch.Tensor, size: int, spatial_idx: int = 1) -> torch.Tensor:
+    """
+    Perform uniform spatial sampling on the frames based on three-crop setting.
+        If width is larger than height, take left, center and right crop.
+        If height is larger than width, take top, center, and bottom crop.
+    Args:
+        frames (tensor): A video tensor of shape (C, T, H, W) to perform uniform crop.
+        size (int): Desired height and weight size to crop the frames.
+        spatial_idx (int): 0, 1, or 2 for left, center, and right crop if width
+            is larger than height. Or 0, 1, or 2 for top, center, and bottom
+            crop if height is larger than width.
+    Returns:
+        cropped (tensor): A cropped video tensor of shape (C, T, size, size).
+    """
+
+    assert spatial_idx in [0, 1, 2]
+    height = frames.shape[2]
+    width = frames.shape[3]
+
+    y_offset = int(math.ceil((height - size) / 2))
+    x_offset = int(math.ceil((width - size) / 2))
+
+    if height > width:
+        if spatial_idx == 0:
+            y_offset = 0
+        elif spatial_idx == 2:
+            y_offset = height - size
+    else:
+        if spatial_idx == 0:
+            x_offset = 0
+        elif spatial_idx == 2:
+            x_offset = width - size
+    cropped = frames[:, :, y_offset : y_offset + size, x_offset : x_offset + size]
+
+    return cropped

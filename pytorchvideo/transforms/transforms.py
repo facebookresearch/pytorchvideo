@@ -82,3 +82,23 @@ class RandomShortSideScale(torch.nn.Module):
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         size = torch.randint(self._min_size, self._max_size + 1, (1,)).item()
         return pytorchvideo.transforms.functional.short_side_scale(x, size)
+
+
+class UniformCropVideo(torch.nn.Module):
+    """
+    nn.Module wrapper for pytorchvideo.transforms.functional.uniform_crop.
+    """
+
+    def __init__(
+        self, size: int, video_key: str = "video", aug_index_key: str = "aug_index"
+    ):
+        super().__init__()
+        self._size = size
+        self._video_key = video_key
+        self._aug_index_key = aug_index_key
+
+    def __call__(self, x: Dict[str, torch.Tensor]) -> Dict[str, torch.Tensor]:
+        x[self._video_key] = pytorchvideo.transforms.functional.uniform_crop(
+            x[self._video_key], self._size, x[self._aug_index_key]
+        )
+        return x

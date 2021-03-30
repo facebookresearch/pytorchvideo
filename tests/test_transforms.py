@@ -7,11 +7,13 @@ from pytorchvideo.data.utils import thwc_to_cthw
 from pytorchvideo.transforms import (
     ApplyTransformToKey,
     RandomShortSideScale,
+    UniformCropVideo,
     UniformTemporalSubsample,
 )
 from pytorchvideo.transforms.functional import (
     repeat_temporal_frames_subsample,
     short_side_scale,
+    uniform_crop,
     uniform_temporal_subsample,
 )
 from torchvision.transforms import Compose
@@ -144,6 +146,51 @@ class TestTransforms(unittest.TestCase):
         expected_shape = ((3, 32, 10, 10), (3, 8, 10, 10))
         for idx in range(len(actual)):
             self.assertEqual(actual[idx].shape, expected_shape[idx])
+
+    def test_uniform_crop(self):
+        # For videos with height < width.
+        video = thwc_to_cthw(create_dummy_video_frames(20, 30, 40)).to(
+            dtype=torch.float32
+        )
+        # Left crop.
+        actual = uniform_crop(video, size=20, spatial_idx=0)
+        self.assertTrue(actual.equal(video[:, :, 5:25, :20]))
+        # Center crop.
+        actual = uniform_crop(video, size=20, spatial_idx=1)
+        self.assertTrue(actual.equal(video[:, :, 5:25, 10:30]))
+        # Right crop.
+        actual = uniform_crop(video, size=20, spatial_idx=2)
+        self.assertTrue(actual.equal(video[:, :, 5:25, 20:]))
+
+        # For videos with height > width.
+        video = thwc_to_cthw(create_dummy_video_frames(20, 40, 30)).to(
+            dtype=torch.float32
+        )
+        # Top crop.
+        actual = uniform_crop(video, size=20, spatial_idx=0)
+        self.assertTrue(actual.equal(video[:, :, :20, 5:25]))
+        # Center crop.
+        actual = uniform_crop(video, size=20, spatial_idx=1)
+        self.assertTrue(actual.equal(video[:, :, 10:30, 5:25]))
+        # Bottom crop.
+        actual = uniform_crop(video, size=20, spatial_idx=2)
+        self.assertTrue(actual.equal(video[:, :, 20:, 5:25]))
+
+    def test_uniform_crop_transforms(self):
+        video = thwc_to_cthw(create_dummy_video_frames(10, 30, 40)).to(
+            dtype=torch.float32
+        )
+        test_clip = {"video": video, "aug_index": 1, "label": 0}
+
+        transform = UniformCropVideo(20)
+
+        actual = transform(test_clip)
+        c, t, h, w = actual["video"].shape
+        self.assertEqual(c, 3)
+        self.assertEqual(t, 10)
+        self.assertEqual(h, 20)
+        self.assertEqual(w, 20)
+        self.assertTrue(actual["video"].equal(video[:, :, 5:25, 10:30]))
 
     # TODO: add a test case for short_side_scale in the next diff
     # (a sanity check to make sure the interp is not changed)
