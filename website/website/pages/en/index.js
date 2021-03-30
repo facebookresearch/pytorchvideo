@@ -165,21 +165,21 @@ from pytorchvideo.models import foo
             },
             {
               content:
-                'Variety of state of the art pretrained video models that are ready to use.',
+                'Variety of state of the art pretrained video models and their assciated benchmarks that are ready to use.',
               image: `${baseUrl}img/modelzoo.svg`,
               imageAlign: 'top',
-              title: 'Extensive Model Zoo',
+              title: 'Reproducible Model Zoo',
             },
+            // {
+            //   content:
+            //     'Variety of benchmark tasks available to evaluate the models.',
+            //   image: `${baseUrl}img/reproducible.svg`,
+            //   imageAlign: 'top',
+            //   title: 'Reproducible Benchmarks',
+            // },
             {
               content:
-                'Variety of benchmark tasks available to evaluate the models.',
-              image: `${baseUrl}img/reproducible.svg`,
-              imageAlign: 'top',
-              title: 'Reproducible Benchmarks',
-            },
-            {
-              content:
-                'Video-focused fast and efficient components that are easy to use.',
+                'Video-focused fast and efficient components that are easy to use. Supports accelerated inference on hardware.',
               image: `${baseUrl}img/efficient.svg`,
               imageAlign: 'top',
               title: 'Efficient Video Components',
