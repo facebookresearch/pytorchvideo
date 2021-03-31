@@ -31,9 +31,9 @@ For each model in model zoo, we provide pretrain checkpoint state_dict for model
 
 
 ```python
-path_to_checkpoint = 'path_to_checkpint'  # fill in the real checkpoint path before you run!
-with open(path_to_checkpoint, "rb") as f:
-    checkpoint = torch.load(f, map_location="cpu")
+from torch.hub import load_state_dict_from_url
+checkpoint_path = 'https://dl.fbaipublicfiles.com/pytorchvideo/model_zoo/kinetics/efficient_x3d_xs_original_form.pyth'
+checkpoint = load_state_dict_from_url(checkpoint_path)
 
 model_efficient_x3d_xs.load_state_dict(checkpoint)
 ```
