@@ -16,16 +16,24 @@
     <img src="https://codecov.io/gh/facebookresearch/pytorchvideo/branch/oss_website_docs/graph/badge.svg?token=OSZSI6JU31"/>
   </a>
   <p align="center">
-    <i> A library for accelerating video research.</i>
+    <i> A deep learning library for video understanding research.</i>
   </p>
   <p align="center">
     <i>Check the <a href="https://pytorchvideo.org/">website</a> for more information.</i>
   </p>
  </p>
  
-# Introduction
+## Introduction
 
-TODO
+PyTorchVideo is a deeplearning library with a focus on video understanding work. PytorchVideo provides resusable, modular and efficient components needed accelerate the video understanding research. PyTorchVideo is developed using [PyTorch](https://pytorch.org) and supports different deeplearning video components like video models, video datasets, and video-specific transforms.
+
+Key features include:
+
+- Extensive video model zoo with accompanying benchmarks.
+- Extensive data loaders supporting different datasets.
+- Specialized video-focused components with accelerated on-hardware performance. 
+- Config-free modular and easy to use implementations.
+
 
 ## Installation
 
@@ -37,7 +45,8 @@ PyTorchVideo is released under the [Apache 2.0 License](LICENSE).
 
 ## Tutorials
 
-TODO
+Get started with PyTorchVideo by tying out one of our tutorials[tutorails](https://pytorchvideo.org/tutorials/) or by running examples in the [projects folder](https://github.com/facebookresearch/pytorchvideo/tree/master/projects)
+
 
 ## Model Zoo and Baselines
 We provide a large set of baseline results and trained models available for download in the [PyTorchVideo Model Zoo](https://github.com/facebookresearch/pytorchvideo/blob/master/MODEL_ZOO.md).

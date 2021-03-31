@@ -122,7 +122,6 @@ from pytorchvideo.models import bar
             </li>
             <li>
               <strong>Try Video classification with Model Zoo  </strong>
-              e.g. compute the chamfer loss between two meshes:
               <MarkdownBlock>{codeExample}</MarkdownBlock>
             </li>
           </ol>

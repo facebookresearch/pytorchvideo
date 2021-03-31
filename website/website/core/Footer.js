@@ -1,16 +1,45 @@
 /**
- * Copyright (c) Facebook, Inc. and its affiliates.
+ * Copyright (c) 2017-present, Facebook, Inc.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  */
 
+
+const PropTypes = require("prop-types");
 const React = require('react');
+
+function SocialFooter(props) {
+  const repoUrl = `https://github.com/${props.config.organizationName}/${props.config.projectName}`;
+  return (
+    <div className="footerSection">
+      <div className="social">
+        <a
+          className="github-button" // part of the https://buttons.github.io/buttons.js script in siteConfig.js
+          href={repoUrl}
+          data-count-href={`${repoUrl}/stargazers`}
+          data-show-count="true"
+          data-count-aria-label="# stargazers on GitHub"
+          aria-label="Star PytorchVideo on GitHub"
+        >
+          {props.config.projectName}
+        </a>
+      </div>
+    </div>
+  );
+}
+
+SocialFooter.propTypes = {
+  config: PropTypes.object
+};
 
 class Footer extends React.Component {
   docUrl(doc, language) {
     const baseUrl = this.props.config.baseUrl;
-    return `${baseUrl}docs/${language ? `${language}/` : ''}${doc}`;
+    const docsUrl = this.props.config.docsUrl;
+    const docsPart = `${docsUrl ? `${docsUrl}/` : ''}`;
+    const langPart = `${language ? `${language}/` : ''}`;
+    return `${baseUrl}${docsPart}${langPart}${doc}`;
   }
 
   pageUrl(doc, language) {
@@ -19,76 +48,15 @@ class Footer extends React.Component {
   }
 
   render() {
+    const repoUrl = `https://github.com/${this.props.config.organizationName}/${this.props.config.projectName}`;
     return (
       <footer className="nav-footer" id="footer">
         <section className="sitemap">
-          <a href={this.props.config.baseUrl} className="nav-home">
-            {this.props.config.footerIcon && (
-              <img
-                src={this.props.config.baseUrl + this.props.config.footerIcon}
-                alt={this.props.config.title}
-                width="66"
-                height="58"
-              />
-            )}
-          </a>
-          <div>
-            <h5>Docs</h5>
-            <a href={this.docUrl('why_pytorchvideo', this.props.language)}>
-              About PyTorchVideo
-            </a>
-            <a href={this.docUrl('tutorial_overview', this.props.language)}>
-              Getting Started
-            </a>
-          </div>
-          <div>
-            <h5>Community</h5>
-            <a
-              href="https://www.slack.com/TODO"
-              target="_blank"
-              rel="noreferrer noopener">
-              Slack
-            </a>
-          </div>
-          <div>
-            <h5>Legal</h5>
-            <a
-              href="https://opensource.facebook.com/legal/terms"
-              target="_blank"
-              rel="noreferrer noopener">
-              Terms of Use
-            </a>
-            <a
-              href="https://opensource.facebook.com/legal/data-policy"
-              target="_blank"
-              rel="noreferrer noopener">
-              Data Policy
-            </a>
-            <a
-              href="https://opensource.facebook.com/legal/cookie-policy"
-              target="_blank"
-              rel="noreferrer noopener">
-              Cookie Policy
-            </a>
-          </div>
-          <div>
-            <h5>More</h5>
-            <a href={this.props.config.repoUrl}>GitHub</a>
-            <a
-              className="github-button"
-              href={this.props.config.repoUrl}
-              data-icon="octicon-star"
-              data-count-href="/facebookresearch/pytorchvideo/stargazers"
-              data-show-count="true"
-              data-count-aria-label="# stargazers on GitHub"
-              aria-label="Star this project on GitHub">
-              Star
-            </a>
-          </div>
+          <SocialFooter config={this.props.config} />
         </section>
 
         <a
-          href="https://code.facebook.com/projects/"
+          href="https://opensource.facebook.com/"
           target="_blank"
           rel="noreferrer noopener"
           className="fbOpenSource">
@@ -99,7 +67,22 @@ class Footer extends React.Component {
             height="45"
           />
         </a>
-        <section className="copyright">{this.props.config.copyright}</section>
+        <section className="copyright">{this.props.config.copyright}
+          <br/>
+          Legal:
+          <a
+            href="https://opensource.facebook.com/legal/privacy/"
+            target="_blank"
+            rel="noreferrer noopener">
+            Privacy
+          </a>
+          <a
+            href="https://opensource.facebook.com/legal/terms/"
+            target="_blank"
+            rel="noreferrer noopener">
+            Terms
+          </a>
+        </section>
       </footer>
     );
   }
