@@ -1,6 +1,6 @@
 This website was created with [Docusaurus](https://docusaurus.io/).
 
-# Building the PyTorch3D website
+# Building the PyTorchVideo website
 
 ## Install
 
