@@ -27,10 +27,9 @@ const siteConfig = {
 
   // For no header links in the top nav bar -> headerLinks: [],
   headerLinks: [
-    {doc: 'why_pytorchvideo', label: 'Docs'},
     {doc: 'tutorial_overview', label: 'Tutorials'},
-    {href: "file:///Users/kalyanv/pytorchvideo/docs/build/html/index.html", label: 'API'},
-    {href: "https://github.com/fairinternal/pytorchvideo", label: 'GitHub'},
+    {href: "file:///Users/kalyanv/pytorchvideo/docs/build/html/index.html", label: 'Docs'},
+    {href: "https://github.com/facebookresearch/pytorchvideo", label: 'GitHub'},
   ],
 
 

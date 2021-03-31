@@ -60,8 +60,9 @@ class HomeSplash extends React.Component {
         <div className="inner">
           <ProjectTitle tagline={siteConfig.tagline} title={siteConfig.title} />
           <PromoSection>
-            <Button href={docUrl('why_pytorchvideo.html')}>Docs</Button>
+            <Button href={'#quickstart'}>Get Started</Button>
             <Button href={docUrl('tutorial_overview.html')}>Tutorials</Button>
+            <Button href={"https://github.com/facebookresearch/pytorchvideo"}>GitHub</Button>
           </PromoSection>
         </div>
       </SplashContainer>
@@ -104,8 +105,8 @@ class Index extends React.Component {
     const pre = '```';
 
     const codeExample = `${pre}python
-from pytorchvideo import blah
-from pytorchvideo.models import foo
+from pytorchvideo import foo
+from pytorchvideo.models import bar
     `;
 
     const QuickStart = () => (
@@ -117,10 +118,10 @@ from pytorchvideo.models import foo
         <Container>
           <ol>
             <li>
-              <strong>Install pytorchvideo  </strong> (following the instructions <a href="https://github.com/facebookresearch/pytorchvideo/INSTALL.md">here</a>)
+              <strong>Install pytorchvideo  </strong> (following the instructions <a href="https://github.com/facebookresearch/pytorchvideo/blob/master/INSTALL.md">here</a>)
             </li>
             <li>
-              <strong>Try a few video operations  </strong>
+              <strong>Try Video classification with Model Zoo  </strong>
               e.g. compute the chamfer loss between two meshes:
               <MarkdownBlock>{codeExample}</MarkdownBlock>
             </li>
@@ -223,6 +224,7 @@ from pytorchvideo.models import foo
         <HomeSplash siteConfig={siteConfig} language={language} />
         <div className="landingPage mainContainer">
           <Features />
+          <QuickStart />
         </div>
       </div>
     );

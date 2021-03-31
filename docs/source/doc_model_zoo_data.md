@@ -1,10 +1,6 @@
----
-id: doc_model_zoo_data
-title: PyTorchVideo Data Preparation
-sidebar_label: Data preparation
----
+## Data Preparation
 
-## Kinetics
+### Kinetics
 
 For more information about Kinetics dataset, please refer the official [website](https://deepmind.com/research/open-source/kinetics). You can take the following steps to prepare the dataset:
 
@@ -25,7 +21,7 @@ path_to_video_N label_N
 All the Kinetics models in the Model Zoo are trained and tested with the same data as [Non-local Network](https://github.com/facebookresearch/video-nonlocal-net/blob/master/DATASET.md) and [PySlowFast](https://github.com/facebookresearch/SlowFast/blob/master/slowfast/datasets/DATASET.md). For dataset specific issues, please reach out to the [dataset provider](https://deepmind.com/research/open-source/kinetics).
 
 
-## Charades
+### Charades
 
 We follow [PySlowFast](https://github.com/facebookresearch/SlowFast/blob/master/slowfast/datasets/DATASET.md) to prepare the Charades dataset as follow:
 
@@ -34,7 +30,7 @@ We follow [PySlowFast](https://github.com/facebookresearch/SlowFast/blob/master/
 2. Download the *frame list* from the following links: ([train](https://dl.fbaipublicfiles.com/pyslowfast/dataset/charades/frame_lists/train.csv), [val](https://dl.fbaipublicfiles.com/pyslowfast/dataset/charades/frame_lists/val.csv)).
 
 
-## Something-Something V2
+### Something-Something V2
 
 We follow [PySlowFast](https://github.com/facebookresearch/SlowFast/blob/master/slowfast/datasets/DATASET.md) to prepare the Something-Something V2 dataset as follow:
 
@@ -43,10 +39,9 @@ We follow [PySlowFast](https://github.com/facebookresearch/SlowFast/blob/master/
 2. Download the *frame list* from the following links: ([train](https://dl.fbaipublicfiles.com/pyslowfast/dataset/ssv2/frame_lists/train.csv), [val](https://dl.fbaipublicfiles.com/pyslowfast/dataset/ssv2/frame_lists/val.csv)).
 
 3. Extract the frames from downloaded videos at 30 FPS. We used ffmpeg-4.1.3 with command:
-```
-ffmpeg -i "${video}" -r 30 -q:v 1 "${out_name}"
-```
-
+	```
+	ffmpeg -i "${video}" -r 30 -q:v 1 "${out_name}"
+	```
 4. The extracted frames should be organized to be consistent with the paths in frame lists.
 
 

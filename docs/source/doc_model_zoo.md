@@ -1,8 +1,5 @@
----
-id: doc_model_zoo
-title: PyTorchVideo Model Zoo
-sidebar_label: Model zoo and benchmarks
----
+
+
 
 ## PyTorchVideo Model Zoo and Benchmarks
 
@@ -26,6 +23,7 @@ X3D      | S     | \-       | 13x6                       | 73.33 | 91.27 | 2.96 
 X3D      | M     | \-       | 16x5                       | 75.94 | 92.72 | 6.72      | 3.79       | [link](https://dl.fbaipublicfiles.com/pytorchvideo/model_zoo/kinetics/X3D\_M.pyth)    
 
 ### Something-Something V2
+
 | arch     | depth | pretrain     | frame length x sample rate | top 1 | top 5 | Flops (G) | Params (M) | Model |
 | -------- | ----- | ------------ | -------------------------- | ----- | ----- | --------- | ---------- | ----- |
 | Slow     | R50   | Kinetics 400 | 8x8                        | 60.04 | 85.19 | 55.10     | 31.96      | [link](https://dl.fbaipublicfiles.com/pytorchvideo/model_zoo/ssv2/SLOW\_8x8\_R50.pyth)  |
@@ -33,10 +31,17 @@ X3D      | M     | \-       | 16x5                       | 75.94 | 92.72 | 6.72 
 
 
 ### Charades
+
 | arch     | depth | pretrain     | frame length x sample rate | MAP   | Flops (G) | Params (M) | Model |
 | -------- | ----- | ------------ | ---------------- | ----- | --------- | ---------- | ----- |
 | Slow     | R50   | Kinetics 400 | 8x8              | 34.72 | 55.10     | 31.96      | [link](https://dl.fbaipublicfiles.com/pytorchvideo/model_zoo/charades/SLOW\_8x8\_R50.pyth)  |
 | SlowFast | R50   | Kinetics 400 | 8x8              | 37.24 | 66.60     | 34.00      | [link](https://dl.fbaipublicfiles.com/pytorchvideo/model_zoo/charades/SLOWFAST\_8x8\_R50.pyth)   |
+
+
+### Using PytorchVideo model zoo
+We provide several different ways to use PyTorchVideo model zoo.
+* The models have been integrated into TorchHub, so could be loaded with TorchHub with or without pre-trained models. Additionally, we provide a [tutorial]() which goes over the steps needed to load models from TorchHub and perform inference.
+* PyTorchVideo models are also supported in PySlowFast. You can use [PySlowFast workflow]() to train or test PyTorchVideo models. 
 
 
 Notes:
@@ -44,7 +49,4 @@ Notes:
 * For more details on the data preparation, you can refer to [PyTorchVideo Data Preparation](doc_model_zoo_data).
 
 
-## Use PytorchVideo model zoo
-We provide several different ways to use PyTorchVideo model zoo.
-* The models have been integrated into TorchHub, so could be loaded with TorchHub with or without pre-trained models. Additionally, we provide a [tutorial]() which goes over the steps needed to load models from TorchHub and perform inference.
-* PyTorchVideo models are also supported in PySlowFast. You can use [PySlowFast workflow]() to train or test PyTorchVideo models. 
+
