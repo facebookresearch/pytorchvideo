@@ -13,8 +13,7 @@ Welcome to PyTorchVideo's documentation!
    :maxdepth: 1
    :caption: Models
 
-   doc_models_overview
-
+   models_overview
 
 .. toctree::
    :maxdepth: 1
