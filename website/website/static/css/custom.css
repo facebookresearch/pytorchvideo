@@ -19,7 +19,7 @@ html body {
 }
 
 .fixedHeaderContainer header .logo {
-  height: 50px;
+  height: 75px;
 }
 
 .fixedHeaderContainer header a:nth-child(2) {

@@ -17,7 +17,7 @@ The PyTorchVideo Kinetics dataset is just an alias for the general pytorchvideo.
 - transform - this provides a way to apply user defined data preprocessing or augmentation before batch collating by the PyTorch data loader. We'll show an example using this later.
 
 
-```
+```python
 import os
 import pytorch_lightning
 import pytorchvideo.data
@@ -66,7 +66,7 @@ class KineticsDataModule(pytorch_lightning.LightningDataModule):
 
 As mentioned above, PyTorchVideo datasets take a "transform" callable arg that defines custom processing (e.g. augmentations, normalization) that's applied to each clip. The callable arg takes a clip dictionary defining the different modalities and metadata. pytorchvideo.data.Kinetics clips have the following dictionary format:
 
-```
+```python
   {
      'video': <video_tensor>,     # Shape: (C, T, H, W)
      'audio': <audio_tensor>,     # Shape: (S)
@@ -81,7 +81,7 @@ PyTorchVideo provides several transforms which you can see here (TODO link to tr
 
 Below we revise the LightningDataModule from the last section to include transforms coming from both TorchVision and PyTorchVideo. For brevity we'll just show the KineticsDataModule.train_dataloader method. The validation dataset transforms would be the same just without the augmentations (RandomShortSideScale, RandomCropVideo, RandomHorizontalFlipVideo).
 
-```
+```python
 from pytorchvideo.transforms import (
     ApplyTransformToKey,
     RandomShortSideScale,
@@ -142,7 +142,7 @@ return torch.utils.data.DataLoader(
 
 All PyTorchVideo models and layers can be built with simple, reproducible factory functions. We call this the "flat" model interface because the args don't require hierachies of configs to be used. An example building a default 3D ResNet can be found below. See the docs for more configuration options (TODO link to model docs).
 
-```
+```python
 import pytorchvideo.models.resnet
 
 def make_kinetics_resnet():
@@ -159,7 +159,7 @@ def make_kinetics_resnet():
 
 To put everything together, let's create a pytorch_lightning.LightningModule (TODO link to docs). This defines the train and validation step code (i.e. the code inside the training and evaluation loops), and the optimizer.
 
-```
+```python
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -202,7 +202,7 @@ class VideoClassificationLightningModule(pytorch_lightning.LightningModule):
 
 Our VideoClassificationLightningModule and KineticsDataModule are ready be trained together using the pytorch_lightning.Trainer (TODO link to docs)!. The trainer class has many arguments to define the training environment (e.g. num_gpus, distributed_backend). To keep things simple we'll just use the default local cpu training but note that this would likely take weeks to train so you might want to use more performant settings based on your environment.
 
-```
+```python
   def train():
     classification_module = VideoClassificationLightningModule()
     data_module = KineticsDataModule()
