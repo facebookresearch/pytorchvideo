@@ -34,12 +34,12 @@ You can construct a model with random weights by calling its constructor:
 ```
 import pytorchvideo.models as models
 
-resnet = models.`create_resnet`()
-acoustic_resnet = models.`create_acoustic_resnet`()
-slowfast = models.`create_slowfast`()
-x3d = models.`create_x3d`()
-r2plus1d = models.`create_r2plus1d`()
-csn = models.`create_csn`()
+resnet = models.create_resnet()
+acoustic_resnet = models.create_acoustic_resnet()
+slowfast = models.create_slowfast()
+x3d = models.create_x3d()
+r2plus1d = models.create_r2plus1d()
+csn = models.create_csn()
 ```
 
 You can verify whether you have built the model successfully by:
@@ -61,7 +61,7 @@ You can construct a layer with random weights by calling its constructor:
 import pytorchvideo.layers as layers
 
 nonlocal = layers.create_nonlocal(dim_in=256, dim_inner=128)
-swish = layers.`Swish`()
+swish = layers.Swish()
 conv_2plus1d = layers.create_conv_2plus1d(in_channels=256, out_channels=512)
 ```
 
@@ -94,7 +94,7 @@ You can construct a head with random weights by calling its constructor:
 import pytorchvideo.models as models
 
 res_head = models.head.create_res_basic_head(in_features, out_features)
-x3d_head = models.x3d.`create_x3d_head`(dim_in=1024, dim_inner=512, dim_out=2048, num_classes=400)
+x3d_head = models.x3d.create_x3d_head(dim_in=1024, dim_inner=512, dim_out=2048, num_classes=400)
 ```
 
 You can verify whether you have built the head successfully by:
@@ -120,7 +120,7 @@ You can construct a loss by calling its constructor:
 ```
 import pytorchvideo.models as models
 
-simclr_loss = models.`SimCLR`()
+simclr_loss = models.SimCLR()
 ```
 
 You can verify whether you have built the loss successfully by:
@@ -141,41 +141,40 @@ loss = simclr_loss(view1, view2)
 
 PyTorchVideo also supports building models with customized components, which is an important feature for video understanding research. Here we take a standard stem model as an example, show how to build each resnet components (head, backbone, stem) separately, and how to use your customized components to replace standard components.
 
-```
-1. Define a new backbone (e.g. MobileNet)
-Create a new file mmdet/models/backbones/mobilenet.py.
 
-from pytorchvideo.models.stem import `create_res_basic_stem`
+```
+from pytorchvideo.models.stem import create_res_basic_stem
 
 
 # Create standard stem layer.
-`stem ``=`` create_res_basic_stem``(``in_channels``=``3``,`` out_channels``=``64``)`
+stem = create_res_basic_stem(in_channels=3, out_channels=64)
 
-`# Create customized stem layer with YourFancyNorm`
-`stem ``=`` create_res_basic_stem``(`
-`    ``in_channels``=``3``,`` `
-`    out_channels``=``64``,`` `
-`    norm``=``YourFancyNorm``,``  ``# GhostNorm for example`
-`)`
+# Create customized stem layer with YourFancyNorm
+stem = create_res_basic_stem(
+    in_channels=3, 
+    out_channels=64, 
+    norm=YourFancyNorm,  # GhostNorm for example
+)
 
-`# Create customized stem layer with YourFancyConv`
-`stem ``=`` create_res_basic_stem``(`
-`    in_channels``=``3``,`` `
-`    out_channels``=``64``,`` `
-`    conv``=``YourFancyConv``,``  ``# OctConv for example`
-`)`
+# Create customized stem layer with YourFancyConv
+stem = create_res_basic_stem(
+    in_channels=3, 
+    out_channels=64, 
+    conv=YourFancyConv,  # OctConv for example
+)
 
-`# Create customized stem layer with YourFancyAct`
-`stem ``=`` create_res_basic_stem``(`
-`    in_channels``=``3``,`` `
-`    out_channels``=``64``,`` `
-`    activation``=``YourFancyAct``,``  ``# Swish for example`
-`)`
+# Create customized stem layer with YourFancyAct
+stem = create_res_basic_stem(
+    in_channels=3, 
+    out_channels=64, 
+    activation=YourFancyAct,  # Swish for example
+)
 
-`# Create customized stem layer with YourFancyPool`
-`stem ``=`` create_res_basic_stem``(`
-`    in_channels``=``3``,`` `
-`    out_channels``=``64``,`` `
-`    pool``=YourFancyPool``,``  ``# MinPool for example`
-`)`
+# Create customized stem layer with YourFancyPool
+stem = create_res_basic_stem(
+    in_channels=3, 
+    out_channels=64, 
+    pool=YourFancyPool,  # MinPool for example
+)
+
 ```
