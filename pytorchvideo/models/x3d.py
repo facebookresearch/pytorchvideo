@@ -33,6 +33,8 @@ def create_x3d_stem(
     """
     Creates the stem layer for X3D. It performs spatial Conv, temporal Conv, BN, and Relu.
 
+    ::
+
                                         Conv_xy
                                            ↓
                                         Conv_t
@@ -42,23 +44,20 @@ def create_x3d_stem(
                                        Activation
 
     Args:
-        Convolution related configs:
-            in_channels (int): input channel size of the convolution.
-            out_channels (int): output channel size of the convolution.
-            conv_kernel_size (tuple): convolutional kernel size(s).
-            conv_stride (tuple): convolutional stride size(s).
-            conv_padding (tuple): convolutional padding size(s).
+        in_channels (int): input channel size of the convolution.
+        out_channels (int): output channel size of the convolution.
+        conv_kernel_size (tuple): convolutional kernel size(s).
+        conv_stride (tuple): convolutional stride size(s).
+        conv_padding (tuple): convolutional padding size(s).
 
-        BN related configs:
-            norm (callable): a callable that constructs normalization layer, options
-                include nn.BatchNorm3d, None (not performing normalization).
-            norm_eps (float): normalization epsilon.
-            norm_momentum (float): normalization momentum.
+        norm (callable): a callable that constructs normalization layer, options
+            include nn.BatchNorm3d, None (not performing normalization).
+        norm_eps (float): normalization epsilon.
+        norm_momentum (float): normalization momentum.
 
-        Activation related configs:
-            activation (callable): a callable that constructs activation layer, options
-                include: nn.ReLU, nn.Softmax, nn.Sigmoid, and None (not performing
-                activation).
+        activation (callable): a callable that constructs activation layer, options
+            include: nn.ReLU, nn.Softmax, nn.Sigmoid, and None (not performing
+            activation).
 
     Returns:
         (nn.Module): X3D stem layer.
@@ -123,6 +122,8 @@ def create_x3d_bottleneck_block(
     Bottleneck block for X3D: a sequence of Conv, Normalization with optional SE block,
     and Activations repeated in the following order:
 
+    ::
+
                                     Conv3d (conv_a)
                                            ↓
                                  Normalization (norm_a)
@@ -142,26 +143,23 @@ def create_x3d_bottleneck_block(
                                  Normalization (norm_c)
 
     Args:
-        Convolution related configs:
-            dim_in (int): input channel size to the bottleneck block.
-            dim_inner (int): intermediate channel size of the bottleneck.
-            dim_out (int): output channel size of the bottleneck.
-            conv_kernel_size (tuple): convolutional kernel size(s) for conv_b.
-            conv_stride (tuple): convolutional stride size(s) for conv_b.
+        dim_in (int): input channel size to the bottleneck block.
+        dim_inner (int): intermediate channel size of the bottleneck.
+        dim_out (int): output channel size of the bottleneck.
+        conv_kernel_size (tuple): convolutional kernel size(s) for conv_b.
+        conv_stride (tuple): convolutional stride size(s) for conv_b.
 
-        Normalization related configs:
-            norm (callable): a callable that constructs normalization layer, examples
-                include nn.BatchNorm3d, None (not performing normalization).
-            norm_eps (float): normalization epsilon.
-            norm_momentum (float): normalization momentum.
-            se_ratio (float): if > 0, apply SE to the 3x3x3 conv, with the SE
-                channel dimensionality being se_ratio times the 3x3x3 conv dim.
+        norm (callable): a callable that constructs normalization layer, examples
+            include nn.BatchNorm3d, None (not performing normalization).
+        norm_eps (float): normalization epsilon.
+        norm_momentum (float): normalization momentum.
+        se_ratio (float): if > 0, apply SE to the 3x3x3 conv, with the SE
+            channel dimensionality being se_ratio times the 3x3x3 conv dim.
 
-        Activation related configs:
-            activation (callable): a callable that constructs activation layer, examples
-                include: nn.ReLU, nn.Softmax, nn.Sigmoid, and None (not performing
-                activation).
-            inner_act (callable): whether use Swish activation for act_b or not.
+        activation (callable): a callable that constructs activation layer, examples
+            include: nn.ReLU, nn.Softmax, nn.Sigmoid, and None (not performing
+            activation).
+        inner_act (callable): whether use Swish activation for act_b or not.
 
     Returns:
         (nn.Module): X3D bottleneck block.
@@ -254,6 +252,8 @@ def create_x3d_res_block(
     main block in branch2. When the input and output dimensions are different, a
     convolution followed by a normalization will be performed.
 
+    ::
+
                                          Input
                                            |-------+
                                            ↓       |
@@ -264,29 +264,25 @@ def create_x3d_res_block(
                                        Activation
 
     Args:
-        Bottleneck block related configs:
-            dim_in (int): input channel size to the bottleneck block.
-            dim_inner (int): intermediate channel size of the bottleneck.
-            dim_out (int): output channel size of the bottleneck.
-            bottleneck (callable): a callable for create_x3d_bottleneck_block.
+        dim_in (int): input channel size to the bottleneck block.
+        dim_inner (int): intermediate channel size of the bottleneck.
+        dim_out (int): output channel size of the bottleneck.
+        bottleneck (callable): a callable for create_x3d_bottleneck_block.
 
-        Convolution related configs:
-            conv_kernel_size (tuple): convolutional kernel size(s) for conv_b.
-            conv_stride (tuple): convolutional stride size(s) for conv_b.
+        conv_kernel_size (tuple): convolutional kernel size(s) for conv_b.
+        conv_stride (tuple): convolutional stride size(s) for conv_b.
 
-        Normalization related configs:
-            norm (callable): a callable that constructs normalization layer, examples
-                include nn.BatchNorm3d, None (not performing normalization).
-            norm_eps (float): normalization epsilon.
-            norm_momentum (float): normalization momentum.
-            se_ratio (float): if > 0, apply SE to the 3x3x3 conv, with the SE
-                channel dimensionality being se_ratio times the 3x3x3 conv dim.
+        norm (callable): a callable that constructs normalization layer, examples
+            include nn.BatchNorm3d, None (not performing normalization).
+        norm_eps (float): normalization epsilon.
+        norm_momentum (float): normalization momentum.
+        se_ratio (float): if > 0, apply SE to the 3x3x3 conv, with the SE
+            channel dimensionality being se_ratio times the 3x3x3 conv dim.
 
-        Activation related configs:
-            activation (callable): a callable that constructs activation layer, examples
-                include: nn.ReLU, nn.Softmax, nn.Sigmoid, and None (not performing
-                activation).
-            inner_act (callable): whether use Swish activation for act_b or not.
+        activation (callable): a callable that constructs activation layer, examples
+            include: nn.ReLU, nn.Softmax, nn.Sigmoid, and None (not performing
+            activation).
+        inner_act (callable): whether use Swish activation for act_b or not.
 
     Returns:
         (nn.Module): X3D block layer.
@@ -349,6 +345,8 @@ def create_x3d_res_stage(
     """
     Create Residual Stage, which composes sequential blocks that make up X3D.
 
+    ::
+
                                         Input
                                            ↓
                                        ResBlock
@@ -360,31 +358,28 @@ def create_x3d_res_stage(
                                        ResBlock
 
     Args:
-        Stage related configs:
-            depth (init): number of blocks to create.
-        Bottleneck block related configs:
-            dim_in (int): input channel size to the bottleneck block.
-            dim_inner (int): intermediate channel size of the bottleneck.
-            dim_out (int): output channel size of the bottleneck.
-            bottleneck (callable): a callable for create_x3d_bottleneck_block.
 
-        Convolution related configs:
-            conv_kernel_size (tuple): convolutional kernel size(s) for conv_b.
-            conv_stride (tuple): convolutional stride size(s) for conv_b.
+        depth (init): number of blocks to create.
 
-        Normalization related configs:
-            norm (callable): a callable that constructs normalization layer, examples
-                include nn.BatchNorm3d, None (not performing normalization).
-            norm_eps (float): normalization epsilon.
-            norm_momentum (float): normalization momentum.
-            se_ratio (float): if > 0, apply SE to the 3x3x3 conv, with the SE
-                channel dimensionality being se_ratio times the 3x3x3 conv dim.
+        dim_in (int): input channel size to the bottleneck block.
+        dim_inner (int): intermediate channel size of the bottleneck.
+        dim_out (int): output channel size of the bottleneck.
+        bottleneck (callable): a callable for create_x3d_bottleneck_block.
 
-        Activation related configs:
-            activation (callable): a callable that constructs activation layer, examples
-                include: nn.ReLU, nn.Softmax, nn.Sigmoid, and None (not performing
-                activation).
-            inner_act (callable): whether use Swish activation for act_b or not.
+        conv_kernel_size (tuple): convolutional kernel size(s) for conv_b.
+        conv_stride (tuple): convolutional stride size(s) for conv_b.
+
+        norm (callable): a callable that constructs normalization layer, examples
+            include nn.BatchNorm3d, None (not performing normalization).
+        norm_eps (float): normalization epsilon.
+        norm_momentum (float): normalization momentum.
+        se_ratio (float): if > 0, apply SE to the 3x3x3 conv, with the SE
+            channel dimensionality being se_ratio times the 3x3x3 conv dim.
+
+        activation (callable): a callable that constructs activation layer, examples
+            include: nn.ReLU, nn.Softmax, nn.Sigmoid, and None (not performing
+            activation).
+        inner_act (callable): whether use Swish activation for act_b or not.
 
     Returns:
         (nn.Module): X3D stage layer.
@@ -437,6 +432,8 @@ def create_x3d_head(
     by an dropout, a fully-connected projection, an activation layer and a global
     spatiotemporal averaging.
 
+    ::
+
                                      ProjectedPool
                                            ↓
                                         Dropout
@@ -448,37 +445,31 @@ def create_x3d_head(
                                        Averaging
 
     Args:
-        Projection related configs:
-            dim_in (int): input channel size of the X3D head.
-            dim_inner (int): intermediate channel size of the X3D head.
-            dim_out (int): output channel size of the X3D head.
-            num_classes (int): the number of classes for the video dataset.
+        dim_in (int): input channel size of the X3D head.
+        dim_inner (int): intermediate channel size of the X3D head.
+        dim_out (int): output channel size of the X3D head.
+        num_classes (int): the number of classes for the video dataset.
 
-        Pooling related configs:
-            pool_act (callable): a callable that constructs resnet pool activation
-                layer such as nn.ReLU.
-            pool_kernel_size (tuple): pooling kernel size(s) when not using adaptive
-                pooling.
+        pool_act (callable): a callable that constructs resnet pool activation
+            layer such as nn.ReLU.
+        pool_kernel_size (tuple): pooling kernel size(s) when not using adaptive
+            pooling.
 
-        Normalization related configs:
-            norm (callable): a callable that constructs normalization layer, examples
-                include nn.BatchNorm3d, None (not performing normalization).
-            norm_eps (float): normalization epsilon.
-            norm_momentum (float): normalization momentum.
-            bn_lin5_on (bool): if True, perform normalization on the features
-                before the classifier.
+        norm (callable): a callable that constructs normalization layer, examples
+            include nn.BatchNorm3d, None (not performing normalization).
+        norm_eps (float): normalization epsilon.
+        norm_momentum (float): normalization momentum.
+        bn_lin5_on (bool): if True, perform normalization on the features
+            before the classifier.
 
-        Dropout related configs:
-            dropout_rate (float): dropout rate.
+        dropout_rate (float): dropout rate.
 
-        Activation related configs:
-            activation (callable): a callable that constructs resnet head activation
-                layer, examples include: nn.ReLU, nn.Softmax, nn.Sigmoid, and None (not
-                applying activation).
+        activation (callable): a callable that constructs resnet head activation
+            layer, examples include: nn.ReLU, nn.Softmax, nn.Sigmoid, and None (not
+            applying activation).
 
-        Output related configs:
-            output_with_global_average (bool): if True, perform global averaging on temporal
-                and spatial dimensions and reshape output to batch_size x out_features.
+        output_with_global_average (bool): if True, perform global averaging on temporal
+            and spatial dimensions and reshape output to batch_size x out_features.
 
     Returns:
         (nn.Module): X3D head layer.
@@ -590,6 +581,8 @@ def create_x3d(
     "X3D: Expanding Architectures for Efficient Video Recognition."
     https://arxiv.org/abs/2004.04730
 
+    ::
+
                                          Input
                                            ↓
                                          Stem
@@ -605,52 +598,45 @@ def create_x3d(
                                          Head
 
     Args:
-        Input clip configs:
-            input_channel (int): number of channels for the input video clip.
-            input_clip_length (int): length of the input video clip. Value for
-                different models: X3D-XS: 4; X3D-S: 13; X3D-M: 16; X3D-L: 16.
-            input_crop_size (int): spatial resolution of the input video clip.
-                Value for different models: X3D-XS: 160; X3D-S: 160; X3D-M: 224;
-                X3D-L: 312.
+        input_channel (int): number of channels for the input video clip.
+        input_clip_length (int): length of the input video clip. Value for
+            different models: X3D-XS: 4; X3D-S: 13; X3D-M: 16; X3D-L: 16.
+        input_crop_size (int): spatial resolution of the input video clip.
+            Value for different models: X3D-XS: 160; X3D-S: 160; X3D-M: 224;
+            X3D-L: 312.
 
-        Model configs:
-            model_num_class (int): the number of classes for the video dataset.
-            dropout_rate (float): dropout rate.
-            width_factor (float): width expansion factor.
-            depth_factor (float): depth expansion factor. Value for different
-                models: X3D-XS: 2.2; X3D-S: 2.2; X3D-M: 2.2; X3D-L: 5.0.
+        model_num_class (int): the number of classes for the video dataset.
+        dropout_rate (float): dropout rate.
+        width_factor (float): width expansion factor.
+        depth_factor (float): depth expansion factor. Value for different
+            models: X3D-XS: 2.2; X3D-S: 2.2; X3D-M: 2.2; X3D-L: 5.0.
 
-        Normalization configs:
-            norm (callable): a callable that constructs normalization layer.
-            norm_eps (float): normalization epsilon.
-            norm_momentum (float): normalization momentum.
+        norm (callable): a callable that constructs normalization layer.
+        norm_eps (float): normalization epsilon.
+        norm_momentum (float): normalization momentum.
 
-        Activation configs:
-            activation (callable): a callable that constructs activation layer.
+        activation (callable): a callable that constructs activation layer.
 
-        Stem configs:
-            stem_dim_in (int): input channel size for stem before expansion.
-            stem_conv_kernel_size (tuple): convolutional kernel size(s) of stem.
-            stem_conv_stride (tuple): convolutional stride size(s) of stem.
+        stem_dim_in (int): input channel size for stem before expansion.
+        stem_conv_kernel_size (tuple): convolutional kernel size(s) of stem.
+        stem_conv_stride (tuple): convolutional stride size(s) of stem.
 
-        Stage configs:
-            stage_conv_kernel_size (tuple): convolutional kernel size(s) for conv_b.
-            stage_spatial_stride (tuple): the spatial stride for each stage.
-            stage_temporal_stride (tuple): the temporal stride for each stage.
-            bottleneck_factor (float): bottleneck expansion factor for the 3x3x3 conv.
-            se_ratio (float): if > 0, apply SE to the 3x3x3 conv, with the SE
-                channel dimensionality being se_ratio times the 3x3x3 conv dim.
-            inner_act (callable): whether use Swish activation for act_b or not.
+        stage_conv_kernel_size (tuple): convolutional kernel size(s) for conv_b.
+        stage_spatial_stride (tuple): the spatial stride for each stage.
+        stage_temporal_stride (tuple): the temporal stride for each stage.
+        bottleneck_factor (float): bottleneck expansion factor for the 3x3x3 conv.
+        se_ratio (float): if > 0, apply SE to the 3x3x3 conv, with the SE
+            channel dimensionality being se_ratio times the 3x3x3 conv dim.
+        inner_act (callable): whether use Swish activation for act_b or not.
 
-        Head configs:
-            head_dim_out (int): output channel size of the X3D head.
-            head_pool_act (callable): a callable that constructs resnet pool activation
-                layer such as nn.ReLU.
-            head_bn_lin5_on (bool): if True, perform normalization on the features
-                before the classifier.
-            head_activation (callable): a callable that constructs activation layer.
-            head_output_with_global_average (bool): if True, perform global averaging on
-                the head output.
+        head_dim_out (int): output channel size of the X3D head.
+        head_pool_act (callable): a callable that constructs resnet pool activation
+            layer such as nn.ReLU.
+        head_bn_lin5_on (bool): if True, perform normalization on the features
+            before the classifier.
+        head_activation (callable): a callable that constructs activation layer.
+        head_output_with_global_average (bool): if True, perform global averaging on
+            the head output.
 
     Returns:
         (nn.Module): the X3D network.
@@ -751,6 +737,8 @@ class ProjectedPool(nn.Module):
     """
     A pooling module augmented with Conv, Normalization and Activation both
     before and after pooling for the head layer of X3D.
+
+    ::
 
                                     Conv3d (pre_conv)
                                            ↓

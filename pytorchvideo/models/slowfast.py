@@ -99,6 +99,8 @@ def create_slowfast(
     "SlowFast networks for video recognition."
     https://arxiv.org/pdf/1812.03982.pdf
 
+    ::
+
                              Slow Input  Fast Input
                                   ↓           ↓
                                  Stem       Stem
@@ -113,61 +115,53 @@ def create_slowfast(
                                        Head
 
     Args:
-        SlowFast configs:
-            slowfast_channel_reduction_ratio (int): Corresponds to the inverse of the channel
-                reduction ratio, $\beta$ between the Slow and Fast pathways.
-            slowfast_conv_channel_fusion_ratio (int): Ratio of channel dimensions
-                between the Slow and Fast pathways.
-            DEPRECATED slowfast_fusion_conv_kernel_size (tuple): the convolutional kernel
-                size used for fusion.
-            DEPRECATED slowfast_fusion_conv_stride (tuple): the convolutional stride size
-                used for fusion.
-            fusion_builder (Callable[[int, int], nn.Module]): Builder function for generating
-                the fusion modules based on stage dimension and index
+        slowfast_channel_reduction_ratio (int): Corresponds to the inverse of the channel
+            reduction ratio, $\beta$ between the Slow and Fast pathways.
+        slowfast_conv_channel_fusion_ratio (int): Ratio of channel dimensions
+            between the Slow and Fast pathways.
+        DEPRECATED slowfast_fusion_conv_kernel_size (tuple): the convolutional kernel
+            size used for fusion.
+        DEPRECATED slowfast_fusion_conv_stride (tuple): the convolutional stride size
+            used for fusion.
+        fusion_builder (Callable[[int, int], nn.Module]): Builder function for generating
+            the fusion modules based on stage dimension and index
 
-        Input clip configs:
-            input_channels (tuple): number of channels for the input video clip.
+        input_channels (tuple): number of channels for the input video clip.
 
-        Model configs:
-            model_depth (int): the depth of the resnet.
-            model_num_class (int): the number of classes for the video dataset.
-            dropout_rate (float): dropout rate.
+        model_depth (int): the depth of the resnet.
+        model_num_class (int): the number of classes for the video dataset.
+        dropout_rate (float): dropout rate.
 
-        Normalization configs:
-            norm (callable): a callable that constructs normalization layer.
+        norm (callable): a callable that constructs normalization layer.
 
-        Activation configs:
-            activation (callable): a callable that constructs activation layer.
+        activation (callable): a callable that constructs activation layer.
 
-        Stem configs:
-            stem_function (Tuple[Callable]): a callable that constructs stem layer.
-                Examples include create_res_basic_stem. Indexed by pathway
-            stem_dim_outs (tuple): output channel size to stem.
-            stem_conv_kernel_sizes (tuple): convolutional kernel size(s) of stem.
-            stem_conv_strides (tuple): convolutional stride size(s) of stem.
-            stem_pool (Tuple[Callable]): a callable that constructs resnet head pooling layer.
-                Indexed by pathway
-            stem_pool_kernel_sizes (tuple): pooling kernel size(s).
-            stem_pool_strides (tuple): pooling stride size(s).
+        stem_function (Tuple[Callable]): a callable that constructs stem layer.
+            Examples include create_res_basic_stem. Indexed by pathway
+        stem_dim_outs (tuple): output channel size to stem.
+        stem_conv_kernel_sizes (tuple): convolutional kernel size(s) of stem.
+        stem_conv_strides (tuple): convolutional stride size(s) of stem.
+        stem_pool (Tuple[Callable]): a callable that constructs resnet head pooling layer.
+            Indexed by pathway
+        stem_pool_kernel_sizes (tuple): pooling kernel size(s).
+        stem_pool_strides (tuple): pooling stride size(s).
 
-        Stage configs:
-            stage_conv_a_kernel_sizes (tuple): convolutional kernel size(s) for conv_a.
-            stage_conv_b_kernel_sizes (tuple): convolutional kernel size(s) for conv_b.
-            stage_conv_b_num_groups (tuple): number of groups for groupwise convolution
-                for conv_b. 1 for ResNet, and larger than 1 for ResNeXt.
-            stage_conv_b_dilations (tuple): dilation for 3D convolution for conv_b.
-            stage_spatial_strides (tuple): the spatial stride for each stage.
-            stage_temporal_strides (tuple): the temporal stride for each stage.
-            bottleneck (Tuple[Tuple[Callable]]): a callable that constructs bottleneck
-                block layer. Examples include: create_bottleneck_block.
-                Indexed by pathway and stage index
+        stage_conv_a_kernel_sizes (tuple): convolutional kernel size(s) for conv_a.
+        stage_conv_b_kernel_sizes (tuple): convolutional kernel size(s) for conv_b.
+        stage_conv_b_num_groups (tuple): number of groups for groupwise convolution
+            for conv_b. 1 for ResNet, and larger than 1 for ResNeXt.
+        stage_conv_b_dilations (tuple): dilation for 3D convolution for conv_b.
+        stage_spatial_strides (tuple): the spatial stride for each stage.
+        stage_temporal_strides (tuple): the temporal stride for each stage.
+        bottleneck (Tuple[Tuple[Callable]]): a callable that constructs bottleneck
+            block layer. Examples include: create_bottleneck_block.
+            Indexed by pathway and stage index
 
-        Head configs:
-            head_pool (callable): a callable that constructs resnet head pooling layer.
-            head_output_sizes (tuple): the size of output tensor for head.
-            head_activation (callable): a callable that constructs activation layer.
-            head_output_with_global_average (bool): if True, perform global averaging on
-                the head output.
+        head_pool (callable): a callable that constructs resnet head pooling layer.
+        head_output_sizes (tuple): the size of output tensor for head.
+        head_activation (callable): a callable that constructs activation layer.
+        head_output_with_global_average (bool): if True, perform global averaging on
+            the head output.
     Returns:
         (nn.Module): SlowFast model.
     """

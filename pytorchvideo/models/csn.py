@@ -50,6 +50,8 @@ def create_csn(
     CSN follows the ResNet style architecture including three parts: Stem,
     Stages and Head. The three parts are assembled in the following order:
 
+    ::
+
                                          Input
                                            ↓
                                          Stem
@@ -69,47 +71,41 @@ def create_csn(
     size, etc.
 
     Args:
-        Input clip configs:
-            input_channel (int): number of channels for the input video clip.
+        
+        input_channel (int): number of channels for the input video clip.
 
-        Model configs:
-            model_depth (int): the depth of the resnet. Options include: 50, 101, 152.
+        model_depth (int): the depth of the resnet. Options include: 50, 101, 152.
             model_num_class (int): the number of classes for the video dataset.
             dropout_rate (float): dropout rate.
 
-        Normalization configs:
-            norm (callable): a callable that constructs normalization layer.
+        norm (callable): a callable that constructs normalization layer.
 
-        Activation configs:
-            activation (callable): a callable that constructs activation layer.
+        activation (callable): a callable that constructs activation layer.
 
-        Stem configs:
-            stem_dim_out (int): output channel size to stem.
-            stem_conv_kernel_size (tuple): convolutional kernel size(s) of stem.
-            stem_conv_stride (tuple): convolutional stride size(s) of stem.
-            stem_pool (callable): a callable that constructs resnet head pooling layer.
-            stem_pool_kernel_size (tuple): pooling kernel size(s).
-            stem_pool_stride (tuple): pooling stride size(s).
+        stem_dim_out (int): output channel size to stem.
+        stem_conv_kernel_size (tuple): convolutional kernel size(s) of stem.
+        stem_conv_stride (tuple): convolutional stride size(s) of stem.
+        stem_pool (callable): a callable that constructs resnet head pooling layer.
+        stem_pool_kernel_size (tuple): pooling kernel size(s).
+        stem_pool_stride (tuple): pooling stride size(s).
 
-        Stage configs:
-            stage_conv_a_kernel_size (tuple): convolutional kernel size(s) for conv_a.
-            stage_conv_b_kernel_size (tuple): convolutional kernel size(s) for conv_b.
-            stage_conv_b_width_per_group(int): the width of each group for conv_b. Set
-                it to 1 for depthwise convolution.
-            stage_spatial_stride (tuple): the spatial stride for each stage.
-            stage_temporal_stride (tuple): the temporal stride for each stage.
-            bottleneck (callable): a callable that constructs bottleneck block layer.
-                Examples include: create_bottleneck_block.
-            bottleneck_ratio (int): the ratio between inner and outer dimensions for
-                the bottleneck block.
+        stage_conv_a_kernel_size (tuple): convolutional kernel size(s) for conv_a.
+        stage_conv_b_kernel_size (tuple): convolutional kernel size(s) for conv_b.
+        stage_conv_b_width_per_group(int): the width of each group for conv_b. Set
+            it to 1 for depthwise convolution.
+        stage_spatial_stride (tuple): the spatial stride for each stage.
+        stage_temporal_stride (tuple): the temporal stride for each stage.
+        bottleneck (callable): a callable that constructs bottleneck block layer.
+            Examples include: create_bottleneck_block.
+        bottleneck_ratio (int): the ratio between inner and outer dimensions for
+            the bottleneck block.
 
-        Head configs:
-            head_pool (callable): a callable that constructs resnet head pooling layer.
-            head_pool_kernel_size (tuple): the pooling kernel size.
-            head_output_size (tuple): the size of output tensor for head.
-            head_activation (callable): a callable that constructs activation layer.
-            head_output_with_global_average (bool): if True, perform global averaging on
-                the head output.
+        head_pool (callable): a callable that constructs resnet head pooling layer.
+        head_pool_kernel_size (tuple): the pooling kernel size.
+        head_output_size (tuple): the size of output tensor for head.
+        head_activation (callable): a callable that constructs activation layer.
+        head_output_with_global_average (bool): if True, perform global averaging on
+            the head output.
 
     Returns:
         (nn.Module): the csn model.
