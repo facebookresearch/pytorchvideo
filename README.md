@@ -37,7 +37,7 @@ Key features include:
 
 ## Installation
 
-For detailed instructions refer to [INSTALL.md](INSTALL.md).
+For detailed instructions please refer to [INSTALL.md](INSTALL.md).
 
 ## License
 
@@ -45,7 +45,7 @@ PyTorchVideo is released under the [Apache 2.0 License](LICENSE).
 
 ## Tutorials
 
-Get started with PyTorchVideo by tying out one of our tutorials[tutorails](https://pytorchvideo.org/tutorials/) or by running examples in the [projects folder](https://github.com/facebookresearch/pytorchvideo/tree/master/projects)
+Get started with PyTorchVideo by trying out one of our [tutorials](https://pytorchvideo.org/tutorials/) or by running examples in the [projects folder](https://github.com/facebookresearch/pytorchvideo/tree/master/projects)
 
 
 ## Model Zoo and Baselines
