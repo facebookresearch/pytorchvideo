@@ -11,12 +11,17 @@ Welcome to PyTorchVideo's documentation!
 
 .. toctree::
    :maxdepth: 1
+   :caption: Models
+
+   doc_models_overview
+
+
+.. toctree::
+   :maxdepth: 1
    :caption: Model Zoo
 
-   doc_model_zoo_data
-   doc_model_zoo
-   doc_model_zoo_accelerator
-
+   model_zoo
+   data_preparation
 
 .. toctree::
    :maxdepth: 2

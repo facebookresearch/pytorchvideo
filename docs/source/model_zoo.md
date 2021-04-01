@@ -51,7 +51,7 @@ Notes:
 
 
 
-## PytorchVideo Accelerator Model Zoo
+### PytorchVideo Accelerator Model Zoo
 Accelerator model zoo provides a set of efficient models on target device with pretrained checkpoints. To learn more about how to build model, load checkpoint and deploy, please refer to [Use PytorchVideo/Accelerator Model Zoo](tutorial_accelerator_use_accelerator_model_zoo.md).
 
 **Efficient Models for mobile CPU**
