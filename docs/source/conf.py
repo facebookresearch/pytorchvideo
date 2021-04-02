@@ -18,6 +18,9 @@ import os
 import sys
 
 import mock
+
+# The full version, including alpha/beta/rc tags
+import pytorchvideo
 import sphinx_rtd_theme
 from recommonmark.parser import CommonMarkParser
 
@@ -62,8 +65,6 @@ project = "PyTorchVideo"
 copyright = "2021, PyTorchVideo contributors"
 author = "PyTorchVideo contributors"
 
-# The full version, including alpha/beta/rc tags
-import pytorchvideo
 version = pytorchvideo.__version__
 # The full version, including alpha/beta/rc tags
 release = version
@@ -92,7 +93,6 @@ extensions = [
     "sphinx.ext.ifconfig",
     "sphinx_markdown_tables",
 ]
-
 
 
 # -- Configurations for plugins ------------
@@ -167,8 +167,7 @@ html_theme_options = {
 html_static_path = ["_static"]
 
 html_logo = "_static/img/ptv_logo.png"
-html_favicon = '../../website/website/static/img/logo_no_text.svg'
-
+html_favicon = "../../website/website/static/img/logo_no_text.svg"
 
 
 # setting custom stylesheets https://stackoverflow.com/a/34420612
@@ -201,8 +200,13 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    (master_doc, "pytorchvideo.tex", "PyTorchVideo Documentation",\
-     "pytorchvideo contributors", "manual")
+    (
+        master_doc,
+        "pytorchvideo.tex",
+        "PyTorchVideo Documentation",
+        "pytorchvideo contributors",
+        "manual",
+    )
 ]
 
 
@@ -210,8 +214,7 @@ latex_documents = [
 
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
-man_pages = [(master_doc, "pytorchvideo", "PyTorchVideo Documentation",\
-     [author], 1)]
+man_pages = [(master_doc, "pytorchvideo", "PyTorchVideo Documentation", [author], 1)]
 
 
 # -- Options for Texinfo output -------------------------------------------

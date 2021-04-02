@@ -59,7 +59,7 @@ def create_bottleneck_block(
                                     Conv3d (conv_c)
                                            ↓
                                  Normalization (norm_c)
-    
+
     Normalization examples include: BatchNorm3d and None (no normalization).
     Activation examples include: ReLU, Softmax, Sigmoid, and None (no activation).
 

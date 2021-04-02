@@ -4,6 +4,7 @@ import torch.nn as nn
 from pytorchvideo.models.resnet import create_resnet
 from torch.hub import load_state_dict_from_url
 
+
 """
 ResNet style models for video recognition.
 """

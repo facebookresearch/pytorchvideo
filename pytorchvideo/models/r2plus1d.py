@@ -59,7 +59,7 @@ def create_2plus1d_bottleneck_block(
     Normalization examples include: BatchNorm3d and None (no normalization).
     Activation examples include: ReLU, Softmax, Sigmoid, and None (no activation).
 
-    Args:        
+    Args:
         dim_in (int): input channel size to the bottleneck block.
         dim_inner (int): intermediate channel size of the bottleneck.
         dim_out (int): output channel size of the bottleneck.
@@ -78,7 +78,7 @@ def create_2plus1d_bottleneck_block(
             include nn.Conv3d, OctaveConv, etc
         conv_c (callable): a callable that constructs the conv_c conv layer, examples
             include nn.Conv3d, OctaveConv, etc
-    
+
         norm (callable): a callable that constructs normalization layer, examples
             include nn.BatchNorm3d, None (not performing normalization).
         norm_eps (float): normalization epsilon.
@@ -197,7 +197,7 @@ def create_r2plus1d(
                                          Head
 
     Args:
-        
+
         input_channel (int): number of channels for the input video clip.
 
         model_depth (int): the depth of the resnet.

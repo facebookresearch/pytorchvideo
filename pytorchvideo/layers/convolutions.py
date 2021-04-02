@@ -11,7 +11,7 @@ from torch.nn.common_types import _size_3_t
 class ConvReduce3D(nn.Module):
     """
     Builds a list of convolutional operators and performs summation on the outputs.
-    
+
     ::
 
                             Conv3d, Conv3d, ...,  Conv3d
@@ -108,9 +108,9 @@ def create_conv_2plus1d(
     """
     Create a 2plus1d conv layer. It performs spatiotemporal Convolution, BN, and
     Relu following by a spatiotemporal pooling.
-    
+
     ::
-    
+
                         Conv_t (or Conv_xy if conv_xy_first = True)
                                            ↓
                                      Normalization
@@ -193,9 +193,9 @@ class Conv2plus1d(nn.Module):
     Implementation of 2+1d Convolution by factorizing 3D Convolution into an 1D temporal
     Convolution and a 2D spatial Convolution with Normalization and Activation module
     in between:
-    
+
     ::
-    
+
                         Conv_t (or Conv_xy if conv_xy_first = True)
                                            ↓
                                      Normalization

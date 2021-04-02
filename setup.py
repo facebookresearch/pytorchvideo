@@ -19,7 +19,7 @@ def get_version():
 setup(
     name="pytorchvideo",
     version=get_version(),
-    license='Apache 2.0',
+    license="Apache 2.0",
     author="Facebook AI",
     url="https://github.com/facebookresearch/pytorchvideo",
     description="A video research library providing pytorch-based components.",
@@ -44,7 +44,7 @@ setup(
             "nbconvert",
             "bs4",
             "autoflake==1.4",
-        ]
+        ],
     },
     packages=find_packages(exclude=("scripts", "tests")),
 )

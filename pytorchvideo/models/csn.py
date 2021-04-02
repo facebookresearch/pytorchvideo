@@ -71,7 +71,7 @@ def create_csn(
     size, etc.
 
     Args:
-        
+
         input_channel (int): number of channels for the input video clip.
 
         model_depth (int): the depth of the resnet. Options include: 50, 101, 152.
