@@ -47,7 +47,7 @@ def create_res_basic_head(
     Pool3d examples include: AvgPool3d, MaxPool3d, AdaptiveAvgPool3d, and None.
 
     Args:
-        
+
         in_features: input channel size of the resnet head.
         out_features: output channel size of the resnet head.
 
