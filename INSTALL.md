@@ -1,11 +1,9 @@
 # Installation
 
-
-
 ## Installing PytorchVideo
-After installing the above dependencies, run one of the following commands:
+After installing the below mentioned requirements, run one of the following commands:
 
-### 1. Install from Anaconda Cloud, on Linux only
+### 1. Install from Anaconda Cloud
 The conda builds are updated **nightly**.
 ```
 # Only to be run after installing requirements
@@ -45,8 +43,7 @@ pip install -e . [test,dev]
 
 ### Core library
 
-The core library is written in PyTorch with few components leveraged from TorchVision and OpenCV-Python. We recommend using GPU environments
-for the best performace.
+The core library is written in PyTorch with few components leveraged from TorchVision and OpenCV-Python. We recommend using GPU environments for the best performace.
 
 - Linux
 - Python 3.7 or 3.8 
@@ -65,7 +62,7 @@ conda install -c conda-forge -c fvcore -c iopath fvcore=0.1.4 iopath
 pip install opencv-python 
 ```
 
-### Tests/Linting and Demos
+### For Runiing Tests, Linting and Demos
 
 For developing on top of PyTorchVideo or contributing, you will need to run the linter and tests. If you want to run any of the notebook tutorials or examples you will need to install the additional dependencies.
 

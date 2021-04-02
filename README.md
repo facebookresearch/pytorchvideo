@@ -45,11 +45,11 @@ PyTorchVideo is released under the [Apache 2.0 License](LICENSE).
 
 ## Tutorials
 
-Get started with PyTorchVideo by trying out one of our [tutorials](https://pytorchvideo.org/tutorials/) or by running examples in the [projects folder](https://github.com/facebookresearch/pytorchvideo/tree/master/projects)
+Get started with PyTorchVideo by trying out one of our [tutorials](https://pytorchvideo.org/tutorials/) or by running examples in the [projects folder](https://github.com/facebookresearch/pytorchvideo/tree/master/projects).
 
 
 ## Model Zoo and Baselines
-We provide a large set of baseline results and trained models available for download in the [PyTorchVideo Model Zoo](https://github.com/facebookresearch/pytorchvideo/blob/master/MODEL_ZOO.md).
+We provide a large set of baseline results and trained models available for download in the [PyTorchVideo Model Zoo](https://github.com/facebookresearch/pytorchvideo/blob/master/docs/source/model_zoo.md).
 
 ## Contributors
 
@@ -59,9 +59,9 @@ PyTorchVideo is written and maintained by the Facebook AI Research.
 
 We welcome new contributions to PyTorchVideo and we will be actively maintaining this library! Please refer to [`CONTRIBUTING.md`](./.github/CONTRIBUTING.md) for full instructions on how to run the code, tests and linter, and submit your pull requests.
 
-## Citation
+<!-- ## Citation
 
-If you find PyTorchVideo useful in your research or wish to refer to the baseline results published in the [Model Zoo](https://github.com/facebookresearch/pytorchvideo/blob/master/MODEL_ZOO.md), please use the following BibTeX entry.
+If you find PyTorchVideo useful in your research or wish to refer to the baseline results published in the [Model Zoo](https://github.com/facebookresearch/pytorchvideo/blob/master/docs/source/model_zoo.md), please use the following BibTeX entry.
 
 ```bibtex
 @Misc{pytorchvideo2019,
@@ -71,7 +71,7 @@ If you find PyTorchVideo useful in your research or wish to refer to the baselin
   year =         {2021},
   url =          {https://github.com/facebookresearch/pytorchvideo}
 }
-```
+``` -->
 
 
 
