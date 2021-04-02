@@ -10,7 +10,7 @@
 
 
 const siteConfig = {
-  title: 'PyTorchVideo', // Title for your website.
+  //title: '', // Title for your website.
   tagline: 'A deep learning library for video understanding research',
   url: 'https://your-docusaurus-test-site.com', // Your website URL
   baseUrl: '/', // Base URL for your project */
@@ -36,7 +36,7 @@ const siteConfig = {
   /* path to images for header/footer */
   headerIcon: 'img/logo.svg',
   footerIcon: 'img/logo.svg',
-  favicon: 'img/logo.svg',
+  favicon: 'img/logo_no_text.svg',
 
   /* Colors for website */
   colors: {

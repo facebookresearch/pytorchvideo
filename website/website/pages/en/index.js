@@ -165,7 +165,7 @@ from pytorchvideo.models import bar
             },
             {
               content:
-                'Variety of state of the art pretrained video models and their assciated benchmarks that are ready to use.',
+                'Variety of state of the art pretrained video models and their associated benchmarks that are ready to use.',
               image: `${baseUrl}img/modelzoo.svg`,
               imageAlign: 'top',
               title: 'Reproducible Model Zoo',

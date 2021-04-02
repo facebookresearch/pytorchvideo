@@ -44,7 +44,7 @@ For the precise versions of these additional dependecies, we recommend looking a
 After installing the above dependencies, run one of the following commands:
 
 ### 1. Install from Anaconda Cloud, on Linux only
-The builds are updated **nightly**,
+The conda builds are updated **nightly**.
 ```
 # Only to be run after installing requirements
 conda install -c pytorchvideo pytorchvideo
@@ -60,7 +60,7 @@ pip install "git+https://github.com/facebookresearch/pytorchvideo.git@stable"
 ```
 
 ### 3. Install from PyPI
-The wheels are updated only on **stable releases**,
+The pip wheels are updated only on **stable releases**.
 ```
 pip install pytorchvideo
 

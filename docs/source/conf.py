@@ -167,6 +167,9 @@ html_theme_options = {
 html_static_path = ["_static"]
 
 html_logo = "_static/img/ptv_logo.png"
+html_favicon = '../../website/website/static/img/logo_no_text.svg'
+
+
 
 # setting custom stylesheets https://stackoverflow.com/a/34420612
 html_context = {"css_files": ["_static/css/pytorchvideo_theme.css"]}
