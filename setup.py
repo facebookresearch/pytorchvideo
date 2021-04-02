@@ -13,11 +13,35 @@ def get_version():
     init_py = open(init_py_path, "r").readlines()
     version_line = [l.strip() for l in init_py if l.startswith("__version__")][0]
     version = version_line.split("=")[-1].strip().strip("'\"")
+
+    # Used by CI to build nightly packages. Users should never use it.
+    # To build a nightly wheel, run:
+    # BUILD_NIGHTLY=1 python setup.py sdist
+    if os.getenv("BUILD_NIGHTLY", "0") == "1":
+        from datetime import datetime
+
+        date_str = datetime.today().strftime("%Y%m%d")
+        # pip can perform proper comparison for ".post" suffix,
+        # i.e., "1.1.post1234" >= "1.1"
+        version = version + ".post" + date_str
+
+        new_init_py = [l for l in init_py if not l.startswith("__version__")]
+        new_init_py.append('__version__ = "{}"\n'.format(version))
+        with open(init_py_path, "w") as f:
+            f.write("".join(new_init_py))
+
     return version
 
 
+def get_name():
+    name = "pytorchvideo"
+    if os.getenv("BUILD_NIGHTLY", "0") == "1":
+        name += "-nightly"
+    return name
+
+
 setup(
-    name="pytorchvideo",
+    name=get_name(),
     version=get_version(),
     license="Apache 2.0",
     author="Facebook AI",
@@ -28,11 +52,10 @@ setup(
         "fvcore>=0.1.4",
         "av",
         "parameterized",
-        "opencv-python",
         "iopath",
     ],
     extras_require={
-        "test": ["coverage", "pytest"],
+        "test": ["coverage", "pytest", "opencv-python"],
         "dev": [
             "black==20.8b1",
             "sphinx",

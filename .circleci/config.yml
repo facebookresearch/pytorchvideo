@@ -74,8 +74,18 @@ install_pytorchvideo: &install_pytorchvideo
         export PATH="$HOME/miniconda3/bin:$PATH"
         conda activate pytorchvideo
         pip install -U --progress-bar off -e .
-        python setup.py sdist
         python -c 'import pytorchvideo; print(pytorchvideo.__version__)'
+
+build_wheels: &build_wheels
+  - run:
+      name: Install PyTorchVideo
+      command: |
+        export PATH="$HOME/miniconda3/bin:$PATH"
+        conda activate pytorchvideo
+        python setup.py sdist
+        
+        export BUILD_NIGHTLY="1"
+        python setup.py sdist
 
 run_unittests: &run_unittests
   - run:
@@ -109,6 +119,7 @@ jobs:
       - <<: *setup_ptv_conda
       - <<: *install_pytorch
       - <<: *install_pytorchvideo
+      - <<: *build_wheels
       - <<: *run_unittests_with_coverage
       - store_artifacts:
           path: ~/pytorchvideo/dist
@@ -172,7 +183,12 @@ jobs:
             fi
             pip install --progress-bar off --user twine
             for pkg in ~/workspace/*.tar.gz; do
-              twine upload --verbose --skip-existing --username __token__ --password $PTV_PYPI_TOKEN $pkg
+              if [[ "$pkg" == *"nightly"* ]];
+              then
+                twine upload --verbose --skip-existing --username __token__ --password $PTV_NIGHTLY_PYPI_TOKEN $pkg
+              else
+                twine upload --verbose --skip-existing --username __token__ --password $PTV_PYPI_TOKEN $pkg
+              fi
             done
 # -------------------------------------------------------------------------------------
 # Workflows to launch
@@ -209,10 +225,10 @@ workflows:
             - gpu_tests
           context:
             - DOCKERHUB_TOKEN
-    triggers:
-      - schedule:
-          cron: "0 0 * * *"
-          filters:
-            branches:
-              only:
-                - master
+    # triggers:
+    #   - schedule:
+    #       cron: "0 0 * * *"
+    #       filters:
+    #         branches:
+    #           only:
+    #             - master
