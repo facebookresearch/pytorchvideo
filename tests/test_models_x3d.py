@@ -1,5 +1,6 @@
 # Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved.
 
+import os
 import unittest
 
 import torch
@@ -57,6 +58,45 @@ class TestX3d(unittest.TestCase):
                 head_bn_lin5_on=False,
                 head_activation=nn.Softmax,
             )
+
+            # Test forwarding.
+            for tensor in TestX3d._get_inputs(input_clip_length, input_crop_size):
+                if tensor.shape[1] != 3:
+                    with self.assertRaises(RuntimeError):
+                        out = model(tensor)
+                    continue
+
+                out = model(tensor)
+
+                output_shape = out.shape
+                output_shape_gt = (tensor.shape[0], 400)
+
+                self.assertEqual(
+                    output_shape,
+                    output_shape_gt,
+                    "Output shape {} is different from expected shape {}".format(
+                        output_shape, output_shape_gt
+                    ),
+                )
+
+    def test_load_hubconf(self):
+        path = os.path.join(
+            os.path.dirname(os.path.realpath(__file__)),
+            "..",
+        )
+        for (input_clip_length, input_crop_size, model_name) in [
+            (4, 160, "x3d_xs"),
+            (13, 160, "x3d_s"),
+            (16, 224, "x3d_m"),
+        ]:
+            model = torch.hub.load(
+                repo_or_dir=path,
+                source="local",
+                model=model_name,
+                pretrained=False,
+                head_output_with_global_average=True,
+            )
+            self.assertIsNotNone(model)
 
             # Test forwarding.
             for tensor in TestX3d._get_inputs(input_clip_length, input_crop_size):
