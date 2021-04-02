@@ -19,8 +19,7 @@ import sys
 
 import mock
 
-# The full version, including alpha/beta/rc tags
-import pytorchvideo
+# -- Project information -----------------------------------------------------
 import sphinx_rtd_theme
 from recommonmark.parser import CommonMarkParser
 
@@ -30,9 +29,8 @@ sys.path.insert(0, os.path.abspath("../"))
 sys.path.insert(0, os.path.abspath("../pytorchvideo"))
 sys.path.insert(0, os.path.abspath("../../"))
 
-DEPLOY = os.environ.get("READTHEDOCS") == "True"
 
-
+# The full version, including alpha/beta/rc tags
 try:
     import torch  # noqa
 except ImportError:
@@ -55,19 +53,13 @@ except ImportError:
         sys.modules[m] = mock.Mock(name=m)
 
 
-# sys.modules["iopath"] = mock.Mock(name="iopath")
-# sys.modules["cv2"] = mock.Mock(name="cv2")
-# sys.modules["fvcore"] = mock.Mock(name="fvcore")
-
-# -- Project information -----------------------------------------------------
-
 project = "PyTorchVideo"
 copyright = "2021, PyTorchVideo contributors"
 author = "PyTorchVideo contributors"
 
-version = pytorchvideo.__version__
+
 # The full version, including alpha/beta/rc tags
-release = version
+# release = version
 
 
 # -- General configuration ---------------------------------------------------
