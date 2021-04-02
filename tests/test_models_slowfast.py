@@ -1,6 +1,7 @@
 # Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved.
 
 import itertools
+import os
 import unittest
 from typing import Tuple
 
@@ -14,6 +15,32 @@ class TestSlowFast(unittest.TestCase):
     def setUp(self):
         super().setUp()
         torch.set_rng_state(torch.manual_seed(42).get_state())
+
+    def test_load_hubconf(self):
+        path = os.path.join(
+            os.path.dirname(os.path.realpath(__file__)),
+            "..",
+        )
+        for model_name in ["slowfast_r50", "slowfast_r101"]:
+            model = torch.hub.load(
+                repo_or_dir=path, source="local", model=model_name, pretrained=False
+            )
+            self.assertIsNotNone(model)
+
+            input_clip_length = 32
+            input_crop_size = 224
+            input_channel = 3
+            # Test forwarding.
+            for tensor in TestSlowFast._get_inputs(
+                input_channel, input_clip_length, input_crop_size
+            ):
+                with torch.no_grad():
+                    if tensor[0].shape[1] != input_channel:
+                        with self.assertRaises(RuntimeError):
+                            model(tensor)
+                        continue
+
+                    model(tensor)
 
     def test_create_slowfast_with_callable(self):
         """
