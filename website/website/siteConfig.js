@@ -12,11 +12,8 @@
 const siteConfig = {
   title: 'PyTorchVideo', // Title for your website.
   tagline: 'A deep learning library for video understanding research',
-  url: 'https://your-docusaurus-test-site.com', // Your website URL
-  baseUrl: '/', // Base URL for your project */
-  // For github.io type URLs, you would set the url and baseUrl like:
-  //   url: 'https://facebook.github.io',
-  //   baseUrl: '/test-site/',
+  url: 'https://pytorchvideo.org', // Your website URL
+  baseUrl: '/', 
 
   // Used for publishing and more
   projectName: 'pytorchvideo',
@@ -26,7 +23,7 @@ const siteConfig = {
   headerLinks: [
     {doc: 'tutorial_overview', label: 'Tutorials'},
     {href: "https://ptv-temp.readthedocs.io/en/latest/index.html", label: 'Docs'}, // TODO: Change this after the repo becomes public.
-    {href: "https://github.com/facebookresearch/pytorchvideo/tree/oss_website_docs", label: 'GitHub'}, //TODO: Change this after repo becomes public
+    {href: "https://github.com/facebookresearch/pytorchvideo/", label: 'GitHub'}, //TODO: Change this after repo becomes public
   ],
 
 
