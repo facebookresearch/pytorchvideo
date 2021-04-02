@@ -14,8 +14,10 @@ do
     done
 done
 
-cd packaging/out && conda convert -p win-64 linux-64/*.tar.bz2
-cd packaging/out && conda convert -p osx-64 linux-64/*.tar.bz2
+cd packaging/out
+conda convert -p win-64 linux-64/*.tar.bz2
+conda convert -p osx-64 linux-64/*.tar.bz2
+cd -
 
 ls -Rl packaging
 

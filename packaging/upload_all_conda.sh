@@ -11,7 +11,7 @@ if [[ -f SKIP ]]
 then
    echo NOTHING TO DO
 else
-    for file in packaging/output_files/linux-64/*.bz2
+    for file in packaging/output_files/{osx,linux,win}-64/*.bz2
     do
         anaconda --verbose -t ${PTV_CONDA_TOKEN} upload --force ${file}
     done
