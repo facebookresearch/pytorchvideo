@@ -10,7 +10,7 @@
 
 
 const siteConfig = {
-  //title: '', // Title for your website.
+  title: 'PyTorchVideo', // Title for your website.
   tagline: 'A deep learning library for video understanding research',
   url: 'https://your-docusaurus-test-site.com', // Your website URL
   baseUrl: '/', // Base URL for your project */
