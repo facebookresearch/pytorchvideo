@@ -5,6 +5,7 @@ import os
 import sys
 
 import mock
+
 # -- Project information -----------------------------------------------------
 import sphinx_rtd_theme
 from recommonmark.parser import CommonMarkParser
