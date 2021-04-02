@@ -29,6 +29,12 @@ Welcome to PyTorchVideo's Documentation
 
 .. toctree::
    :maxdepth: 1
+   :caption: Accelerator
+
+   accelerator
+
+.. toctree::
+   :maxdepth: 1
    :caption: Model Zoo
 
    model_zoo
