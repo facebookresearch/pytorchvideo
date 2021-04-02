@@ -6,8 +6,12 @@
 :github_url: https://github.com/facebookresearch/pytorchvideo/
 
 
-Welcome to PyTorchVideo's documentation!
+Welcome to PyTorchVideo's Documentation
 ========================================
+
+.. toctree:: 
+   
+   Return to PyTorchVideo Home Page <https://kalyanvasudev.github.io/ptv_temp/>
 
 .. toctree::
    :maxdepth: 1
