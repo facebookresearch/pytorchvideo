@@ -17,7 +17,19 @@ Welcome to PyTorchVideo's Documentation
    :maxdepth: 1
    :caption: Models
 
-   models_overview
+   models
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Data
+
+   data
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Transforms
+
+   transforms
 
 .. toctree::
    :maxdepth: 1
@@ -31,6 +43,3 @@ Welcome to PyTorchVideo's Documentation
    :caption: API
 
    api/index
-
-
-

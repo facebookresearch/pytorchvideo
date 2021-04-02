@@ -8,6 +8,7 @@ title: Training a PyTorchVideo classification model
 In this tutorial we will show how to build a simple video classification training pipeline using PyTorchVideo models, datasets and transforms. We'll be using a 3D ResNet [1] for the model, Kinetics [2] for the dataset and a standard video transform augmentation recipe. As PyTorchVideo doesn't contain training code, we'll use [PyTorch Lightning](https://github.com/PyTorchLightning/pytorch-lightning) - a lightweight PyTorch training framework - to help out. Don't worry if you don't have Lightning experience, we'll explain what's needed as we go along.
 
 [1] He, Kaiming, et al. Deep Residual Learning for Image Recognition. ArXiv:1512.03385, 2015.
+
 [2] W. Kay, et al. The kinetics human action video dataset. arXiv preprint arXiv:1705.06950, 2017.
 
 # Dataset
