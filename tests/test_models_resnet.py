@@ -1,6 +1,7 @@
 # Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved.
 
 import itertools
+import os
 import unittest
 
 import numpy as np
@@ -1396,6 +1397,29 @@ class TestResNet(unittest.TestCase):
                             model(tensor)
                         continue
                     model(tensor)
+
+    def test_load_hubconf(self):
+        path = os.path.join(
+            os.path.dirname(os.path.realpath(__file__)),
+            "..",
+        )
+        input_channel = 3
+        input_clip_length = 2
+        input_crop_size = 56
+        model = torch.hub.load(
+            repo_or_dir=path, source="local", model="slow_r50", pretrained=False
+        )
+        self.assertIsNotNone(model)
+
+        # Test forwarding.
+        for tensor in TestResNet._get_inputs(
+            input_channel, input_clip_length, input_crop_size
+        ):
+            with torch.no_grad():
+                if tensor.shape[1] != input_channel:
+                    with self.assertRaises(RuntimeError):
+                        model(tensor)
+                    continue
 
     @staticmethod
     def _get_inputs(
