@@ -9,10 +9,6 @@
 Welcome to PyTorchVideo's Documentation
 ========================================
 
-.. toctree:: 
-   
-   Return to PyTorchVideo Home Page <https://kalyanvasudev.github.io/ptv_temp/>
-
 .. toctree::
    :maxdepth: 1
    :caption: Models
