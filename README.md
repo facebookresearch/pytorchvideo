@@ -37,6 +37,11 @@ Key features include:
 
 ## Installation
 
+Install PyTorchVideo inside a conda environment(Python >=3.7) with
+```shell
+pip install pytorchvideo
+```
+
 For detailed instructions please refer to [INSTALL.md](INSTALL.md).
 
 ## License
@@ -72,6 +77,3 @@ If you find PyTorchVideo useful in your research or wish to refer to the baselin
   url =          {https://github.com/facebookresearch/pytorchvideo}
 }
 ``` -->
-
-
-

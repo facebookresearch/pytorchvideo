@@ -5,7 +5,6 @@ import os
 import sys
 
 import mock
-
 # -- Project information -----------------------------------------------------
 import sphinx_rtd_theme
 from recommonmark.parser import CommonMarkParser
@@ -148,7 +147,7 @@ html_theme_options = {
 html_static_path = ["_static"]
 
 html_logo = "_static/img/ptv_logo.png"
-html_favicon = "../../website/website/static/img/logo_no_text.svg"
+html_favicon = "../../website/website/static/img/favicon.png"
 
 
 # setting custom stylesheets https://stackoverflow.com/a/34420612

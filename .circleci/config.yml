@@ -138,29 +138,6 @@ jobs:
       - <<: *install_pytorchvideo
       - <<: *run_unittests
   
-  build_and_upload_conda:
-    docker:
-      - image: continuumio/miniconda3
-        auth:
-          username: $DOCKERHUB_USERNAME
-          password: $DOCKERHUB_TOKEN
-    steps:
-      - checkout
-      - run:
-          name: Build Conda Packages
-          command: |
-            # no commits in the last 25 hours
-            if [[ -z $(git log --since="25 hours ago") ]]; then
-              echo "No commits in the last day."
-              exit 0
-            fi
-            conda install anaconda-client conda-build
-            bash packaging/build_all_conda.sh
-      - run:
-          name: Upload Conda Packages
-          command: |
-            bash packaging/upload_all_conda.sh
-
   upload_wheel:
     docker:
       - image: circleci/python:3.7
@@ -211,22 +188,16 @@ workflows:
       - gpu_tests:
           context:
             - DOCKERHUB_TOKEN
-      - build_and_upload_conda:
-          requires:
-            - cpu_tests
-            - gpu_tests
-          context:
-            - DOCKERHUB_TOKEN
       - upload_wheel:
           requires:
             - cpu_tests
             - gpu_tests
           context:
             - DOCKERHUB_TOKEN
-    # triggers:
-    #   - schedule:
-    #       cron: "0 0 * * *"
-    #       filters:
-    #         branches:
-    #           only:
-    #             - master
+    triggers:
+      - schedule:
+          cron: "0 0 * * *"
+          filters:
+            branches:
+              only:
+                - master

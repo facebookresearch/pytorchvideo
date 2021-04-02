@@ -2,11 +2,16 @@
 
 ## Installing PytorchVideo
 
-### 1. Install from Anaconda Cloud
-The conda builds are updated **nightly**.
+
+### 1. Install from PyPI
+For stable release,
 ```
-# Only to be run after installing requirements
-conda install -c pytorchvideo pytorchvideo
+pip install pytorchvideo
+```
+
+For nighly builds,
+```
+pip install pytorchvideo-nightly
 ```
 
 ### 2. Install from GitHub using pip
@@ -18,16 +23,7 @@ To install using the code of the released version instead of from the main branc
 pip install "git+https://github.com/facebookresearch/pytorchvideo.git@stable"
 ```
 
-### 3. Install from PyPI
-The pip wheels are updated only on **stable releases**.
-```
-pip install pytorchvideo
-
-# For developing and testing
-pip install pytorchvideo[test,dev]
-```
-
-### 4. Install from a local clone
+### 3. Install from a local clone
 ```
 git clone https://github.com/facebookresearch/pytorchvideo.git
 cd pytorchvideo 
@@ -49,25 +45,10 @@ pip install -e . [test,dev]
 - [ioPath](https://github.com/facebookresearch/iopath)
 - If CUDA is to be used, use a version which is supported by the corresponding pytorch version and at least version 10.2 or higher.
 
-The runtime dependencies can be installed by running:
+We recommend setting up a conda environment with Pytorch and Torchvision before installing PyTorchVideo.
+For instance, follow the bellow instructions to setup the conda environment,
 ```
 conda create -n pytorchvideo python=3.7
 conda activate pytorchvideo
 conda install -c pytorch pytorch=1.8.0 torchvision cudatoolkit=10.2
-conda install -c conda-forge -c fvcore -c iopath fvcore=0.1.4 iopath
-pip install opencv-python 
 ```
-
-### For Runiing Tests, Linting and Demos
-
-For developing on top of PyTorchVideo or contributing, you will need to run the linter and tests. If you want to run any of the notebook tutorials or examples you will need to install the additional dependencies.
-
-For the precise versions of these additional dependecies, we recommend looking at `setup.py` in the root of the project.
-
-- black
-- isort
-- flake8
-- autoflake
-- jupyter
-- pytest
-- coverage
