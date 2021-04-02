@@ -1,7 +1,6 @@
 # Installation
 
 ## Installing PytorchVideo
-After installing the below mentioned requirements, run one of the following commands:
 
 ### 1. Install from Anaconda Cloud
 The conda builds are updated **nightly**.
@@ -43,9 +42,6 @@ pip install -e . [test,dev]
 
 ### Core library
 
-The core library is written in PyTorch with few components leveraged from TorchVision and OpenCV-Python. We recommend using GPU environments for the best performace.
-
-- Linux
 - Python 3.7 or 3.8 
 - PyTorch 1.8.0 or higher.
 - torchvision that matches the PyTorch installation. You can install them together as explained at pytorch.org to make sure of this.

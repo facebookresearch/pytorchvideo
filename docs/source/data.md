@@ -4,8 +4,8 @@ PyTorchVideo datasets are subclasses of either torch.utils.data.Dataset or torch
 
 ```python
 dataset = pytorchvideo.data.Kinetics(
-		data_path="path/to/kinetics_root/train.csv",
-		clip_sampler=pytorchvideo.data.make_clip_sampler("random", duration=2),
+        data_path="path/to/kinetics_root/train.csv",
+        clip_sampler=pytorchvideo.data.make_clip_sampler("random", duration=2),
 )
 data_loader = torch.utils.data.DataLoader(dataset, batch_size=8)
 ```
