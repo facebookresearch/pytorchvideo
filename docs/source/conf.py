@@ -1,23 +1,12 @@
 # Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
 
 # flake8: noqa
-
-# Configuration file for the Sphinx documentation builder.
-#
-# This file only contains a selection of the most common options. For a full
-# list see the documentation:
-# https://www.sphinx-doc.org/en/master/usage/configuration.html
-
-# -- Path setup --------------------------------------------------------------
-
-# If extensions (or modules to document with autodoc) are in another directory,
-# add these directories to sys.path here. If the directory is relative to the
-# documentation root, use os.path.abspath to make it absolute, like shown here.
-#
 import os
 import sys
 
 import mock
+
+# -- Project information -----------------------------------------------------
 import sphinx_rtd_theme
 from recommonmark.parser import CommonMarkParser
 
@@ -27,9 +16,8 @@ sys.path.insert(0, os.path.abspath("../"))
 sys.path.insert(0, os.path.abspath("../pytorchvideo"))
 sys.path.insert(0, os.path.abspath("../../"))
 
-DEPLOY = os.environ.get("READTHEDOCS") == "True"
 
-
+# The full version, including alpha/beta/rc tags
 try:
     import torch  # noqa
 except ImportError:
@@ -52,22 +40,9 @@ except ImportError:
         sys.modules[m] = mock.Mock(name=m)
 
 
-# sys.modules["iopath"] = mock.Mock(name="iopath")
-# sys.modules["cv2"] = mock.Mock(name="cv2")
-# sys.modules["fvcore"] = mock.Mock(name="fvcore")
-
-# -- Project information -----------------------------------------------------
-
 project = "PyTorchVideo"
 copyright = "2021, PyTorchVideo contributors"
 author = "PyTorchVideo contributors"
-
-# The full version, including alpha/beta/rc tags
-import pytorchvideo
-
-version = pytorchvideo.__version__
-# The full version, including alpha/beta/rc tags
-release = version
 
 
 # -- General configuration ---------------------------------------------------
@@ -94,6 +69,8 @@ extensions = [
     "sphinx_markdown_tables",
 ]
 
+# Add any paths that contain templates here, relative to this directory.
+templates_path = ["_templates"]
 
 # -- Configurations for plugins ------------
 napoleon_google_docstring = True
@@ -167,6 +144,8 @@ html_theme_options = {
 html_static_path = ["_static"]
 
 html_logo = "_static/img/ptv_logo.png"
+html_favicon = "../../website/website/static/img/favicon.png"
+
 
 # setting custom stylesheets https://stackoverflow.com/a/34420612
 html_context = {"css_files": ["_static/css/pytorchvideo_theme.css"]}
@@ -175,38 +154,6 @@ html_context = {"css_files": ["_static/css/pytorchvideo_theme.css"]}
 
 # Output file base name for HTML help builder.
 htmlhelp_basename = "pytorchvideodoc"
-
-
-# -- Options for LaTeX output ------------------------------------------------
-
-latex_elements = {
-    # The paper size ('letterpaper' or 'a4paper').
-    #
-    # 'papersize': 'letterpaper',
-    # The font size ('10pt', '11pt' or '12pt').
-    #
-    # 'pointsize': '10pt',
-    # Additional stuff for the LaTeX preamble.
-    #
-    # 'preamble': '',
-    # Latex figure (float) alignment
-    #
-    # 'figure_align': 'htbp',
-}
-
-# Grouping the document tree into LaTeX files. List of tuples
-# (source start file, target name, title,
-#  author, documentclass [howto, manual, or own class]).
-latex_documents = [
-    (
-        master_doc,
-        "pytorchvideo.tex",
-        "PyTorchVideo Documentation",
-        "pytorchvideo contributors",
-        "manual",
-    )
-]
-
 
 # -- Options for manual page output ---------------------------------------
 

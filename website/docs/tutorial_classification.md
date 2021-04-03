@@ -5,13 +5,17 @@ title: Training a PyTorchVideo classification model
 
 # Introduction
 
-In this tutorial we will show how to build a simple video classification training pipeline using PyTorchVideo models, datasets and transforms. We'll be using a 3D ResNet (TODO cite ResNet) for the model, Kinetics (TODO cite Kinetics) for the dataset and a standard video transform augmentation recipe. As PyTorchVideo doesn't contain training code, we'll use [PyTorch Lightning](https://github.com/PyTorchLightning/pytorch-lightning) - a lightweight PyTorch training framework - to help out. Don't worry if you don't have Lightning experience, we'll explain what's needed as we go along.
+In this tutorial we will show how to build a simple video classification training pipeline using PyTorchVideo models, datasets and transforms. We'll be using a 3D ResNet [1] for the model, Kinetics [2] for the dataset and a standard video transform augmentation recipe. As PyTorchVideo doesn't contain training code, we'll use [PyTorch Lightning](https://github.com/PyTorchLightning/pytorch-lightning) - a lightweight PyTorch training framework - to help out. Don't worry if you don't have Lightning experience, we'll explain what's needed as we go along.
+
+[1] He, Kaiming, et al. Deep Residual Learning for Image Recognition. ArXiv:1512.03385, 2015.
+
+[2] W. Kay, et al. The kinetics human action video dataset. arXiv preprint arXiv:1705.06950, 2017.
 
 # Dataset
 
-To start off with, let's setup the PyTorchVideo Kinetics data loader using a pytorch_lightning_LightningDataModule (TODO link to docs). A LightningDataModule is a wrapper that defines the train, val and test data partitions, we'll use it to wrap the PyTorchVideo Kinetics dataset below.
+To start off with, let's setup the PyTorchVideo Kinetics data loader using a [pytorch_lightning_LightningDataModule](https://pytorch-lightning.readthedocs.io/en/latest/api/pytorch_lightning.core.datamodule.html#pytorch_lightning.core.datamodule.LightningDataModule) . A LightningDataModule is a wrapper that defines the train, val and test data partitions, we'll use it to wrap the PyTorchVideo Kinetics dataset below.
 
-The PyTorchVideo Kinetics dataset is just an alias for the general pytorchvideo.data.EncodedVideoDataset class (TODO link to docs). If you look at its constructor, you'll notice that most args are what you'd expect (e.g. path to data). However, there are a few args that are more specific to PyTorchVideo datasets:
+The PyTorchVideo Kinetics dataset is just an alias for the general [pytorchvideo.data.EncodedVideoDataset](http://pytorchvideo.org/api/data/encoded_video.html#pytorchvideo.data.encoded_video_dataset.EncodedVideoDataset) class. If you look at its constructor, you'll notice that most args are what you'd expect (e.g. path to data). However, there are a few args that are more specific to PyTorchVideo datasets:
 - video_sampler - defining the order to sample a video at each iteration. The default is a "random".
 - clip_sampler - defining how to sample a clip from the chosen video at each iteration. For a train partition it is typical to use a "random" clip sampler (i.e. take a random clip of the specified duration from the video). For testing, typically you'll use "uniform" (i.e. uniformly sample all clips of the specified duration from the video) to ensure the entire video is sampled in each epoch.
 - transform - this provides a way to apply user defined data preprocessing or augmentation before batch collating by the PyTorch data loader. We'll show an example using this later.
@@ -77,7 +81,7 @@ As mentioned above, PyTorchVideo datasets take a "transform" callable arg that d
   }
 ```
 
-PyTorchVideo provides several transforms which you can see here (TODO link to transform docs). Notably, PyTorchVideo provides dictionary transforms that can be used to easily interoperate with other domain specifc libraries. For example, pytorchvideo.transforms.ApplyTransformToKey(key, transform) (TODO link to docs), can be used to apply domain specific transforms to a specific dictionary key. For video tensors we use the same tensor shape as TorchVision and for audio we use TorchAudio tensor shapes, making it east to apply their transforms alongside PyTorchVideo ones.
+PyTorchVideo provides several transforms which you can see in the [docs](http://pytorchvideo.org/api/transforms/transforms.html) Notably, PyTorchVideo provides dictionary transforms that can be used to easily interoperate with other domain specifc libraries. For example, [pytorchvideo.transforms.ApplyTransformToKey(key, transform)](http://pytorchvideo.org/api/transforms/transforms.html#pytorchvideo.transforms.transforms.ApplyTransformToKey), can be used to apply domain specific transforms to a specific dictionary key. For video tensors we use the same tensor shape as TorchVision and for audio we use TorchAudio tensor shapes, making it east to apply their transforms alongside PyTorchVideo ones.
 
 Below we revise the LightningDataModule from the last section to include transforms coming from both TorchVision and PyTorchVideo. For brevity we'll just show the KineticsDataModule.train_dataloader method. The validation dataset transforms would be the same just without the augmentations (RandomShortSideScale, RandomCropVideo, RandomHorizontalFlipVideo).
 
@@ -112,27 +116,27 @@ class KineticsDataModule(pytorch_lightning.LightningDataModule):
             ApplyTransformToKey(
               key="video",
               transform=Compose(
-                [
-                UniformTemporalSubsample(8),
-                Normalize((0.45, 0.45, 0.45), (0.225, 0.225, 0.225)),
-                RandomShortSideScale(min_size=256, max_size=320),
-                RandomCrop(244),
-                RandomHorizontalFlip(p=0.5),
-                ]
+                  [
+                    UniformTemporalSubsample(8),
+                    Normalize((0.45, 0.45, 0.45), (0.225, 0.225, 0.225)),
+                    RandomShortSideScale(min_size=256, max_size=320),
+                    RandomCrop(244),
+                    RandomHorizontalFlip(p=0.5),
+                  ]
                 ),
               ),
             ]
-            )
+        )
         train_dataset = pytorchvideo.data.Kinetics(
             data_path=os.path.join(self._DATA_PATH, "train.csv"),
             clip_sampler=pytorchvideo.data.make_clip_sampler("random", self._CLIP_DURATION),
             transform=train_transform
-            )
-return torch.utils.data.DataLoader(
-    train_dataset,
-    batch_size=self._BATCH_SIZE,
-    num_workers=self._NUM_WORKERS,
-    )
+        )
+        return torch.utils.data.DataLoader(
+            train_dataset,
+            batch_size=self._BATCH_SIZE,
+            num_workers=self._NUM_WORKERS,
+        )
 
 # ...
 
@@ -140,7 +144,7 @@ return torch.utils.data.DataLoader(
 
 # Model
 
-All PyTorchVideo models and layers can be built with simple, reproducible factory functions. We call this the "flat" model interface because the args don't require hierachies of configs to be used. An example building a default 3D ResNet can be found below. See the docs for more configuration options (TODO link to model docs).
+All PyTorchVideo models and layers can be built with simple, reproducible factory functions. We call this the "flat" model interface because the args don't require hierachies of configs to be used. An example building a default ResNet can be found below. See the [docs](http://pytorchvideo.org/api/models/resnet.html#pytorchvideo.models.resnet.create_bottleneck_block) for more configuration options.
 
 ```python
 import pytorchvideo.models.resnet
@@ -157,7 +161,7 @@ def make_kinetics_resnet():
 
 # Putting it all together
 
-To put everything together, let's create a pytorch_lightning.LightningModule (TODO link to docs). This defines the train and validation step code (i.e. the code inside the training and evaluation loops), and the optimizer.
+To put everything together, let's create a [pytorch_lightning.LightningModule](https://pytorch-lightning.readthedocs.io/en/latest/common/lightning_module.html). This defines the train and validation step code (i.e. the code inside the training and evaluation loops), and the optimizer.
 
 ```python
 import torch
@@ -200,7 +204,7 @@ class VideoClassificationLightningModule(pytorch_lightning.LightningModule):
       return torch.optim.Adam(self.parameters(), lr=1e-1)
 ```
 
-Our VideoClassificationLightningModule and KineticsDataModule are ready be trained together using the pytorch_lightning.Trainer (TODO link to docs)!. The trainer class has many arguments to define the training environment (e.g. num_gpus, distributed_backend). To keep things simple we'll just use the default local cpu training but note that this would likely take weeks to train so you might want to use more performant settings based on your environment.
+Our VideoClassificationLightningModule and KineticsDataModule are ready be trained together using the [pytorch_lightning.Trainer](https://pytorch-lightning.readthedocs.io/en/latest/common/trainer.html)!. The trainer class has many arguments to define the training environment (e.g. num_gpus, distributed_backend). To keep things simple we'll just use the default local cpu training but note that this would likely take weeks to train so you might want to use more performant settings based on your environment.
 
 ```python
   def train():
@@ -212,6 +216,6 @@ Our VideoClassificationLightningModule and KineticsDataModule are ready be train
 
 # Conclusion
 
-In this tutorial we showed how to train a 3D ResNet on Kinetics using PyTorch Lightning. You can see the final code from the tutorial (including a few extra bells and whistles) here (TODO link to example code).
+In this tutorial we showed how to train a 3D ResNet on Kinetics using PyTorch Lightning. You can see the final code from the tutorial (including a few extra bells and whistles) in the PyTorchVideo projects directory.
 
-To learn more about PyTorchVideo, check out the rest of the documentation (TODO link to documentation) and tutorials (TODO link to tutorials overview).
+To learn more about PyTorchVideo, check out the rest of the [documentation](http://pytorchvideo.org/docs/api/index.html)  and [tutorials](http://pytorchvideo.org/docs/tutorial_overview).

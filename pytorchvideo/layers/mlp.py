@@ -16,17 +16,20 @@ def make_multilayer_perceptron(
     Factory function for Multi-Layer Perceptron. These are constructed as repeated
     blocks of the following format where each fc represents the blocks output/input dimension.
 
-                                    Linear (in=fc[i-1], out=fc[i])
+    ::
+
+                             Linear (in=fc[i-1], out=fc[i])
                                            ↓
                                  Normalization (norm)
                                            ↓
-                                   Activation (mid_activation)
-
-    After the repeated Perceptron blocks, a final dropout and activation layer is applied:
-
-                                 Dropout (p=dropout_rate)
+                               Activation (mid_activation)
                                            ↓
-                                   Activation (final_activation)
+                            After the repeated Perceptron blocks,
+                      a final dropout and activation layer is applied:
+                                           ↓
+                               Dropout (p=dropout_rate)
+                                           ↓
+                               Activation (final_activation)
 
     """
     assert isinstance(fully_connected_dims, list)

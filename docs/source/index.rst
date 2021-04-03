@@ -6,14 +6,32 @@
 :github_url: https://github.com/facebookresearch/pytorchvideo/
 
 
-Welcome to PyTorchVideo's documentation!
+Welcome to PyTorchVideo's Documentation
 ========================================
 
 .. toctree::
    :maxdepth: 1
    :caption: Models
 
-   models_overview
+   models
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Data
+
+   data
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Transforms
+
+   transforms
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Accelerator
+
+   accelerator
 
 .. toctree::
    :maxdepth: 1
@@ -27,6 +45,3 @@ Welcome to PyTorchVideo's documentation!
    :caption: API
 
    api/index
-
-
-

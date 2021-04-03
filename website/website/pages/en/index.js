@@ -108,6 +108,9 @@ class Index extends React.Component {
 from pytorchvideo import foo
 from pytorchvideo.models import bar
     `;
+    const install = `${pre}bash
+pip install pytorchvideo
+    `;
 
     const QuickStart = () => (
       <div
@@ -118,7 +121,8 @@ from pytorchvideo.models import bar
         <Container>
           <ol>
             <li>
-              <strong>Install pytorchvideo  </strong> (following the instructions <a href="https://github.com/facebookresearch/pytorchvideo/blob/master/INSTALL.md">here</a>)
+              <strong>Install pytorchvideo  </strong> (Confirm requirements following the instructions <a href="https://github.com/facebookresearch/pytorchvideo/blob/master/INSTALL.md">here</a>)
+              <MarkdownBlock>{install}</MarkdownBlock>
             </li>
             <li>
               <strong>Try Video classification with Model Zoo  </strong>
@@ -165,7 +169,7 @@ from pytorchvideo.models import bar
             },
             {
               content:
-                'Variety of state of the art pretrained video models and their assciated benchmarks that are ready to use.',
+                'Variety of state of the art pretrained video models and their associated benchmarks that are ready to use.',
               image: `${baseUrl}img/modelzoo.svg`,
               imageAlign: 'top',
               title: 'Reproducible Model Zoo',

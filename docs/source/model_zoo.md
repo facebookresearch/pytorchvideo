@@ -61,3 +61,4 @@ All top1/top5 accuracies are measured with 10-clip evaluation. Latency is benchm
 |--------|--------------------------------------------------------------------------|-------|-------|--------------|----------------|---------------------|
 | X3D_XS | models.accelerator.mobile_cpu.efficient_x3d.EfficientX3d(expansion="XS") | 68.5  | 88.0  |          233 | 3.8            | [link](http://dl.fbaipublicfiles.com/pytorchvideo/model_zoo/kinetics/efficient_x3d_xs_original_form.pyth) |
 | X3D_S  | models.accelerator.mobile_cpu.efficient_x3d.EfficientX3d(expansion="S")  | 73.0  | 90.6  |          764 | 3.8            | [link](http://dl.fbaipublicfiles.com/pytorchvideo/model_zoo/kinetics/efficient_x3d_s_original_form.pyth) |
+

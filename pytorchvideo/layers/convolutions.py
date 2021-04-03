@@ -12,6 +12,8 @@ class ConvReduce3D(nn.Module):
     """
     Builds a list of convolutional operators and performs summation on the outputs.
 
+    ::
+
                             Conv3d, Conv3d, ...,  Conv3d
                                            ↓
                                           Sum
@@ -107,6 +109,8 @@ def create_conv_2plus1d(
     Create a 2plus1d conv layer. It performs spatiotemporal Convolution, BN, and
     Relu following by a spatiotemporal pooling.
 
+    ::
+
                         Conv_t (or Conv_xy if conv_xy_first = True)
                                            ↓
                                      Normalization
@@ -119,28 +123,25 @@ def create_conv_2plus1d(
     Activation options include: ReLU, Softmax, Sigmoid, and None (no activation).
 
     Args:
-        Convolution related configs:
-            in_channels (int): input channel size of the convolution.
-            out_channels (int): output channel size of the convolution.
-            kernel_size (tuple): convolutional kernel size(s).
-            stride (tuple): convolutional stride size(s).
-            padding (tuple): convolutional padding size(s).
-            bias (bool): convolutional bias. If true, adds a learnable bias to the
-                output.
-            groups (int): Number of groups in convolution layers. value >1 is unsupported.
-            dilation (tuple): dilation value in convolution layers. value >1 is unsupported.
-            conv_xy_first (bool): If True, spatial convolution comes before temporal conv
+        in_channels (int): input channel size of the convolution.
+        out_channels (int): output channel size of the convolution.
+        kernel_size (tuple): convolutional kernel size(s).
+        stride (tuple): convolutional stride size(s).
+        padding (tuple): convolutional padding size(s).
+        bias (bool): convolutional bias. If true, adds a learnable bias to the
+            output.
+        groups (int): Number of groups in convolution layers. value >1 is unsupported.
+        dilation (tuple): dilation value in convolution layers. value >1 is unsupported.
+        conv_xy_first (bool): If True, spatial convolution comes before temporal conv
 
-        BN related configs:
-            norm (callable): a callable that constructs normalization layer, options
-                include nn.BatchNorm3d, None (not performing normalization).
-            norm_eps (float): normalization epsilon.
-            norm_momentum (float): normalization momentum.
+        norm (callable): a callable that constructs normalization layer, options
+            include nn.BatchNorm3d, None (not performing normalization).
+        norm_eps (float): normalization epsilon.
+        norm_momentum (float): normalization momentum.
 
-        Activation related configs:
-            activation (callable): a callable that constructs activation layer, options
-                include: nn.ReLU, nn.Softmax, nn.Sigmoid, and None (not performing
-                activation).
+        activation (callable): a callable that constructs activation layer, options
+            include: nn.ReLU, nn.Softmax, nn.Sigmoid, and None (not performing
+            activation).
 
     Returns:
         (nn.Module): 2plus1d conv layer.
@@ -192,6 +193,8 @@ class Conv2plus1d(nn.Module):
     Implementation of 2+1d Convolution by factorizing 3D Convolution into an 1D temporal
     Convolution and a 2D spatial Convolution with Normalization and Activation module
     in between:
+
+    ::
 
                         Conv_t (or Conv_xy if conv_xy_first = True)
                                            ↓

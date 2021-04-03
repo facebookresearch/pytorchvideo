@@ -73,9 +73,19 @@ install_pytorchvideo: &install_pytorchvideo
       command: |
         export PATH="$HOME/miniconda3/bin:$PATH"
         conda activate pytorchvideo
-        pip install -U --progress-bar off -e .
-        python setup.py sdist
+        pip install -U --progress-bar off -e .[test]
         python -c 'import pytorchvideo; print(pytorchvideo.__version__)'
+
+build_wheels: &build_wheels
+  - run:
+      name: Install PyTorchVideo
+      command: |
+        export PATH="$HOME/miniconda3/bin:$PATH"
+        conda activate pytorchvideo
+        python setup.py sdist
+        
+        export BUILD_NIGHTLY="1"
+        python setup.py sdist
 
 run_unittests: &run_unittests
   - run:
@@ -83,7 +93,6 @@ run_unittests: &run_unittests
       command: |
         export PATH="$HOME/miniconda3/bin:$PATH"
         conda activate pytorchvideo
-        pip install --progress-bar off pytest
         python -m unittest discover -v -s tests
 
 run_unittests_with_coverage: &run_unittests_with_coverage
@@ -92,7 +101,6 @@ run_unittests_with_coverage: &run_unittests_with_coverage
       command: |
         export PATH="$HOME/miniconda3/bin:$PATH"
         conda activate pytorchvideo
-        pip install --progress-bar off coverage pytest
         coverage run -m unittest discover -v -s tests
         bash <(curl -s https://codecov.io/bash)
 
@@ -109,6 +117,7 @@ jobs:
       - <<: *setup_ptv_conda
       - <<: *install_pytorch
       - <<: *install_pytorchvideo
+      - <<: *build_wheels
       - <<: *run_unittests_with_coverage
       - store_artifacts:
           path: ~/pytorchvideo/dist
@@ -129,29 +138,6 @@ jobs:
       - <<: *install_pytorchvideo
       - <<: *run_unittests
   
-  build_and_upload_conda:
-    docker:
-      - image: continuumio/miniconda3
-        auth:
-          username: $DOCKERHUB_USERNAME
-          password: $DOCKERHUB_TOKEN
-    steps:
-      - checkout
-      - run:
-          name: Build Conda Packages
-          command: |
-            # no commits in the last 25 hours
-            if [[ -z $(git log --since="25 hours ago") ]]; then
-              echo "No commits in the last day."
-              exit 0
-            fi
-            conda install anaconda-client conda-build
-            bash packaging/build_all_conda.sh
-      - run:
-          name: Upload Conda Packages
-          command: |
-            bash packaging/upload_all_conda.sh
-
   upload_wheel:
     docker:
       - image: circleci/python:3.7
@@ -172,7 +158,12 @@ jobs:
             fi
             pip install --progress-bar off --user twine
             for pkg in ~/workspace/*.tar.gz; do
-              twine upload --verbose --skip-existing --username __token__ --password $PTV_PYPI_TOKEN $pkg
+              if [[ "$pkg" == *"nightly"* ]];
+              then
+                twine upload --verbose --skip-existing --username __token__ --password $PTV_NIGHTLY_PYPI_TOKEN $pkg
+              else
+                twine upload --verbose --skip-existing --username __token__ --password $PTV_PYPI_TOKEN $pkg
+              fi
             done
 # -------------------------------------------------------------------------------------
 # Workflows to launch
@@ -197,22 +188,16 @@ workflows:
       - gpu_tests:
           context:
             - DOCKERHUB_TOKEN
-      - build_and_upload_conda:
-          requires:
-            - cpu_tests
-            - gpu_tests
-          context:
-            - DOCKERHUB_TOKEN
       - upload_wheel:
           requires:
             - cpu_tests
             - gpu_tests
           context:
             - DOCKERHUB_TOKEN
-    # triggers:
-    #   - schedule:
-    #       cron: "0 0 * * *"
-    #       filters:
-    #         branches:
-    #           only:
-    #             - master
+    triggers:
+      - schedule:
+          cron: "0 0 * * *"
+          filters:
+            branches:
+              only:
+                - master

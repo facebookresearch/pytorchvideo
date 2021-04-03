@@ -9,17 +9,19 @@ html body {
 }
 
 .fixedHeaderContainer {
-  background-color: #222222;
+  background-color: #ffffff;
+  border-bottom: 5px solid #812ce5;
 }
 
 
 .fixedHeaderContainer header .headerTitleWithLogo {
   display: block;
   color: #ffffff;
+  font-size: 20px;
 }
 
 .fixedHeaderContainer header .logo {
-  height: 75px;
+  height: 55px;
 }
 
 .fixedHeaderContainer header a:nth-child(2) {
@@ -40,21 +42,24 @@ html body {
 }
 
 .navigationSlider .slidingNav ul {
-  background: #222222;
+  background: #ffffff;
+  font-size: 22px;
 }
 
 .navigationSlider .slidingNav ul li a {
-  color: #c7d4fd;
+  color: #222222;
+  background-color: #ffffff;
 }
 
 .navigationSlider .slidingNav ul li a:hover,
 .navigationSlider .slidingNav ul li a:focus {
-  color: #ffffff;
+  color: #812ce5;
   background-color: inherit;
 }
 
 .navigationSlider .slidingNav ul li.siteNavItemActive > a,
 .navigationSlider .slidingNav ul li.siteNavGroupActive > a {
+  color: #812ce5;
   background-color: inherit;
 }
 

@@ -52,3 +52,4 @@ they need to be fairly up to date.
 ## License
 By contributing to PyTorchVideo, you agree that your contributions will be licensed
 under the LICENSE file in the root directory of this source tree.
+
