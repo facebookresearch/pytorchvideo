@@ -1,3 +1,5 @@
+# Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved.
+
 dependencies = ["torch"]
 from pytorchvideo.models.hub import (  # noqa: F401, E402
     slow_r50,
