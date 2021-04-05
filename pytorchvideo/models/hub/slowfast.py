@@ -4,6 +4,7 @@ import torch.nn as nn
 from pytorchvideo.models.slowfast import create_slowfast
 from torch.hub import load_state_dict_from_url
 
+
 root_dir = "https://dl.fbaipublicfiles.com/pytorchvideo/model_zoo/kinetics"
 checkpoint_paths = {
     "slowfast_r50": f"{root_dir}/SLOWFAST_8x8_R50.pyth",

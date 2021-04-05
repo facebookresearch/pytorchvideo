@@ -4,6 +4,7 @@ import torch.nn as nn
 from pytorchvideo.models.x3d import create_x3d
 from torch.hub import load_state_dict_from_url
 
+
 root_dir = "https://dl.fbaipublicfiles.com/pytorchvideo/model_zoo/kinetics"
 checkpoint_paths = {
     "x3d_xs": f"{root_dir}/X3D_XS.pyth",
