@@ -1,3 +1,5 @@
+# Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved.
+
 from typing import Any
 
 import torch.nn as nn
