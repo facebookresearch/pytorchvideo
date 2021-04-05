@@ -1,3 +1,5 @@
+# Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved.
+
 from collections import OrderedDict
 from typing import Optional, Tuple
 

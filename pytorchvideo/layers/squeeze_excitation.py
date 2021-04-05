@@ -1,4 +1,4 @@
-# (c) Facebook, Inc. and its affiliates. Confidential and proprietary.
+# Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved.
 
 from typing import Callable, Optional
 
