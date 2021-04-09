@@ -56,9 +56,10 @@ Get started with PyTorchVideo by trying out one of our [tutorials](https://pytor
 ## Model Zoo and Baselines
 We provide a large set of baseline results and trained models available for download in the [PyTorchVideo Model Zoo](https://github.com/facebookresearch/pytorchvideo/blob/master/docs/source/model_zoo.md).
 
+
 ## Contributors
 
-PyTorchVideo is written and maintained by the Facebook AI Research.
+PyTorchVideo is written and maintained by the Facebook AI Research, including following memebers in alphabetical order: Aaron Adcock, Amy Bearman, Bernard Nguyen, Bo Xiong, Chengyuan Yan, Christoph Feichtenhofer, Dave Schnizlein, Haoqi Fan, Heng Wang, Jackson Hamburger, Kalyan Vasudev Alwala, Matt, Feiszli, Nikhila Ravi, Tullie Murrell, Wan-Yen Lo, Weiyao Wang, Yanghao Li, Yilei Li, Zhengxing Chen, Zhicheng Yan.
 
 ## Development
 
