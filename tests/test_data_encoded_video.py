@@ -3,7 +3,6 @@
 import tempfile
 import unittest
 
-import av
 import pytest
 from pytorchvideo.data.encoded_video import EncodedVideo
 from utils import temp_encoded_video, temp_encoded_video_with_audio
@@ -136,6 +135,6 @@ class TestEncodedVideo(unittest.TestCase):
     def test_decode_video_failure(self):
         with tempfile.NamedTemporaryFile(suffix=".mp4") as f:
             f.write(b"This is not an mp4 file")
-            with pytest.raises(av.AVError):
+            with pytest.raises(RuntimeError):
                 test_video = EncodedVideo.from_path(f.name)
                 test_video.close()

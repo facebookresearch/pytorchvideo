@@ -129,10 +129,9 @@ class EncodedVideoDataset(torch.utils.data.IterableDataset):
                         decoder=self._decoder,
                     )
                     self._loaded_video_label = (video, info_dict, video_index)
-                except (RuntimeError, OSError) as e:
-                    logger.warning(
-                        "Failed to load video from {} with error {}; trial {}".format(
-                            video_path,
+                except Exception as e:
+                    logger.debug(
+                        "Failed to load video with error: {}; trial {}".format(
                             e,
                             i_try,
                         )
@@ -165,10 +164,8 @@ class EncodedVideoDataset(torch.utils.data.IterableDataset):
                 self._next_clip_start_time = 0.0
 
                 if clip_is_null:
-                    logger.warning(
-                        "Failed to meta load video {}; trial {}".format(
-                            video.name, i_try
-                        )
+                    logger.debug(
+                        "Failed to load clip {}; trial {}".format(video.name, i_try)
                     )
                     continue
 
@@ -209,6 +206,9 @@ class EncodedVideoDataset(torch.utils.data.IterableDataset):
             self._video_random_generator.manual_seed(base_seed)
 
         return self
+
+    def num_videos(self):
+        return len(self.video_sampler)
 
 
 def labeled_encoded_video_dataset(

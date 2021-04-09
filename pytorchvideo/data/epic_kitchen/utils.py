@@ -6,7 +6,6 @@ from iopath.common.file_io import g_pathmgr
 from pytorchvideo.data.dataset_manifest_utils import EncodedVideoInfo, VideoFrameInfo
 from pytorchvideo.data.utils import (
     optional_threaded_foreach,
-    save_dataclass_objs_to_headered_csv,
 )
 
 

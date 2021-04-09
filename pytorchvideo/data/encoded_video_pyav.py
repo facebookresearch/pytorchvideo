@@ -39,8 +39,7 @@ class EncodedVideoPyAV(Video):
         try:
             self._container = av.open(file)
         except Exception as e:
-            logger.warning(f"Failed to open video {video_name}. {e}")
-            raise e
+            raise RuntimeError(f"Failed to open video {video_name}. {e}")
 
         if self._container is None or len(self._container.streams.video) == 0:
             raise RuntimeError(f"Video stream not found {video_name}")
@@ -73,9 +72,10 @@ class EncodedVideoPyAV(Video):
         if audio_duration is None and video_duration is None:
             self._selective_decoding = False
             self._video, self._audio = self._pyav_decode_video()
-            if self._video is not None:
-                video_duration = self._video[-1][1]
+            if self._video is None:
+                raise RuntimeError("Unable to decode video stream")
 
+            video_duration = self._video[-1][1]
             if self._audio is not None:
                 audio_duration = self._audio[-1][1]
 
@@ -174,7 +174,7 @@ class EncodedVideoPyAV(Video):
             audio_samples = audio_samples.to(torch.float32)
 
         if video_frames is None or len(video_frames) == 0:
-            logger.warning(
+            logger.debug(
                 f"No video found within {start_sec} and {end_sec} seconds. "
                 f"Video starts at time 0 and ends at {self.duration}."
             )
@@ -240,8 +240,7 @@ class EncodedVideoPyAV(Video):
                     ]
 
         except Exception as e:
-            logger.warning(f"Failed to decode video at path {self._file_path}. {e}")
-            raise e
+            logger.debug(f"Failed to decode video: {self._video_name}. {e}")
 
         return video_and_pts, audio_and_pts
 
