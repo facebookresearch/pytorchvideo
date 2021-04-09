@@ -58,7 +58,7 @@ We provide a large set of baseline results and trained models available for down
 
 ## Contributors
 
-PyTorchVideo is written and maintained by the Facebook AI Research, including following memebers in alphabetical order: Aaron Adcock, Amy Bearman, Bernard Nguyen, Bo Xiong, Chengyuan Yan, Christoph Feichtenhofer, Dave Schnizlein, Haoqi Fan, Heng Wang, Jackson Hamburger, Kalyan Vasudev Alwala, Matt, Feiszli, Nikhila Ravi, Tullie Murrell, Wan-Yen Lo, Weiyao Wang, Yanghao Li, Yilei Li, Zhengxing Chen, Zhicheng Yan.
+PyTorchVideo is written and maintained by the Facebook AI Research, including following memebers in alphabetical order: Aaron Adcock, Amy Bearman, Bernard Nguyen, Bo Xiong, Chengyuan Yan, Christoph Feichtenhofer, Dave Schnizlein, Haoqi Fan, Heng Wang, Jackson Hamburger, Kalyan Vasudev Alwala, Matt Feiszli, Nikhila Ravi, Tullie Murrell, Wan-Yen Lo, Weiyao Wang, Yanghao Li, Yilei Li, Zhengxing Chen, Zhicheng Yan.
 
 ## Development
 
