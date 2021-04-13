@@ -1,0 +1,7 @@
+{
+  "docs-other": {
+    "Tutorials": ["tutorial_overview"],
+    "Classification": ["tutorial_classification", "tutorial_torchhub_inference"],
+    "Accelerator": ["tutorial_accelerator_build_your_model", "tutorial_accelerator_use_accelerator_model_zoo", "tutorial_accelerator_use_model_transmuter"]
+  }
+}

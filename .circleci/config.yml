@@ -1,0 +1,205 @@
+# Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved.
+
+# -------------------------------------------------------------------------------------
+# CircleCI configuration file.
+# Specifies automated environment setup and tests.
+#
+# See https://circleci.com/docs/2.0/language-python/ for more details
+# Available Machine Images: 
+# https://circleci.com/docs/2.0/configuration-reference/#available-machine-images
+# -------------------------------------------------------------------------------------
+
+version: 2.1
+
+# -------------------------------------------------------------------------------------
+# Environments to run the jobs in
+# -------------------------------------------------------------------------------------
+cpu: &cpu
+  machine:
+      image: ubuntu-2004:202101-01
+
+gpu: &gpu
+  environment:
+    CUDA_VERSION: "10.2"
+  resource_class: gpu.medium # tesla m60
+  machine:
+      image: ubuntu-2004:202101-01
+
+setup_cuda: &setup_cuda
+  run:
+    name: Setup CUDA
+    working_directory: ~/
+    command: |
+      # download and install nvidia drivers, cuda, etc
+      wget --no-verbose --no-clobber -P ~/nvidia-downloads https://developer.download.nvidia.com/compute/cuda/11.2.2/local_installers/cuda_11.2.2_460.32.03_linux.run
+      sudo sh ~/nvidia-downloads/cuda_11.2.2_460.32.03_linux.run --silent
+      echo "Done installing CUDA."
+      nvidia-smi
+
+# -------------------------------------------------------------------------------------
+# Re-usable commands
+# -------------------------------------------------------------------------------------
+install_conda: &install_conda
+  run:
+    name: Setup Conda
+    working_directory: ~/
+    command: |
+      curl --retry 3 -o conda.sh https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
+      sh conda.sh -b -p $HOME/miniconda3
+      
+setup_ptv_conda: &setup_ptv_conda
+  run:
+    name: Setup Conda Environment
+    command: |
+      pyenv versions
+      export PATH="$HOME/miniconda3/bin:$PATH"
+      conda update -y conda
+      conda init bash
+      source ~/.bashrc
+      conda create --name pytorchvideo python=3.7.9
+
+install_pytorch: &install_pytorch
+  - run:
+      name: Install Pytorch
+      command: |
+        export PATH="$HOME/miniconda3/bin:$PATH"
+        conda activate pytorchvideo
+        conda install pytorch=1.8.0 torchvision -c pytorch
+        python -c 'import torch; print(torch.__version__)'
+        python -c 'import torch; print("CUDA:", torch.cuda.is_available())'
+        python -c 'import torchvision; print(torchvision.__version__)'
+        
+install_pytorchvideo: &install_pytorchvideo
+  - run:
+      name: Install PyTorchVideo
+      command: |
+        export PATH="$HOME/miniconda3/bin:$PATH"
+        conda activate pytorchvideo
+        pip install -U --progress-bar off -e .[test]
+        python -c 'import pytorchvideo; print(pytorchvideo.__version__)'
+
+build_wheels: &build_wheels
+  - run:
+      name: Install PyTorchVideo
+      command: |
+        export PATH="$HOME/miniconda3/bin:$PATH"
+        conda activate pytorchvideo
+        python setup.py sdist
+        
+        export BUILD_NIGHTLY="1"
+        python setup.py sdist
+
+run_unittests: &run_unittests
+  - run:
+      name: Run Unit Tests
+      command: |
+        export PATH="$HOME/miniconda3/bin:$PATH"
+        conda activate pytorchvideo
+        python -m unittest discover -v -s tests
+
+run_unittests_with_coverage: &run_unittests_with_coverage
+  - run:
+      name: Run Unit Tests
+      command: |
+        export PATH="$HOME/miniconda3/bin:$PATH"
+        conda activate pytorchvideo
+        coverage run -m unittest discover -v -s tests
+        bash <(curl -s https://codecov.io/bash)
+
+# -------------------------------------------------------------------------------------
+# Jobs to run
+# -------------------------------------------------------------------------------------
+jobs:
+  cpu_tests:
+    <<: *cpu
+    working_directory: ~/pytorchvideo
+    steps:
+      - checkout
+      - <<: *install_conda
+      - <<: *setup_ptv_conda
+      - <<: *install_pytorch
+      - <<: *install_pytorchvideo
+      - <<: *build_wheels
+      - <<: *run_unittests_with_coverage
+      - store_artifacts:
+          path: ~/pytorchvideo/dist
+      - persist_to_workspace:
+          root: ~/pytorchvideo/dist
+          paths:
+            - "*"
+
+  gpu_tests:
+    working_directory: ~/pytorchvideo
+    <<: *gpu
+    steps:
+      - checkout
+      - <<: *setup_cuda
+      - <<: *install_conda
+      - <<: *setup_ptv_conda
+      - <<: *install_pytorch
+      - <<: *install_pytorchvideo
+      - <<: *run_unittests
+  
+  upload_wheel:
+    docker:
+      - image: circleci/python:3.7
+        auth:
+          username: $DOCKERHUB_USERNAME
+          password: $DOCKERHUB_TOKEN
+    working_directory: ~/pytorchvideo
+    steps:
+      - checkout
+      - attach_workspace:
+          at: ~/workspace
+      - run:
+          command: |
+            # no commits in the last 25 hours
+            if [[ -z $(git log --since="25 hours ago") ]]; then
+              echo "No commits in the last day."
+              exit 0
+            fi
+            pip install --progress-bar off --user twine
+            for pkg in ~/workspace/*.tar.gz; do
+              if [[ "$pkg" == *"nightly"* ]];
+              then
+                twine upload --verbose --skip-existing --username __token__ --password $PTV_NIGHTLY_PYPI_TOKEN $pkg
+              else
+                twine upload --verbose --skip-existing --username __token__ --password $PTV_PYPI_TOKEN $pkg
+              fi
+            done
+# -------------------------------------------------------------------------------------
+# Workflows to launch
+# -------------------------------------------------------------------------------------
+workflows:
+  version: 2
+  regular_test:
+    jobs:
+      - cpu_tests:
+          context:
+            - DOCKERHUB_TOKEN
+      - gpu_tests:
+          context:
+            - DOCKERHUB_TOKEN
+
+  nightly:
+    jobs:
+      # https://circleci.com/docs/2.0/contexts/#creating-and-using-a-context
+      - cpu_tests:
+          context:
+            - DOCKERHUB_TOKEN
+      - gpu_tests:
+          context:
+            - DOCKERHUB_TOKEN
+      - upload_wheel:
+          requires:
+            - cpu_tests
+            - gpu_tests
+          context:
+            - DOCKERHUB_TOKEN
+    triggers:
+      - schedule:
+          cron: "0 0 * * *"
+          filters:
+            branches:
+              only:
+                - master
