@@ -1,4 +1,4 @@
-Transforms
+Transforms API
 ==================
 
 .. toctree::

@@ -7,9 +7,9 @@ import sys
 import mock
 
 # -- Project information -----------------------------------------------------
-import sphinx_rtd_theme
+import pytorch_sphinx_theme
 from recommonmark.parser import CommonMarkParser
-
+from recommonmark.transform import AutoStructify
 
 # -- Path setup --------------------------------------------------------------
 sys.path.insert(0, os.path.abspath("../"))
@@ -91,7 +91,7 @@ intersphinx_mapping = {
 source_parsers = {".md": CommonMarkParser}
 
 # Add any paths that contain templates here, relative to this directory.
-templates_path = ["_templates"]
+# templates_path = ["_templates"]
 
 # The suffix(es) of source filenames.
 # You can specify multiple suffix as a list of string:
@@ -107,7 +107,7 @@ master_doc = "index"
 # This is also used if you do content translation via gettext catalogs.
 # Usually you set "language" from the command line for these cases.
 language = None
-
+autodoc_typehints = "description"
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path.
@@ -119,36 +119,31 @@ pygments_style = "sphinx"
 # If true, `todo` and `todoList` produce output, else they produce nothing.
 todo_include_todos = True
 
-
 # -- Options for HTML output -------------------------------------------------
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = "sphinx_rtd_theme"
-html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
+html_theme = "pytorch_sphinx_theme"
+html_theme_path = [pytorch_sphinx_theme.get_html_theme_path()]
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
 # documentation.
-#
+
 html_theme_options = {
-    "collapse_navigation": False,  # default
-    "display_version": True,  # default
-    "logo_only": True,  # default = False
+    "includehidden": False,
+    "canonical_url": "https://pytorchvideo.org/api/",
+    "pytorch_project": "docs",
 }
+
+html_baseurl = "/"
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = ["_static"]
 
-html_logo = "_static/img/ptv_logo.png"
 html_favicon = "../../website/website/static/img/favicon.png"
-
-
-# setting custom stylesheets https://stackoverflow.com/a/34420612
-html_context = {"css_files": ["_static/css/pytorchvideo_theme.css"]}
 
 # -- Options for HTMLHelp output ------------------------------------------
 
@@ -179,19 +174,15 @@ texinfo_documents = [
     )
 ]
 
+github_doc_root = "https://github.com/facebookresearch/pytorchvideo/tree/master"
 
 def setup(app):
-    from recommonmark.transform import AutoStructify
-
     app.add_config_value(
         "recommonmark_config",
         {
+            "url_resolver": lambda url: github_doc_root + url,
             "auto_toc_tree_section": "Contents",
-            "enable_math": True,
-            "enable_inline_math": True,
-            "enable_eval_rst": True,
-            "enable_auto_toc_tree": True,
         },
         True,
     )
-    return app
+    app.add_transform(AutoStructify)

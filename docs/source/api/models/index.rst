@@ -1,4 +1,4 @@
-Models
+Models API
 ==================
 
 .. toctree::

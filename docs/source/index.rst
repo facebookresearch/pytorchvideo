@@ -6,7 +6,7 @@
 :github_url: https://github.com/facebookresearch/pytorchvideo/
 
 
-Welcome to PyTorchVideo's Documentation
+PyTorchVideo Documentation
 ========================================
 
 .. toctree::
@@ -14,34 +14,33 @@ Welcome to PyTorchVideo's Documentation
    :caption: Models
 
    models
+   model_zoo
+   api/models/index
 
 .. toctree::
    :maxdepth: 1
    :caption: Data
 
    data
+   data_preparation
+   api/data/index
 
 .. toctree::
    :maxdepth: 1
    :caption: Transforms
 
    transforms
+   api/transforms/index
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Layers
+
+   api/layers/index
 
 .. toctree::
    :maxdepth: 1
    :caption: Accelerator
 
-   accelerator
-
-.. toctree::
-   :maxdepth: 1
-   :caption: Model Zoo
-
-   model_zoo
-   data_preparation
-
-.. toctree::
-   :maxdepth: 2
-   :caption: API
-
-   api/index
+   accelerator   
+   

@@ -12,13 +12,13 @@ Our vision for PytorchVideo/Accelerator is to enable video understanding models 
 We benchmarked the latency of SOTA models ([X3D-XS and X3D-S](https://arxiv.org/abs/2004.04730)) on a mainstream mobile device (Samsung S9 International, released in 2018). With Accelerator, we not only observed 4-6X latency reduction on fp32, but also enabled int8 operation which has not been supported in vanilla Pytorch. A table summarizing latency comparison is shown below.
 
 |model  |implementation |precision  |latency per 1-s clip (ms)  |speed up   |
-|---    |---    |---    |---    |---    |
-|X3D-XS |Vanilla Pytorch    |fp32   |1067   |1.0X   |
-|X3D-XS |PytrochVideo/Accelerator   |fp32   |233    |4.6X   |
-|X3D-XS |PytrochVideo/Accelerator   |int8   |165    |6.5X   |
-|X3D-S  |Vanilla Pytorch    |fp32   |4248   |1.0X   |
-|X3D-S  |PytrochVideo/Accelerator   |fp32   |763    |5.6X   |
-|X3D-S  |PytrochVideo/Accelerator   |int8   |503    |8.4X   |
+|---    |-------------------------  |---    |---    |---    |
+|X3D-XS |Vanilla Pytorch            |fp32   |1067   |1.0X   |
+|X3D-XS |PytrochVideo/ Accelerator   |fp32   |233    |4.6X   |
+|X3D-XS |PytrochVideo/ Accelerator   |int8   |165    |6.5X   |
+|X3D-S  |Vanilla Pytorch            |fp32   |4248   |1.0X   |
+|X3D-S  |PytrochVideo/ Accelerator   |fp32   |763    |5.6X   |
+|X3D-S  |PytrochVideo/ Accelerator   |int8   |503    |8.4X   |
 
 ## Components in PytorchVideo/Accelerator
 

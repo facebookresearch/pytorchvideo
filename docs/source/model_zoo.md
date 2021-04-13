@@ -1,7 +1,7 @@
 
 
 
-## PyTorchVideo Model Zoo and Benchmarks
+## Model Zoo and Benchmarks
 
 PyTorchVideo provides reference implementation of a large number of video understanding approaches. In this document, we also provide comprehensive benchmarks to evaluate the supported models on different datasets using standard evaluation setup. All the models can be downloaded from the provided links.
 
@@ -59,5 +59,5 @@ All top1/top5 accuracies are measured with 10-clip evaluation. Latency is benchm
 
 | model  | model builder                                                            | top 1 | top 5 | latency (ms) | params (M) | checkpoint          |
 |--------|--------------------------------------------------------------------------|-------|-------|--------------|----------------|---------------------|
-| X3D_XS | models.accelerator.mobile_cpu.efficient_x3d.EfficientX3d(expansion="XS") | 68.5  | 88.0  |          233 | 3.8            | [link](https://dl.fbaipublicfiles.com/pytorchvideo/model_zoo/kinetics/efficient_x3d_xs_original_form.pyth) |
-| X3D_S  | models.accelerator.mobile_cpu.efficient_x3d.EfficientX3d(expansion="S")  | 73.0  | 90.6  |          764 | 3.8            | [link](https://dl.fbaipublicfiles.com/pytorchvideo/model_zoo/kinetics/efficient_x3d_s_original_form.pyth) |
+| X3D_XS | models. accelerator. mobile_cpu. efficient_x3d. EfficientX3d (expansion="XS") | 68.5  | 88.0  |          233 | 3.8            | [link](http://dl.fbaipublicfiles.com/pytorchvideo/model_zoo/kinetics/efficient_x3d_xs_original_form.pyth) |
+| X3D_S  | models. accelerator. mobile_cpu. efficient_x3d. EfficientX3d (expansion="S")  | 73.0  | 90.6  |          764 | 3.8            | [link](http://dl.fbaipublicfiles.com/pytorchvideo/model_zoo/kinetics/efficient_x3d_s_original_form.pyth) |

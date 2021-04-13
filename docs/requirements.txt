@@ -2,15 +2,16 @@ docutils==0.16
 # https://github.com/sphinx-doc/sphinx/commit/7acd3ada3f38076af7b2b5c9f3b60bb9c2587a3d
 sphinx==3.2.0
 recommonmark==0.6.0
-sphinx_rtd_theme
 sphinx_markdown_tables
 mock
 numpy
 av
+torch
+torchvision
 opencv-python
 parameterized
 git+git://github.com/facebookresearch/fvcore.git
 git+git://github.com/facebookresearch/iopath.git
-https://download.pytorch.org/whl/cpu/torchvision-0.8.2%2Bcpu-cp37-cp37m-linux_x86_64.whl
-https://download.pytorch.org/whl/cpu/torch-1.7.1%2Bcpu-cp37-cp37m-linux_x86_64.whl
+git+git://github.com/kalyanvasudev/pytorch_sphinx_theme.git
+
 

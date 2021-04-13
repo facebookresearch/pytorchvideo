@@ -3,9 +3,7 @@ pytorchvideo.transforms.transforms
 
 
 .. automodule:: pytorchvideo.transforms.transforms
-    :members:
-    :undoc-members:
-    :show-inheritance:
+  :members:
 
 
 pytorchvideo.transforms.functional 
@@ -13,6 +11,4 @@ pytorchvideo.transforms.functional
 
 
 .. automodule:: pytorchvideo.transforms.functional
-    :members:
-    :undoc-members:
-    :show-inheritance:
+  :members:
