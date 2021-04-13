@@ -36,6 +36,7 @@ PyTorchVideo Documentation
    :maxdepth: 1
    :caption: Layers
 
+   layers
    api/layers/index
 
 .. toctree::
