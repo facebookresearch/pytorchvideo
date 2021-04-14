@@ -86,7 +86,7 @@ class MyNet(nn.Module):
         # (N, C, T, H, W) -> (N, T, H, W, C).
         x = x.permute((0, 2, 3, 4, 1))
         x = self.projection(x)
-        # Performs fully convlutional inference.
+        # Performs fully convolutional inference.
         if not self.training:
             x = self.act(x)
             x = x.mean([1, 2, 3])
