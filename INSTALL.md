@@ -14,7 +14,7 @@ conda install -c pytorch pytorch=1.8.0 torchvision cudatoolkit=10.2
 conda install -c conda-forge -c fvcore -c iopath fvcore=0.1.4 iopath
 ```
 
-For nighly builds,
+For nightly builds,
 ```
 pip install pytorchvideo-nightly
 ```
