@@ -38,7 +38,7 @@ X3D      | M     | \-       | 16x5                       | 75.94 | 92.72 | 6.72 
 | SlowFast | R50   | Kinetics 400 | 8x8              | 37.24 | 66.60     | 34.00      | [link](https://dl.fbaipublicfiles.com/pytorchvideo/model_zoo/charades/SLOWFAST\_8x8\_R50.pyth)   |
 
 
-### Using PytorchVideo model zoo
+### Using PyTorchVideo model zoo
 We provide several different ways to use PyTorchVideo model zoo.
 * The models have been integrated into TorchHub, so could be loaded with TorchHub with or without pre-trained models. Additionally, we provide a [tutorial](https://pytorchvideo.org/docs/tutorial_torchhub_inference) which goes over the steps needed to load models from TorchHub and perform inference.
 * PyTorchVideo models/datasets are also supported in PySlowFast. You can use [PySlowFast workflow](https://github.com/facebookresearch/SlowFast/tree/master/projects/pytorchvideo) to train or test PyTorchVideo models/datasets.
@@ -52,12 +52,12 @@ Notes:
 
 
 ### PytorchVideo Accelerator Model Zoo
-Accelerator model zoo provides a set of efficient models on target device with pretrained checkpoints. To learn more about how to build model, load checkpoint and deploy, please refer to [Use PytorchVideo/Accelerator Model Zoo](https://pytorchvideo.org/docs/tutorial_accelerator_use_accelerator_model_zoo).
+Accelerator model zoo provides a set of efficient models on target device with pretrained checkpoints. To learn more about how to build model, load checkpoint and deploy, please refer to [Use PyTorchVideo/Accelerator Model Zoo](https://pytorchvideo.org/docs/tutorial_accelerator_use_accelerator_model_zoo).
 
 **Efficient Models for mobile CPU**
 All top1/top5 accuracies are measured with 10-clip evaluation. Latency is benchmarked on Samsung S8 phone with 1s input clip length.
 
 | model  | model builder                                                            | top 1 | top 5 | latency (ms) | params (M) | checkpoint          |
 |--------|--------------------------------------------------------------------------|-------|-------|--------------|----------------|---------------------|
-| X3D_XS | models. accelerator. mobile_cpu. efficient_x3d. EfficientX3d (expansion="XS") | 68.5  | 88.0  |          233 | 3.8            | [link](http://dl.fbaipublicfiles.com/pytorchvideo/model_zoo/kinetics/efficient_x3d_xs_original_form.pyth) |
-| X3D_S  | models. accelerator. mobile_cpu. efficient_x3d. EfficientX3d (expansion="S")  | 73.0  | 90.6  |          764 | 3.8            | [link](http://dl.fbaipublicfiles.com/pytorchvideo/model_zoo/kinetics/efficient_x3d_s_original_form.pyth) |
+| X3D_XS | models. accelerator. mobile_cpu. efficient_x3d. EfficientX3d (expansion="XS") | 68.5  | 88.0  |          233 | 3.8            | [link](https://dl.fbaipublicfiles.com/pytorchvideo/model_zoo/kinetics/efficient_x3d_xs_original_form.pyth) |
+| X3D_S  | models. accelerator. mobile_cpu. efficient_x3d. EfficientX3d (expansion="S")  | 73.0  | 90.6  |          764 | 3.8            | [link](https://dl.fbaipublicfiles.com/pytorchvideo/model_zoo/kinetics/efficient_x3d_s_original_form.pyth) |
