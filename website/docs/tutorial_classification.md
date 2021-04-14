@@ -81,7 +81,7 @@ As mentioned above, PyTorchVideo datasets take a "transform" callable arg that d
   }
 ```
 
-PyTorchVideo provides several transforms which you can see in the [docs](http://pytorchvideo.org/api/transforms/transforms.html) Notably, PyTorchVideo provides dictionary transforms that can be used to easily interoperate with other domain specifc libraries. For example, [pytorchvideo.transforms.ApplyTransformToKey(key, transform)](http://pytorchvideo.org/api/transforms/transforms.html#pytorchvideo.transforms.transforms.ApplyTransformToKey), can be used to apply domain specific transforms to a specific dictionary key. For video tensors we use the same tensor shape as TorchVision and for audio we use TorchAudio tensor shapes, making it east to apply their transforms alongside PyTorchVideo ones.
+PyTorchVideo provides several transforms which you can see in the [docs](https://pytorchvideo.readthedocs.io/en/latest/transforms.html) Notably, PyTorchVideo provides dictionary transforms that can be used to easily interoperate with other domain specifc libraries. For example, [pytorchvideo.transforms.ApplyTransformToKey(key, transform)](https://pytorchvideo.readthedocs.io/en/latest/api/transforms/transforms.html), can be used to apply domain specific transforms to a specific dictionary key. For video tensors we use the same tensor shape as TorchVision and for audio we use TorchAudio tensor shapes, making it east to apply their transforms alongside PyTorchVideo ones.
 
 Below we revise the LightningDataModule from the last section to include transforms coming from both TorchVision and PyTorchVideo. For brevity we'll just show the KineticsDataModule.train_dataloader method. The validation dataset transforms would be the same just without the augmentations (RandomShortSideScale, RandomCropVideo, RandomHorizontalFlipVideo).
 
@@ -144,7 +144,7 @@ class KineticsDataModule(pytorch_lightning.LightningDataModule):
 
 # Model
 
-All PyTorchVideo models and layers can be built with simple, reproducible factory functions. We call this the "flat" model interface because the args don't require hierachies of configs to be used. An example building a default ResNet can be found below. See the [docs](http://pytorchvideo.org/api/models/resnet.html#pytorchvideo.models.resnet.create_bottleneck_block) for more configuration options.
+All PyTorchVideo models and layers can be built with simple, reproducible factory functions. We call this the "flat" model interface because the args don't require hierachies of configs to be used. An example building a default ResNet can be found below. See the [docs](https://pytorchvideo.readthedocs.io/en/latest/_modules/pytorchvideo/models/resnet.html#create_bottleneck_block) for more configuration options.
 
 ```python
 import pytorchvideo.models.resnet
@@ -218,4 +218,5 @@ Our VideoClassificationLightningModule and KineticsDataModule are ready be train
 
 In this tutorial we showed how to train a 3D ResNet on Kinetics using PyTorch Lightning. You can see the final code from the tutorial (including a few extra bells and whistles) in the PyTorchVideo projects directory.
 
-To learn more about PyTorchVideo, check out the rest of the [documentation](http://pytorchvideo.org/docs/api/index.html)  and [tutorials](http://pytorchvideo.org/docs/tutorial_overview).
+To learn more about PyTorchVideo, check out the rest of the [documentation](https://pytorchvideo.readthedocs.io/en/latest/index.html)  and [tutorials](https://pytorchvideo.org/docs/tutorial_overview).
+

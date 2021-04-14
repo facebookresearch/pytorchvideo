@@ -22,7 +22,7 @@ const siteConfig = {
   // For no header links in the top nav bar -> headerLinks: [],
   headerLinks: [
     {doc: 'tutorial_overview', label: 'Tutorials'},
-    {href: "https://ptv-temp.readthedocs.io/en/latest/index.html", label: 'Docs'}, // TODO: Change this after the repo becomes public.
+    {href: "https://pytorchvideo.readthedocs.io/en/latest/index.html", label: 'Docs'}, // TODO: Change this after the repo becomes public.
     {href: "https://github.com/facebookresearch/pytorchvideo/", label: 'GitHub'}, //TODO: Change this after repo becomes public
   ],
 

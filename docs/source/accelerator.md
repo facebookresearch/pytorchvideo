@@ -26,15 +26,15 @@ We benchmarked the latency of SOTA models ([X3D-XS and X3D-S](https://arxiv.org/
 
 Efficient block library contains common building blocks (residual block, squeeze-excite, etc.) that can be mapped to high-performance kernel operator implementation library of target device platform. The rationale behind having an efficient block library is that high-performance kernel operator library generally only supports a small set of kernel operators. In other words, a randomly picked kernel might not be supported by high-performance kernel operator library. By having an efficient block library and building model using efficient blocks in that library can guarantee the model is deployable with high efficiency on target device.
 
-Efficient block library lives under `pytorchvideo/layers/accelerator/<target_device>` (for simple layers) and `pytorchvideo/models/accelerator/<target_device>` (for complex modules such as residual block). Please also check [Build your model with PytorchVideo/Accelerator](link_fixme) tutorial for detailed examples.
+Efficient block library lives under `pytorchvideo/layers/accelerator/<target_device>` (for simple layers) and `pytorchvideo/models/accelerator/<target_device>` (for complex modules such as residual block). Please also check [Build your model with PytorchVideo/Accelerator](https://pytorchvideo.org/docs/tutorial_accelerator_build_your_model) tutorial for detailed examples.
 
 ### Deployment
 
-Deployment flow includes kernel optimization as well as model export for target backend. Kernel optimization utilities can be an extremely important part that decides performance of on-device model operation. Accelerator provides a bunch of useful utilities for deployment under `pytorchvideo/accelerator/deployment`. Please also check related tutorials ([Build your model with PytorchVideo/Accelerator](link_fixme), [Accelerate your model with model transmuter in PytorchVideo/Accelerator](link_fixme))  for detailed examples.
+Deployment flow includes kernel optimization as well as model export for target backend. Kernel optimization utilities can be an extremely important part that decides performance of on-device model operation. Accelerator provides a bunch of useful utilities for deployment under `pytorchvideo/accelerator/deployment`. Please also check related tutorials ([Build your model with PytorchVideo/Accelerator](https://pytorchvideo.org/docs/tutorial_accelerator_build_your_model), [Accelerate your model with model transmuter in PytorchVideo/Accelerator](https://pytorchvideo.org/docs/tutorial_accelerator_use_model_transmuter))  for detailed examples.
 
 ### Model zoo
 
-Accelerator provides efficient model zoo for target devices, which include model builder (under `pytorchvideo/models/accelerator/<target_device>`) as well as pretrained checkpoint. Please also refer to [Use PytorchVideo/Accelerator Model Zoo](link_fixme) for how to use model zoo.
+Accelerator provides efficient model zoo for target devices, which include model builder (under `pytorchvideo/models/accelerator/<target_device>`) as well as pretrained checkpoint. Please also refer to [Use PytorchVideo/Accelerator Model Zoo](https://pytorchvideo.org/docs/tutorial_accelerator_use_accelerator_model_zoo) for how to use model zoo.
 
 
 ## Supported devices
@@ -46,8 +46,8 @@ Currently mobile cpu (ARM-based cpu on mobile phones) is supported. We will upda
 
 Refer to following tutorial pages to get started!
 
-[Build your model with PytorchVideo/Accelerator](link_fixme)
+[Build your model with PytorchVideo/Accelerator](https://pytorchvideo.org/docs/tutorial_accelerator_build_your_model)
 
-[Use PytorchVideo/Accelerator Model Zoo](link_fixme)
+[Use PytorchVideo/Accelerator Model Zoo](https://pytorchvideo.org/docs/tutorial_accelerator_use_accelerator_model_zoo)
 
-[Accelerate your model with model transmuter in PytorchVideo/Accelerator](link_fixme)
+[Accelerate your model with model transmuter in PytorchVideo/Accelerator](https://pytorchvideo.org/docs/tutorial_accelerator_use_model_transmuter)

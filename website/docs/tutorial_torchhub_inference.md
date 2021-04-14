@@ -5,7 +5,7 @@ title: Running a pre-trained PyTorchVideo classification model using Torch Hub
 
 # Introduction
 
-PyTorchVideo provides several pretrained models through [Torch Hub](https://pytorch.org/hub/). In this tutorial we will show how to load a pre trained video classification model in PyTorchVideo and run it on a test video. The PyTorchVideo Torch Hub models were trained on the Kinetics 400 [1] dataset.  Available models are described in [model zoo documentation](https://github.com/facebookresearch/pytorchvideo/blob/master/docs/source/model_zoo.md#kinetics-400).
+PyTorchVideo provides several pretrained models through [Torch Hub](https://pytorch.org/hub/). In this tutorial we will show how to load a pre trained video classification model in PyTorchVideo and run it on a test video. The PyTorchVideo Torch Hub models were trained on the Kinetics 400 [1] dataset.  Available models are described in [model zoo documentation](https://pytorchvideo.readthedocs.io/en/latest/model_zoo.html).
 
 [1] W. Kay, et al. The kinetics human action video dataset. arXiv preprint arXiv:1705.06950, 2017.
 
@@ -161,4 +161,4 @@ print("Predicted labels: %s" % ", ".join(pred_class_names))
 
 In this tutorial we showed how to load and run a pretrained PyTorchVideo model on a test video. You can run this tutorial as a notebook in the PyTorchVideo tutorials directory.
 
-To learn more about PyTorchVideo, check out the rest of the [documentation](http://pytorchvideo.org/docs/api/index.html)  and [tutorials](http://pytorchvideo.org/docs/tutorial_overview).
+To learn more about PyTorchVideo, check out the rest of the [documentation](https://pytorchvideo.readthedocs.io/en/latest/index.html)  and [tutorials](https://pytorchvideo.org/docs/tutorial_overview).

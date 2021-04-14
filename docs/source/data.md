@@ -35,7 +35,7 @@ Although there isn't a strict interface governing how PyTorchVideo datasets work
     ```
     All datasets share the same canonical modality tensor shapes and dtypes, which aligns with tensor types of other domain specific libraries (e.g. TorchVision, TorchAudio).
 
-6. The final step before returning a clip, involves feeding it into a transform callable that can be defined for of all PyTorchVideo datasets. This callable is used to allow custom data processing or augmentations to be applied before batch collation in the torch.utils.data.DataLoader. PyTorchVideo provides common [transforms](http://pytorchvideo.org/docs/api/transforms/transforms.html) that are useful for this callable, but users can easily define their own too.
+6. The final step before returning a clip, involves feeding it into a transform callable that can be defined for of all PyTorchVideo datasets. This callable is used to allow custom data processing or augmentations to be applied before batch collation in the torch.utils.data.DataLoader. PyTorchVideo provides common [transforms](https://pytorchvideo.readthedocs.io/en/latest/transforms.html) that are useful for this callable, but users can easily define their own too.
 
 ## Available datasets:
 
