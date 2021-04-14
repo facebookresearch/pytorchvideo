@@ -50,7 +50,7 @@ PyTorchVideo is released under the [Apache 2.0 License](LICENSE).
 
 ## Tutorials
 
-Get started with PyTorchVideo by trying out one of our [tutorials](https://pytorchvideo.org/tutorials/) or by running examples in the [projects folder](https://github.com/facebookresearch/pytorchvideo/tree/master/projects).
+Get started with PyTorchVideo by trying out one of our [tutorials](https://pytorchvideo.org/docs/tutorial_overview) or by running examples in the [tutorials folder](./tutorials).
 
 
 ## Model Zoo and Baselines
