@@ -9,6 +9,7 @@ from pytorchvideo.transforms import (
     RandomShortSideScale,
     UniformCropVideo,
     UniformTemporalSubsample,
+    Normalize,
 )
 from pytorchvideo.transforms.functional import (
     repeat_temporal_frames_subsample,
@@ -176,7 +177,7 @@ class TestTransforms(unittest.TestCase):
         actual = uniform_crop(video, size=20, spatial_idx=2)
         self.assertTrue(actual.equal(video[:, :, 20:, 5:25]))
 
-    def test_uniform_crop_transforms(self):
+    def test_uniform_crop_transform(self):
         video = thwc_to_cthw(create_dummy_video_frames(10, 30, 40)).to(
             dtype=torch.float32
         )
@@ -192,5 +193,12 @@ class TestTransforms(unittest.TestCase):
         self.assertEqual(w, 20)
         self.assertTrue(actual["video"].equal(video[:, :, 5:25, 10:30]))
 
-    # TODO: add a test case for short_side_scale in the next diff
-    # (a sanity check to make sure the interp is not changed)
+    def test_normalize(self):
+        video = thwc_to_cthw(create_dummy_video_frames(10, 30, 40)).to(
+            dtype=torch.float32
+        )
+        transform = Normalize(video.mean(), video.std())
+
+        actual = transform(video)
+        self.assertAlmostEqual(actual.mean().item(), 0)
+        self.assertAlmostEqual(actual.std().item(), 1)

@@ -1,0 +1,12 @@
+# Conda environment file
+# Usage: `conda env update -f environment.yml`
+
+name: video_classification_example
+
+channels:
+  - conda-forge
+  - pytorch-nightly
+
+dependencies:
+  - pytorch-lightning
+  - submitit

@@ -4,6 +4,7 @@ from typing import Callable, Dict
 
 import pytorchvideo.transforms.functional
 import torch
+import torchvision.transforms
 
 
 class ApplyTransformToKey:
@@ -102,3 +103,20 @@ class UniformCropVideo(torch.nn.Module):
             x[self._video_key], self._size, x[self._aug_index_key]
         )
         return x
+
+
+class Normalize(torchvision.transforms.Normalize):
+    """
+    Normalize the (CTHW) video clip by mean subtraction and division by standard deviation
+
+    Args:
+        mean (3-tuple): pixel RGB mean
+        std (3-tuple): pixel RGB standard deviation
+        inplace (boolean): whether do in-place normalization
+    """
+
+    def forward(self, vid: torch.Tensor) -> torch.Tensor:
+        vid = vid.permute(1, 0, 2, 3)  # C T H W to T C H W
+        vid = super().forward(vid)
+        vid = vid.permute(1, 0, 2, 3)  # T C H W to C T H W
+        return vid
