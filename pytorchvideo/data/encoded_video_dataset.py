@@ -5,7 +5,7 @@ from __future__ import annotations
 import logging
 import multiprocessing
 import pathlib
-from typing import Any, Callable, List, Optional, Tuple, Type
+from typing import Any, Callable, List, Optional, Tuple, Type, Dict
 
 import torch.utils.data
 from pytorchvideo.data.clip_sampling import ClipSampler
@@ -215,7 +215,7 @@ def labeled_encoded_video_dataset(
     data_path: pathlib.path,
     clip_sampler: ClipSampler,
     video_sampler: Type[torch.utils.data.Sampler] = torch.utils.data.RandomSampler,
-    transform: Optional[Callable[[dict], Any]] = None,
+    transform: Optional[Callable[[Dict[str, Any]], Dict[str, Any]]] = None,
     video_path_prefix: str = "",
     decode_audio: bool = True,
     decoder: str = "pyav",
