@@ -58,29 +58,9 @@ We provide a large set of baseline results and trained models available for down
 
 ## Contributors
 
-PyTorchVideo core contributors in alphabetical order: 
-* Aaron Adcock, 
-* Amy Bearman,
-* Bernard Nguyen,
-* Bo Xiong, 
-* Chengyuan Yan,
-* Christoph Feichtenhofer,
-* Dave Schnizlein,
-* Haoqi Fan,
-* Heng Wang,
-* Jackson Hamburger,
-* Kalyan Vasudev Alwala,
-* Matt Feiszli,
-* Nikhila Ravi,
-* Tullie Murrell,
-* Wan-Yen Lo,
-* Weiyao Wang,
-* Yanghao Li,
-* Yilei Li,
-* Zhengxing Chen,
-* Zhicheng Yan
+Here is the growing list of PyTorchVideo contributors in alphabetical order (let us know if you would like to be added):
+[Aaron Adcock](https://www.linkedin.com/in/aaron-adcock-79855383/), [Amy Bearman](https://www.linkedin.com/in/amy-bearman/), [Bernard Nguyen](https://www.linkedin.com/in/mrbernardnguyen/), [Bo Xiong](https://www.cs.utexas.edu/~bxiong/), [Chengyuan Yan](https://www.linkedin.com/in/chengyuan-yan-4a804282/), [Christoph Feichtenhofer](https://feichtenhofer.github.io/), [Dave Schnizlein](https://www.linkedin.com/in/david-schnizlein-96020136/), [Haoqi Fan](https://haoqifan.github.io/), [Heng Wang](https://hengcv.github.io/), [Jackson Hamburger](https://www.linkedin.com/in/jackson-hamburger-986a2873/), [Kalyan Vasudev Alwala](https://www.linkedin.com/in/kalyan-vasudev-alwala-2a802b64/), [Matt Feiszli](https://www.linkedin.com/in/matt-feiszli-76b34b/), [Nikhila Ravi](https://www.linkedin.com/in/nikhilaravi/), [Tullie Murrell](https://www.linkedin.com/in/tullie/), [Wan-Yen Lo](https://www.linkedin.com/in/wanyenlo/), [Weiyao Wang](https://www.linkedin.com/in/weiyaowang/?locale=en_US), [Yanghao Li](https://lyttonhao.github.io/), [Yilei Li](https://liyilui.github.io/personal_page/), [Zhengxing Chen](http://czxttkl.github.io/), [Zhicheng Yan](https://www.linkedin.com/in/zhichengyan/).
 
-If you contribute to the codebase, feel free to add your name to the list.
 
 ## Development
 
