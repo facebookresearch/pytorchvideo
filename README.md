@@ -58,22 +58,30 @@ We provide a large set of baseline results and trained models available for down
 
 ## Contributors
 
-PyTorchVideo is written and maintained by the Facebook AI Research, including following members in alphabetical order: Aaron Adcock, Amy Bearman, Bernard Nguyen, Bo Xiong, Chengyuan Yan, Christoph Feichtenhofer, Dave Schnizlein, Haoqi Fan, Heng Wang, Jackson Hamburger, Kalyan Vasudev Alwala, Matt Feiszli, Nikhila Ravi, Tullie Murrell, Wan-Yen Lo, Weiyao Wang, Yanghao Li, Yilei Li, Zhengxing Chen, Zhicheng Yan.
+PyTorchVideo core contributors in alphabetical order: 
+* Aaron Adcock, 
+* Amy Bearman,
+* Bernard Nguyen,
+* Bo Xiong, 
+* Chengyuan Yan,
+* Christoph Feichtenhofer,
+* Dave Schnizlein,
+* Haoqi Fan,
+* Heng Wang,
+* Jackson Hamburger,
+* Kalyan Vasudev Alwala,
+* Matt Feiszli,
+* Nikhila Ravi,
+* Tullie Murrell,
+* Wan-Yen Lo,
+* Weiyao Wang,
+* Yanghao Li,
+* Yilei Li,
+* Zhengxing Chen,
+* Zhicheng Yan
+
+If you contribute to the codebase, feel free to add your name to the list.
 
 ## Development
 
 We welcome new contributions to PyTorchVideo and we will be actively maintaining this library! Please refer to [`CONTRIBUTING.md`](./.github/CONTRIBUTING.md) for full instructions on how to run the code, tests and linter, and submit your pull requests.
-
-<!-- ## Citation
-
-If you find PyTorchVideo useful in your research or wish to refer to the baseline results published in the [Model Zoo](https://github.com/facebookresearch/pytorchvideo/blob/master/docs/source/model_zoo.md), please use the following BibTeX entry.
-
-```bibtex
-@Misc{pytorchvideo2019,
-  author =       {Facebook AI Research},
-  title =        {PytorchVideo - A library for accelerating video research},
-  howpublished = {Github},
-  year =         {2021},
-  url =          {https://github.com/facebookresearch/pytorchvideo}
-}
-``` -->
