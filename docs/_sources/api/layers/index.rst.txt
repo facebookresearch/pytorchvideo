@@ -1,6 +1,0 @@
-Layers API
-==================
-
-.. toctree::
-
-    layers
