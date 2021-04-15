@@ -176,6 +176,7 @@ texinfo_documents = [
 
 github_doc_root = "https://github.com/facebookresearch/pytorchvideo/tree/master"
 
+
 def setup(app):
     app.add_config_value(
         "recommonmark_config",
