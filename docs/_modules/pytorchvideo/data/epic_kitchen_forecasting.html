@@ -1,0 +1,652 @@
+
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>pytorchvideo.data.epic_kitchen_forecasting &mdash; PyTorchVideo  documentation</title>
+  
+
+  
+  
+    <link rel="shortcut icon" href="../../../_static/favicon.png"/>
+  
+  
+  
+    <link rel="canonical" href="https://pytorchvideo.org/docs/_modules/pytorchvideo/data/epic_kitchen_forecasting.html"/>
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <!-- <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" /> -->
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+
+  
+  <script src="../../../_static/js/modernizr.min.js"></script>
+
+  <!-- Preload the theme fonts -->
+
+<link rel="preload" href="../../../_static/fonts/FreightSans/freight-sans-book.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../../../_static/fonts/FreightSans/freight-sans-medium.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../../../_static/fonts/IBMPlexMono/IBMPlexMono-Medium.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../../../_static/fonts/FreightSans/freight-sans-bold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../../../_static/fonts/FreightSans/freight-sans-medium-italic.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../../../_static/fonts/IBMPlexMono/IBMPlexMono-SemiBold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+
+<!-- Preload the katex fonts -->
+
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Math-Italic.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Main-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Main-Bold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size1-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size4-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size2-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size3-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Caligraphic-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.2/css/all.css" integrity="sha384-vSIIfh2YWi9wW0r9iZe7RJPrKwp6bG+s9QZMoITbCckVJqGCCRhc+ccxNcdpHuYu" crossorigin="anonymous">
+</head>
+
+<div class="container-fluid header-holder tutorials-header" id="header-holder">
+  <div class="container">
+    <div class="header-container">
+      <a class="header-logo" href="https://pytorchvideo.org" aria-label="PyTorch"></a>
+
+      <div class="main-menu">
+        <ul>
+          <li>
+            <a href="https://pytorchvideo.org">Home</a>
+          </li>
+          <li>
+            <a href="https://pytorchvideo.org/docs/tutorial_overview">Tutorials</a>
+          </li>
+          <li>
+            <a href="https://github.com/facebookresearch/pytorchvideo/">Github</a>
+          </li>
+        </ul>
+      </div>
+
+      <a class="main-menu-open-button" href="#" data-behavior="open-mobile-menu"></a>
+    </div>
+  </div>
+</div>
+
+
+<body class="pytorch-body">
+
+   
+
+    
+
+    <div class="table-of-contents-link-wrapper">
+      <span>Table of Contents</span>
+      <a href="#" class="toggle-table-of-contents" data-behavior="toggle-table-of-contents"></a>
+    </div>
+
+    <nav data-toggle="wy-nav-shift" class="pytorch-left-menu" id="pytorch-left-menu">
+      <div class="pytorch-side-scroll">
+        <div class="pytorch-menu pytorch-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          <div class="pytorch-left-menu-search">
+            
+
+            
+              
+              
+            
+
+            
+
+
+  
+
+
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search Docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+            
+          </div>
+
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Models</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../docs/models.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../docs/model_zoo.html">Model Zoo and Benchmarks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/models/index.html">Models API</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Data</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../docs/data.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../docs/data_preparation.html">Data Preparation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/data/index.html">Data API</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Transforms</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../docs/transforms.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/transforms/index.html">Transforms API</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Layers</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../docs/layers.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/layers/index.html">Layers API</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Accelerator</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../docs/accelerator.html">Overview</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <div class="pytorch-container">
+      <div class="pytorch-page-level-bar" id="pytorch-page-level-bar">
+        <div class="pytorch-breadcrumbs-wrapper">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="pytorch-breadcrumbs">
+    
+      <li>
+        <a href="../../../index.html">
+          
+            Docs
+          
+        </a> &gt;
+      </li>
+
+        
+          <li><a href="../../index.html">Module code</a> &gt;</li>
+        
+      <li>pytorchvideo.data.epic_kitchen_forecasting</li>
+    
+    
+      <li class="pytorch-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+</div>
+        </div>
+
+        <div class="pytorch-shortcuts-wrapper" id="pytorch-shortcuts-wrapper">
+          Shortcuts
+        </div>
+      </div>
+
+      <section data-toggle="wy-nav-shift" id="pytorch-content-wrap" class="pytorch-content-wrap">
+        <div class="pytorch-content-left">
+
+        
+          
+          <div class="rst-content">
+          
+            <div role="main" class="main-content" itemscope="itemscope" itemtype="http://schema.org/Article">
+             <article itemprop="articleBody" id="pytorch-article" class="pytorch-article">
+              
+  <h1>Source code for pytorchvideo.data.epic_kitchen_forecasting</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved.</span>
+
+<span class="kn">from</span> <span class="nn">dataclasses</span> <span class="kn">import</span> <span class="n">fields</span> <span class="k">as</span> <span class="n">dataclass_fields</span>
+<span class="kn">from</span> <span class="nn">enum</span> <span class="kn">import</span> <span class="n">Enum</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span>
+
+<span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">from</span> <span class="nn">pytorchvideo.data.dataset_manifest_utils</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">EncodedVideoInfo</span><span class="p">,</span>
+    <span class="n">VideoClipInfo</span><span class="p">,</span>
+    <span class="n">VideoDatasetType</span><span class="p">,</span>
+    <span class="n">VideoFrameInfo</span><span class="p">,</span>
+    <span class="n">VideoInfo</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">pytorchvideo.data.epic_kitchen</span> <span class="kn">import</span> <span class="n">ActionData</span><span class="p">,</span> <span class="n">EpicKitchenDataset</span>
+<span class="kn">from</span> <span class="nn">pytorchvideo.data.video</span> <span class="kn">import</span> <span class="n">Video</span>
+
+
+<div class="viewcode-block" id="ClipSampling"><a class="viewcode-back" href="../../../api/data/epic_kitchen.html#pytorchvideo.data.epic_kitchen_forecasting.ClipSampling">[docs]</a><span class="k">class</span> <span class="nc">ClipSampling</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
+    <span class="n">Random</span> <span class="o">=</span> <span class="mi">1</span></div>
+
+
+<div class="viewcode-block" id="EpicKitchenForecasting"><a class="viewcode-back" href="../../../api/data/epic_kitchen.html#pytorchvideo.data.epic_kitchen_forecasting.EpicKitchenForecasting">[docs]</a><span class="k">class</span> <span class="nc">EpicKitchenForecasting</span><span class="p">(</span><span class="n">EpicKitchenDataset</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Action forecasting video data set for EpicKitchen-55 Dataset.</span>
+<span class="sd">    &lt;https://epic-kitchens.github.io/2019/&gt;</span>
+
+<span class="sd">    This dataset handles the loading, decoding, and clip sampling for the videos.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">video_info_file_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">actions_file_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">video_data_manifest_file_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">clip_sampling</span><span class="p">:</span> <span class="n">ClipSampling</span> <span class="o">=</span> <span class="n">ClipSampling</span><span class="o">.</span><span class="n">Random</span><span class="p">,</span>
+        <span class="n">dataset_type</span><span class="p">:</span> <span class="n">VideoDatasetType</span> <span class="o">=</span> <span class="n">VideoDatasetType</span><span class="o">.</span><span class="n">Frame</span><span class="p">,</span>
+        <span class="n">seconds_per_clip</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">2.0</span><span class="p">,</span>
+        <span class="n">clip_time_stride</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">10.0</span><span class="p">,</span>
+        <span class="n">num_input_clips</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="n">frames_per_clip</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">num_forecast_actions</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="n">transform</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]],</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">multithreaded_io</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">        Args:</span>
+<span class="s2">            video_info_file_path (str):</span>
+<span class="s2">                Path or URI to manifest with basic metadata of each video.</span>
+<span class="s2">                File must be a csv (w/header) with columns:</span>
+<span class="s2">                </span><span class="si">{</span><span class="p">[</span><span class="n">f</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">dataclass_fields</span><span class="p">(</span><span class="n">VideoInfo</span><span class="p">)]</span><span class="si">}</span><span class="s2"></span>
+
+<span class="s2">            actions_file_path (str):</span>
+<span class="s2">                Path or URI to manifest with action annotations for each video.</span>
+<span class="s2">                File must ber a csv (w/header) with columns:</span>
+<span class="s2">                </span><span class="si">{</span><span class="p">[</span><span class="n">f</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">dataclass_fields</span><span class="p">(</span><span class="n">ActionData</span><span class="p">)]</span><span class="si">}</span><span class="s2"></span>
+
+<span class="s2">            video_data_manifest_file_path (str):</span>
+<span class="s2">                The path to a json file outlining the available video data for the</span>
+<span class="s2">                associated videos. File must be a csv (w/header) with columns either:</span>
+
+<span class="s2">                For Frame Videos:</span>
+<span class="s2">                </span><span class="si">{</span><span class="p">[</span><span class="n">f</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">dataclass_fields</span><span class="p">(</span><span class="n">VideoFrameInfo</span><span class="p">)]</span><span class="si">}</span><span class="s2"></span>
+
+<span class="s2">                For Encoded Videos:</span>
+<span class="s2">                </span><span class="si">{</span><span class="p">[</span><span class="n">f</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">dataclass_fields</span><span class="p">(</span><span class="n">EncodedVideoInfo</span><span class="p">)]</span><span class="si">}</span><span class="s2"></span>
+
+<span class="s2">                To generate this file from a directory of video frames, see helper</span>
+<span class="s2">                functions in Module: pytorchvideo.data.epic_kitchen.utils</span>
+
+<span class="s2">            clip_sampling (ClipSampling):</span>
+<span class="s2">                The type of sampling to perform to perform on the videos of the dataset.</span>
+
+<span class="s2">            dataset_type (VideoDatasetType): The dataformat in which dataset</span>
+<span class="s2">                video data is store (e.g. video frames, encoded video etc).</span>
+
+<span class="s2">            seconds_per_clip (float): The length of each sampled subclip in seconds.</span>
+
+<span class="s2">            clip_time_stride (float): The time difference in seconds between the start of</span>
+<span class="s2">                each input subclip.</span>
+
+<span class="s2">            num_input_clips (int): The number of subclips to be included in the input</span>
+<span class="s2">                video data.</span>
+
+<span class="s2">            frames_per_clip (Optional[int]): The number of frames per clip to sample.</span>
+<span class="s2">                If None, all frames in the clip will be included.</span>
+
+<span class="s2">            num_forecast_actions (int): The number of actions to be included in the</span>
+<span class="s2">                action vector.</span>
+
+<span class="s2">            transform (Callable[[Dict[str, Any]], Any]):</span>
+<span class="s2">                This callable is evaluated on the clip output before the clip is returned.</span>
+<span class="s2">                It can be used for user-defined preprocessing and augmentations to the clips.</span>
+<span class="s2">                The clip input is a dictionary with the following format:</span>
+<span class="s2">                    </span><span class="se">{{</span><span class="s2"></span>
+<span class="s2">                        &#39;video_id&#39;: &lt;str&gt;,</span>
+<span class="s2">                        &#39;video&#39;: &lt;video_tensor&gt;,</span>
+<span class="s2">                        &#39;audio&#39;: &lt;audio_tensor&gt;,</span>
+<span class="s2">                        &#39;label&#39;: &lt;List[ActionData]&gt;,</span>
+<span class="s2">                        &#39;start_time&#39;: &lt;float&gt;,</span>
+<span class="s2">                        &#39;stop_time&#39;: &lt;float&gt;</span>
+<span class="s2">                    </span><span class="se">}}</span><span class="s2"></span>
+
+<span class="s2">                If transform is None, the raw clip output in the above format is</span>
+<span class="s2">                    returned unmodified.</span>
+
+<span class="s2">            multithreaded_io (bool):</span>
+<span class="s2">                Boolean to control whether parllelizable io operations are performed across</span>
+<span class="s2">                multiple threads.</span>
+<span class="s2">        &quot;&quot;&quot;</span>
+        <span class="n">define_clip_structure_fn</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">EpicKitchenForecasting</span><span class="o">.</span><span class="n">_define_clip_structure_generator</span><span class="p">(</span>
+                <span class="n">clip_sampling</span><span class="p">,</span>
+                <span class="n">seconds_per_clip</span><span class="p">,</span>
+                <span class="n">clip_time_stride</span><span class="p">,</span>
+                <span class="n">num_input_clips</span><span class="p">,</span>
+                <span class="n">num_forecast_actions</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+        <span class="n">frame_filter</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">EpicKitchenForecasting</span><span class="o">.</span><span class="n">_frame_filter_generator</span><span class="p">(</span>
+                <span class="n">frames_per_clip</span><span class="p">,</span> <span class="n">seconds_per_clip</span><span class="p">,</span> <span class="n">clip_time_stride</span><span class="p">,</span> <span class="n">num_input_clips</span>
+            <span class="p">)</span>
+            <span class="k">if</span> <span class="n">frames_per_clip</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+            <span class="k">else</span> <span class="kc">None</span>
+        <span class="p">)</span>
+        <span class="n">transform</span> <span class="o">=</span> <span class="n">EpicKitchenForecasting</span><span class="o">.</span><span class="n">_transform_generator</span><span class="p">(</span>
+            <span class="n">transform</span><span class="p">,</span> <span class="n">num_forecast_actions</span><span class="p">,</span> <span class="n">frames_per_clip</span><span class="p">,</span> <span class="n">num_input_clips</span>
+        <span class="p">)</span>
+
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="n">video_info_file_path</span><span class="o">=</span><span class="n">video_info_file_path</span><span class="p">,</span>
+            <span class="n">actions_file_path</span><span class="o">=</span><span class="n">actions_file_path</span><span class="p">,</span>
+            <span class="n">video_data_manifest_file_path</span><span class="o">=</span><span class="n">video_data_manifest_file_path</span><span class="p">,</span>
+            <span class="n">dataset_type</span><span class="o">=</span><span class="n">dataset_type</span><span class="p">,</span>
+            <span class="n">transform</span><span class="o">=</span><span class="n">transform</span><span class="p">,</span>
+            <span class="n">frame_filter</span><span class="o">=</span><span class="n">frame_filter</span><span class="p">,</span>
+            <span class="n">clip_sampler</span><span class="o">=</span><span class="n">define_clip_structure_fn</span><span class="p">,</span>
+            <span class="n">multithreaded_io</span><span class="o">=</span><span class="n">multithreaded_io</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_transform_generator</span><span class="p">(</span>
+        <span class="n">transform</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]],</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]],</span>
+        <span class="n">num_forecast_actions</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">frames_per_clip</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">num_input_clips</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]],</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Args:</span>
+<span class="sd">            transform (Callable[[Dict[str, Any]], Dict[str, Any]]): A function that performs</span>
+<span class="sd">            any operation on a clip before it is returned in the default transform function.</span>
+<span class="sd">            num_forecast_actions: (int) The number of actions to be included in the</span>
+<span class="sd">                action vector.</span>
+<span class="sd">            frames_per_clip (int): The number of frames per clip to sample.</span>
+<span class="sd">            num_input_clips (int): The number of subclips to be included in the video data.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            A function that performs any operation on a clip and returns the transformed clip.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">def</span> <span class="nf">transform_clip</span><span class="p">(</span><span class="n">clip</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+            <span class="k">assert</span> <span class="nb">all</span><span class="p">(</span>
+                <span class="n">clip</span><span class="p">[</span><span class="s2">&quot;actions&quot;</span><span class="p">][</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">start_time</span> <span class="o">&lt;=</span> <span class="n">clip</span><span class="p">[</span><span class="s2">&quot;actions&quot;</span><span class="p">][</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">start_time</span>
+                <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">clip</span><span class="p">[</span><span class="s2">&quot;actions&quot;</span><span class="p">])</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="p">),</span> <span class="s2">&quot;Actions must be sorted&quot;</span>
+            <span class="n">next_k_actions</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">ActionData</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="n">a</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">clip</span><span class="p">[</span><span class="s2">&quot;actions&quot;</span><span class="p">]</span> <span class="k">if</span> <span class="p">(</span><span class="n">a</span><span class="o">.</span><span class="n">start_time</span> <span class="o">&gt;</span> <span class="n">clip</span><span class="p">[</span><span class="s2">&quot;stop_time&quot;</span><span class="p">])</span>
+            <span class="p">][:</span><span class="n">num_forecast_actions</span><span class="p">]</span>
+            <span class="n">clip</span><span class="p">[</span><span class="s2">&quot;actions&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">next_k_actions</span>
+
+            <span class="k">assert</span> <span class="n">clip</span><span class="p">[</span><span class="s2">&quot;video&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">size</span><span class="p">()[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="n">num_input_clips</span> <span class="o">*</span> <span class="n">frames_per_clip</span>
+            <span class="n">clip_video_tensor</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span>
+                <span class="p">[</span>
+                    <span class="n">clip</span><span class="p">[</span><span class="s2">&quot;video&quot;</span><span class="p">][</span>
+                        <span class="p">:,</span> <span class="p">(</span><span class="n">i</span> <span class="o">*</span> <span class="n">frames_per_clip</span><span class="p">)</span> <span class="p">:</span> <span class="p">((</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">frames_per_clip</span><span class="p">),</span> <span class="p">:,</span> <span class="p">:</span>
+                    <span class="p">]</span>
+                    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_input_clips</span><span class="p">)</span>
+                <span class="p">]</span>
+            <span class="p">)</span>
+            <span class="n">clip</span><span class="p">[</span><span class="s2">&quot;video&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">clip_video_tensor</span>
+
+            <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">clip</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">clip</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">clip</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([])</span>
+
+            <span class="k">if</span> <span class="n">transform</span><span class="p">:</span>
+                <span class="n">clip</span> <span class="o">=</span> <span class="n">transform</span><span class="p">(</span><span class="n">clip</span><span class="p">)</span>
+
+            <span class="k">return</span> <span class="n">clip</span>
+
+        <span class="k">return</span> <span class="n">transform_clip</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_frame_filter_generator</span><span class="p">(</span>
+        <span class="n">frames_per_clip</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">seconds_per_clip</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">clip_time_stride</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">num_input_clips</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]],</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]]:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Args:</span>
+<span class="sd">            frames_per_clip (int): The number of frames per clip to sample.</span>
+<span class="sd">            seconds_per_clip (float): The length of each sampled subclip in seconds.</span>
+<span class="sd">            clip_time_stride (float): The time difference in seconds between the start of</span>
+<span class="sd">                each input subclip.</span>
+<span class="sd">            num_input_clips (int): The number of subclips to be included in the video data.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            A function that takes in a list of frame indicies and outputs a subsampled list.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">time_window_length</span> <span class="o">=</span> <span class="n">seconds_per_clip</span> <span class="o">+</span> <span class="p">(</span><span class="n">num_input_clips</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">clip_time_stride</span>
+        <span class="n">desired_frames_per_second</span> <span class="o">=</span> <span class="n">frames_per_clip</span> <span class="o">/</span> <span class="n">seconds_per_clip</span>
+
+        <span class="k">def</span> <span class="nf">frame_filter</span><span class="p">(</span><span class="n">frame_indices</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]:</span>
+            <span class="n">num_available_frames_for_all_clips</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">frame_indices</span><span class="p">)</span>
+            <span class="n">available_frames_per_second</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">num_available_frames_for_all_clips</span> <span class="o">/</span> <span class="n">time_window_length</span>
+            <span class="p">)</span>
+            <span class="n">intra_clip_sampling_stride</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span>
+                <span class="n">available_frames_per_second</span> <span class="o">//</span> <span class="n">desired_frames_per_second</span>
+            <span class="p">)</span>
+            <span class="n">selected_frames</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_input_clips</span><span class="p">):</span>
+                <span class="n">clip_start_index</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span>
+                    <span class="n">i</span> <span class="o">*</span> <span class="n">clip_time_stride</span> <span class="o">*</span> <span class="n">available_frames_per_second</span>
+                <span class="p">)</span>
+                <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">frames_per_clip</span><span class="p">):</span>
+                    <span class="n">selected_frames</span><span class="o">.</span><span class="n">add</span><span class="p">(</span>
+                        <span class="n">clip_start_index</span> <span class="o">+</span> <span class="n">j</span> <span class="o">*</span> <span class="n">intra_clip_sampling_stride</span>
+                    <span class="p">)</span>
+            <span class="k">return</span> <span class="p">[</span><span class="n">x</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">frame_indices</span><span class="p">)</span> <span class="k">if</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">selected_frames</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="n">frame_filter</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_define_clip_structure_generator</span><span class="p">(</span>
+        <span class="n">clip_sampling</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">seconds_per_clip</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">clip_time_stride</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">num_input_clips</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">num_forecast_actions</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Video</span><span class="p">],</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">ActionData</span><span class="p">]]],</span> <span class="n">List</span><span class="p">[</span><span class="n">VideoClipInfo</span><span class="p">]]:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Args:</span>
+<span class="sd">            clip_sampling (ClipSampling):</span>
+<span class="sd">                The type of sampling to perform to perform on the videos of the dataset.</span>
+<span class="sd">            seconds_per_clip (float): The length of each sampled clip in seconds.</span>
+<span class="sd">            clip_time_stride: The time difference in seconds between the start of</span>
+<span class="sd">                each input subclip.</span>
+<span class="sd">            num_input_clips (int):  The number of subclips to be included in the video data.</span>
+<span class="sd">            num_forecast_actions (int): The number of actions to be included in the</span>
+<span class="sd">                action vector.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            A function that takes a dictionary of videos and outputs a list of sampled</span>
+<span class="sd">            clips.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># TODO(T77683480)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">clip_sampling</span> <span class="o">==</span> <span class="n">ClipSampling</span><span class="o">.</span><span class="n">Random</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Only </span><span class="si">{</span><span class="n">ClipSampling</span><span class="o">.</span><span class="n">Random</span><span class="si">}</span><span class="s2"> is implemented. &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">clip_sampling</span><span class="si">}</span><span class="s2"> not implemented.&quot;</span>
+            <span class="p">)</span>
+
+        <span class="n">time_window_length</span> <span class="o">=</span> <span class="n">seconds_per_clip</span> <span class="o">+</span> <span class="p">(</span><span class="n">num_input_clips</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">clip_time_stride</span>
+
+        <span class="k">def</span> <span class="nf">define_clip_structure</span><span class="p">(</span>
+            <span class="n">videos</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Video</span><span class="p">],</span> <span class="n">video_actions</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">ActionData</span><span class="p">]]</span>
+        <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">VideoClipInfo</span><span class="p">]:</span>
+            <span class="n">candidate_sample_clips</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">video_id</span><span class="p">,</span> <span class="n">actions</span> <span class="ow">in</span> <span class="n">video_actions</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">action</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">actions</span><span class="p">[:</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span> <span class="o">*</span> <span class="n">num_forecast_actions</span><span class="p">)]):</span>
+                    <span class="c1"># Only actions with num_forecast_actions after to predict</span>
+                    <span class="c1"># Confirm there are &gt;= num_forecast_actions available</span>
+                    <span class="c1"># (it is possible for actions to overlap)</span>
+                    <span class="n">number_valid_actions</span> <span class="o">=</span> <span class="mi">0</span>
+                    <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">actions</span><span class="p">)):</span>
+                        <span class="k">if</span> <span class="n">actions</span><span class="p">[</span><span class="n">j</span><span class="p">]</span><span class="o">.</span><span class="n">start_time</span> <span class="o">&gt;</span> <span class="n">action</span><span class="o">.</span><span class="n">stop_time</span><span class="p">:</span>
+                            <span class="n">number_valid_actions</span> <span class="o">+=</span> <span class="mi">1</span>
+                        <span class="k">if</span> <span class="n">number_valid_actions</span> <span class="o">==</span> <span class="n">num_forecast_actions</span><span class="p">:</span>
+                            <span class="k">if</span> <span class="p">(</span>
+                                <span class="n">action</span><span class="o">.</span><span class="n">start_time</span> <span class="o">-</span> <span class="n">time_window_length</span> <span class="o">&gt;=</span> <span class="mi">0</span>
+                            <span class="p">):</span>  <span class="c1"># Only add clips that have the full input video available</span>
+                                <span class="n">candidate_sample_clips</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                                    <span class="n">VideoClipInfo</span><span class="p">(</span>
+                                        <span class="n">video_id</span><span class="p">,</span>
+                                        <span class="n">action</span><span class="o">.</span><span class="n">stop_time</span> <span class="o">-</span> <span class="n">time_window_length</span><span class="p">,</span>
+                                        <span class="n">action</span><span class="o">.</span><span class="n">stop_time</span><span class="p">,</span>
+                                    <span class="p">)</span>
+                                <span class="p">)</span>
+                            <span class="k">break</span>
+            <span class="k">return</span> <span class="n">candidate_sample_clips</span>
+
+        <span class="k">return</span> <span class="n">define_clip_structure</span></div>
+</pre></div>
+
+             </article>
+             
+            </div>
+            <!-- <footer>
+  
+
+  
+
+    <hr>
+
+  
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2021, PyTorchVideo contributors.
+
+    </p>
+  </div>
+    
+      <div>
+        Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+      </div>
+     
+
+</footer>
+ -->
+          </div>
+        </div>
+
+        <div class="pytorch-content-right" id="pytorch-content-right">
+          <div class="pytorch-right-menu" id="pytorch-right-menu">
+            <div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
+              
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+  
+
+
+  
+
+     
+       <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+         <script src="../../../_static/jquery.js"></script>
+         <script src="../../../_static/underscore.js"></script>
+         <script src="../../../_static/doctools.js"></script>
+         <script src="../../../_static/language_data.js"></script>
+     
+
+  
+
+  <script type="text/javascript" src="../../../_static/js/vendor/popper.min.js"></script>
+  <script type="text/javascript" src="../../../_static/js/vendor/bootstrap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/list.js/1.5.0/list.min.js"></script>
+  <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+  <!-- Begin Footer -->
+
+
+  <div class="cookie-banner-wrapper">
+  <div class="container">
+    <p class="gdpr-notice">To analyze traffic and optimize your experience, we serve cookies on this site. By clicking or navigating, you agree to allow our usage of cookies. As the current maintainers of this site, Facebook’s Cookies Policy applies. Learn more, including about available controls: <a href="https://www.facebook.com/policies/cookies/">Cookies Policy</a>.</p>
+    <img class="close-button" src="../../../_static/images/pytorch-x.svg">
+  </div>
+</div>
+
+  <!-- End Footer -->
+
+  <!-- Begin Mobile Menu -->
+
+  <div class="mobile-main-menu">
+    <div class="container-fluid">
+      <div class="container">
+        <div class="mobile-main-menu-header-container">
+          <a class="header-logo" href="https://pytorchvideo.org" aria-label="PyTorch"></a>
+          <a class="main-menu-close-button" href="#" data-behavior="close-mobile-menu"></a>
+        </div>
+      </div>
+    </div>
+
+    <div class="mobile-main-menu-links-container">
+      <div class="main-menu">
+        <ul>
+          <li>
+            <a href="https://pytorchvideo.org">Home</a>
+          </li>
+          <li>
+            <a href="https://pytorchvideo.org/docs/tutorial_overview">Tutorials</a>
+          </li>
+          <li>
+            <a href="https://github.com/facebookresearch/pytorchvideo/">Github</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <!-- End Mobile Menu -->
+
+  <script type="text/javascript" src="../../../_static/js/vendor/anchor.min.js"></script>
+
+  <script type="text/javascript">
+    $(document).ready(function() {
+      mobileMenu.bind();
+      mobileTOC.bind();
+      pytorchAnchors.bind();
+      sideMenus.bind();
+      scrollToAnchor.bind();
+      highlightNavigation.bind();
+      mainMenuDropdown.bind();
+      filterTags.bind();
+
+      // Add class to links that have code blocks, since we cannot create links in code blocks
+      $("article.pytorch-article a span.pre").each(function(e) {
+        $(this).closest("a").addClass("has-code");
+      });
+    })
+  </script>
+</body>
+</html>
