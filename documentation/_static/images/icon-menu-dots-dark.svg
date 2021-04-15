@@ -1,1 +1,42 @@
-<svg width="25" height="6" viewBox="0 0 25 6" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><defs><path id="a" d="M0 .481h4.817V5.25H0z"/><path id="c" d="M.684.481H5.5V5.25H.684z"/><path id="e" d="M.61.481h4.816V5.25H.61z"/></defs><g fill="none" fill-rule="evenodd"><mask id="b" fill="#fff"><use xlink:href="#a"/></mask><path d="M0 2.866C0 1.549 1.079.48 2.408.48c1.33 0 2.409 1.068 2.409 2.385 0 1.317-1.078 2.384-2.409 2.384C1.078 5.25 0 4.183 0 2.866" fill-opacity=".5" fill="#8C8C8C" mask="url(#b)"/><g transform="translate(9)"><mask id="d" fill="#fff"><use xlink:href="#c"/></mask><path d="M.684 2.866C.684 1.549 1.762.48 3.093.48A2.395 2.395 0 015.5 2.866 2.395 2.395 0 013.093 5.25c-1.33 0-2.41-1.067-2.41-2.384" fill-opacity=".5" fill="#8C8C8C" mask="url(#d)"/></g><g transform="translate(19)"><mask id="f" fill="#fff"><use xlink:href="#e"/></mask><path d="M.61 2.866C.61 1.549 1.688.48 3.02.48a2.395 2.395 0 012.407 2.385A2.395 2.395 0 013.02 5.25C1.689 5.25.61 4.183.61 2.866" fill-opacity=".5" fill="#8C8C8C" mask="url(#f)"/></g></g></svg>
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="25px" height="6px" viewBox="0 0 25 6" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 51.2 (57519) - http://www.bohemiancoding.com/sketch -->
+    <title>Page 1</title>
+    <desc>Created with Sketch.</desc>
+    <defs>
+        <polygon id="path-1" points="0 0.4815 4.81659091 0.4815 4.81659091 5.249925 0 5.249925"></polygon>
+        <polygon id="path-3" points="0.683560606 0.4815 5.50022727 0.4815 5.50022727 5.249925 0.683560606 5.249925"></polygon>
+        <polygon id="path-5" points="0.61030303 0.4815 5.42621212 0.4815 5.42621212 5.249925 0.61030303 5.249925"></polygon>
+    </defs>
+    <g id="desktop" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Behaviors" transform="translate(-856.000000, -249.000000)">
+            <g id="mobile" transform="translate(-3.000000, -4.000000)">
+                <g id="condensed-menu-scroll" transform="translate(530.000000, 158.000000)">
+                    <g id="Page-1" transform="translate(329.000000, 95.000000)">
+                        <g id="Group-3">
+                            <mask id="mask-2" fill="white">
+                                <use xlink:href="#path-1"></use>
+                            </mask>
+                            <g id="Clip-2"></g>
+                            <path d="M-7.57575758e-05,2.865675 C-7.57575758e-05,1.548675 1.07871212,0.481425 2.40825758,0.481425 C3.73856061,0.481425 4.81659091,1.548675 4.81659091,2.865675 C4.81659091,4.182675 3.73856061,5.249925 2.40825758,5.249925 C1.07871212,5.249925 -7.57575758e-05,4.182675 -7.57575758e-05,2.865675" id="Fill-1" fill-opacity="0.5" fill="#8C8C8C" mask="url(#mask-2)"></path>
+                        </g>
+                        <g id="Group-6" transform="translate(9.000000, 0.000000)">
+                            <mask id="mask-4" fill="white">
+                                <use xlink:href="#path-3"></use>
+                            </mask>
+                            <g id="Clip-5"></g>
+                            <path d="M0.683560606,2.865675 C0.683560606,1.548675 1.76234848,0.481425 3.09265152,0.481425 C4.42295455,0.481425 5.50022727,1.548675 5.50022727,2.865675 C5.50022727,4.182675 4.42295455,5.249925 3.09265152,5.249925 C1.76234848,5.249925 0.683560606,4.182675 0.683560606,2.865675" id="Fill-4" fill-opacity="0.5" fill="#8C8C8C" mask="url(#mask-4)"></path>
+                        </g>
+                        <g id="Group-9" transform="translate(19.000000, 0.000000)">
+                            <mask id="mask-6" fill="white">
+                                <use xlink:href="#path-5"></use>
+                            </mask>
+                            <g id="Clip-8"></g>
+                            <path d="M0.61030303,2.865675 C0.61030303,1.548675 1.68833333,0.481425 3.01863636,0.481425 C4.34893939,0.481425 5.42621212,1.548675 5.42621212,2.865675 C5.42621212,4.182675 4.34893939,5.249925 3.01863636,5.249925 C1.68833333,5.249925 0.61030303,4.182675 0.61030303,2.865675" id="Fill-7" fill-opacity="0.5" fill="#8C8C8C" mask="url(#mask-6)"></path>
+                        </g>
+                    </g>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>
