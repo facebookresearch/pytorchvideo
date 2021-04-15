@@ -1,0 +1,525 @@
+
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>id: tutorial_torchhub_inference title: Running a pre-trained PyTorchVideo classification model using Torch Hub &mdash; PyTorchVideo  documentation</title>
+  
+
+  
+  
+    <link rel="shortcut icon" href="../_static/favicon.png"/>
+  
+  
+  
+    <link rel="canonical" href="https://pytorchvideo.org/docs/docs/tutorial_torchhub_inference.html"/>
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <!-- <link rel="stylesheet" href="../_static/pygments.css" type="text/css" /> -->
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+  <!-- Preload the theme fonts -->
+
+<link rel="preload" href="../_static/fonts/FreightSans/freight-sans-book.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../_static/fonts/FreightSans/freight-sans-medium.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../_static/fonts/IBMPlexMono/IBMPlexMono-Medium.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../_static/fonts/FreightSans/freight-sans-bold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../_static/fonts/FreightSans/freight-sans-medium-italic.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../_static/fonts/IBMPlexMono/IBMPlexMono-SemiBold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+
+<!-- Preload the katex fonts -->
+
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Math-Italic.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Main-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Main-Bold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size1-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size4-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size2-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size3-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Caligraphic-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.2/css/all.css" integrity="sha384-vSIIfh2YWi9wW0r9iZe7RJPrKwp6bG+s9QZMoITbCckVJqGCCRhc+ccxNcdpHuYu" crossorigin="anonymous">
+</head>
+
+<div class="container-fluid header-holder tutorials-header" id="header-holder">
+  <div class="container">
+    <div class="header-container">
+      <a class="header-logo" href="https://pytorchvideo.org" aria-label="PyTorch"></a>
+
+      <div class="main-menu">
+        <ul>
+          <li>
+            <a href="https://pytorchvideo.org">Home</a>
+          </li>
+          <li>
+            <a href="https://pytorchvideo.org/docs/tutorial_overview">Tutorials</a>
+          </li>
+          <li>
+            <a href="https://github.com/facebookresearch/pytorchvideo/">Github</a>
+          </li>
+        </ul>
+      </div>
+
+      <a class="main-menu-open-button" href="#" data-behavior="open-mobile-menu"></a>
+    </div>
+  </div>
+</div>
+
+
+<body class="pytorch-body">
+
+   
+
+    
+
+    <div class="table-of-contents-link-wrapper">
+      <span>Table of Contents</span>
+      <a href="#" class="toggle-table-of-contents" data-behavior="toggle-table-of-contents"></a>
+    </div>
+
+    <nav data-toggle="wy-nav-shift" class="pytorch-left-menu" id="pytorch-left-menu">
+      <div class="pytorch-side-scroll">
+        <div class="pytorch-menu pytorch-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          <div class="pytorch-left-menu-search">
+            
+
+            
+              
+              
+            
+
+            
+
+
+  
+
+
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search Docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+            
+          </div>
+
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Models</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="models.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="model_zoo.html">Model Zoo and Benchmarks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api/models/index.html">Models API</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Data</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="data.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="data_preparation.html">Data Preparation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api/data/index.html">Data API</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Transforms</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="transforms.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api/transforms/index.html">Transforms API</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Layers</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="layers.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api/layers/index.html">Layers API</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Accelerator</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="accelerator.html">Overview</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <div class="pytorch-container">
+      <div class="pytorch-page-level-bar" id="pytorch-page-level-bar">
+        <div class="pytorch-breadcrumbs-wrapper">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="pytorch-breadcrumbs">
+    
+      <li>
+        <a href="../index.html">
+          
+            Docs
+          
+        </a> &gt;
+      </li>
+
+        
+      <li>id: tutorial_torchhub_inference
+title: Running a pre-trained PyTorchVideo classification model using Torch Hub</li>
+    
+    
+      <li class="pytorch-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/docs/tutorial_torchhub_inference.md.txt" rel="nofollow"><img src="../_static/images/view-page-source-icon.svg"></a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+</div>
+        </div>
+
+        <div class="pytorch-shortcuts-wrapper" id="pytorch-shortcuts-wrapper">
+          Shortcuts
+        </div>
+      </div>
+
+      <section data-toggle="wy-nav-shift" id="pytorch-content-wrap" class="pytorch-content-wrap">
+        <div class="pytorch-content-left">
+
+        
+          
+          <div class="rst-content">
+          
+            <div role="main" class="main-content" itemscope="itemscope" itemtype="http://schema.org/Article">
+             <article itemprop="articleBody" id="pytorch-article" class="pytorch-article">
+              
+  <hr class="docutils" />
+<div class="section" id="id-tutorial-torchhub-inference-title-running-a-pre-trained-pytorchvideo-classification-model-using-torch-hub">
+<h1>id: tutorial_torchhub_inference
+title: Running a pre-trained PyTorchVideo classification model using Torch Hub<a class="headerlink" href="#id-tutorial-torchhub-inference-title-running-a-pre-trained-pytorchvideo-classification-model-using-torch-hub" title="Permalink to this headline">¶</a></h1>
+</div>
+<div class="section" id="introduction">
+<h1>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h1>
+<p>PyTorchVideo provides several pretrained models through <a class="reference external" href="https://pytorch.org/hub/">Torch Hub</a>. In this tutorial we will show how to load a pre trained video classification model in PyTorchVideo and run it on a test video. The PyTorchVideo Torch Hub models were trained on the Kinetics 400 [1] dataset.  Available models are described in <a class="reference external" href="https://pytorchvideo.org/docs/model_zoo.html">model zoo documentation</a>.</p>
+<p>[1] W. Kay, et al. The kinetics human action video dataset. arXiv preprint arXiv:1705.06950, 2017.</p>
+<p>NOTE: Currently, this tutorial will only work with a local clone of the PyTorchVideo GitHub repo.</p>
+</div>
+<div class="section" id="imports">
+<h1>Imports<a class="headerlink" href="#imports" title="Permalink to this headline">¶</a></h1>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">from</span> <span class="nn">torchvision.transforms</span> <span class="kn">import</span> <span class="n">Compose</span><span class="p">,</span> <span class="n">Lambda</span>
+<span class="kn">from</span> <span class="nn">torchvision.transforms._transforms_video</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">CenterCropVideo</span><span class="p">,</span>
+    <span class="n">NormalizeVideo</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">pytorchvideo.data.encoded_video</span> <span class="kn">import</span> <span class="n">EncodedVideo</span>
+<span class="kn">from</span> <span class="nn">pytorchvideo.transforms</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">ApplyTransformToKey</span><span class="p">,</span>
+    <span class="n">ShortSideScale</span><span class="p">,</span>
+    <span class="n">UniformTemporalSubsample</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="load-model">
+<h1>Load Model<a class="headerlink" href="#load-model" title="Permalink to this headline">¶</a></h1>
+<p>Let’s select the <code class="docutils literal notranslate"><span class="pre">slow_r50</span></code> model which was trained using a 8x8 setting on the Kinetics 400 dataset.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Device on which to run the model</span>
+<span class="n">device</span> <span class="o">=</span> <span class="s2">&quot;cuda:0&quot;</span>
+
+<span class="c1"># Pick a pretrained model</span>
+<span class="n">model_name</span> <span class="o">=</span> <span class="s2">&quot;slow_r50&quot;</span>
+
+<span class="c1"># Local path to the parent folder of hubconf.py in the pytorchvideo codebase</span>
+<span class="n">path</span> <span class="o">=</span> <span class="s1">&#39;../&#39;</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">hub</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">source</span><span class="o">=</span><span class="s2">&quot;local&quot;</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="n">model_name</span><span class="p">,</span> <span class="n">pretrained</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="c1"># Set to eval mode and move to desired device</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="setup-labels">
+<h1>Setup Labels<a class="headerlink" href="#setup-labels" title="Permalink to this headline">¶</a></h1>
+<p>Next let’s download the id-to-label mapping for the Kinetics 400 dataset on which the torch hub models were trained. This will be used to get the category label names from the predicted class ids.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span>!wget https://dl.fbaipublicfiles.com/pyslowfast/dataset/class_names/kinetics_classnames.json
+</pre></div>
+</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;kinetics_classnames.json&quot;</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+    <span class="n">kinetics_classnames</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+
+<span class="c1"># Create an id to label name mapping</span>
+<span class="n">kinetics_id_to_classname</span> <span class="o">=</span> <span class="p">{}</span>
+<span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">kinetics_classnames</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+    <span class="n">kinetics_id_to_classname</span><span class="p">[</span><span class="n">v</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">k</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;&quot;&#39;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="input-transform">
+<h1>Input Transform<a class="headerlink" href="#input-transform" title="Permalink to this headline">¶</a></h1>
+<p>Before passing the video into the model we need to apply some input transforms and sample a clip of the correct duration. We will define them below.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">side_size</span> <span class="o">=</span> <span class="mi">256</span>
+<span class="n">mean</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.45</span><span class="p">,</span> <span class="mf">0.45</span><span class="p">,</span> <span class="mf">0.45</span><span class="p">]</span>
+<span class="n">std</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.225</span><span class="p">,</span> <span class="mf">0.225</span><span class="p">,</span> <span class="mf">0.225</span><span class="p">]</span>
+<span class="n">crop_size</span> <span class="o">=</span> <span class="mi">256</span>
+<span class="n">num_frames</span> <span class="o">=</span> <span class="mi">8</span>
+<span class="n">sampling_rate</span> <span class="o">=</span> <span class="mi">8</span>
+<span class="n">frames_per_second</span> <span class="o">=</span> <span class="mi">30</span>
+
+<span class="c1"># Note that this transform is specific to the slow_R50 model.</span>
+<span class="c1"># If you want to try another of the torch hub models you will need to modify this transform</span>
+<span class="n">transform</span> <span class="o">=</span>  <span class="n">ApplyTransformToKey</span><span class="p">(</span>
+    <span class="n">key</span><span class="o">=</span><span class="s2">&quot;video&quot;</span><span class="p">,</span>
+    <span class="n">transform</span><span class="o">=</span><span class="n">Compose</span><span class="p">(</span>
+        <span class="p">[</span>
+            <span class="n">UniformTemporalSubsample</span><span class="p">(</span><span class="n">num_frames</span><span class="p">),</span>
+            <span class="n">Lambda</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">/</span><span class="mf">255.0</span><span class="p">),</span>
+            <span class="n">NormalizeVideo</span><span class="p">(</span><span class="n">mean</span><span class="p">,</span> <span class="n">std</span><span class="p">),</span>
+            <span class="n">ShortSideScale</span><span class="p">(</span>
+                <span class="n">size</span><span class="o">=</span><span class="n">side_size</span>
+            <span class="p">),</span>
+            <span class="n">CenterCropVideo</span><span class="p">(</span><span class="n">crop_size</span><span class="o">=</span><span class="p">(</span><span class="n">crop_size</span><span class="p">,</span> <span class="n">crop_size</span><span class="p">))</span>
+        <span class="p">]</span>
+    <span class="p">),</span>
+<span class="p">)</span>
+
+<span class="c1"># The duration of the input clip is also specific to the model.</span>
+<span class="n">clip_duration</span> <span class="o">=</span> <span class="p">(</span><span class="n">num_frames</span> <span class="o">*</span> <span class="n">sampling_rate</span><span class="p">)</span><span class="o">/</span><span class="n">frames_per_second</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="load-an-example-video">
+<h1>Load an example video<a class="headerlink" href="#load-an-example-video" title="Permalink to this headline">¶</a></h1>
+<p>We can now test the model with an example video from the Kinetics validation set such as this <a class="reference external" href="https://www.youtube.com/watch?v=3and4vWkW4s">archery video</a>.</p>
+<p>We will load the video and apply the input transform.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span># Download the example video file
+!wget https://dl.fbaipublicfiles.com/pytorchvideo/projects/archery.mp4
+</pre></div>
+</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Load the example video</span>
+<span class="n">video_path</span> <span class="o">=</span> <span class="s2">&quot;archery.mp4&quot;</span>
+
+<span class="c1"># Select the duration of the clip to load by specifying the start and end duration</span>
+<span class="c1"># The start_sec should correspond to where the action occurs in the video</span>
+<span class="n">start_sec</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="n">end_sec</span> <span class="o">=</span> <span class="n">start_sec</span> <span class="o">+</span> <span class="n">clip_duration</span>
+
+<span class="c1"># Initialize an EncodedVideo helper class</span>
+<span class="n">video</span> <span class="o">=</span> <span class="n">EncodedVideo</span><span class="o">.</span><span class="n">from_path</span><span class="p">(</span><span class="n">video_path</span><span class="p">)</span>
+
+<span class="c1"># Load the desired clip</span>
+<span class="n">video_data</span> <span class="o">=</span> <span class="n">video</span><span class="o">.</span><span class="n">get_clip</span><span class="p">(</span><span class="n">start_sec</span><span class="o">=</span><span class="n">start_sec</span><span class="p">,</span> <span class="n">end_sec</span><span class="o">=</span><span class="n">end_sec</span><span class="p">)</span>
+
+<span class="c1"># Apply a transform to normalize the video input</span>
+<span class="n">video_data</span> <span class="o">=</span> <span class="n">transform</span><span class="p">(</span><span class="n">video_data</span><span class="p">)</span>
+
+<span class="c1"># Move the inputs to the desired device</span>
+<span class="n">inputs</span> <span class="o">=</span> <span class="n">video_data</span><span class="p">[</span><span class="s2">&quot;video&quot;</span><span class="p">]</span>
+<span class="n">inputs</span> <span class="o">=</span> <span class="n">inputs</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="section" id="get-model-predictions">
+<h2>Get model predictions<a class="headerlink" href="#get-model-predictions" title="Permalink to this headline">¶</a></h2>
+<p>Now we are ready to pass the input into the model and classify the action.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Pass the input clip through the model</span>
+<span class="n">preds</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">inputs</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="o">...</span><span class="p">])</span>
+</pre></div>
+</div>
+<p>Let’s look at the top 5 best predictions:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Get the predicted classes</span>
+<span class="n">post_act</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Softmax</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">preds</span> <span class="o">=</span> <span class="n">post_act</span><span class="p">(</span><span class="n">preds</span><span class="p">)</span>
+<span class="n">pred_classes</span> <span class="o">=</span> <span class="n">preds</span><span class="o">.</span><span class="n">topk</span><span class="p">(</span><span class="n">k</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span><span class="o">.</span><span class="n">indices</span>
+
+<span class="c1"># Map the predicted classes to the label names</span>
+<span class="n">pred_class_names</span> <span class="o">=</span> <span class="p">[</span><span class="n">kinetics_id_to_classname</span><span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">i</span><span class="p">)]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">pred_classes</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Predicted labels: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">pred_class_names</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="conclusion">
+<h1>Conclusion<a class="headerlink" href="#conclusion" title="Permalink to this headline">¶</a></h1>
+<p>In this tutorial we showed how to load and run a pretrained PyTorchVideo model on a test video. You can run this tutorial as a notebook in the PyTorchVideo tutorials directory.</p>
+<p>To learn more about PyTorchVideo, check out the rest of the <a class="reference external" href="https://pytorchvideo.org/docs/">documentation</a>  and <a class="reference external" href="https://pytorchvideo.org/docs/tutorial_overview">tutorials</a>.</p>
+</div>
+
+
+             </article>
+             
+            </div>
+            <!-- <footer>
+  
+
+  
+
+    <hr>
+
+  
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2021, PyTorchVideo contributors.
+
+    </p>
+  </div>
+    
+      <div>
+        Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+      </div>
+     
+
+</footer>
+ -->
+          </div>
+        </div>
+
+        <div class="pytorch-content-right" id="pytorch-content-right">
+          <div class="pytorch-right-menu" id="pytorch-right-menu">
+            <div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
+              <ul>
+<li><a class="reference internal" href="#">id: tutorial_torchhub_inference
+title: Running a pre-trained PyTorchVideo classification model using Torch Hub</a></li>
+<li><a class="reference internal" href="#introduction">Introduction</a></li>
+<li><a class="reference internal" href="#imports">Imports</a></li>
+<li><a class="reference internal" href="#load-model">Load Model</a></li>
+<li><a class="reference internal" href="#setup-labels">Setup Labels</a></li>
+<li><a class="reference internal" href="#input-transform">Input Transform</a></li>
+<li><a class="reference internal" href="#load-an-example-video">Load an example video</a><ul>
+<li><a class="reference internal" href="#get-model-predictions">Get model predictions</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#conclusion">Conclusion</a></li>
+</ul>
+
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+  
+
+
+  
+
+     
+       <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+         <script src="../_static/jquery.js"></script>
+         <script src="../_static/underscore.js"></script>
+         <script src="../_static/doctools.js"></script>
+         <script src="../_static/language_data.js"></script>
+     
+
+  
+
+  <script type="text/javascript" src="../_static/js/vendor/popper.min.js"></script>
+  <script type="text/javascript" src="../_static/js/vendor/bootstrap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/list.js/1.5.0/list.min.js"></script>
+  <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+  <!-- Begin Footer -->
+
+
+  <div class="cookie-banner-wrapper">
+  <div class="container">
+    <p class="gdpr-notice">To analyze traffic and optimize your experience, we serve cookies on this site. By clicking or navigating, you agree to allow our usage of cookies. As the current maintainers of this site, Facebook’s Cookies Policy applies. Learn more, including about available controls: <a href="https://www.facebook.com/policies/cookies/">Cookies Policy</a>.</p>
+    <img class="close-button" src="../_static/images/pytorch-x.svg">
+  </div>
+</div>
+
+  <!-- End Footer -->
+
+  <!-- Begin Mobile Menu -->
+
+  <div class="mobile-main-menu">
+    <div class="container-fluid">
+      <div class="container">
+        <div class="mobile-main-menu-header-container">
+          <a class="header-logo" href="https://pytorchvideo.org" aria-label="PyTorch"></a>
+          <a class="main-menu-close-button" href="#" data-behavior="close-mobile-menu"></a>
+        </div>
+      </div>
+    </div>
+
+    <div class="mobile-main-menu-links-container">
+      <div class="main-menu">
+        <ul>
+          <li>
+            <a href="https://pytorchvideo.org">Home</a>
+          </li>
+          <li>
+            <a href="https://pytorchvideo.org/docs/tutorial_overview">Tutorials</a>
+          </li>
+          <li>
+            <a href="https://github.com/facebookresearch/pytorchvideo/">Github</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <!-- End Mobile Menu -->
+
+  <script type="text/javascript" src="../_static/js/vendor/anchor.min.js"></script>
+
+  <script type="text/javascript">
+    $(document).ready(function() {
+      mobileMenu.bind();
+      mobileTOC.bind();
+      pytorchAnchors.bind();
+      sideMenus.bind();
+      scrollToAnchor.bind();
+      highlightNavigation.bind();
+      mainMenuDropdown.bind();
+      filterTags.bind();
+
+      // Add class to links that have code blocks, since we cannot create links in code blocks
+      $("article.pytorch-article a span.pre").each(function(e) {
+        $(this).closest("a").addClass("has-code");
+      });
+    })
+  </script>
+</body>
+</html>

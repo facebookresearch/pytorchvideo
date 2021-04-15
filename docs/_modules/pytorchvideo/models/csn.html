@@ -1,0 +1,544 @@
+
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>pytorchvideo.models.csn &mdash; PyTorchVideo  documentation</title>
+  
+
+  
+  
+    <link rel="shortcut icon" href="../../../_static/favicon.png"/>
+  
+  
+  
+    <link rel="canonical" href="https://pytorchvideo.org/docs/_modules/pytorchvideo/models/csn.html"/>
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <!-- <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" /> -->
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+
+  
+  <script src="../../../_static/js/modernizr.min.js"></script>
+
+  <!-- Preload the theme fonts -->
+
+<link rel="preload" href="../../../_static/fonts/FreightSans/freight-sans-book.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../../../_static/fonts/FreightSans/freight-sans-medium.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../../../_static/fonts/IBMPlexMono/IBMPlexMono-Medium.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../../../_static/fonts/FreightSans/freight-sans-bold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../../../_static/fonts/FreightSans/freight-sans-medium-italic.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../../../_static/fonts/IBMPlexMono/IBMPlexMono-SemiBold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+
+<!-- Preload the katex fonts -->
+
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Math-Italic.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Main-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Main-Bold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size1-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size4-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size2-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size3-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Caligraphic-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.2/css/all.css" integrity="sha384-vSIIfh2YWi9wW0r9iZe7RJPrKwp6bG+s9QZMoITbCckVJqGCCRhc+ccxNcdpHuYu" crossorigin="anonymous">
+</head>
+
+<div class="container-fluid header-holder tutorials-header" id="header-holder">
+  <div class="container">
+    <div class="header-container">
+      <a class="header-logo" href="https://pytorchvideo.org" aria-label="PyTorch"></a>
+
+      <div class="main-menu">
+        <ul>
+          <li>
+            <a href="https://pytorchvideo.org">Home</a>
+          </li>
+          <li>
+            <a href="https://pytorchvideo.org/docs/tutorial_overview">Tutorials</a>
+          </li>
+          <li>
+            <a href="https://github.com/facebookresearch/pytorchvideo/">Github</a>
+          </li>
+        </ul>
+      </div>
+
+      <a class="main-menu-open-button" href="#" data-behavior="open-mobile-menu"></a>
+    </div>
+  </div>
+</div>
+
+
+<body class="pytorch-body">
+
+   
+
+    
+
+    <div class="table-of-contents-link-wrapper">
+      <span>Table of Contents</span>
+      <a href="#" class="toggle-table-of-contents" data-behavior="toggle-table-of-contents"></a>
+    </div>
+
+    <nav data-toggle="wy-nav-shift" class="pytorch-left-menu" id="pytorch-left-menu">
+      <div class="pytorch-side-scroll">
+        <div class="pytorch-menu pytorch-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          <div class="pytorch-left-menu-search">
+            
+
+            
+              
+              
+            
+
+            
+
+
+  
+
+
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search Docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+            
+          </div>
+
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Models</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../docs/models.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../docs/model_zoo.html">Model Zoo and Benchmarks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/models/index.html">Models API</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Data</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../docs/data.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../docs/data_preparation.html">Data Preparation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/data/index.html">Data API</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Transforms</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../docs/transforms.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/transforms/index.html">Transforms API</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Layers</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../docs/layers.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/layers/index.html">Layers API</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Accelerator</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../docs/accelerator.html">Overview</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <div class="pytorch-container">
+      <div class="pytorch-page-level-bar" id="pytorch-page-level-bar">
+        <div class="pytorch-breadcrumbs-wrapper">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="pytorch-breadcrumbs">
+    
+      <li>
+        <a href="../../../index.html">
+          
+            Docs
+          
+        </a> &gt;
+      </li>
+
+        
+          <li><a href="../../index.html">Module code</a> &gt;</li>
+        
+      <li>pytorchvideo.models.csn</li>
+    
+    
+      <li class="pytorch-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+</div>
+        </div>
+
+        <div class="pytorch-shortcuts-wrapper" id="pytorch-shortcuts-wrapper">
+          Shortcuts
+        </div>
+      </div>
+
+      <section data-toggle="wy-nav-shift" id="pytorch-content-wrap" class="pytorch-content-wrap">
+        <div class="pytorch-content-left">
+
+        
+          
+          <div class="rst-content">
+          
+            <div role="main" class="main-content" itemscope="itemscope" itemtype="http://schema.org/Article">
+             <article itemprop="articleBody" id="pytorch-article" class="pytorch-article">
+              
+  <h1>Source code for pytorchvideo.models.csn</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved.</span>
+
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Tuple</span>
+
+<span class="kn">import</span> <span class="nn">torch.nn</span> <span class="k">as</span> <span class="nn">nn</span>
+<span class="kn">from</span> <span class="nn">pytorchvideo.models.head</span> <span class="kn">import</span> <span class="n">create_res_basic_head</span>
+<span class="kn">from</span> <span class="nn">pytorchvideo.models.resnet</span> <span class="kn">import</span> <span class="n">Net</span><span class="p">,</span> <span class="n">create_bottleneck_block</span><span class="p">,</span> <span class="n">create_res_stage</span>
+<span class="kn">from</span> <span class="nn">pytorchvideo.models.stem</span> <span class="kn">import</span> <span class="n">create_res_basic_stem</span>
+
+
+<div class="viewcode-block" id="create_csn"><a class="viewcode-back" href="../../../api/models/csn.html#pytorchvideo.models.csn.create_csn">[docs]</a><span class="k">def</span> <span class="nf">create_csn</span><span class="p">(</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="c1"># Input clip configs.</span>
+    <span class="n">input_channel</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span>
+    <span class="c1"># Model configs.</span>
+    <span class="n">model_depth</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">50</span><span class="p">,</span>
+    <span class="n">model_num_class</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">400</span><span class="p">,</span>
+    <span class="n">dropout_rate</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+    <span class="c1"># Normalization configs.</span>
+    <span class="n">norm</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">BatchNorm3d</span><span class="p">,</span>
+    <span class="c1"># Activation configs.</span>
+    <span class="n">activation</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span><span class="p">,</span>
+    <span class="c1"># Stem configs.</span>
+    <span class="n">stem_dim_out</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">64</span><span class="p">,</span>
+    <span class="n">stem_conv_kernel_size</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">7</span><span class="p">),</span>
+    <span class="n">stem_conv_stride</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span>
+    <span class="n">stem_pool</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">stem_pool_kernel_size</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span>
+    <span class="n">stem_pool_stride</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span>
+    <span class="c1"># Stage configs.</span>
+    <span class="n">stage_conv_a_kernel_size</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+    <span class="n">stage_conv_b_kernel_size</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span>
+    <span class="n">stage_conv_b_width_per_group</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="n">stage_spatial_stride</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span>
+    <span class="n">stage_temporal_stride</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span>
+    <span class="n">bottleneck</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">=</span> <span class="n">create_bottleneck_block</span><span class="p">,</span>
+    <span class="n">bottleneck_ratio</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span>
+    <span class="c1"># Head configs.</span>
+    <span class="n">head_pool</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">AvgPool3d</span><span class="p">,</span>
+    <span class="n">head_pool_kernel_size</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">7</span><span class="p">),</span>
+    <span class="n">head_output_size</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+    <span class="n">head_activation</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">head_output_with_global_average</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Build Channel-Separated Convolutional Networks (CSN):</span>
+<span class="sd">    Video classification with channel-separated convolutional networks.</span>
+<span class="sd">    Du Tran, Heng Wang, Lorenzo Torresani, Matt Feiszli. ICCV 2019.</span>
+
+<span class="sd">    CSN follows the ResNet style architecture including three parts: Stem,</span>
+<span class="sd">    Stages and Head. The three parts are assembled in the following order:</span>
+
+<span class="sd">    ::</span>
+
+<span class="sd">                                         Input</span>
+<span class="sd">                                           ↓</span>
+<span class="sd">                                         Stem</span>
+<span class="sd">                                           ↓</span>
+<span class="sd">                                         Stage 1</span>
+<span class="sd">                                           ↓</span>
+<span class="sd">                                           .</span>
+<span class="sd">                                           .</span>
+<span class="sd">                                           .</span>
+<span class="sd">                                           ↓</span>
+<span class="sd">                                         Stage N</span>
+<span class="sd">                                           ↓</span>
+<span class="sd">                                         Head</span>
+
+<span class="sd">    CSN uses depthwise convolution. To further reduce the computational cost, it uses</span>
+<span class="sd">    low resolution (112x112), short clips (4 frames), different striding and kernel</span>
+<span class="sd">    size, etc.</span>
+
+<span class="sd">    Args:</span>
+
+<span class="sd">        input_channel (int): number of channels for the input video clip.</span>
+
+<span class="sd">        model_depth (int): the depth of the resnet. Options include: 50, 101, 152.</span>
+<span class="sd">            model_num_class (int): the number of classes for the video dataset.</span>
+<span class="sd">            dropout_rate (float): dropout rate.</span>
+
+<span class="sd">        norm (callable): a callable that constructs normalization layer.</span>
+
+<span class="sd">        activation (callable): a callable that constructs activation layer.</span>
+
+<span class="sd">        stem_dim_out (int): output channel size to stem.</span>
+<span class="sd">        stem_conv_kernel_size (tuple): convolutional kernel size(s) of stem.</span>
+<span class="sd">        stem_conv_stride (tuple): convolutional stride size(s) of stem.</span>
+<span class="sd">        stem_pool (callable): a callable that constructs resnet head pooling layer.</span>
+<span class="sd">        stem_pool_kernel_size (tuple): pooling kernel size(s).</span>
+<span class="sd">        stem_pool_stride (tuple): pooling stride size(s).</span>
+
+<span class="sd">        stage_conv_a_kernel_size (tuple): convolutional kernel size(s) for conv_a.</span>
+<span class="sd">        stage_conv_b_kernel_size (tuple): convolutional kernel size(s) for conv_b.</span>
+<span class="sd">        stage_conv_b_width_per_group(int): the width of each group for conv_b. Set</span>
+<span class="sd">            it to 1 for depthwise convolution.</span>
+<span class="sd">        stage_spatial_stride (tuple): the spatial stride for each stage.</span>
+<span class="sd">        stage_temporal_stride (tuple): the temporal stride for each stage.</span>
+<span class="sd">        bottleneck (callable): a callable that constructs bottleneck block layer.</span>
+<span class="sd">            Examples include: create_bottleneck_block.</span>
+<span class="sd">        bottleneck_ratio (int): the ratio between inner and outer dimensions for</span>
+<span class="sd">            the bottleneck block.</span>
+
+<span class="sd">        head_pool (callable): a callable that constructs resnet head pooling layer.</span>
+<span class="sd">        head_pool_kernel_size (tuple): the pooling kernel size.</span>
+<span class="sd">        head_output_size (tuple): the size of output tensor for head.</span>
+<span class="sd">        head_activation (callable): a callable that constructs activation layer.</span>
+<span class="sd">        head_output_with_global_average (bool): if True, perform global averaging on</span>
+<span class="sd">            the head output.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        (nn.Module): the csn model.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Number of blocks for different stages given the model depth.</span>
+    <span class="n">_MODEL_STAGE_DEPTH</span> <span class="o">=</span> <span class="p">{</span><span class="mi">50</span><span class="p">:</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="mi">101</span><span class="p">:</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">23</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="mi">152</span><span class="p">:</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">36</span><span class="p">,</span> <span class="mi">3</span><span class="p">)}</span>
+
+    <span class="c1"># Given a model depth, get the number of blocks for each stage.</span>
+    <span class="k">assert</span> <span class="p">(</span>
+        <span class="n">model_depth</span> <span class="ow">in</span> <span class="n">_MODEL_STAGE_DEPTH</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+    <span class="p">),</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">model_depth</span><span class="si">}</span><span class="s2"> is not in </span><span class="si">{</span><span class="n">_MODEL_STAGE_DEPTH</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="n">stage_depths</span> <span class="o">=</span> <span class="n">_MODEL_STAGE_DEPTH</span><span class="p">[</span><span class="n">model_depth</span><span class="p">]</span>
+
+    <span class="n">blocks</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="c1"># Create stem for CSN.</span>
+    <span class="n">stem</span> <span class="o">=</span> <span class="n">create_res_basic_stem</span><span class="p">(</span>
+        <span class="n">in_channels</span><span class="o">=</span><span class="n">input_channel</span><span class="p">,</span>
+        <span class="n">out_channels</span><span class="o">=</span><span class="n">stem_dim_out</span><span class="p">,</span>
+        <span class="n">conv_kernel_size</span><span class="o">=</span><span class="n">stem_conv_kernel_size</span><span class="p">,</span>
+        <span class="n">conv_stride</span><span class="o">=</span><span class="n">stem_conv_stride</span><span class="p">,</span>
+        <span class="n">conv_padding</span><span class="o">=</span><span class="p">[</span><span class="n">size</span> <span class="o">//</span> <span class="mi">2</span> <span class="k">for</span> <span class="n">size</span> <span class="ow">in</span> <span class="n">stem_conv_kernel_size</span><span class="p">],</span>
+        <span class="n">pool</span><span class="o">=</span><span class="n">stem_pool</span><span class="p">,</span>
+        <span class="n">pool_kernel_size</span><span class="o">=</span><span class="n">stem_pool_kernel_size</span><span class="p">,</span>
+        <span class="n">pool_stride</span><span class="o">=</span><span class="n">stem_pool_stride</span><span class="p">,</span>
+        <span class="n">pool_padding</span><span class="o">=</span><span class="p">[</span><span class="n">size</span> <span class="o">//</span> <span class="mi">2</span> <span class="k">for</span> <span class="n">size</span> <span class="ow">in</span> <span class="n">stem_pool_kernel_size</span><span class="p">],</span>
+        <span class="n">norm</span><span class="o">=</span><span class="n">norm</span><span class="p">,</span>
+        <span class="n">activation</span><span class="o">=</span><span class="n">activation</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">blocks</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">stem</span><span class="p">)</span>
+
+    <span class="n">stage_dim_in</span> <span class="o">=</span> <span class="n">stem_dim_out</span>
+    <span class="n">stage_dim_out</span> <span class="o">=</span> <span class="n">stage_dim_in</span> <span class="o">*</span> <span class="mi">4</span>
+
+    <span class="c1"># Create each stage for CSN.</span>
+    <span class="k">for</span> <span class="n">idx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">stage_depths</span><span class="p">)):</span>
+        <span class="n">stage_dim_inner</span> <span class="o">=</span> <span class="n">stage_dim_out</span> <span class="o">//</span> <span class="n">bottleneck_ratio</span>
+        <span class="n">depth</span> <span class="o">=</span> <span class="n">stage_depths</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
+
+        <span class="n">stage_conv_b_stride</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">stage_temporal_stride</span><span class="p">[</span><span class="n">idx</span><span class="p">],</span>
+            <span class="n">stage_spatial_stride</span><span class="p">[</span><span class="n">idx</span><span class="p">],</span>
+            <span class="n">stage_spatial_stride</span><span class="p">[</span><span class="n">idx</span><span class="p">],</span>
+        <span class="p">)</span>
+
+        <span class="n">stage</span> <span class="o">=</span> <span class="n">create_res_stage</span><span class="p">(</span>
+            <span class="n">depth</span><span class="o">=</span><span class="n">depth</span><span class="p">,</span>
+            <span class="n">dim_in</span><span class="o">=</span><span class="n">stage_dim_in</span><span class="p">,</span>
+            <span class="n">dim_inner</span><span class="o">=</span><span class="n">stage_dim_inner</span><span class="p">,</span>
+            <span class="n">dim_out</span><span class="o">=</span><span class="n">stage_dim_out</span><span class="p">,</span>
+            <span class="n">bottleneck</span><span class="o">=</span><span class="n">bottleneck</span><span class="p">,</span>
+            <span class="n">conv_a_kernel_size</span><span class="o">=</span><span class="n">stage_conv_a_kernel_size</span><span class="p">,</span>
+            <span class="n">conv_a_stride</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+            <span class="n">conv_a_padding</span><span class="o">=</span><span class="p">[</span><span class="n">size</span> <span class="o">//</span> <span class="mi">2</span> <span class="k">for</span> <span class="n">size</span> <span class="ow">in</span> <span class="n">stage_conv_a_kernel_size</span><span class="p">],</span>
+            <span class="n">conv_b_kernel_size</span><span class="o">=</span><span class="n">stage_conv_b_kernel_size</span><span class="p">,</span>
+            <span class="n">conv_b_stride</span><span class="o">=</span><span class="n">stage_conv_b_stride</span><span class="p">,</span>
+            <span class="n">conv_b_padding</span><span class="o">=</span><span class="p">[</span><span class="n">size</span> <span class="o">//</span> <span class="mi">2</span> <span class="k">for</span> <span class="n">size</span> <span class="ow">in</span> <span class="n">stage_conv_b_kernel_size</span><span class="p">],</span>
+            <span class="n">conv_b_num_groups</span><span class="o">=</span><span class="p">(</span><span class="n">stage_dim_inner</span> <span class="o">//</span> <span class="n">stage_conv_b_width_per_group</span><span class="p">),</span>
+            <span class="n">conv_b_dilation</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+            <span class="n">norm</span><span class="o">=</span><span class="n">norm</span><span class="p">,</span>
+            <span class="n">activation</span><span class="o">=</span><span class="n">activation</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="n">blocks</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">stage</span><span class="p">)</span>
+        <span class="n">stage_dim_in</span> <span class="o">=</span> <span class="n">stage_dim_out</span>
+        <span class="n">stage_dim_out</span> <span class="o">=</span> <span class="n">stage_dim_out</span> <span class="o">*</span> <span class="mi">2</span>
+
+    <span class="c1"># Create head for CSN.</span>
+    <span class="n">head</span> <span class="o">=</span> <span class="n">create_res_basic_head</span><span class="p">(</span>
+        <span class="n">in_features</span><span class="o">=</span><span class="n">stage_dim_in</span><span class="p">,</span>
+        <span class="n">out_features</span><span class="o">=</span><span class="n">model_num_class</span><span class="p">,</span>
+        <span class="n">pool</span><span class="o">=</span><span class="n">head_pool</span><span class="p">,</span>
+        <span class="n">output_size</span><span class="o">=</span><span class="n">head_output_size</span><span class="p">,</span>
+        <span class="n">pool_kernel_size</span><span class="o">=</span><span class="n">head_pool_kernel_size</span><span class="p">,</span>
+        <span class="n">dropout_rate</span><span class="o">=</span><span class="n">dropout_rate</span><span class="p">,</span>
+        <span class="n">activation</span><span class="o">=</span><span class="n">head_activation</span><span class="p">,</span>
+        <span class="n">output_with_global_average</span><span class="o">=</span><span class="n">head_output_with_global_average</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">blocks</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">head</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">Net</span><span class="p">(</span><span class="n">blocks</span><span class="o">=</span><span class="n">nn</span><span class="o">.</span><span class="n">ModuleList</span><span class="p">(</span><span class="n">blocks</span><span class="p">))</span></div>
+</pre></div>
+
+             </article>
+             
+            </div>
+            <!-- <footer>
+  
+
+  
+
+    <hr>
+
+  
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2021, PyTorchVideo contributors.
+
+    </p>
+  </div>
+    
+      <div>
+        Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+      </div>
+     
+
+</footer>
+ -->
+          </div>
+        </div>
+
+        <div class="pytorch-content-right" id="pytorch-content-right">
+          <div class="pytorch-right-menu" id="pytorch-right-menu">
+            <div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
+              
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+  
+
+
+  
+
+     
+       <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+         <script src="../../../_static/jquery.js"></script>
+         <script src="../../../_static/underscore.js"></script>
+         <script src="../../../_static/doctools.js"></script>
+         <script src="../../../_static/language_data.js"></script>
+     
+
+  
+
+  <script type="text/javascript" src="../../../_static/js/vendor/popper.min.js"></script>
+  <script type="text/javascript" src="../../../_static/js/vendor/bootstrap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/list.js/1.5.0/list.min.js"></script>
+  <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+  <!-- Begin Footer -->
+
+
+  <div class="cookie-banner-wrapper">
+  <div class="container">
+    <p class="gdpr-notice">To analyze traffic and optimize your experience, we serve cookies on this site. By clicking or navigating, you agree to allow our usage of cookies. As the current maintainers of this site, Facebook’s Cookies Policy applies. Learn more, including about available controls: <a href="https://www.facebook.com/policies/cookies/">Cookies Policy</a>.</p>
+    <img class="close-button" src="../../../_static/images/pytorch-x.svg">
+  </div>
+</div>
+
+  <!-- End Footer -->
+
+  <!-- Begin Mobile Menu -->
+
+  <div class="mobile-main-menu">
+    <div class="container-fluid">
+      <div class="container">
+        <div class="mobile-main-menu-header-container">
+          <a class="header-logo" href="https://pytorchvideo.org" aria-label="PyTorch"></a>
+          <a class="main-menu-close-button" href="#" data-behavior="close-mobile-menu"></a>
+        </div>
+      </div>
+    </div>
+
+    <div class="mobile-main-menu-links-container">
+      <div class="main-menu">
+        <ul>
+          <li>
+            <a href="https://pytorchvideo.org">Home</a>
+          </li>
+          <li>
+            <a href="https://pytorchvideo.org/docs/tutorial_overview">Tutorials</a>
+          </li>
+          <li>
+            <a href="https://github.com/facebookresearch/pytorchvideo/">Github</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <!-- End Mobile Menu -->
+
+  <script type="text/javascript" src="../../../_static/js/vendor/anchor.min.js"></script>
+
+  <script type="text/javascript">
+    $(document).ready(function() {
+      mobileMenu.bind();
+      mobileTOC.bind();
+      pytorchAnchors.bind();
+      sideMenus.bind();
+      scrollToAnchor.bind();
+      highlightNavigation.bind();
+      mainMenuDropdown.bind();
+      filterTags.bind();
+
+      // Add class to links that have code blocks, since we cannot create links in code blocks
+      $("article.pytorch-article a span.pre").each(function(e) {
+        $(this).closest("a").addClass("has-code");
+      });
+    })
+  </script>
+</body>
+</html>

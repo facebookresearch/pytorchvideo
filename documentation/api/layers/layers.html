@@ -1,0 +1,903 @@
+
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>pytorchvideo.layers.batch_norm &mdash; PyTorchVideo  documentation</title>
+  
+
+  
+  
+    <link rel="shortcut icon" href="../../_static/favicon.png"/>
+  
+  
+  
+    <link rel="canonical" href="https://pytorchvideo.org/docs/api/layers/layers.html"/>
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <!-- <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" /> -->
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Overview" href="../../docs/accelerator.html" />
+    <link rel="prev" title="Layers API" href="index.html" /> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+  <!-- Preload the theme fonts -->
+
+<link rel="preload" href="../../_static/fonts/FreightSans/freight-sans-book.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../../_static/fonts/FreightSans/freight-sans-medium.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../../_static/fonts/IBMPlexMono/IBMPlexMono-Medium.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../../_static/fonts/FreightSans/freight-sans-bold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../../_static/fonts/FreightSans/freight-sans-medium-italic.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../../_static/fonts/IBMPlexMono/IBMPlexMono-SemiBold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+
+<!-- Preload the katex fonts -->
+
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Math-Italic.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Main-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Main-Bold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size1-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size4-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size2-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size3-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Caligraphic-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.2/css/all.css" integrity="sha384-vSIIfh2YWi9wW0r9iZe7RJPrKwp6bG+s9QZMoITbCckVJqGCCRhc+ccxNcdpHuYu" crossorigin="anonymous">
+</head>
+
+<div class="container-fluid header-holder tutorials-header" id="header-holder">
+  <div class="container">
+    <div class="header-container">
+      <a class="header-logo" href="https://pytorchvideo.org" aria-label="PyTorch"></a>
+
+      <div class="main-menu">
+        <ul>
+          <li>
+            <a href="https://pytorchvideo.org">Home</a>
+          </li>
+          <li>
+            <a href="https://pytorchvideo.org/docs/tutorial_overview">Tutorials</a>
+          </li>
+          <li>
+            <a href="https://github.com/facebookresearch/pytorchvideo/">Github</a>
+          </li>
+        </ul>
+      </div>
+
+      <a class="main-menu-open-button" href="#" data-behavior="open-mobile-menu"></a>
+    </div>
+  </div>
+</div>
+
+
+<body class="pytorch-body">
+
+   
+
+    
+
+    <div class="table-of-contents-link-wrapper">
+      <span>Table of Contents</span>
+      <a href="#" class="toggle-table-of-contents" data-behavior="toggle-table-of-contents"></a>
+    </div>
+
+    <nav data-toggle="wy-nav-shift" class="pytorch-left-menu" id="pytorch-left-menu">
+      <div class="pytorch-side-scroll">
+        <div class="pytorch-menu pytorch-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          <div class="pytorch-left-menu-search">
+            
+
+            
+              
+              
+            
+
+            
+
+
+  
+
+
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search Docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+            
+          </div>
+
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Models</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../docs/models.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../docs/model_zoo.html">Model Zoo and Benchmarks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../models/index.html">Models API</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Data</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../docs/data.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../docs/data_preparation.html">Data Preparation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../data/index.html">Data API</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Transforms</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../docs/transforms.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../transforms/index.html">Transforms API</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Layers</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../docs/layers.html">Overview</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Layers API</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Accelerator</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../docs/accelerator.html">Overview</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <div class="pytorch-container">
+      <div class="pytorch-page-level-bar" id="pytorch-page-level-bar">
+        <div class="pytorch-breadcrumbs-wrapper">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="pytorch-breadcrumbs">
+    
+      <li>
+        <a href="../../index.html">
+          
+            Docs
+          
+        </a> &gt;
+      </li>
+
+        
+          <li><a href="index.html">Layers API</a> &gt;</li>
+        
+      <li>pytorchvideo.layers.batch_norm</li>
+    
+    
+      <li class="pytorch-breadcrumbs-aside">
+        
+            
+            <a href="../../_sources/api/layers/layers.rst.txt" rel="nofollow"><img src="../../_static/images/view-page-source-icon.svg"></a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+</div>
+        </div>
+
+        <div class="pytorch-shortcuts-wrapper" id="pytorch-shortcuts-wrapper">
+          Shortcuts
+        </div>
+      </div>
+
+      <section data-toggle="wy-nav-shift" id="pytorch-content-wrap" class="pytorch-content-wrap">
+        <div class="pytorch-content-left">
+
+        
+          
+          <div class="rst-content">
+          
+            <div role="main" class="main-content" itemscope="itemscope" itemtype="http://schema.org/Article">
+             <article itemprop="articleBody" id="pytorch-article" class="pytorch-article">
+              
+  <div class="section" id="module-pytorchvideo.layers.batch_norm">
+<span id="pytorchvideo-layers-batch-norm"></span><h1>pytorchvideo.layers.batch_norm<a class="headerlink" href="#module-pytorchvideo.layers.batch_norm" title="Permalink to this headline">¶</a></h1>
+<dl class="py class">
+<dt id="pytorchvideo.layers.batch_norm.NaiveSyncBatchNorm1d">
+<em class="property">class </em><code class="sig-prename descclassname">pytorchvideo.layers.batch_norm.</code><code class="sig-name descname">NaiveSyncBatchNorm1d</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">num_features</span></em>, <em class="sig-param"><span class="n">eps</span><span class="o">=</span><span class="default_value">1e-05</span></em>, <em class="sig-param"><span class="n">momentum</span><span class="o">=</span><span class="default_value">0.1</span></em>, <em class="sig-param"><span class="n">affine</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">track_running_stats</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pytorchvideo/layers/batch_norm.html#NaiveSyncBatchNorm1d"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytorchvideo.layers.batch_norm.NaiveSyncBatchNorm1d" title="Permalink to this definition">¶</a></dt>
+<dd><p>An implementation of 1D naive sync batch normalization. See details in
+NaiveSyncBatchNorm2d below.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt id="pytorchvideo.layers.batch_norm.NaiveSyncBatchNorm2d">
+<em class="property">class </em><code class="sig-prename descclassname">pytorchvideo.layers.batch_norm.</code><code class="sig-name descname">NaiveSyncBatchNorm2d</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">num_features</span></em>, <em class="sig-param"><span class="n">eps</span><span class="o">=</span><span class="default_value">1e-05</span></em>, <em class="sig-param"><span class="n">momentum</span><span class="o">=</span><span class="default_value">0.1</span></em>, <em class="sig-param"><span class="n">affine</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">track_running_stats</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pytorchvideo/layers/batch_norm.html#NaiveSyncBatchNorm2d"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytorchvideo.layers.batch_norm.NaiveSyncBatchNorm2d" title="Permalink to this definition">¶</a></dt>
+<dd><p>An implementation of 2D naive sync batch normalization.
+In PyTorch&lt;=1.5, <code class="docutils literal notranslate"><span class="pre">nn.SyncBatchNorm</span></code> has incorrect gradient
+when the batch size on each worker is different.
+(e.g., when scale augmentation is used, or when it is applied to mask head).</p>
+<p>This is a slower but correct alternative to <cite>nn.SyncBatchNorm</cite>.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This module computes overall statistics by using
+statistics of each worker with equal weight.  The result is true statistics
+of all samples (as if they are all on one worker) only when all workers
+have the same (N, H, W). This mode does not support inputs with zero batch size.</p>
+</div>
+</dd></dl>
+
+<dl class="py class">
+<dt id="pytorchvideo.layers.batch_norm.NaiveSyncBatchNorm3d">
+<em class="property">class </em><code class="sig-prename descclassname">pytorchvideo.layers.batch_norm.</code><code class="sig-name descname">NaiveSyncBatchNorm3d</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">num_features</span></em>, <em class="sig-param"><span class="n">eps</span><span class="o">=</span><span class="default_value">1e-05</span></em>, <em class="sig-param"><span class="n">momentum</span><span class="o">=</span><span class="default_value">0.1</span></em>, <em class="sig-param"><span class="n">affine</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">track_running_stats</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pytorchvideo/layers/batch_norm.html#NaiveSyncBatchNorm3d"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytorchvideo.layers.batch_norm.NaiveSyncBatchNorm3d" title="Permalink to this definition">¶</a></dt>
+<dd><p>An implementation of 3D naive sync batch normalization. See details in
+NaiveSyncBatchNorm2d above.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-pytorchvideo.layers.convolutions">
+<span id="pytorchvideo-layers-convolutions"></span><h1>pytorchvideo.layers.convolutions<a class="headerlink" href="#module-pytorchvideo.layers.convolutions" title="Permalink to this headline">¶</a></h1>
+<dl class="py class">
+<dt id="pytorchvideo.layers.convolutions.ConvReduce3D">
+<em class="property">class </em><code class="sig-prename descclassname">pytorchvideo.layers.convolutions.</code><code class="sig-name descname">ConvReduce3D</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span></em>, <em class="sig-param"><span class="n">in_channels</span></em>, <em class="sig-param"><span class="n">out_channels</span></em>, <em class="sig-param"><span class="n">kernel_size</span></em>, <em class="sig-param"><span class="n">stride</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">padding</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">padding_mode</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">dilation</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">groups</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">bias</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">reduction_method</span><span class="o">=</span><span class="default_value">'sum'</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pytorchvideo/layers/convolutions.html#ConvReduce3D"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytorchvideo.layers.convolutions.ConvReduce3D" title="Permalink to this definition">¶</a></dt>
+<dd><p>Builds a list of convolutional operators and performs summation on the outputs.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Conv3d, Conv3d, ...,  Conv3d
+               ↓
+              Sum
+</pre></div>
+</div>
+<dl class="py method">
+<dt id="pytorchvideo.layers.convolutions.ConvReduce3D.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span></em>, <em class="sig-param"><span class="n">in_channels</span></em>, <em class="sig-param"><span class="n">out_channels</span></em>, <em class="sig-param"><span class="n">kernel_size</span></em>, <em class="sig-param"><span class="n">stride</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">padding</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">padding_mode</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">dilation</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">groups</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">bias</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">reduction_method</span><span class="o">=</span><span class="default_value">'sum'</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pytorchvideo/layers/convolutions.html#ConvReduce3D.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytorchvideo.layers.convolutions.ConvReduce3D.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>int</strong> (<em>out_channels</em>) – number of input channels.</p></li>
+<li><p><strong>int</strong> – number of output channels produced by the convolution(s).</p></li>
+<li><p><strong>tuple</strong> (<em>bias</em>) – Tuple of sizes of the convolutionaling kernels.</p></li>
+<li><p><strong>tuple</strong> – Tuple of strides of the convolutions.</p></li>
+<li><p><strong>tuple</strong> – Tuple of paddings added to all three sides of the
+input.</p></li>
+<li><p><strong>tuple</strong> – Tuple of padding modes for each convs.
+Options include <cite>zeros</cite>, <cite>reflect</cite>, <cite>replicate</cite> or <cite>circular</cite>.</p></li>
+<li><p><strong>tuple</strong> – Tuple of spacings between kernel elements.</p></li>
+<li><p><strong>tuple</strong> – Tuple of numbers of blocked connections from input
+channels to output channels.</p></li>
+<li><p><strong>tuple</strong> – If <cite>True</cite>, adds a learnable bias to the output.</p></li>
+<li><p><strong>str</strong> (<em>reduction_method</em>) – Options include <cite>sum</cite> and <cite>cat</cite>.</p></li>
+<li><p><strong>in_channels</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – </p></li>
+<li><p><strong>out_channels</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – </p></li>
+<li><p><strong>kernel_size</strong> (<em>Tuple</em><em>[</em><em>Union</em><em>[</em><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a><em>, </em><em>Tuple</em><em>[</em><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a><em>]</em><em>]</em><em>]</em>) – </p></li>
+<li><p><strong>stride</strong> (<em>Optional</em><em>[</em><em>Tuple</em><em>[</em><em>Union</em><em>[</em><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a><em>, </em><em>Tuple</em><em>[</em><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a><em>]</em><em>]</em><em>]</em><em>]</em>) – </p></li>
+<li><p><strong>padding</strong> (<em>Optional</em><em>[</em><em>Tuple</em><em>[</em><em>Union</em><em>[</em><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a><em>, </em><em>Tuple</em><em>[</em><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a><em>]</em><em>]</em><em>]</em><em>]</em>) – </p></li>
+<li><p><strong>padding_mode</strong> (<em>Optional</em><em>[</em><em>Tuple</em><em>[</em><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a><em>]</em><em>]</em>) – </p></li>
+<li><p><strong>dilation</strong> (<em>Optional</em><em>[</em><em>Tuple</em><em>[</em><em>Union</em><em>[</em><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a><em>, </em><em>Tuple</em><em>[</em><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a><em>]</em><em>]</em><em>]</em><em>]</em>) – </p></li>
+<li><p><strong>groups</strong> (<em>Optional</em><em>[</em><em>Tuple</em><em>[</em><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a><em>]</em><em>]</em>) – </p></li>
+<li><p><strong>bias</strong> (<em>Optional</em><em>[</em><em>Tuple</em><em>[</em><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a><em>]</em><em>]</em>) – </p></li>
+<li><p><strong>reduction_method</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.6/library/constants.html#None" title="(in Python v3.6)">None</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt id="pytorchvideo.layers.convolutions.create_conv_2plus1d">
+<code class="sig-prename descclassname">pytorchvideo.layers.convolutions.</code><code class="sig-name descname">create_conv_2plus1d</code><span class="sig-paren">(</span><em class="sig-param">*</em>, <em class="sig-param">in_channels</em>, <em class="sig-param">out_channels</em>, <em class="sig-param">inner_channels=None</em>, <em class="sig-param">conv_xy_first=False</em>, <em class="sig-param">kernel_size=(3</em>, <em class="sig-param">3</em>, <em class="sig-param">3)</em>, <em class="sig-param">stride=(2</em>, <em class="sig-param">2</em>, <em class="sig-param">2)</em>, <em class="sig-param">padding=(1</em>, <em class="sig-param">1</em>, <em class="sig-param">1)</em>, <em class="sig-param">bias=False</em>, <em class="sig-param">dilation=(1</em>, <em class="sig-param">1</em>, <em class="sig-param">1)</em>, <em class="sig-param">groups=1</em>, <em class="sig-param">norm=&lt;class 'torch.nn.modules.batchnorm.BatchNorm3d'&gt;</em>, <em class="sig-param">norm_eps=1e-05</em>, <em class="sig-param">norm_momentum=0.1</em>, <em class="sig-param">activation=&lt;class 'torch.nn.modules.activation.ReLU'&gt;</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pytorchvideo/layers/convolutions.html#create_conv_2plus1d"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytorchvideo.layers.convolutions.create_conv_2plus1d" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a 2plus1d conv layer. It performs spatiotemporal Convolution, BN, and
+Relu following by a spatiotemporal pooling.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Conv_t (or Conv_xy if conv_xy_first = True)
+                   ↓
+             Normalization
+                   ↓
+               Activation
+                   ↓
+Conv_xy (or Conv_t if conv_xy_first = True)
+</pre></div>
+</div>
+<p>Normalization options include: BatchNorm3d and None (no normalization).
+Activation options include: ReLU, Softmax, Sigmoid, and None (no activation).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>in_channels</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – input channel size of the convolution.</p></li>
+<li><p><strong>out_channels</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – output channel size of the convolution.</p></li>
+<li><p><strong>kernel_size</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#tuple" title="(in Python v3.6)"><em>tuple</em></a>) – convolutional kernel size(s).</p></li>
+<li><p><strong>stride</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#tuple" title="(in Python v3.6)"><em>tuple</em></a>) – convolutional stride size(s).</p></li>
+<li><p><strong>padding</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#tuple" title="(in Python v3.6)"><em>tuple</em></a>) – convolutional padding size(s).</p></li>
+<li><p><strong>bias</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) – convolutional bias. If true, adds a learnable bias to the
+output.</p></li>
+<li><p><strong>groups</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – Number of groups in convolution layers. value &gt;1 is unsupported.</p></li>
+<li><p><strong>dilation</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#tuple" title="(in Python v3.6)"><em>tuple</em></a>) – dilation value in convolution layers. value &gt;1 is unsupported.</p></li>
+<li><p><strong>conv_xy_first</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) – If True, spatial convolution comes before temporal conv</p></li>
+<li><p><strong>norm</strong> (<em>callable</em>) – a callable that constructs normalization layer, options
+include nn.BatchNorm3d, None (not performing normalization).</p></li>
+<li><p><strong>norm_eps</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#float" title="(in Python v3.6)"><em>float</em></a>) – normalization epsilon.</p></li>
+<li><p><strong>norm_momentum</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#float" title="(in Python v3.6)"><em>float</em></a>) – normalization momentum.</p></li>
+<li><p><strong>activation</strong> (<em>callable</em>) – a callable that constructs activation layer, options
+include: nn.ReLU, nn.Softmax, nn.Sigmoid, and None (not performing
+activation).</p></li>
+<li><p><strong>inner_channels</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><em>(nn.Module)</em> – 2plus1d conv layer.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>torch.nn.modules.module.Module</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt id="pytorchvideo.layers.convolutions.Conv2plus1d">
+<em class="property">class </em><code class="sig-prename descclassname">pytorchvideo.layers.convolutions.</code><code class="sig-name descname">Conv2plus1d</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span></em>, <em class="sig-param"><span class="n">conv_t</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">norm</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">activation</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">conv_xy</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">conv_xy_first</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pytorchvideo/layers/convolutions.html#Conv2plus1d"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytorchvideo.layers.convolutions.Conv2plus1d" title="Permalink to this definition">¶</a></dt>
+<dd><p>Implementation of 2+1d Convolution by factorizing 3D Convolution into an 1D temporal
+Convolution and a 2D spatial Convolution with Normalization and Activation module
+in between:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Conv_t (or Conv_xy if conv_xy_first = True)
+                   ↓
+             Normalization
+                   ↓
+               Activation
+                   ↓
+Conv_xy (or Conv_t if conv_xy_first = True)
+</pre></div>
+</div>
+<p>The 2+1d Convolution is used to build the R(2+1)D network.</p>
+<dl class="py method">
+<dt id="pytorchvideo.layers.convolutions.Conv2plus1d.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span></em>, <em class="sig-param"><span class="n">conv_t</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">norm</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">activation</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">conv_xy</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">conv_xy_first</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pytorchvideo/layers/convolutions.html#Conv2plus1d.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytorchvideo.layers.convolutions.Conv2plus1d.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>conv_t</strong> (<em>torch.nn.modules</em>) – temporal convolution module.</p></li>
+<li><p><strong>norm</strong> (<em>torch.nn.modules</em>) – normalization module.</p></li>
+<li><p><strong>activation</strong> (<em>torch.nn.modules</em>) – activation module.</p></li>
+<li><p><strong>conv_xy</strong> (<em>torch.nn.modules</em>) – spatial convolution module.</p></li>
+<li><p><strong>conv_xy_first</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) – If True, spatial convolution comes before temporal conv</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.6/library/constants.html#None" title="(in Python v3.6)">None</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-pytorchvideo.layers.fusion">
+<span id="pytorchvideo-layers-fusion"></span><h1>pytorchvideo.layers.fusion<a class="headerlink" href="#module-pytorchvideo.layers.fusion" title="Permalink to this headline">¶</a></h1>
+<dl class="py function">
+<dt id="pytorchvideo.layers.fusion.make_fusion_layer">
+<code class="sig-prename descclassname">pytorchvideo.layers.fusion.</code><code class="sig-name descname">make_fusion_layer</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">method</span></em>, <em class="sig-param"><span class="n">feature_dims</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pytorchvideo/layers/fusion.html#make_fusion_layer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytorchvideo.layers.fusion.make_fusion_layer" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>method</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – the fusion method to be constructed. Options:
+- ‘concat’
+- ‘temporal_concat’
+- ‘max’
+- ‘sum’
+- ‘prod’</p></li>
+<li><p><strong>feature_dims</strong> (<em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a><em>]</em>) – the first argument of all fusion layers. It holds a list
+of required feature_dims for each tensor input (where the tensor inputs are of
+shape (batch_size, seq_len, feature_dim)). The list order must corresponds to
+the tensor order passed to forward(…).</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt id="pytorchvideo.layers.fusion.ConcatFusion">
+<em class="property">class </em><code class="sig-prename descclassname">pytorchvideo.layers.fusion.</code><code class="sig-name descname">ConcatFusion</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">feature_dims</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pytorchvideo/layers/fusion.html#ConcatFusion"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytorchvideo.layers.fusion.ConcatFusion" title="Permalink to this definition">¶</a></dt>
+<dd><p>Concatenates all inputs by their last dimension. The resulting tensor last dim will be
+the sum of the last dimension of all input tensors.</p>
+<dl class="py method">
+<dt id="pytorchvideo.layers.fusion.ConcatFusion.output_dim">
+<em class="property">property </em><code class="sig-name descname">output_dim</code><a class="headerlink" href="#pytorchvideo.layers.fusion.ConcatFusion.output_dim" title="Permalink to this definition">¶</a></dt>
+<dd><p>Last dimension size of forward(..) tensor output.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pytorchvideo.layers.fusion.ConcatFusion.forward">
+<code class="sig-name descname">forward</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">input_list</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pytorchvideo/layers/fusion.html#ConcatFusion.forward"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytorchvideo.layers.fusion.ConcatFusion.forward" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>input_list</strong> (<em>List</em><em>[</em><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (1.9.0a0+git12d5971 ))"><em>torch.Tensor</em></a><em>]</em>) – a list of tensors of shape
+(batch_size, seq_len, feature_dim).</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>Tensor of shape (batch_size, seq_len, sum(feature_dims)) where sum(feature_dims)</dt><dd><p>is the sum of all input feature_dims.</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (1.9.0a0+git12d5971 ))">torch.Tensor</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="pytorchvideo.layers.fusion.TemporalConcatFusion">
+<em class="property">class </em><code class="sig-prename descclassname">pytorchvideo.layers.fusion.</code><code class="sig-name descname">TemporalConcatFusion</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">feature_dims</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pytorchvideo/layers/fusion.html#TemporalConcatFusion"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytorchvideo.layers.fusion.TemporalConcatFusion" title="Permalink to this definition">¶</a></dt>
+<dd><p>Concatenates all inputs by their temporal dimension which is assumed to be dim=1.</p>
+<dl class="py method">
+<dt id="pytorchvideo.layers.fusion.TemporalConcatFusion.output_dim">
+<em class="property">property </em><code class="sig-name descname">output_dim</code><a class="headerlink" href="#pytorchvideo.layers.fusion.TemporalConcatFusion.output_dim" title="Permalink to this definition">¶</a></dt>
+<dd><p>Last dimension size of forward(..) tensor output.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pytorchvideo.layers.fusion.TemporalConcatFusion.forward">
+<code class="sig-name descname">forward</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">input_list</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pytorchvideo/layers/fusion.html#TemporalConcatFusion.forward"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytorchvideo.layers.fusion.TemporalConcatFusion.forward" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>input_list</strong> (<em>List</em><em>[</em><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (1.9.0a0+git12d5971 ))"><em>torch.Tensor</em></a><em>]</em>) – a list of tensors of shape
+(batch_size, seq_len, feature_dim)</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>Tensor of shape (batch_size, sum(seq_len), feature_dim) where sum(seq_len) is</dt><dd><p>the sum of all input tensors.</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (1.9.0a0+git12d5971 ))">torch.Tensor</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="pytorchvideo.layers.fusion.ReduceFusion">
+<em class="property">class </em><code class="sig-prename descclassname">pytorchvideo.layers.fusion.</code><code class="sig-name descname">ReduceFusion</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">feature_dims</span></em>, <em class="sig-param"><span class="n">reduce_fn</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pytorchvideo/layers/fusion.html#ReduceFusion"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytorchvideo.layers.fusion.ReduceFusion" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generic fusion method which takes a callable which takes the list of input tensors
+and expects a single tensor to be used. This class can be used to implement fusion
+methods like “sum”, “max” and “prod”.</p>
+<dl class="py method">
+<dt id="pytorchvideo.layers.fusion.ReduceFusion.output_dim">
+<em class="property">property </em><code class="sig-name descname">output_dim</code><a class="headerlink" href="#pytorchvideo.layers.fusion.ReduceFusion.output_dim" title="Permalink to this definition">¶</a></dt>
+<dd><p>Last dimension size of forward(..) tensor output.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pytorchvideo.layers.fusion.ReduceFusion.forward">
+<code class="sig-name descname">forward</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">input_list</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pytorchvideo/layers/fusion.html#ReduceFusion.forward"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytorchvideo.layers.fusion.ReduceFusion.forward" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>input_list</strong> (<em>List</em><em>[</em><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (1.9.0a0+git12d5971 ))"><em>torch.Tensor</em></a><em>]</em>) – a list of tensors of shape
+(batch_size, seq_len, feature_dim).</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Tensor of shape (batch_size, seq_len, feature_dim).</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (1.9.0a0+git12d5971 ))">torch.Tensor</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-pytorchvideo.layers.mlp">
+<span id="pytorchvideo-layers-mlp"></span><h1>pytorchvideo.layers.mlp<a class="headerlink" href="#module-pytorchvideo.layers.mlp" title="Permalink to this headline">¶</a></h1>
+<dl class="py function">
+<dt id="pytorchvideo.layers.mlp.make_multilayer_perceptron">
+<code class="sig-prename descclassname">pytorchvideo.layers.mlp.</code><code class="sig-name descname">make_multilayer_perceptron</code><span class="sig-paren">(</span><em class="sig-param">fully_connected_dims</em>, <em class="sig-param">norm=None</em>, <em class="sig-param">mid_activation=&lt;class 'torch.nn.modules.activation.ReLU'&gt;</em>, <em class="sig-param">final_activation=&lt;class 'torch.nn.modules.activation.ReLU'&gt;</em>, <em class="sig-param">dropout_rate=0.0</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pytorchvideo/layers/mlp.html#make_multilayer_perceptron"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytorchvideo.layers.mlp.make_multilayer_perceptron" title="Permalink to this definition">¶</a></dt>
+<dd><p>Factory function for Multi-Layer Perceptron. These are constructed as repeated
+blocks of the following format where each fc represents the blocks output/input dimension.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>       Linear (in=fc[i-1], out=fc[i])
+                     ↓
+           Normalization (norm)
+                     ↓
+         Activation (mid_activation)
+                     ↓
+      After the repeated Perceptron blocks,
+a final dropout and activation layer is applied:
+                     ↓
+         Dropout (p=dropout_rate)
+                     ↓
+         Activation (final_activation)
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>fully_connected_dims</strong> (<em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a><em>]</em>) – </p></li>
+<li><p><strong>norm</strong> (<em>Optional</em><em>[</em><em>Callable</em><em>]</em>) – </p></li>
+<li><p><strong>mid_activation</strong> (<em>Callable</em>) – </p></li>
+<li><p><strong>final_activation</strong> (<em>Optional</em><em>[</em><em>Callable</em><em>]</em>) – </p></li>
+<li><p><strong>dropout_rate</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#float" title="(in Python v3.6)"><em>float</em></a>) – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>Tuple[torch.nn.modules.module.Module, <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)">int</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="module-pytorchvideo.layers.nonlocal_net">
+<span id="pytorchvideo-layers-nonlocal-net"></span><h1>pytorchvideo.layers.nonlocal_net<a class="headerlink" href="#module-pytorchvideo.layers.nonlocal_net" title="Permalink to this headline">¶</a></h1>
+<dl class="py class">
+<dt id="pytorchvideo.layers.nonlocal_net.NonLocal">
+<em class="property">class </em><code class="sig-prename descclassname">pytorchvideo.layers.nonlocal_net.</code><code class="sig-name descname">NonLocal</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span></em>, <em class="sig-param"><span class="n">conv_theta</span></em>, <em class="sig-param"><span class="n">conv_phi</span></em>, <em class="sig-param"><span class="n">conv_g</span></em>, <em class="sig-param"><span class="n">conv_out</span></em>, <em class="sig-param"><span class="n">pool</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">norm</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">instantiation</span><span class="o">=</span><span class="default_value">'dot_product'</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pytorchvideo/layers/nonlocal_net.html#NonLocal"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytorchvideo.layers.nonlocal_net.NonLocal" title="Permalink to this definition">¶</a></dt>
+<dd><p>Builds Non-local Neural Networks as a generic family of building
+blocks for capturing long-range dependencies. Non-local Network
+computes the response at a position as a weighted sum of the
+features at all positions. This building block can be plugged into
+many computer vision architectures.
+More details in the paper:
+Wang, Xiaolong, Ross Girshick, Abhinav Gupta, and Kaiming He.
+“Non-local neural networks.”
+In Proceedings of the IEEE conference on CVPR, 2018.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="pytorchvideo.layers.nonlocal_net.create_nonlocal">
+<code class="sig-prename descclassname">pytorchvideo.layers.nonlocal_net.</code><code class="sig-name descname">create_nonlocal</code><span class="sig-paren">(</span><em class="sig-param">*</em>, <em class="sig-param">dim_in</em>, <em class="sig-param">dim_inner</em>, <em class="sig-param">pool_size=(1</em>, <em class="sig-param">1</em>, <em class="sig-param">1)</em>, <em class="sig-param">instantiation='softmax'</em>, <em class="sig-param">norm=&lt;class 'torch.nn.modules.batchnorm.BatchNorm3d'&gt;</em>, <em class="sig-param">norm_eps=1e-05</em>, <em class="sig-param">norm_momentum=0.1</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pytorchvideo/layers/nonlocal_net.html#create_nonlocal"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytorchvideo.layers.nonlocal_net.create_nonlocal" title="Permalink to this definition">¶</a></dt>
+<dd><p>Builds Non-local Neural Networks as a generic family of building
+blocks for capturing long-range dependencies. Non-local Network
+computes the response at a position as a weighted sum of the
+features at all positions. This building block can be plugged into
+many computer vision architectures.
+More details in the paper: <a class="reference external" href="https://arxiv.org/pdf/1711.07971">https://arxiv.org/pdf/1711.07971</a>
+:param dim_in: number of dimension for the input.
+:type dim_in: int
+:param dim_inner: number of dimension inside of the Non-local block.
+:type dim_inner: int
+:param pool_size: the kernel size of spatial temporal pooling,</p>
+<blockquote>
+<div><p>temporal pool kernel size, spatial pool kernel size, spatial pool kernel
+size in order. By default pool_size is None, then there would be no pooling
+used.</p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>instantiation</strong> (<em>string</em>) – supports two different instantiation method:
+“dot_product”: normalizing correlation matrix with L2.
+“softmax”: normalizing correlation matrix with Softmax.</p></li>
+<li><p><strong>norm</strong> (<em>nn.Module</em>) – nn.Module for the normalization layer. The default is
+nn.BatchNorm3d.</p></li>
+<li><p><strong>norm_eps</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#float" title="(in Python v3.6)"><em>float</em></a>) – normalization epsilon.</p></li>
+<li><p><strong>norm_momentum</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#float" title="(in Python v3.6)"><em>float</em></a>) – normalization momentum.</p></li>
+<li><p><strong>dim_in</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – </p></li>
+<li><p><strong>dim_inner</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – </p></li>
+<li><p><strong>pool_size</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#tuple" title="(in Python v3.6)"><em>tuple</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a><em>]</em>) – </p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="pytorchvideo-layers-positional-encoding">
+<h1>pytorchvideo.layers.positional_encoding<a class="headerlink" href="#pytorchvideo-layers-positional-encoding" title="Permalink to this headline">¶</a></h1>
+<span class="target" id="module-pytorchvideo.layers.positional_encoding"></span><dl class="py class">
+<dt id="pytorchvideo.layers.positional_encoding.PositionalEncoding">
+<em class="property">class </em><code class="sig-prename descclassname">pytorchvideo.layers.positional_encoding.</code><code class="sig-name descname">PositionalEncoding</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">embed_dim</span></em>, <em class="sig-param"><span class="n">seq_len</span><span class="o">=</span><span class="default_value">1024</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pytorchvideo/layers/positional_encoding.html#PositionalEncoding"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytorchvideo.layers.positional_encoding.PositionalEncoding" title="Permalink to this definition">¶</a></dt>
+<dd><p>Applies a positional encoding to a tensor with shape (batch_size x seq_len x embed_dim).</p>
+<dl>
+<dt>The positional encoding is computed as follows:</dt><dd><p>PE(pos,2i) = sin(pos/10000^(2i/dmodel))
+PE(pos,2i+1) = cos(pos/10000^(2i/dmodel))</p>
+<p>where pos = position, pos in [0, seq_len)
+dmodel = data embedding dimension = embed_dim
+i = dimension index, i in [0, embed_dim)</p>
+</dd>
+</dl>
+<p>Reference: “Attention Is All You Need” <a class="reference external" href="https://arxiv.org/abs/1706.03762">https://arxiv.org/abs/1706.03762</a>
+Implementation Reference: <a class="reference external" href="https://pytorch.org/tutorials/beginner/transformer_tutorial.html">https://pytorch.org/tutorials/beginner/transformer_tutorial.html</a></p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-pytorchvideo.layers.swish">
+<span id="pytorchvideo-layers-swish"></span><h1>pytorchvideo.layers.swish<a class="headerlink" href="#module-pytorchvideo.layers.swish" title="Permalink to this headline">¶</a></h1>
+<dl class="py class">
+<dt id="pytorchvideo.layers.swish.Swish">
+<em class="property">class </em><code class="sig-prename descclassname">pytorchvideo.layers.swish.</code><code class="sig-name descname">Swish</code><a class="reference internal" href="../../_modules/pytorchvideo/layers/swish.html#Swish"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytorchvideo.layers.swish.Swish" title="Permalink to this definition">¶</a></dt>
+<dd><p>Wrapper for the Swish activation function.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt id="pytorchvideo.layers.swish.SwishFunction">
+<em class="property">class </em><code class="sig-prename descclassname">pytorchvideo.layers.swish.</code><code class="sig-name descname">SwishFunction</code><a class="reference internal" href="../../_modules/pytorchvideo/layers/swish.html#SwishFunction"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytorchvideo.layers.swish.SwishFunction" title="Permalink to this definition">¶</a></dt>
+<dd><p>Implementation of the Swish activation function: x * sigmoid(x).</p>
+<p>Searching for activation functions. Ramachandran, Prajit and Zoph, Barret
+and Le, Quoc V. 2017</p>
+</dd></dl>
+
+</div>
+<div class="section" id="pytorchvideo-layers-squeeze-excitation">
+<h1>pytorchvideo.layers.squeeze_excitation<a class="headerlink" href="#pytorchvideo-layers-squeeze-excitation" title="Permalink to this headline">¶</a></h1>
+<span class="target" id="module-pytorchvideo.layers.squeeze_excitation"></span><dl class="py class">
+<dt id="pytorchvideo.layers.squeeze_excitation.SqueezeAndExcitationLayer2D">
+<em class="property">class </em><code class="sig-prename descclassname">pytorchvideo.layers.squeeze_excitation.</code><code class="sig-name descname">SqueezeAndExcitationLayer2D</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">in_planes</span></em>, <em class="sig-param"><span class="n">reduction_ratio</span><span class="o">=</span><span class="default_value">16</span></em>, <em class="sig-param"><span class="n">reduced_planes</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pytorchvideo/layers/squeeze_excitation.html#SqueezeAndExcitationLayer2D"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytorchvideo.layers.squeeze_excitation.SqueezeAndExcitationLayer2D" title="Permalink to this definition">¶</a></dt>
+<dd><p>2D Squeeze and excitation layer, as per <a class="reference external" href="https://arxiv.org/pdf/1709.01507.pdf">https://arxiv.org/pdf/1709.01507.pdf</a></p>
+<dl class="py method">
+<dt id="pytorchvideo.layers.squeeze_excitation.SqueezeAndExcitationLayer2D.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">in_planes</span></em>, <em class="sig-param"><span class="n">reduction_ratio</span><span class="o">=</span><span class="default_value">16</span></em>, <em class="sig-param"><span class="n">reduced_planes</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pytorchvideo/layers/squeeze_excitation.html#SqueezeAndExcitationLayer2D.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytorchvideo.layers.squeeze_excitation.SqueezeAndExcitationLayer2D.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>in_planes</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – input channel dimension.</p></li>
+<li><p><strong>reduction_ratio</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – factor by which in_planes should be reduced to
+get the output channel dimension.</p></li>
+<li><p><strong>reduced_planes</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – Output channel dimension. Only one of reduction_ratio
+or reduced_planes should be defined.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pytorchvideo.layers.squeeze_excitation.SqueezeAndExcitationLayer2D.forward">
+<code class="sig-name descname">forward</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pytorchvideo/layers/squeeze_excitation.html#SqueezeAndExcitationLayer2D.forward"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytorchvideo.layers.squeeze_excitation.SqueezeAndExcitationLayer2D.forward" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>x</strong> (<em>tensor</em>) – 2D image of format C * H * W</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (1.9.0a0+git12d5971 ))">torch.Tensor</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt id="pytorchvideo.layers.squeeze_excitation.create_audio_2d_squeeze_excitation_block">
+<code class="sig-prename descclassname">pytorchvideo.layers.squeeze_excitation.</code><code class="sig-name descname">create_audio_2d_squeeze_excitation_block</code><span class="sig-paren">(</span><em class="sig-param">dim_in</em>, <em class="sig-param">dim_out</em>, <em class="sig-param">use_se=False</em>, <em class="sig-param">se_reduction_ratio=16</em>, <em class="sig-param">branch_fusion=&lt;function &lt;lambda&gt;&gt;</em>, <em class="sig-param">conv_a_kernel_size=3</em>, <em class="sig-param">conv_a_stride=1</em>, <em class="sig-param">conv_a_padding=1</em>, <em class="sig-param">conv_b_kernel_size=3</em>, <em class="sig-param">conv_b_stride=1</em>, <em class="sig-param">conv_b_padding=1</em>, <em class="sig-param">norm=&lt;class 'torch.nn.modules.batchnorm.BatchNorm2d'&gt;</em>, <em class="sig-param">norm_eps=1e-05</em>, <em class="sig-param">norm_momentum=0.1</em>, <em class="sig-param">activation=&lt;class 'torch.nn.modules.activation.ReLU'&gt;</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pytorchvideo/layers/squeeze_excitation.html#create_audio_2d_squeeze_excitation_block"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytorchvideo.layers.squeeze_excitation.create_audio_2d_squeeze_excitation_block" title="Permalink to this definition">¶</a></dt>
+<dd><p>2-D Residual block with squeeze excitation (SE2D) for 2d. Performs a summation between an
+identity shortcut in branch1 and a main block in branch2. When the input and
+output dimensions are different, a convolution followed by a normalization
+will be performed.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>  Input
+    |-------+
+    ↓       |
+  conv2d    |
+    ↓       |
+   Norm     |
+    ↓       |
+activation  |
+    ↓       |
+  conv2d    |
+    ↓       |
+   Norm     |
+    ↓       |
+   SE2D     |
+    ↓       }
+Summation ←-+
+    ↓
+Activation
+</pre></div>
+</div>
+<p>Normalization examples include: BatchNorm3d and None (no normalization).
+Activation examples include: ReLU, Softmax, Sigmoid, and None (no activation).
+Transform examples include: BottleneckBlock.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dim_in</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – input channel size to the bottleneck block.</p></li>
+<li><p><strong>dim_out</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – output channel size of the bottleneck.</p></li>
+<li><p><strong>use_se</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) – if true, use squeeze excitation layer in the bottleneck.</p></li>
+<li><p><strong>se_reduction_ratio</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – factor by which input channels should be reduced to
+get the output channel dimension in SE layer.</p></li>
+<li><p><strong>branch_fusion</strong> (<em>callable</em>) – a callable that constructs summation layer.
+Examples include: lambda x, y: x + y, OctaveSum.</p></li>
+<li><p><strong>conv_a_kernel_size</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#tuple" title="(in Python v3.6)"><em>tuple</em></a>) – convolutional kernel size(s) for conv_a.</p></li>
+<li><p><strong>conv_a_stride</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#tuple" title="(in Python v3.6)"><em>tuple</em></a>) – convolutional stride size(s) for conv_a.</p></li>
+<li><p><strong>conv_a_padding</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#tuple" title="(in Python v3.6)"><em>tuple</em></a>) – convolutional padding(s) for conv_a.</p></li>
+<li><p><strong>conv_b_kernel_size</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#tuple" title="(in Python v3.6)"><em>tuple</em></a>) – convolutional kernel size(s) for conv_b.</p></li>
+<li><p><strong>conv_b_stride</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#tuple" title="(in Python v3.6)"><em>tuple</em></a>) – convolutional stride size(s) for conv_b.</p></li>
+<li><p><strong>conv_b_padding</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#tuple" title="(in Python v3.6)"><em>tuple</em></a>) – convolutional padding(s) for conv_b.</p></li>
+<li><p><strong>norm</strong> (<em>callable</em>) – a callable that constructs normalization layer. Examples
+include nn.BatchNorm3d, None (not performing normalization).</p></li>
+<li><p><strong>norm_eps</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#float" title="(in Python v3.6)"><em>float</em></a>) – normalization epsilon.</p></li>
+<li><p><strong>norm_momentum</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#float" title="(in Python v3.6)"><em>float</em></a>) – normalization momentum.</p></li>
+<li><p><strong>activation</strong> (<em>callable</em>) – a callable that constructs activation layer in
+bottleneck and block. Examples include: nn.ReLU, nn.Softmax, nn.Sigmoid,
+and None (not performing activation).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><em>(nn.Module)</em> – resnet basic block layer.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>torch.nn.modules.module.Module</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+
+
+             </article>
+             
+            </div>
+            <!-- <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="../../docs/accelerator.html" class="btn btn-neutral float-right" title="Overview" accesskey="n" rel="next">Next <img src="../../_static/images/chevron-right-orange.svg" class="next-page"></a>
+      
+      
+        <a href="index.html" class="btn btn-neutral" title="Layers API" accesskey="p" rel="prev"><img src="../../_static/images/chevron-right-orange.svg" class="previous-page"> Previous</a>
+      
+    </div>
+  
+
+  
+
+    <hr>
+
+  
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2021, PyTorchVideo contributors.
+
+    </p>
+  </div>
+    
+      <div>
+        Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+      </div>
+     
+
+</footer>
+ -->
+          </div>
+        </div>
+
+        <div class="pytorch-content-right" id="pytorch-content-right">
+          <div class="pytorch-right-menu" id="pytorch-right-menu">
+            <div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
+              <ul>
+<li><a class="reference internal" href="#">pytorchvideo.layers.batch_norm</a></li>
+<li><a class="reference internal" href="#module-pytorchvideo.layers.convolutions">pytorchvideo.layers.convolutions</a></li>
+<li><a class="reference internal" href="#module-pytorchvideo.layers.fusion">pytorchvideo.layers.fusion</a></li>
+<li><a class="reference internal" href="#module-pytorchvideo.layers.mlp">pytorchvideo.layers.mlp</a></li>
+<li><a class="reference internal" href="#module-pytorchvideo.layers.nonlocal_net">pytorchvideo.layers.nonlocal_net</a></li>
+<li><a class="reference internal" href="#pytorchvideo-layers-positional-encoding">pytorchvideo.layers.positional_encoding</a></li>
+<li><a class="reference internal" href="#module-pytorchvideo.layers.swish">pytorchvideo.layers.swish</a></li>
+<li><a class="reference internal" href="#pytorchvideo-layers-squeeze-excitation">pytorchvideo.layers.squeeze_excitation</a></li>
+</ul>
+
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+  
+
+
+  
+
+     
+       <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+         <script src="../../_static/jquery.js"></script>
+         <script src="../../_static/underscore.js"></script>
+         <script src="../../_static/doctools.js"></script>
+         <script src="../../_static/language_data.js"></script>
+     
+
+  
+
+  <script type="text/javascript" src="../../_static/js/vendor/popper.min.js"></script>
+  <script type="text/javascript" src="../../_static/js/vendor/bootstrap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/list.js/1.5.0/list.min.js"></script>
+  <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+  <!-- Begin Footer -->
+
+
+  <div class="cookie-banner-wrapper">
+  <div class="container">
+    <p class="gdpr-notice">To analyze traffic and optimize your experience, we serve cookies on this site. By clicking or navigating, you agree to allow our usage of cookies. As the current maintainers of this site, Facebook’s Cookies Policy applies. Learn more, including about available controls: <a href="https://www.facebook.com/policies/cookies/">Cookies Policy</a>.</p>
+    <img class="close-button" src="../../_static/images/pytorch-x.svg">
+  </div>
+</div>
+
+  <!-- End Footer -->
+
+  <!-- Begin Mobile Menu -->
+
+  <div class="mobile-main-menu">
+    <div class="container-fluid">
+      <div class="container">
+        <div class="mobile-main-menu-header-container">
+          <a class="header-logo" href="https://pytorchvideo.org" aria-label="PyTorch"></a>
+          <a class="main-menu-close-button" href="#" data-behavior="close-mobile-menu"></a>
+        </div>
+      </div>
+    </div>
+
+    <div class="mobile-main-menu-links-container">
+      <div class="main-menu">
+        <ul>
+          <li>
+            <a href="https://pytorchvideo.org">Home</a>
+          </li>
+          <li>
+            <a href="https://pytorchvideo.org/docs/tutorial_overview">Tutorials</a>
+          </li>
+          <li>
+            <a href="https://github.com/facebookresearch/pytorchvideo/">Github</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <!-- End Mobile Menu -->
+
+  <script type="text/javascript" src="../../_static/js/vendor/anchor.min.js"></script>
+
+  <script type="text/javascript">
+    $(document).ready(function() {
+      mobileMenu.bind();
+      mobileTOC.bind();
+      pytorchAnchors.bind();
+      sideMenus.bind();
+      scrollToAnchor.bind();
+      highlightNavigation.bind();
+      mainMenuDropdown.bind();
+      filterTags.bind();
+
+      // Add class to links that have code blocks, since we cannot create links in code blocks
+      $("article.pytorch-article a span.pre").each(function(e) {
+        $(this).closest("a").addClass("has-code");
+      });
+    })
+  </script>
+</body>
+</html>

@@ -1,0 +1,148 @@
+<!DOCTYPE html><html lang="en"><head><meta charSet="utf-8"/><meta http-equiv="X-UA-Compatible" content="IE=edge"/><title>models · PyTorchVideo</title><meta name="viewport" content="width=device-width, initial-scale=1.0"/><meta name="generator" content="Docusaurus"/><meta name="description" content="# Overview"/><meta name="docsearch:language" content="en"/><meta property="og:title" content="models · PyTorchVideo"/><meta property="og:type" content="website"/><meta property="og:url" content="https://pytorchvideo.org/"/><meta property="og:description" content="# Overview"/><meta property="og:image" content="https://pytorchvideo.org/img/logo.svg"/><meta name="twitter:card" content="summary"/><meta name="twitter:image" content="https://pytorchvideo.org/img/logo.svg"/><link rel="shortcut icon" href="/img/favicon.png"/><link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/atom-one-dark.min.css"/><script type="text/javascript" src="https://buttons.github.io/buttons.js"></script><script src="/js/scrollSpy.js"></script><link rel="stylesheet" href="/css/main.css"/><script src="/js/codetabs.js"></script></head><body class="sideNavVisible separateOnPageNav"><div class="fixedHeaderContainer"><div class="headerWrapper wrapper"><header><a href="/"><img class="logo" src="/img/logo.svg" alt="PyTorchVideo"/><h2 class="headerTitleWithLogo">PyTorchVideo</h2></a><div class="navigationWrapper navigationSlider"><nav class="slidingNav"><ul class="nav-site nav-site-internal"><li class=""><a href="/docs/tutorial_overview" target="_self">Tutorials</a></li><li class=""><a href="/docs_redirect" target="_self">Docs</a></li><li class=""><a href="https://github.com/facebookresearch/pytorchvideo/" target="_self">GitHub</a></li></ul></nav></div></header></div></div><div class="navPusher"><div class="docMainWrapper wrapper"><div class="container mainContainer docsContainer"><div class="wrapper"><div class="post"><header class="postHeader"><h1 id="__docusaurus" class="postHeaderTitle">models</h1></header><article><div><span><h1><a class="anchor" aria-hidden="true" id="overview"></a><a href="#overview" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Overview</h1>
+<p>PyTorchVideo is an open source video understanding library that provides up to date builders for state of the art video understanding backbones, layers, heads, and losses addressing different tasks, including acoustic event detection, action recognition (video classification), action detection (video detection), multimodal understanding (acoustic visual classification), self-supervised learning.</p>
+<p>The models subpackage contains definitions for the following model architectures and layers:</p>
+<ul>
+<li>Acoustic Backbone
+<ul>
+<li>Acoustic ResNet</li>
+</ul></li>
+<li>Visual Backbone
+<ul>
+<li><a href="https://arxiv.org/pdf/1705.07750.pdf">I3D</a></li>
+<li><a href="https://arxiv.org/pdf/1711.07971.pdf">C2D</a></li>
+<li><a href="https://arxiv.org/pdf/1709.01507.pdf">Squeeze-and-Excitation Networks</a></li>
+<li><a href="https://arxiv.org/pdf/1711.07971.pdf">Nonlocal Networks</a></li>
+<li><a href="https://openaccess.thecvf.com/content_cvpr_2018/papers/Tran_A_Closer_Look_CVPR_2018_paper.pdf">R2+1D</a></li>
+<li>CSN</li>
+<li><a href="https://arxiv.org/pdf/1812.03982.pdf">SlowFast</a></li>
+<li><a href="https://arxiv.org/pdf/2004.04730.pdf">X3D</a></li>
+</ul></li>
+<li>Self-Supervised Learning
+<ul>
+<li><a href="https://arxiv.org/pdf/2002.05709.pdf">SimCLR</a></li>
+<li><a href="https://arxiv.org/pdf/2006.07733.pdf">Bootstrap Your Own Latent</a></li>
+<li><a href="https://openaccess.thecvf.com/content_cvpr_2018/CameraReady/0801.pdf">Non-Parametric Instance Discrimination</a></li>
+</ul></li>
+</ul>
+<h2><a class="anchor" aria-hidden="true" id="build-standard-models"></a><a href="#build-standard-models" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Build standard models</h2>
+<p>PyTorchVideo provide default builders to construct state-of-the-art video understanding models, layers, heads, and losses.</p>
+<h3><a class="anchor" aria-hidden="true" id="models"></a><a href="#models" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Models</h3>
+<p>You can construct a model with random weights by calling its constructor:</p>
+<pre><code class="hljs">import pytorchvideo.<span class="hljs-keyword">models</span> as <span class="hljs-keyword">models</span>
+
+resnet = <span class="hljs-keyword">models</span>.create_resnet()
+acoustic_resnet = <span class="hljs-keyword">models</span>.create_acoustic_resnet()
+slowfast = <span class="hljs-keyword">models</span>.create_slowfast()
+x3d = <span class="hljs-keyword">models</span>.create_x3d()
+r2plus1d = <span class="hljs-keyword">models</span>.create_r2plus1d()
+csn = <span class="hljs-keyword">models</span>.create_csn()
+</code></pre>
+<p>You can verify whether you have built the model successfully by:</p>
+<pre><code class="hljs"><span class="hljs-keyword">import</span> pytorchvideo.models as models
+
+resnet = models.create_resnet()
+B, C, T, H, W = <span class="hljs-number">2</span>, <span class="hljs-number">3</span>, <span class="hljs-number">8</span>, <span class="hljs-number">224</span>, <span class="hljs-number">224</span>
+input_tensor = torch.zeros(B, C, T, H, W)
+output = resnet(input_tensor)
+</code></pre>
+<h3><a class="anchor" aria-hidden="true" id="layers"></a><a href="#layers" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Layers</h3>
+<p>You can construct a layer with random weights by calling its constructor:</p>
+<pre><code class="hljs"><span class="hljs-keyword">import</span> pytorchvideo.layers <span class="hljs-keyword">as</span> layers
+
+<span class="hljs-keyword">nonlocal</span> = layers.create_nonlocal(dim_in=<span class="hljs-number">256</span>, dim_inner=<span class="hljs-number">128</span>)
+swish = layers.Swish()
+conv_2plus1d = layers.create_conv_2plus1d(in_channels=<span class="hljs-number">256</span>, out_channels=<span class="hljs-number">512</span>)
+</code></pre>
+<p>You can verify whether you have built the model successfully by:</p>
+<pre><code class="hljs"><span class="hljs-keyword">import</span> pytorchvideo.layers <span class="hljs-keyword">as</span> layers
+
+<span class="hljs-keyword">nonlocal</span> = layers.create_nonlocal(dim_in=<span class="hljs-number">256</span>, dim_inner=<span class="hljs-number">128</span>)
+B, C, T, H, W = <span class="hljs-number">2</span>, <span class="hljs-number">256</span>, <span class="hljs-number">4</span>, <span class="hljs-number">14</span>, <span class="hljs-number">14</span>
+input_tensor = torch.zeros(B, C, T, H, W)
+output = <span class="hljs-keyword">nonlocal</span>(input_tensor)
+
+swish = layers.Swish()
+B, C, T, H, W = <span class="hljs-number">2</span>, <span class="hljs-number">256</span>, <span class="hljs-number">4</span>, <span class="hljs-number">14</span>, <span class="hljs-number">14</span>
+input_tensor = torch.zeros(B, C, T, H, W)
+output = swish(input_tensor)
+
+conv_2plus1d = layers.create_conv_2plus1d(in_channels=<span class="hljs-number">256</span>, out_channels=<span class="hljs-number">512</span>)
+B, C, T, H, W = <span class="hljs-number">2</span>, <span class="hljs-number">256</span>, <span class="hljs-number">4</span>, <span class="hljs-number">14</span>, <span class="hljs-number">14</span>
+input_tensor = torch.zeros(B, C, T, H, W)
+output = conv_2plus1d(input_tensor)
+</code></pre>
+<h3><a class="anchor" aria-hidden="true" id="heads"></a><a href="#heads" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Heads</h3>
+<p>You can construct a head with random weights by calling its constructor:</p>
+<pre><code class="hljs">import pytorchvideo.models <span class="hljs-keyword">as</span> models
+
+res_head = models.head.create<span class="hljs-constructor">_res_basic_head(<span class="hljs-params">in_features</span>, <span class="hljs-params">out_features</span>)</span>
+x3d_head = models.x3d.create<span class="hljs-constructor">_x3d_head(<span class="hljs-params">dim_in</span>=1024, <span class="hljs-params">dim_inner</span>=512, <span class="hljs-params">dim_out</span>=2048, <span class="hljs-params">num_classes</span>=400)</span>
+</code></pre>
+<p>You can verify whether you have built the head successfully by:</p>
+<pre><code class="hljs"><span class="hljs-keyword">import</span> pytorchvideo.models as models
+
+res_head = models.head.create_res_basic_head(in_features, out_features)
+B, C, T, H, W = <span class="hljs-number">2</span>, <span class="hljs-number">256</span>, <span class="hljs-number">4</span>, <span class="hljs-number">14</span>, <span class="hljs-number">14</span>
+input_tensor = torch.zeros(B, C, T, H, W)
+output = res_head(input_tensor)
+
+x3d_head = models.x3d.create_x3d_head(dim_in=<span class="hljs-number">1024</span>, dim_inner=<span class="hljs-number">512</span>, dim_out=<span class="hljs-number">2048</span>, num_classes=<span class="hljs-number">400</span>)
+B, C, T, H, W = <span class="hljs-number">2</span>, <span class="hljs-number">256</span>, <span class="hljs-number">4</span>, <span class="hljs-number">14</span>, <span class="hljs-number">14</span>
+input_tensor = torch.zeros(B, C, T, H, W)
+output = x3d_head(input_tensor)
+</code></pre>
+<h3><a class="anchor" aria-hidden="true" id="losses"></a><a href="#losses" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Losses</h3>
+<p>You can construct a loss by calling its constructor:</p>
+<pre><code class="hljs"><span class="hljs-keyword">import</span> pytorchvideo.models <span class="hljs-keyword">as</span> models
+
+<span class="hljs-title">simclr_loss</span> = models.<span class="hljs-type">SimCLR</span>()
+</code></pre>
+<p>You can verify whether you have built the loss successfully by:</p>
+<pre><code class="hljs">import pytorchvideo.models <span class="hljs-keyword">as</span> models
+import pytorchvideo.layers <span class="hljs-keyword">as</span> layers
+
+resnet = models.create<span class="hljs-constructor">_resnet()</span>
+mlp = layers.make<span class="hljs-constructor">_multilayer_perceptron(<span class="hljs-params">fully_connected_dims</span>=(2048, 1024, 2048)</span>)
+simclr_loss = models.<span class="hljs-constructor">SimCLR(<span class="hljs-params">mlp</span>=<span class="hljs-params">mlp</span>, <span class="hljs-params">backbone</span>=<span class="hljs-params">resnet</span>)</span>
+B, C, T, H, W = <span class="hljs-number">2</span>, <span class="hljs-number">256</span>, <span class="hljs-number">4</span>, <span class="hljs-number">14</span>, <span class="hljs-number">14</span>
+view1, view2 = torch.zeros(B, C, T, H, W), torch.zeros(B, C, T, H, W)
+loss = simclr<span class="hljs-constructor">_loss(<span class="hljs-params">view1</span>, <span class="hljs-params">view2</span>)</span>
+</code></pre>
+<h2><a class="anchor" aria-hidden="true" id="build-customized-models"></a><a href="#build-customized-models" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Build customized models</h2>
+<p>PyTorchVideo also supports building models with customized components, which is an important feature for video understanding research. Here we take a standard stem model as an example, show how to build each resnet components (head, backbone, stem) separately, and how to use your customized components to replace standard components.</p>
+<pre><code class="hljs"><span class="hljs-keyword">from</span> pytorchvideo.models.stem import create_res_basic_stem
+
+
+<span class="hljs-comment"># Create standard stem layer.</span>
+stem = create_res_basic_stem(<span class="hljs-attribute">in_channels</span>=3, <span class="hljs-attribute">out_channels</span>=64)
+
+<span class="hljs-comment"># Create customized stem layer with YourFancyNorm</span>
+stem = create_res_basic_stem(
+    <span class="hljs-attribute">in_channels</span>=3, 
+    <span class="hljs-attribute">out_channels</span>=64, 
+    <span class="hljs-attribute">norm</span>=YourFancyNorm,  # GhostNorm <span class="hljs-keyword">for</span> example
+)
+
+<span class="hljs-comment"># Create customized stem layer with YourFancyConv</span>
+stem = create_res_basic_stem(
+    <span class="hljs-attribute">in_channels</span>=3, 
+    <span class="hljs-attribute">out_channels</span>=64, 
+    <span class="hljs-attribute">conv</span>=YourFancyConv,  # OctConv <span class="hljs-keyword">for</span> example
+)
+
+<span class="hljs-comment"># Create customized stem layer with YourFancyAct</span>
+stem = create_res_basic_stem(
+    <span class="hljs-attribute">in_channels</span>=3, 
+    <span class="hljs-attribute">out_channels</span>=64, 
+    <span class="hljs-attribute">activation</span>=YourFancyAct,  # Swish <span class="hljs-keyword">for</span> example
+)
+
+<span class="hljs-comment"># Create customized stem layer with YourFancyPool</span>
+stem = create_res_basic_stem(
+    <span class="hljs-attribute">in_channels</span>=3, 
+    <span class="hljs-attribute">out_channels</span>=64, 
+    <span class="hljs-attribute">pool</span>=YourFancyPool,  # MinPool <span class="hljs-keyword">for</span> example
+)
+
+</code></pre>
+</span></div></article></div><div class="docs-prevnext"></div></div></div><nav class="onPageNav"><ul class="toc-headings"><li><a href="#build-standard-models">Build standard models</a><ul class="toc-headings"><li><a href="#models">Models</a></li><li><a href="#layers">Layers</a></li><li><a href="#heads">Heads</a></li><li><a href="#losses">Losses</a></li></ul></li><li><a href="#build-customized-models">Build customized models</a></li></ul></nav></div><footer class="nav-footer" id="footer"><section class="sitemap"><div class="footerSection"><div class="social"><a class="github-button" href="https://github.com/facebookresearch/pytorchvideo" data-count-href="https://github.com/facebookresearch/pytorchvideo/stargazers" data-show-count="true" data-count-aria-label="# stargazers on GitHub" aria-label="Star PytorchVideo on GitHub">pytorchvideo</a></div></div></section><a href="https://opensource.facebook.com/" target="_blank" rel="noreferrer noopener" class="fbOpenSource"><img src="/img/oss_logo.png" alt="Facebook Open Source" width="170" height="45"/></a><section class="copyright">Copyright © 2021 Facebook, Inc<br/>Legal:<a href="https://opensource.facebook.com/legal/privacy/" target="_blank" rel="noreferrer noopener">Privacy</a><a href="https://opensource.facebook.com/legal/terms/" target="_blank" rel="noreferrer noopener">Terms</a></section></footer></div></body></html>

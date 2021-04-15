@@ -1,0 +1,47 @@
+.. pytorchvideo documentation master file, created by
+   sphinx-quickstart on Tue Feb 23 17:19:36 2021.
+   You can adapt this file completely to your liking, but it should at least
+   contain the root `toctree` directive.
+
+:github_url: https://github.com/facebookresearch/pytorchvideo/
+
+
+PyTorchVideo Documentation
+========================================
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Models
+
+   docs/models
+   docs/model_zoo
+   api/models/index
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Data
+
+   docs/data
+   docs/data_preparation
+   api/data/index
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Transforms
+
+   docs/transforms
+   api/transforms/index
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Layers
+
+   docs/layers
+   api/layers/index
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Accelerator
+
+   docs/accelerator   
+   

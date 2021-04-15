@@ -1,0 +1,1034 @@
+
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>pytorchvideo.data.labeled_video_paths &mdash; PyTorchVideo  documentation</title>
+  
+
+  
+  
+    <link rel="shortcut icon" href="../../_static/favicon.png"/>
+  
+  
+  
+    <link rel="canonical" href="https://pytorchvideo.org/docs/api/data/extra.html"/>
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <!-- <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" /> -->
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Overview" href="../../docs/transforms.html" />
+    <link rel="prev" title="pytorchvideo.data.hmdb51" href="hmdb51.html" /> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+  <!-- Preload the theme fonts -->
+
+<link rel="preload" href="../../_static/fonts/FreightSans/freight-sans-book.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../../_static/fonts/FreightSans/freight-sans-medium.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../../_static/fonts/IBMPlexMono/IBMPlexMono-Medium.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../../_static/fonts/FreightSans/freight-sans-bold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../../_static/fonts/FreightSans/freight-sans-medium-italic.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../../_static/fonts/IBMPlexMono/IBMPlexMono-SemiBold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+
+<!-- Preload the katex fonts -->
+
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Math-Italic.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Main-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Main-Bold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size1-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size4-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size2-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size3-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Caligraphic-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.2/css/all.css" integrity="sha384-vSIIfh2YWi9wW0r9iZe7RJPrKwp6bG+s9QZMoITbCckVJqGCCRhc+ccxNcdpHuYu" crossorigin="anonymous">
+</head>
+
+<div class="container-fluid header-holder tutorials-header" id="header-holder">
+  <div class="container">
+    <div class="header-container">
+      <a class="header-logo" href="https://pytorchvideo.org" aria-label="PyTorch"></a>
+
+      <div class="main-menu">
+        <ul>
+          <li>
+            <a href="https://pytorchvideo.org">Home</a>
+          </li>
+          <li>
+            <a href="https://pytorchvideo.org/docs/tutorial_overview">Tutorials</a>
+          </li>
+          <li>
+            <a href="https://github.com/facebookresearch/pytorchvideo/">Github</a>
+          </li>
+        </ul>
+      </div>
+
+      <a class="main-menu-open-button" href="#" data-behavior="open-mobile-menu"></a>
+    </div>
+  </div>
+</div>
+
+
+<body class="pytorch-body">
+
+   
+
+    
+
+    <div class="table-of-contents-link-wrapper">
+      <span>Table of Contents</span>
+      <a href="#" class="toggle-table-of-contents" data-behavior="toggle-table-of-contents"></a>
+    </div>
+
+    <nav data-toggle="wy-nav-shift" class="pytorch-left-menu" id="pytorch-left-menu">
+      <div class="pytorch-side-scroll">
+        <div class="pytorch-menu pytorch-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          <div class="pytorch-left-menu-search">
+            
+
+            
+              
+              
+            
+
+            
+
+
+  
+
+
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search Docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+            
+          </div>
+
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Models</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../docs/models.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../docs/model_zoo.html">Model Zoo and Benchmarks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../models/index.html">Models API</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Data</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../docs/data.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../docs/data_preparation.html">Data Preparation</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Data API</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Transforms</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../docs/transforms.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../transforms/index.html">Transforms API</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Layers</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../docs/layers.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../layers/index.html">Layers API</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Accelerator</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../docs/accelerator.html">Overview</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <div class="pytorch-container">
+      <div class="pytorch-page-level-bar" id="pytorch-page-level-bar">
+        <div class="pytorch-breadcrumbs-wrapper">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="pytorch-breadcrumbs">
+    
+      <li>
+        <a href="../../index.html">
+          
+            Docs
+          
+        </a> &gt;
+      </li>
+
+        
+          <li><a href="index.html">Data API</a> &gt;</li>
+        
+      <li>pytorchvideo.data.labeled_video_paths</li>
+    
+    
+      <li class="pytorch-breadcrumbs-aside">
+        
+            
+            <a href="../../_sources/api/data/extra.rst.txt" rel="nofollow"><img src="../../_static/images/view-page-source-icon.svg"></a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+</div>
+        </div>
+
+        <div class="pytorch-shortcuts-wrapper" id="pytorch-shortcuts-wrapper">
+          Shortcuts
+        </div>
+      </div>
+
+      <section data-toggle="wy-nav-shift" id="pytorch-content-wrap" class="pytorch-content-wrap">
+        <div class="pytorch-content-left">
+
+        
+          
+          <div class="rst-content">
+          
+            <div role="main" class="main-content" itemscope="itemscope" itemtype="http://schema.org/Article">
+             <article itemprop="articleBody" id="pytorch-article" class="pytorch-article">
+              
+  <div class="section" id="pytorchvideo-data-labeled-video-paths">
+<h1>pytorchvideo.data.labeled_video_paths<a class="headerlink" href="#pytorchvideo-data-labeled-video-paths" title="Permalink to this headline">¶</a></h1>
+<span class="target" id="module-pytorchvideo.data.labeled_video_paths"></span><dl class="py class">
+<dt id="pytorchvideo.data.labeled_video_paths.LabeledVideoPaths">
+<em class="property">class </em><code class="sig-prename descclassname">pytorchvideo.data.labeled_video_paths.</code><code class="sig-name descname">LabeledVideoPaths</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">paths_and_labels</span></em>, <em class="sig-param"><span class="n">path_prefix</span><span class="o">=</span><span class="default_value">''</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pytorchvideo/data/labeled_video_paths.html#LabeledVideoPaths"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytorchvideo.data.labeled_video_paths.LabeledVideoPaths" title="Permalink to this definition">¶</a></dt>
+<dd><p>LabeledVideoPaths contains pairs of video path and integer index label.</p>
+<dl class="py method">
+<dt id="pytorchvideo.data.labeled_video_paths.LabeledVideoPaths.from_path">
+<em class="property">classmethod </em><code class="sig-name descname">from_path</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">data_path</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pytorchvideo/data/labeled_video_paths.html#LabeledVideoPaths.from_path"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytorchvideo.data.labeled_video_paths.LabeledVideoPaths.from_path" title="Permalink to this definition">¶</a></dt>
+<dd><p>Factory function that creates a LabeledVideoPaths object depending on the path
+type.
+- If it is a directory path it uses the LabeledVideoPaths.from_directory function.
+- If it’s a file it uses the LabeledVideoPaths.from_csv file.
+:param file_path: The path to the file to be read.
+:type file_path: str</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>data_path</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – </p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference internal" href="#pytorchvideo.data.labeled_video_paths.LabeledVideoPaths" title="pytorchvideo.data.labeled_video_paths.LabeledVideoPaths">pytorchvideo.data.labeled_video_paths.LabeledVideoPaths</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pytorchvideo.data.labeled_video_paths.LabeledVideoPaths.from_csv">
+<em class="property">classmethod </em><code class="sig-name descname">from_csv</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">file_path</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pytorchvideo/data/labeled_video_paths.html#LabeledVideoPaths.from_csv"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytorchvideo.data.labeled_video_paths.LabeledVideoPaths.from_csv" title="Permalink to this definition">¶</a></dt>
+<dd><p>Factory function that creates a LabeledVideoPaths object by reading a file with the
+following format:</p>
+<blockquote>
+<div><p>&lt;path&gt; &lt;integer_label&gt;
+…
+&lt;path&gt; &lt;integer_label&gt;</p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>file_path</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – The path to the file to be read.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference internal" href="#pytorchvideo.data.labeled_video_paths.LabeledVideoPaths" title="pytorchvideo.data.labeled_video_paths.LabeledVideoPaths">pytorchvideo.data.labeled_video_paths.LabeledVideoPaths</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pytorchvideo.data.labeled_video_paths.LabeledVideoPaths.from_directory">
+<em class="property">classmethod </em><code class="sig-name descname">from_directory</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">dir_path</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pytorchvideo/data/labeled_video_paths.html#LabeledVideoPaths.from_directory"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytorchvideo.data.labeled_video_paths.LabeledVideoPaths.from_directory" title="Permalink to this definition">¶</a></dt>
+<dd><p>Factory function that creates a LabeledVideoPaths object by parsing the structure
+of the given directory’s subdirectories into the classification labels. It
+expects the directory format to be the following:</p>
+<blockquote>
+<div><p>dir_path/&lt;class_name&gt;/&lt;video_name&gt;.mp4</p>
+</div></blockquote>
+<p>Classes are indexed from 0 to the number of classes, alphabetically.</p>
+<dl class="simple">
+<dt>E.g.</dt><dd><p>dir_path/class_x/xxx.ext
+dir_path/class_x/xxy.ext
+dir_path/class_x/xxz.ext
+dir_path/class_y/123.ext
+dir_path/class_y/nsdf3.ext
+dir_path/class_y/<a href="#id1"><span class="problematic" id="id2">asd932_</span></a>.ext</p>
+</dd>
+</dl>
+<p>Would produce two classes labeled 0 and 1 with 3 videos paths associated with each.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>dir_path</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – Root directory to the video class directories .</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference internal" href="#pytorchvideo.data.labeled_video_paths.LabeledVideoPaths" title="pytorchvideo.data.labeled_video_paths.LabeledVideoPaths">pytorchvideo.data.labeled_video_paths.LabeledVideoPaths</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pytorchvideo.data.labeled_video_paths.LabeledVideoPaths.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">paths_and_labels</span></em>, <em class="sig-param"><span class="n">path_prefix</span><span class="o">=</span><span class="default_value">''</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pytorchvideo/data/labeled_video_paths.html#LabeledVideoPaths.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytorchvideo.data.labeled_video_paths.LabeledVideoPaths.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>[</strong> (<em>paths_and_labels</em>) – a list of tuples containing the video
+path and integer label.</p></li>
+<li><p><strong>paths_and_labels</strong> (<em>List</em><em>[</em><em>Tuple</em><em>[</em><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a><em>, </em><em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a><em>]</em><em>]</em><em>]</em>) – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.6/library/constants.html#None" title="(in Python v3.6)">None</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pytorchvideo.data.labeled_video_paths.LabeledVideoPaths.__getitem__">
+<code class="sig-name descname">__getitem__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">index</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pytorchvideo/data/labeled_video_paths.html#LabeledVideoPaths.__getitem__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytorchvideo.data.labeled_video_paths.LabeledVideoPaths.__getitem__" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>index</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – the path and label index.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The path and label tuple for the given index.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>Tuple[<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)">str</a>, <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)">int</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pytorchvideo.data.labeled_video_paths.LabeledVideoPaths.__len__">
+<code class="sig-name descname">__len__</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pytorchvideo/data/labeled_video_paths.html#LabeledVideoPaths.__len__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytorchvideo.data.labeled_video_paths.LabeledVideoPaths.__len__" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>The number of video paths and label pairs.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)">int</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="pytorchvideo-data-frame-video">
+<h1>pytorchvideo.data.frame_video<a class="headerlink" href="#pytorchvideo-data-frame-video" title="Permalink to this headline">¶</a></h1>
+<span class="target" id="module-pytorchvideo.data.frame_video"></span><dl class="py class">
+<dt id="pytorchvideo.data.frame_video.FrameVideo">
+<em class="property">class </em><code class="sig-prename descclassname">pytorchvideo.data.frame_video.</code><code class="sig-name descname">FrameVideo</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">duration</span></em>, <em class="sig-param"><span class="n">fps</span></em>, <em class="sig-param"><span class="n">video_frame_to_path_fn</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">video_frame_paths</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">multithreaded_io</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pytorchvideo/data/frame_video.html#FrameVideo"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytorchvideo.data.frame_video.FrameVideo" title="Permalink to this definition">¶</a></dt>
+<dd><p>FrameVideo is an abstractions for accessing clips based on their start and end
+time for a video where each frame is stored as an image. PathManager is used for
+frame image reading, allowing non-local uri’s to be used.</p>
+<dl class="py method">
+<dt id="pytorchvideo.data.frame_video.FrameVideo.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">duration</span></em>, <em class="sig-param"><span class="n">fps</span></em>, <em class="sig-param"><span class="n">video_frame_to_path_fn</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">video_frame_paths</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">multithreaded_io</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pytorchvideo/data/frame_video.html#FrameVideo.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytorchvideo.data.frame_video.FrameVideo.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>duration</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#float" title="(in Python v3.6)"><em>float</em></a>) – the duration of the video in seconds.</p></li>
+<li><p><strong>fps</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#float" title="(in Python v3.6)"><em>float</em></a>) – the target fps for the video. This is needed to link the frames
+to a second timestamp in the video.</p></li>
+<li><p><strong>video_frame_to_path_fn</strong> (<em>Callable</em><em>[</em><em>[</em><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a><em>]</em><em>, </em><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a><em>]</em>) – a function that maps from a frame
+index integer to the file path where the frame is located.</p></li>
+<li><p><strong>video_frame_paths</strong> (<em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a><em>]</em>) – Dictionary of frame paths for each index of a video.</p></li>
+<li><p><strong>multithreaded_io</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) – controls whether parllelizable io operations are
+performed across multiple threads.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.6/library/constants.html#None" title="(in Python v3.6)">None</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pytorchvideo.data.frame_video.FrameVideo.from_frame_paths">
+<em class="property">classmethod </em><code class="sig-name descname">from_frame_paths</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">video_frame_paths</span></em>, <em class="sig-param"><span class="n">fps</span><span class="o">=</span><span class="default_value">30.0</span></em>, <em class="sig-param"><span class="n">multithreaded_io</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pytorchvideo/data/frame_video.html#FrameVideo.from_frame_paths"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytorchvideo.data.frame_video.FrameVideo.from_frame_paths" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>video_frame_paths</strong> (<em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a><em>]</em>) – a list of paths to each frames in the video.</p></li>
+<li><p><strong>fps</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#float" title="(in Python v3.6)"><em>float</em></a>) – the target fps for the video. This is needed to link the frames
+to a second timestamp in the video.</p></li>
+<li><p><strong>multithreaded_io</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) – controls whether parllelizable io operations are
+performed across multiple threads.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pytorchvideo.data.frame_video.FrameVideo.duration">
+<em class="property">property </em><code class="sig-name descname">duration</code><a class="headerlink" href="#pytorchvideo.data.frame_video.FrameVideo.duration" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns:
+duration: the video’s duration/end-time in seconds.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pytorchvideo.data.frame_video.FrameVideo.get_clip">
+<code class="sig-name descname">get_clip</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">start_sec</span></em>, <em class="sig-param"><span class="n">end_sec</span></em>, <em class="sig-param"><span class="n">frame_filter</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pytorchvideo/data/frame_video.html#FrameVideo.get_clip"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytorchvideo.data.frame_video.FrameVideo.get_clip" title="Permalink to this definition">¶</a></dt>
+<dd><p>Retrieves frames from the stored video at the specified start and end times
+in seconds (the video always starts at 0 seconds). Given that PathManager may
+be fetching the frames from network storage, to handle transient errors, frame
+reading is retried N times.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>start_sec</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#float" title="(in Python v3.6)"><em>float</em></a>) – the clip start time in seconds</p></li>
+<li><p><strong>end_sec</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#float" title="(in Python v3.6)"><em>float</em></a>) – the clip end time in seconds</p></li>
+<li><p><strong>frame_filter</strong> (<em>Optional</em><em>[</em><em>Callable</em><em>[</em><em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a><em>]</em><em>, </em><em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a><em>]</em><em>]</em><em>]</em>) – function to subsample frames in a clip before loading.
+If None, no subsampling is peformed.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><p><em>clip_frames</em> –</p>
+<dl>
+<dt>A tensor of the clip’s RGB frames with shape:</dt><dd><p>(channel, time, height, width). The frames are of type torch.float32 and
+in the range [0 - 255]. Raises an exception if unable to load images.</p>
+</dd>
+<dt>clip_data:</dt><dd><p>”video”: A tensor of the clip’s RGB frames with shape:
+(channel, time, height, width). The frames are of type torch.float32 and
+in the range [0 - 255]. Raises an exception if unable to load images.</p>
+<p>”frame_indices”: A list of indices for each frame relative to all frames in the
+video.</p>
+</dd>
+</dl>
+<p>Returns None if no frames are found.</p>
+</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>Dict[<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)">str</a>, Optional[<a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (1.9.0a0+git12d5971 ))">torch.Tensor</a>]]</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="pytorchvideo-data-clip-sampling">
+<h1>pytorchvideo.data.clip_sampling<a class="headerlink" href="#pytorchvideo-data-clip-sampling" title="Permalink to this headline">¶</a></h1>
+<span class="target" id="module-pytorchvideo.data.clip_sampling"></span><dl class="py class">
+<dt id="pytorchvideo.data.clip_sampling.ClipInfo">
+<em class="property">class </em><code class="sig-prename descclassname">pytorchvideo.data.clip_sampling.</code><code class="sig-name descname">ClipInfo</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">clip_start_sec</span></em>, <em class="sig-param"><span class="n">clip_end_sec</span></em>, <em class="sig-param"><span class="n">clip_index</span></em>, <em class="sig-param"><span class="n">aug_index</span></em>, <em class="sig-param"><span class="n">is_last_clip</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pytorchvideo/data/clip_sampling.html#ClipInfo"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytorchvideo.data.clip_sampling.ClipInfo" title="Permalink to this definition">¶</a></dt>
+<dd><dl>
+<dt>Named-tuple for clip information with:</dt><dd><p>clip_start_sec  (float): clip start time.
+clip_end_sec (float): clip end time.
+clip_index (int): clip index in the video.
+aug_index (int): augmentation index for the clip. Different augmentation methods</p>
+<blockquote>
+<div><p>might generate multiple views for the same clip.</p>
+</div></blockquote>
+<dl class="simple">
+<dt>is_last_clip (bool): a bool specifying whether there are more clips to be</dt><dd><p>sampled from the video.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<dl class="py method">
+<dt id="pytorchvideo.data.clip_sampling.ClipInfo.clip_start_sec">
+<em class="property">property </em><code class="sig-name descname">clip_start_sec</code><a class="headerlink" href="#pytorchvideo.data.clip_sampling.ClipInfo.clip_start_sec" title="Permalink to this definition">¶</a></dt>
+<dd><p>Alias for field number 0</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pytorchvideo.data.clip_sampling.ClipInfo.clip_end_sec">
+<em class="property">property </em><code class="sig-name descname">clip_end_sec</code><a class="headerlink" href="#pytorchvideo.data.clip_sampling.ClipInfo.clip_end_sec" title="Permalink to this definition">¶</a></dt>
+<dd><p>Alias for field number 1</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pytorchvideo.data.clip_sampling.ClipInfo.clip_index">
+<em class="property">property </em><code class="sig-name descname">clip_index</code><a class="headerlink" href="#pytorchvideo.data.clip_sampling.ClipInfo.clip_index" title="Permalink to this definition">¶</a></dt>
+<dd><p>Alias for field number 2</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pytorchvideo.data.clip_sampling.ClipInfo.aug_index">
+<em class="property">property </em><code class="sig-name descname">aug_index</code><a class="headerlink" href="#pytorchvideo.data.clip_sampling.ClipInfo.aug_index" title="Permalink to this definition">¶</a></dt>
+<dd><p>Alias for field number 3</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pytorchvideo.data.clip_sampling.ClipInfo.is_last_clip">
+<em class="property">property </em><code class="sig-name descname">is_last_clip</code><a class="headerlink" href="#pytorchvideo.data.clip_sampling.ClipInfo.is_last_clip" title="Permalink to this definition">¶</a></dt>
+<dd><p>Alias for field number 4</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="pytorchvideo.data.clip_sampling.ClipSampler">
+<em class="property">class </em><code class="sig-prename descclassname">pytorchvideo.data.clip_sampling.</code><code class="sig-name descname">ClipSampler</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">clip_duration</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pytorchvideo/data/clip_sampling.html#ClipSampler"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytorchvideo.data.clip_sampling.ClipSampler" title="Permalink to this definition">¶</a></dt>
+<dd><p>Interface for clip sampler’s which take a video time, previous sampled clip time,
+and returns a named-tuple <cite>ClipInfo</cite>.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="pytorchvideo.data.clip_sampling.make_clip_sampler">
+<code class="sig-prename descclassname">pytorchvideo.data.clip_sampling.</code><code class="sig-name descname">make_clip_sampler</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">sampling_type</span></em>, <em class="sig-param"><span class="o">*</span><span class="n">args</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pytorchvideo/data/clip_sampling.html#make_clip_sampler"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytorchvideo.data.clip_sampling.make_clip_sampler" title="Permalink to this definition">¶</a></dt>
+<dd><p>Constructs the clip samplers found in this module from the given arguments.
+:param sampling_type: choose clip sampler to return. It has two options:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>uniform: constructs and return UniformClipSampler</p></li>
+<li><p>random: construct and return RandomClipSampler</p></li>
+</ul>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>*args</strong> – the args to pass to the chosen clip sampler constructor</p></li>
+<li><p><strong>sampling_type</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference internal" href="#pytorchvideo.data.clip_sampling.ClipSampler" title="pytorchvideo.data.clip_sampling.ClipSampler">pytorchvideo.data.clip_sampling.ClipSampler</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt id="pytorchvideo.data.clip_sampling.UniformClipSampler">
+<em class="property">class </em><code class="sig-prename descclassname">pytorchvideo.data.clip_sampling.</code><code class="sig-name descname">UniformClipSampler</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">clip_duration</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pytorchvideo/data/clip_sampling.html#UniformClipSampler"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytorchvideo.data.clip_sampling.UniformClipSampler" title="Permalink to this definition">¶</a></dt>
+<dd><p>Evenly splits the video into clips of size clip_duration.</p>
+<dl class="py method">
+<dt id="pytorchvideo.data.clip_sampling.UniformClipSampler.__call__">
+<code class="sig-name descname">__call__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">last_clip_time</span></em>, <em class="sig-param"><span class="n">video_duration</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pytorchvideo/data/clip_sampling.html#UniformClipSampler.__call__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytorchvideo.data.clip_sampling.UniformClipSampler.__call__" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>last_clip_time</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#float" title="(in Python v3.6)"><em>float</em></a>) – the last clip end time sampled from this video. This
+should be 0.0 if the video hasn’t had clips sampled yet.
+segments, clip_index is the segment index to sample.</p></li>
+<li><p><strong>video_duration</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#float" title="(in Python v3.6)"><em>float</em></a>) – (float): the duration of the video that’s being sampled in seconds</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><p>a named-tuple <cite>ClipInfo</cite> –</p>
+<dl class="simple">
+<dt>includes the clip information of (clip_start_time,</dt><dd><p>clip_end_time, clip_index, aug_index, is_last_clip), where the times are in
+seconds and is_last_clip is False when there is still more of time in the video
+to be sampled.</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="#pytorchvideo.data.clip_sampling.ClipInfo" title="pytorchvideo.data.clip_sampling.ClipInfo">pytorchvideo.data.clip_sampling.ClipInfo</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="pytorchvideo.data.clip_sampling.RandomClipSampler">
+<em class="property">class </em><code class="sig-prename descclassname">pytorchvideo.data.clip_sampling.</code><code class="sig-name descname">RandomClipSampler</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">clip_duration</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pytorchvideo/data/clip_sampling.html#RandomClipSampler"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytorchvideo.data.clip_sampling.RandomClipSampler" title="Permalink to this definition">¶</a></dt>
+<dd><p>Randomly samples clip of size clip_duration from the videos.</p>
+<dl class="py method">
+<dt id="pytorchvideo.data.clip_sampling.RandomClipSampler.__call__">
+<code class="sig-name descname">__call__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">last_clip_time</span></em>, <em class="sig-param"><span class="n">video_duration</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pytorchvideo/data/clip_sampling.html#RandomClipSampler.__call__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytorchvideo.data.clip_sampling.RandomClipSampler.__call__" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>last_clip_time</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#float" title="(in Python v3.6)"><em>float</em></a>) – Not used for RandomClipSampler.</p></li>
+<li><p><strong>video_duration</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#float" title="(in Python v3.6)"><em>float</em></a>) – (float): the duration (in seconds) for the video that’s
+being sampled</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><p>a named-tuple <cite>ClipInfo</cite> –</p>
+<dl class="simple">
+<dt>includes the clip information of (clip_start_time,</dt><dd><p>clip_end_time, clip_index, aug_index, is_last_clip). The times are in seconds.
+clip_index, aux_index and is_last_clip are always 0, 0 and True, respectively.</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="#pytorchvideo.data.clip_sampling.ClipInfo" title="pytorchvideo.data.clip_sampling.ClipInfo">pytorchvideo.data.clip_sampling.ClipInfo</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="pytorchvideo.data.clip_sampling.ConstantClipsPerVideoSampler">
+<em class="property">class </em><code class="sig-prename descclassname">pytorchvideo.data.clip_sampling.</code><code class="sig-name descname">ConstantClipsPerVideoSampler</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">clip_duration</span></em>, <em class="sig-param"><span class="n">clips_per_video</span></em>, <em class="sig-param"><span class="n">augs_per_clip</span><span class="o">=</span><span class="default_value">1</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pytorchvideo/data/clip_sampling.html#ConstantClipsPerVideoSampler"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytorchvideo.data.clip_sampling.ConstantClipsPerVideoSampler" title="Permalink to this definition">¶</a></dt>
+<dd><p>Evenly splits the video into clips_per_video increments and samples clips of size
+clip_duration at these increments.</p>
+<dl class="py method">
+<dt id="pytorchvideo.data.clip_sampling.ConstantClipsPerVideoSampler.__call__">
+<code class="sig-name descname">__call__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">last_clip_time</span></em>, <em class="sig-param"><span class="n">video_duration</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pytorchvideo/data/clip_sampling.html#ConstantClipsPerVideoSampler.__call__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytorchvideo.data.clip_sampling.ConstantClipsPerVideoSampler.__call__" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>last_clip_time</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#float" title="(in Python v3.6)"><em>float</em></a>) – Not used for ConstantClipsPerVideoSampler.</p></li>
+<li><p><strong>video_duration</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#float" title="(in Python v3.6)"><em>float</em></a>) – (float): the duration (in seconds) for the video that’s
+being sampled.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><p>a named-tuple <cite>ClipInfo</cite> –</p>
+<dl class="simple">
+<dt>includes the clip information of (clip_start_time,</dt><dd><p>clip_end_time, clip_index, aug_index, is_last_clip). The times are in seconds.
+is_last_clip is True after clips_per_video clips have been sampled or the end
+of the video is reached.</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="#pytorchvideo.data.clip_sampling.ClipInfo" title="pytorchvideo.data.clip_sampling.ClipInfo">pytorchvideo.data.clip_sampling.ClipInfo</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-pytorchvideo.data.video">
+<span id="pytorchvideo-data-video"></span><h1>pytorchvideo.data.video<a class="headerlink" href="#module-pytorchvideo.data.video" title="Permalink to this headline">¶</a></h1>
+<dl class="py class">
+<dt id="pytorchvideo.data.video.Video">
+<em class="property">class </em><code class="sig-prename descclassname">pytorchvideo.data.video.</code><code class="sig-name descname">Video</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">file</span></em>, <em class="sig-param"><span class="n">video_name</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">decode_audio</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pytorchvideo/data/video.html#Video"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytorchvideo.data.video.Video" title="Permalink to this definition">¶</a></dt>
+<dd><p>Video provides an interface to access clips from a video container.</p>
+<dl class="py method">
+<dt id="pytorchvideo.data.video.Video.from_path">
+<em class="property">classmethod </em><code class="sig-name descname">from_path</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">file_path</span></em>, <em class="sig-param"><span class="n">decode_audio</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pytorchvideo/data/video.html#Video.from_path"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytorchvideo.data.video.Video.from_path" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fetches the given video path using PathManager (allowing remote uris to be
+fetched) and constructs the EncodedVideo object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>file_path</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – a PathManager file-path.</p></li>
+<li><p><strong>decode_audio</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) – </p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pytorchvideo.data.video.Video.duration">
+<em class="property">abstract property </em><code class="sig-name descname">duration</code><a class="headerlink" href="#pytorchvideo.data.video.Video.duration" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns:
+duration of the video in seconds</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pytorchvideo.data.video.Video.get_clip">
+<em class="property">abstract </em><code class="sig-name descname">get_clip</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">start_sec</span></em>, <em class="sig-param"><span class="n">end_sec</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pytorchvideo/data/video.html#Video.get_clip"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytorchvideo.data.video.Video.get_clip" title="Permalink to this definition">¶</a></dt>
+<dd><p>Retrieves frames from the internal video at the specified start and end times
+in seconds (the video always starts at 0 seconds).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>start_sec</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#float" title="(in Python v3.6)"><em>float</em></a>) – the clip start time in seconds</p></li>
+<li><p><strong>end_sec</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#float" title="(in Python v3.6)"><em>float</em></a>) – the clip end time in seconds</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><p><em>video_data_dictonary</em> –</p>
+<dl class="simple">
+<dt>A dictionary mapping strings to tensor of the clip’s</dt><dd><p>underlying data.</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>Dict[<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)">str</a>, Optional[<a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (1.9.0a0+git12d5971 ))">torch.Tensor</a>]]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pytorchvideo.data.video.Video.__init__">
+<em class="property">abstract </em><code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">file</span></em>, <em class="sig-param"><span class="n">video_name</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">decode_audio</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pytorchvideo/data/video.html#Video.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytorchvideo.data.video.Video.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>file</strong> (<em>BinaryIO</em>) – a file-like object (e.g. io.BytesIO or io.StringIO) that
+contains the encoded video.</p></li>
+<li><p><strong>video_name</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a><em>]</em>) – </p></li>
+<li><p><strong>decode_audio</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.6/library/constants.html#None" title="(in Python v3.6)">None</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-pytorchvideo.data.utils">
+<span id="pytorchvideo-data-utils"></span><h1>pytorchvideo.data.utils<a class="headerlink" href="#module-pytorchvideo.data.utils" title="Permalink to this headline">¶</a></h1>
+<dl class="py function">
+<dt id="pytorchvideo.data.utils.thwc_to_cthw">
+<code class="sig-prename descclassname">pytorchvideo.data.utils.</code><code class="sig-name descname">thwc_to_cthw</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">data</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pytorchvideo/data/utils.html#thwc_to_cthw"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytorchvideo.data.utils.thwc_to_cthw" title="Permalink to this definition">¶</a></dt>
+<dd><p>Permute tensor from (time, height, weight, channel) to
+(channel, height, width, time).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>data</strong> (<a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (1.9.0a0+git12d5971 ))"><em>torch.Tensor</em></a>) – </p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://pytorch.org/docs/master/tensors.html#torch.Tensor" title="(in PyTorch vmaster (1.9.0a0+git12d5971 ))">torch.Tensor</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="pytorchvideo.data.utils.secs_to_pts">
+<code class="sig-prename descclassname">pytorchvideo.data.utils.</code><code class="sig-name descname">secs_to_pts</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">time_in_seconds</span></em>, <em class="sig-param"><span class="n">time_base</span></em>, <em class="sig-param"><span class="n">start_pts</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pytorchvideo/data/utils.html#secs_to_pts"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytorchvideo.data.utils.secs_to_pts" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts a time (in seconds) to the given time base and start_pts offset
+presentation time.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><em>pts (float)</em> – The time in the given time base.</p>
+</dd>
+<dt class="field-even">Parameters</dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>time_in_seconds</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#float" title="(in Python v3.6)"><em>float</em></a>) – </p></li>
+<li><p><strong>time_base</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#float" title="(in Python v3.6)"><em>float</em></a>) – </p></li>
+<li><p><strong>start_pts</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#float" title="(in Python v3.6)"><em>float</em></a>) – </p></li>
+</ul>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#float" title="(in Python v3.6)">float</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="pytorchvideo.data.utils.pts_to_secs">
+<code class="sig-prename descclassname">pytorchvideo.data.utils.</code><code class="sig-name descname">pts_to_secs</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">time_in_seconds</span></em>, <em class="sig-param"><span class="n">time_base</span></em>, <em class="sig-param"><span class="n">start_pts</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pytorchvideo/data/utils.html#pts_to_secs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytorchvideo.data.utils.pts_to_secs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts a present time with the given time base and start_pts offset to seconds.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><em>time_in_seconds (float)</em> – The corresponding time in seconds.</p>
+</dd>
+<dt class="field-even">Parameters</dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>time_in_seconds</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#float" title="(in Python v3.6)"><em>float</em></a>) – </p></li>
+<li><p><strong>time_base</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#float" title="(in Python v3.6)"><em>float</em></a>) – </p></li>
+<li><p><strong>start_pts</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#float" title="(in Python v3.6)"><em>float</em></a>) – </p></li>
+</ul>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#float" title="(in Python v3.6)">float</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt id="pytorchvideo.data.utils.MultiProcessSampler">
+<em class="property">class </em><code class="sig-prename descclassname">pytorchvideo.data.utils.</code><code class="sig-name descname">MultiProcessSampler</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwds</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pytorchvideo/data/utils.html#MultiProcessSampler"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytorchvideo.data.utils.MultiProcessSampler" title="Permalink to this definition">¶</a></dt>
+<dd><p>MultiProcessSampler splits sample indices from a PyTorch Sampler evenly across
+workers spawned by a PyTorch DataLoader.</p>
+<dl class="py method">
+<dt id="pytorchvideo.data.utils.MultiProcessSampler.__iter__">
+<code class="sig-name descname">__iter__</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pytorchvideo/data/utils.html#MultiProcessSampler.__iter__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytorchvideo.data.utils.MultiProcessSampler.__iter__" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>Iterator for underlying PyTorch Sampler indices split by worker id.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt id="pytorchvideo.data.utils.optional_threaded_foreach">
+<code class="sig-prename descclassname">pytorchvideo.data.utils.</code><code class="sig-name descname">optional_threaded_foreach</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">target</span></em>, <em class="sig-param"><span class="n">args_iterable</span></em>, <em class="sig-param"><span class="n">multithreaded</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pytorchvideo/data/utils.html#optional_threaded_foreach"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytorchvideo.data.utils.optional_threaded_foreach" title="Permalink to this definition">¶</a></dt>
+<dd><p>Applies ‘target’ function to each Tuple args in ‘args_iterable’.
+If ‘multithreaded’ a thread is spawned for each function application.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>target</strong> (<em>Callable</em>) – A function that takes as input the parameters in each args_iterable Tuple.</p></li>
+<li><p><strong>args_iterable</strong> (<em>Iterable</em><em>[</em><em>Tuple</em><em>]</em>) – An iterable of the tuples each containing a set of parameters to pass to
+target.</p></li>
+<li><p><strong>multithreaded</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) – Whether or not the target applications are parallelized by thread.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt id="pytorchvideo.data.utils.DataclassFieldCaster">
+<em class="property">class </em><code class="sig-prename descclassname">pytorchvideo.data.utils.</code><code class="sig-name descname">DataclassFieldCaster</code><a class="reference internal" href="../../_modules/pytorchvideo/data/utils.html#DataclassFieldCaster"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytorchvideo.data.utils.DataclassFieldCaster" title="Permalink to this definition">¶</a></dt>
+<dd><p>Class to allow subclasses wrapped in &#64;dataclass to automatically
+cast fields to their relevant type by default.</p>
+<p>Also allows for an arbitrary intialization function to be applied
+for a given field.</p>
+<dl class="py method">
+<dt id="pytorchvideo.data.utils.DataclassFieldCaster.complex_initialized_dataclass_field">
+<em class="property">static </em><code class="sig-name descname">complex_initialized_dataclass_field</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">field_initializer</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pytorchvideo/data/utils.html#DataclassFieldCaster.complex_initialized_dataclass_field"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytorchvideo.data.utils.DataclassFieldCaster.complex_initialized_dataclass_field" title="Permalink to this definition">¶</a></dt>
+<dd><p>Allows for the setting of a function to be called on the
+named parameter associated with a field during initialization,
+after __init__() completes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>field_initializer</strong> (<em>Callable</em>) – The function to be called on the field</p></li>
+<li><p><strong>**kwargs</strong> – To be passed downstream to the dataclasses.field method</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>(dataclasses.Field) that contains the field_initializer and kwargs infoÎ</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>dataclasses.Field</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt id="pytorchvideo.data.utils.load_dataclass_dict_from_csv">
+<code class="sig-prename descclassname">pytorchvideo.data.utils.</code><code class="sig-name descname">load_dataclass_dict_from_csv</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">input_csv_file_path</span></em>, <em class="sig-param"><span class="n">dataclass_class</span></em>, <em class="sig-param"><span class="n">dict_key_field</span></em>, <em class="sig-param"><span class="n">list_per_key</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pytorchvideo/data/utils.html#load_dataclass_dict_from_csv"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytorchvideo.data.utils.load_dataclass_dict_from_csv" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>input_csv_file_path</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – File path of the csv to read from</p></li>
+<li><p><strong>dataclass_class</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#type" title="(in Python v3.6)"><em>type</em></a>) – The dataclass to read each row into.</p></li>
+<li><p><strong>dict_key_field</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – The field of ‘dataclass_class’ to use as
+the dictionary key.</p></li>
+<li><p><strong>list_per_key</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) – If the output data structure</p></li>
+<li><p><strong>a list of dataclass objects per key</strong> (<em>contains</em>) – </p></li>
+<li><p><strong>than a</strong> (<em>rather</em>) – </p></li>
+<li><p><strong>unique dataclass object.</strong> (<em>single</em>) – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><p>Dict[Any, Union[Any, List[Any]] mapping from the dataclass
+value at attr = dict_key_field to either:</p>
+<p>if ‘list_per_key’, a list of all dataclass objects that
+have equal values at attr = dict_key_field, equal to the key</p>
+<p>if not ‘list_per_key’, the unique dataclass object
+for which the value at attr = dict_key_field is equal to the key</p>
+</p>
+</dd>
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><a class="reference external" href="https://docs.python.org/3.6/library/exceptions.html#AssertionError" title="(in Python v3.6)"><strong>AssertionError</strong></a> – if not ‘list_per_key’ and there are</p></li>
+<li><p><strong>dataclass obejcts with equal values at attr = dict_key_field</strong> – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>Dict[Any, Union[Any, List[Any]]]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="pytorchvideo.data.utils.save_dataclass_objs_to_headered_csv">
+<code class="sig-prename descclassname">pytorchvideo.data.utils.</code><code class="sig-name descname">save_dataclass_objs_to_headered_csv</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">dataclass_objs</span></em>, <em class="sig-param"><span class="n">file_name</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pytorchvideo/data/utils.html#save_dataclass_objs_to_headered_csv"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytorchvideo.data.utils.save_dataclass_objs_to_headered_csv" title="Permalink to this definition">¶</a></dt>
+<dd><p>Saves a list of &#64;dataclass objects to the specified csv file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dataclass_objs</strong> (<em>List</em><em>[</em><em>Any</em><em>]</em>) – A list of &#64;dataclass objects to be saved.</p></li>
+<li><p><strong>file_name</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – file_name to save csv data to.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.6/library/constants.html#None" title="(in Python v3.6)">None</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+
+
+             </article>
+             
+            </div>
+            <!-- <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="../../docs/transforms.html" class="btn btn-neutral float-right" title="Overview" accesskey="n" rel="next">Next <img src="../../_static/images/chevron-right-orange.svg" class="next-page"></a>
+      
+      
+        <a href="hmdb51.html" class="btn btn-neutral" title="pytorchvideo.data.hmdb51" accesskey="p" rel="prev"><img src="../../_static/images/chevron-right-orange.svg" class="previous-page"> Previous</a>
+      
+    </div>
+  
+
+  
+
+    <hr>
+
+  
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2021, PyTorchVideo contributors.
+
+    </p>
+  </div>
+    
+      <div>
+        Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+      </div>
+     
+
+</footer>
+ -->
+          </div>
+        </div>
+
+        <div class="pytorch-content-right" id="pytorch-content-right">
+          <div class="pytorch-right-menu" id="pytorch-right-menu">
+            <div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
+              <ul>
+<li><a class="reference internal" href="#">pytorchvideo.data.labeled_video_paths</a></li>
+<li><a class="reference internal" href="#pytorchvideo-data-frame-video">pytorchvideo.data.frame_video</a></li>
+<li><a class="reference internal" href="#pytorchvideo-data-clip-sampling">pytorchvideo.data.clip_sampling</a></li>
+<li><a class="reference internal" href="#module-pytorchvideo.data.video">pytorchvideo.data.video</a></li>
+<li><a class="reference internal" href="#module-pytorchvideo.data.utils">pytorchvideo.data.utils</a></li>
+</ul>
+
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+  
+
+
+  
+
+     
+       <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+         <script src="../../_static/jquery.js"></script>
+         <script src="../../_static/underscore.js"></script>
+         <script src="../../_static/doctools.js"></script>
+         <script src="../../_static/language_data.js"></script>
+     
+
+  
+
+  <script type="text/javascript" src="../../_static/js/vendor/popper.min.js"></script>
+  <script type="text/javascript" src="../../_static/js/vendor/bootstrap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/list.js/1.5.0/list.min.js"></script>
+  <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+  <!-- Begin Footer -->
+
+
+  <div class="cookie-banner-wrapper">
+  <div class="container">
+    <p class="gdpr-notice">To analyze traffic and optimize your experience, we serve cookies on this site. By clicking or navigating, you agree to allow our usage of cookies. As the current maintainers of this site, Facebook’s Cookies Policy applies. Learn more, including about available controls: <a href="https://www.facebook.com/policies/cookies/">Cookies Policy</a>.</p>
+    <img class="close-button" src="../../_static/images/pytorch-x.svg">
+  </div>
+</div>
+
+  <!-- End Footer -->
+
+  <!-- Begin Mobile Menu -->
+
+  <div class="mobile-main-menu">
+    <div class="container-fluid">
+      <div class="container">
+        <div class="mobile-main-menu-header-container">
+          <a class="header-logo" href="https://pytorchvideo.org" aria-label="PyTorch"></a>
+          <a class="main-menu-close-button" href="#" data-behavior="close-mobile-menu"></a>
+        </div>
+      </div>
+    </div>
+
+    <div class="mobile-main-menu-links-container">
+      <div class="main-menu">
+        <ul>
+          <li>
+            <a href="https://pytorchvideo.org">Home</a>
+          </li>
+          <li>
+            <a href="https://pytorchvideo.org/docs/tutorial_overview">Tutorials</a>
+          </li>
+          <li>
+            <a href="https://github.com/facebookresearch/pytorchvideo/">Github</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <!-- End Mobile Menu -->
+
+  <script type="text/javascript" src="../../_static/js/vendor/anchor.min.js"></script>
+
+  <script type="text/javascript">
+    $(document).ready(function() {
+      mobileMenu.bind();
+      mobileTOC.bind();
+      pytorchAnchors.bind();
+      sideMenus.bind();
+      scrollToAnchor.bind();
+      highlightNavigation.bind();
+      mainMenuDropdown.bind();
+      filterTags.bind();
+
+      // Add class to links that have code blocks, since we cannot create links in code blocks
+      $("article.pytorch-article a span.pre").each(function(e) {
+        $(this).closest("a").addClass("has-code");
+      });
+    })
+  </script>
+</body>
+</html>
