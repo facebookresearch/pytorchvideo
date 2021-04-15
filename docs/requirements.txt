@@ -13,5 +13,3 @@ parameterized
 git+git://github.com/facebookresearch/fvcore.git
 git+git://github.com/facebookresearch/iopath.git
 git+git://github.com/kalyanvasudev/pytorch_sphinx_theme.git
-
-

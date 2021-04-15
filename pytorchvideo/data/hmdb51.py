@@ -177,40 +177,37 @@ def Hmdb51(
     decoder: str = "pyav",
 ) -> EncodedVideoDataset:
     """
-    A helper function to create EncodedVideoDataset object for HMDB51 dataset
+    A helper function to create ``EncodedVideoDataset`` object for HMDB51 dataset
 
     Args:
-        data_path (pathlib.Path): Path to the data. The path type defines how the
-        data should be read:
-            - For a file path, the file is read and each line is parsed into a
-                video path and label.
-            - For a directory, the directory structure defines the classes
-                (i.e. each subdirectory is a class).
-        See the LabeledVideoPaths class documentation for specific formatting
-        details and examples.
+        data_path (pathlib.Path): Path to the data. The path type defines how the data
+            should be read:
+
+            * For a file path, the file is read and each line is parsed into a
+              video path and label.
+            * For a directory, the directory structure defines the classes
+              (i.e. each subdirectory is a class).
 
         clip_sampler (ClipSampler): Defines how clips should be sampled from each
-                video. See the clip sampling documentation for more information.
+            video. See the clip sampling documentation for more information.
 
         video_sampler (Type[torch.utils.data.Sampler]): Sampler for the internal
-                video container. This defines the order videos are decoded and,
-                if necessary, the distributed split.
+            video container. This defines the order videos are decoded and,
+            if necessary, the distributed split.
 
         transform (Callable): This callable is evaluated on the clip output before
-                the clip is returned. It can be used for user defined preprocessing and
-                augmentations to the clips. The clip output is a dictionary with the
-                following format:
-                    {
-                        'video': <video_tensor>,
-                        'label': <index_label>,
-                        'index': <clip_index>
-                    }
-                If transform is None, the raw clip output in the above format is
-                returned unmodified.
+            the clip is returned. It can be used for user defined preprocessing and
+            augmentations to the clips. See the ``EncodedVideoDataset`` class for
+            clip output format.
 
         video_path_prefix (str): Path to root directory with the videos that are
-                loaded in EncodedVideoDataset. All the video paths before loading
-                are prefixed with this path.
+            loaded in EncodedVideoDataset. All the video paths before loading
+            are prefixed with this path.
+
+        split_id (int): Fold id to be loaded. Options are 1, 2 or 3
+
+        split_type (str): Split/Fold type to be loaded. Options are ("train", "test" or
+            "unused")
 
         decoder (str): Defines which backend should be used to decode videos.
     """

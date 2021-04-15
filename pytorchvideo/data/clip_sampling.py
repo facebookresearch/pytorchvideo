@@ -26,8 +26,8 @@ class ClipInfo(NamedTuple):
 
 class ClipSampler(ABC):
     """
-    Interface for clip sampler's which take a video time, previous sampled clip time,
-    and returns a named-tuple `ClipInfo`.
+    Interface for clip samplers that take a video time, previous sampled clip time,
+    and returns a named-tuple ``ClipInfo``.
     """
 
     def __init__(self, clip_duration: float) -> None:
@@ -42,12 +42,17 @@ class ClipSampler(ABC):
 
 def make_clip_sampler(sampling_type: str, *args) -> ClipSampler:
     """
-    Constructs the clip samplers found in this module from the given arguments.
+    Constructs the clip samplers found in ``pytorchvideo.data.clip_sampling`` from the
+    given arguments.
+
     Args:
-        sampling_type (str): choose clip sampler to return. It has two options:
-            - uniform: constructs and return UniformClipSampler
-            - random: construct and return RandomClipSampler
-        *args: the args to pass to the chosen clip sampler constructor
+        sampling_type (str): choose clip sampler to return. It has three options:
+
+            * uniform: constructs and return ``UniformClipSampler``
+            * random: construct and return ``RandomClipSampler``
+            * constant_clips_per_video: construct and return ``ConstantClipsPerVideoSampler``
+
+        *args: the args to pass to the chosen clip sampler constructor.
     """
     if sampling_type == "uniform":
         return UniformClipSampler(*args)
@@ -72,13 +77,12 @@ class UniformClipSampler(ClipSampler):
         Args:
             last_clip_time (float): the last clip end time sampled from this video. This
                 should be 0.0 if the video hasn't had clips sampled yet.
-                segments, clip_index is the segment index to sample.
             video_duration: (float): the duration of the video that's being sampled in seconds
         Returns:
-            a named-tuple `ClipInfo`: includes the clip information of (clip_start_time,
-                clip_end_time, clip_index, aug_index, is_last_clip), where the times are in
-                seconds and is_last_clip is False when there is still more of time in the video
-                to be sampled.
+            clip_info: (ClipInfo): includes the clip information (clip_start_time,
+            clip_end_time, clip_index, aug_index, is_last_clip), where the times are in
+            seconds and is_last_clip is False when there is still more of time in the video
+            to be sampled.
 
         """
         clip_start_sec = last_clip_time
@@ -104,9 +108,9 @@ class RandomClipSampler(ClipSampler):
             video_duration: (float): the duration (in seconds) for the video that's
                 being sampled
         Returns:
-            a named-tuple `ClipInfo`: includes the clip information of (clip_start_time,
-                clip_end_time, clip_index, aug_index, is_last_clip). The times are in seconds.
-                clip_index, aux_index and is_last_clip are always 0, 0 and True, respectively.
+            clip_info (ClipInfo): includes the clip information of (clip_start_time,
+            clip_end_time, clip_index, aug_index, is_last_clip). The times are in seconds.
+            clip_index, aux_index and is_last_clip are always 0, 0 and True, respectively.
 
         """
         max_possible_clip_start = max(video_duration - self._clip_duration, 0)

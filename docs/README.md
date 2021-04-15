@@ -12,7 +12,7 @@ pip install -U recommonmark mock sphinx sphinx_rtd_theme sphinx_markdown_tables
 We want to include the root readme as an overview. Before generating the docs create a symlink to the root readme.
 
 ```
-cd <pytorchvideo>/docs        
+cd <pytorchvideo>/docs
 ln -s ../README.md  overview.md
 ```
 

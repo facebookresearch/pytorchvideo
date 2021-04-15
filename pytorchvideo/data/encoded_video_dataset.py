@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import logging
-import multiprocessing
 import pathlib
 from typing import Any, Callable, List, Optional, Tuple, Type, Dict
 
@@ -37,7 +36,7 @@ class EncodedVideoDataset(torch.utils.data.IterableDataset):
     ) -> None:
         """
         Args:
-            labeled_video_paths List[Tuple[str, Optional[dict]]]]) : List containing
+            labeled_video_paths (List[Tuple[str, Optional[dict]]]): List containing
                     video file paths and associated labels
 
             clip_sampler (ClipSampler): Defines how clips should be sampled from each
@@ -49,18 +48,9 @@ class EncodedVideoDataset(torch.utils.data.IterableDataset):
 
             transform (Callable): This callable is evaluated on the clip output before
                 the clip is returned. It can be used for user defined preprocessing and
-                augmentations to the clips. The clip output is a dictionary with the
-                following format:
-                    {
-                        'video': <video_tensor>
-                        'label': <index_label>
-                        'video_index': <video_index>
-                        'clip_index': <clip_index>
-                        'aug_index': <aug_index>, augmentation index as augmentations
-                            might generate multiple views for one clip.
-                    }
-                If transform is None, the raw clip output in the above format is
-                returned unmodified.
+                augmentations on the clips. The clip output format is described in __next__().
+
+            decode_audio (bool): If True, also decode audio from video.
 
             decoder (str): Defines what type of decoder used to decode a video.
         """
@@ -99,16 +89,18 @@ class EncodedVideoDataset(torch.utils.data.IterableDataset):
         Retrieves the next clip based on the clip sampling strategy and video sampler.
 
         Returns:
-            A video clip with the following format if transform is None:
+            A dictionary with the following format.
+
+            .. code-block:: text
+
                 {
                     'video': <video_tensor>,
                     'label': <index_label>,
-                    'video_index': <video_index>
-                    'clip_index': <clip_index>
-                    'aug_index': <aug_index>, augmentation index as augmentations
-                        might generate multiple views for one clip.
+                    'video_label': <index_label>
+                    'video_index': <video_index>,
+                    'clip_index': <clip_index>,
+                    'aug_index': <aug_index>,
                 }
-            Otherwise, the transform defines the clip output.
         """
         if not self._video_sampler_iter:
             # Setup MultiProcessSampler here - after PyTorch DataLoader workers are spawned.
@@ -221,17 +213,16 @@ def labeled_encoded_video_dataset(
     decoder: str = "pyav",
 ) -> EncodedVideoDataset:
     """
-    A helper function to create EncodedVideoDataset object for Ucf101 and Kinectis datasets.
+    A helper function to create ``EncodedVideoDataset`` object for Ucf101 and Kinetics datasets.
 
     Args:
-        data_path (pathlib.Path): Path to the data. The path type defines how the
-        data should be read:
-            - For a file path, the file is read and each line is parsed into a
-                video path and label.
-            - For a directory, the directory structure defines the classes
-                (i.e. each subdirectory is a class).
-        See the LabeledVideoPaths class documentation for specific formatting
-        details and examples.
+        data_path (pathlib.Path): Path to the data. The path type defines how the data
+            should be read:
+
+            * For a file path, the file is read and each line is parsed into a
+              video path and label.
+            * For a directory, the directory structure defines the classes
+              (i.e. each subdirectory is a class).
 
         clip_sampler (ClipSampler): Defines how clips should be sampled from each
                 video. See the clip sampling documentation for more information.
@@ -242,31 +233,19 @@ def labeled_encoded_video_dataset(
 
         transform (Callable): This callable is evaluated on the clip output before
                 the clip is returned. It can be used for user defined preprocessing and
-                augmentations to the clips. The clip output is a dictionary with the
-                following format:
-                    {
-                        'video': <video_tensor>,
-                        'label': <index_label>,
-                        'video_index': <video_index>
-                        'clip_index': <clip_index>
-                        'aug_index': <aug_index>, augmentation index as augmentations
-                            might generate multiple views for one clip.
-                    }
-                If transform is None, the raw clip output in the above format is
-                returned unmodified.
+                augmentations to the clips. See the ``EncodedVideoDataset`` class for clip
+                output format.
 
         video_path_prefix (str): Path to root directory with the videos that are
-                loaded in EncodedVideoDataset. All the video paths before loading
+                loaded in ``EncodedVideoDataset``. All the video paths before loading
                 are prefixed with this path.
+
+        decode_audio (bool): If True, also decode audio from video.
 
         decoder (str): Defines what type of decoder used to decode a video.
 
     """
-    # PathManager may configure the multiprocessing context in a way that conflicts
-    # with PyTorch DataLoader workers. To avoid this, we make sure the PathManager
-    # calls (made by LabeledVideoPaths) are wrapped in their own sandboxed process.
     labeled_video_paths = LabeledVideoPaths.from_path(data_path)
-
     labeled_video_paths.path_prefix = video_path_prefix
     dataset = EncodedVideoDataset(
         labeled_video_paths,

@@ -18,12 +18,12 @@ from .utils import MultiProcessSampler
 
 class Charades(torch.utils.data.IterableDataset):
     """
-    Action recognition video dataset for Charades stored as image frames.
-    <https://prior.allenai.org/projects/charades>
+    Action recognition video dataset for
+    `Charades <https://prior.allenai.org/projects/charades>`_ stored as image frames.
 
     This dataset handles the parsing of frames, loading and clip sampling for the
-    videos. All io reading is done with PathManager, enabling non-local storage
-    uri's to be used.
+    videos. All io is done through :code:`iopath.common.file_io.PathManager`, enabling
+    non-local storage uri's to be used.
     """
 
     # Number of classes represented by this dataset's annotated labels.
@@ -41,8 +41,8 @@ class Charades(torch.utils.data.IterableDataset):
         """
         Args:
             data_path (str): Path to the data file. This file must be a space
-                separated csv with the format:
-                    `original_vido_id video_id frame_id path labels`
+                separated csv with the format: (original_vido_id video_id frame_id
+                path_labels)
 
             clip_sampler (ClipSampler): Defines how clips should be sampled from each
                 video. See the clip sampling documentation for more information.
@@ -53,20 +53,10 @@ class Charades(torch.utils.data.IterableDataset):
 
             transform (Optional[Callable]): This callable is evaluated on the clip output before
                 the clip is returned. It can be used for user defined preprocessing and
-                augmentations to the clips. The clip output is a dictionary with the
-                following format:
-                    {
-                        'video': <video_tensor>,
-                        'label': <index_label> for clip-level label,
-                        'video_label': <index_label> for video-level label,
-                        'video_index': <video_index>,
-                        'clip_index': <clip_index>,
-                        'aug_index': <aug_index>, augmentation index as augmentations
-                            might generate multiple views for one clip.
-                    }
-                If transform is None, the raw clip output in the above format is
-                returned unmodified.
+                augmentations on the clips. The clip output format is described in __next__().
+
             video_path_prefix (str): prefix path to add to all paths from data_path.
+
             frames_per_clip (Optional[int]): The number of frames per clip to sample.
         """
         self._transform = transform
@@ -113,7 +103,7 @@ class Charades(torch.utils.data.IterableDataset):
         return [frame_indices[idx] for idx in indices]
 
     @property
-    def video_sampler(self):
+    def video_sampler(self) -> torch.utils.data.Sampler:
         return self._video_sampler
 
     def __next__(self) -> dict:
@@ -121,17 +111,18 @@ class Charades(torch.utils.data.IterableDataset):
         Retrieves the next clip based on the clip sampling strategy and video sampler.
 
         Returns:
-            A video clip with the following format if transform is None:
+            A dictionary with the following format.
+
+            .. code-block:: text
+
                 {
                     'video': <video_tensor>,
-                    'label': <index_label> for clip-level label,
-                    'video_label': <index_label> for video-level label,
+                    'label': <index_label>,
+                    'video_label': <index_label>
                     'video_index': <video_index>,
                     'clip_index': <clip_index>,
-                    'aug_index': <aug_index>, augmentation index as augmentations
-                        might generate multiple views for one clip.
+                    'aug_index': <aug_index>,
                 }
-            Otherwise, the transform defines the clip output.
         """
         if not self._video_sampler_iter:
             # Setup MultiProcessSampler here - after PyTorch DataLoader workers are spawned.

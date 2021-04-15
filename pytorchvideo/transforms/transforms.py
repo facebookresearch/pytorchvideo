@@ -32,10 +32,19 @@ class ApplyTransformToKey:
 
 
 class RemoveKey(torch.nn.Module):
+    """
+    Removes the given key from the input dict. Useful for removing modalities from a
+    video clip that aren't needed.
+    """
+
     def __init__(self, key: str):
         self._key = key
 
     def __call__(self, x: Dict[str, torch.Tensor]) -> Dict[str, torch.Tensor]:
+        """
+        Args:
+            x (Dict[str, torch.Tensor]): video clip dict.
+        """
         if self._key in x:
             del x[self._key]
         return x
@@ -43,7 +52,7 @@ class RemoveKey(torch.nn.Module):
 
 class UniformTemporalSubsample(torch.nn.Module):
     """
-    nn.Module wrapper for pytorchvideo.transforms.functional.uniform_temporal_subsample.
+    ``nn.Module`` wrapper for ``pytorchvideo.transforms.functional.uniform_temporal_subsample``.
     """
 
     def __init__(self, num_samples: int):
@@ -51,6 +60,10 @@ class UniformTemporalSubsample(torch.nn.Module):
         self._num_samples = num_samples
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
+        """
+        Args:
+            x (torch.Tensor): video tensor with shape (C, T, H, W).
+        """
         return pytorchvideo.transforms.functional.uniform_temporal_subsample(
             x, self._num_samples
         )
@@ -58,7 +71,7 @@ class UniformTemporalSubsample(torch.nn.Module):
 
 class ShortSideScale(torch.nn.Module):
     """
-    nn.Module wrapper for pytorchvideo.transforms.functional.short_side_scale.
+    ``nn.Module`` wrapper for ``pytorchvideo.transforms.functional.short_side_scale``.
     """
 
     def __init__(self, size: int):
@@ -66,12 +79,16 @@ class ShortSideScale(torch.nn.Module):
         self._size = size
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
+        """
+        Args:
+            x (torch.Tensor): video tensor with shape (C, T, H, W).
+        """
         return pytorchvideo.transforms.functional.short_side_scale(x, self._size)
 
 
 class RandomShortSideScale(torch.nn.Module):
     """
-    nn.Module wrapper for pytorchvideo.transforms.functional.short_side_scale. The size
+    ``nn.Module`` wrapper for ``pytorchvideo.transforms.functional.short_side_scale``. The size
     parameter is chosen randomly in [min_size, max_size].
     """
 
@@ -81,13 +98,17 @@ class RandomShortSideScale(torch.nn.Module):
         self._max_size = max_size
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
+        """
+        Args:
+            x (torch.Tensor): video tensor with shape (C, T, H, W).
+        """
         size = torch.randint(self._min_size, self._max_size + 1, (1,)).item()
         return pytorchvideo.transforms.functional.short_side_scale(x, size)
 
 
 class UniformCropVideo(torch.nn.Module):
     """
-    nn.Module wrapper for pytorchvideo.transforms.functional.uniform_crop.
+    ``nn.Module`` wrapper for ``pytorchvideo.transforms.functional.uniform_crop``.
     """
 
     def __init__(
@@ -99,6 +120,10 @@ class UniformCropVideo(torch.nn.Module):
         self._aug_index_key = aug_index_key
 
     def __call__(self, x: Dict[str, torch.Tensor]) -> Dict[str, torch.Tensor]:
+        """
+        Args:
+            x (Dict[str, torch.Tensor]): video clip dict.
+        """
         x[self._video_key] = pytorchvideo.transforms.functional.uniform_crop(
             x[self._video_key], self._size, x[self._aug_index_key]
         )
@@ -115,8 +140,12 @@ class Normalize(torchvision.transforms.Normalize):
         inplace (boolean): whether do in-place normalization
     """
 
-    def forward(self, vid: torch.Tensor) -> torch.Tensor:
-        vid = vid.permute(1, 0, 2, 3)  # C T H W to T C H W
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        """
+        Args:
+            x (torch.Tensor): video tensor with shape (C, T, H, W).
+        """
+        vid = x.permute(1, 0, 2, 3)  # C T H W to T C H W
         vid = super().forward(vid)
         vid = vid.permute(1, 0, 2, 3)  # T C H W to C T H W
         return vid

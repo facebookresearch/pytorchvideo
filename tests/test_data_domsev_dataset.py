@@ -5,6 +5,7 @@ import unittest
 import unittest.mock
 from contextlib import ExitStack
 from pathlib import Path
+from typing import Optional
 
 import torch
 from parameterized import parameterized
@@ -12,9 +13,8 @@ from pytorchvideo.data.dataset_manifest_utils import VideoClipInfo, VideoDataset
 from pytorchvideo.data.domsev import (
     ActivityData,
     DomsevDataset,
-    frame_index_to_seconds,
-    get_overlap_for_time_range_pair,
-    seconds_to_frame_index,
+    _get_overlap_for_time_range_pair,
+    _seconds_to_frame_index,
 )
 from pytorchvideo.data.utils import save_dataclass_objs_to_headered_csv
 from utils import (
@@ -23,6 +23,28 @@ from utils import (
     get_encoded_video_infos,
     get_flat_video_frames,
 )
+
+
+def _frame_index_to_seconds(
+    frame_index: int, fps: int, zero_indexed: Optional[bool] = True
+) -> float:
+    """
+    Converts a frame index within a video clip to the corresponding
+    point in time (in seconds) within the video, based on a specified frame rate.
+
+    Args:
+        frame_index (int): The index of the frame within the video.
+        fps (int): The frame rate (frames per second) of the video.
+        zero_indexed (Optional[bool]): Whether the specified frame is zero-indexed
+            (if True) or one-indexed (if False).
+
+    Returns:
+        (float) The point in time within the video.
+    """
+    if not zero_indexed:
+        frame_index -= 1
+    time_in_seconds = frame_index / fps
+    return time_in_seconds
 
 
 class TestDomsevDataset(unittest.TestCase):
@@ -103,31 +125,20 @@ class TestDomsevDataset(unittest.TestCase):
         pass
 
     def test_seconds_to_frame_index(self):
-        self.assertEqual(seconds_to_frame_index(10.56, 1, zero_indexed=True), 10)
-        self.assertEqual(seconds_to_frame_index(10.56, 1, zero_indexed=False), 11)
+        self.assertEqual(_seconds_to_frame_index(10.56, 1, zero_indexed=True), 10)
+        self.assertEqual(_seconds_to_frame_index(10.56, 1, zero_indexed=False), 11)
 
-        self.assertEqual(seconds_to_frame_index(9.99, 1, zero_indexed=True), 9)
-        self.assertEqual(seconds_to_frame_index(9.99, 1, zero_indexed=False), 10)
+        self.assertEqual(_seconds_to_frame_index(9.99, 1, zero_indexed=True), 9)
+        self.assertEqual(_seconds_to_frame_index(9.99, 1, zero_indexed=False), 10)
 
-        self.assertEqual(seconds_to_frame_index(1.01, 10, zero_indexed=True), 10)
-        self.assertEqual(seconds_to_frame_index(1.01, 10, zero_indexed=False), 11)
-
-    def test_frame_index_to_seconds(self):
-        self.assertEqual(frame_index_to_seconds(1, 1, zero_indexed=True), 1.0)
-        self.assertEqual(frame_index_to_seconds(1, 1, zero_indexed=False), 0.0)
-        self.assertEqual(frame_index_to_seconds(2, 1, zero_indexed=False), 1.0)
-
-        self.assertEqual(frame_index_to_seconds(30, 30, zero_indexed=True), 1.0)
-        self.assertEqual(frame_index_to_seconds(30, 30, zero_indexed=False), 29 / 30)
-
-        self.assertEqual(frame_index_to_seconds(1, 10, zero_indexed=True), 0.1)
-        self.assertEqual(frame_index_to_seconds(2, 10, zero_indexed=False), 0.1)
+        self.assertEqual(_seconds_to_frame_index(1.01, 10, zero_indexed=True), 10)
+        self.assertEqual(_seconds_to_frame_index(1.01, 10, zero_indexed=False), 11)
 
     def test_get_overlap_for_time_range_pair(self):
-        self.assertEqual(get_overlap_for_time_range_pair(0, 1, 0.1, 0.2), (0.1, 0.2))
-        self.assertEqual(get_overlap_for_time_range_pair(0.1, 0.2, 0, 1), (0.1, 0.2))
-        self.assertEqual(get_overlap_for_time_range_pair(0, 1, 0.9, 1.1), (0.9, 1.0))
-        self.assertEqual(get_overlap_for_time_range_pair(0, 0.2, 0.1, 1), (0.1, 0.2))
+        self.assertEqual(_get_overlap_for_time_range_pair(0, 1, 0.1, 0.2), (0.1, 0.2))
+        self.assertEqual(_get_overlap_for_time_range_pair(0.1, 0.2, 0, 1), (0.1, 0.2))
+        self.assertEqual(_get_overlap_for_time_range_pair(0, 1, 0.9, 1.1), (0.9, 1.0))
+        self.assertEqual(_get_overlap_for_time_range_pair(0, 0.2, 0.1, 1), (0.1, 0.2))
 
     @parameterized.expand([(VideoDatasetType.Frame,), (VideoDatasetType.EncodedVideo,)])
     def test__len__(self, dataset_type):

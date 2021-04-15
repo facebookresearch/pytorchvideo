@@ -1,14 +1,20 @@
-pytorchvideo.transforms.transforms 
-=================================
+pytorchvideo.transforms
+==================================
 
 
-.. automodule:: pytorchvideo.transforms.transforms
-  :members:
+.. automodule:: pytorchvideo.transforms
+ :imported-members:
+ :members:
+ :undoc-members:
+ :show-inheritance:
 
 
-pytorchvideo.transforms.functional 
-=================================
+pytorchvideo.transforms.functional
+==================================
 
 
 .. automodule:: pytorchvideo.transforms.functional
-  :members:
+ :imported-members:
+ :members:
+ :undoc-members:
+ :show-inheritance:

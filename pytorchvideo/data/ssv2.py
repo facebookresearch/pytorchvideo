@@ -20,12 +20,13 @@ from .utils import MultiProcessSampler
 
 class SSv2(torch.utils.data.IterableDataset):
     """
-    Action recognition video dataset for Something-something v2 (SSv2) stored
-    as image frames. <https://20bn.com/datasets/something-something>
+    Action recognition video dataset for
+    `Something-something v2 (SSv2) <https://20bn.com/datasets/something-something>`_ stored
+    as image frames.
 
     This dataset handles the parsing of frames, loading and clip sampling for the
-    videos. All io reading is done with PathManager, enabling non-local storage
-    uri's to be used.
+    videos. All io is done through :code:`iopath.common.file_io.PathManager`, enabling
+    non-local storage uri's to be used.
     """
 
     def __init__(
@@ -42,7 +43,7 @@ class SSv2(torch.utils.data.IterableDataset):
     ) -> None:
         """
         Args:
-            label_name_file (str): ssv2 label file that contians the label names and
+            label_name_file (str): SSV2 label file that contains the label names and
                 indexes.
 
             video_label_file (str): a file that contains video ids and the corresponding
@@ -50,8 +51,7 @@ class SSv2(torch.utils.data.IterableDataset):
 
             video_path_label_file (str): a file that contains frame paths for each
                 video and the corresponding frame label. The file must be a space separated
-                csv of the format:
-                    `original_vido_id video_id frame_id path labels`
+                csv of the format: (original_vido_id video_id frame_id path labels).
 
             clip_sampler (ClipSampler): Defines how clips should be sampled from each
                 video. See the clip sampling documentation for more information.
@@ -62,18 +62,7 @@ class SSv2(torch.utils.data.IterableDataset):
 
             transform (Optional[Callable]): This callable is evaluated on the clip output before
                 the clip is returned. It can be used for user defined preprocessing and
-                augmentations to the clips. The clip output is a dictionary with the
-                following format:
-                    {
-                        'video': <video_tensor>,
-                        'label': <index_label>,
-                        'video_index': <video_index>,
-                        'clip_index': <clip_index>,
-                        'aug_index': <aug_index>, augmentation index as augmentations
-                            might generate multiple views for one clip.
-                    }
-                If transform is None, the raw clip output in the above format is
-                returned unmodified.
+                augmentations on the clips. The clip output format is described in __next__().
 
             video_path_prefix (str): prefix path to add to all paths from data_path.
 
@@ -146,16 +135,18 @@ class SSv2(torch.utils.data.IterableDataset):
         Retrieves the next clip based on the clip sampling strategy and video sampler.
 
         Returns:
-            A video clip with the following format if transform is None:
+            A dictionary with the following format.
+
+            .. code-block:: text
+
                 {
                     'video': <video_tensor>,
                     'label': <index_label>,
+                    'video_label': <index_label>
                     'video_index': <video_index>,
                     'clip_index': <clip_index>,
-                    'aug_index': <aug_index>, augmentation index as augmentations
-                        might generate multiple views for one clip.
+                    'aug_index': <aug_index>,
                 }
-            Otherwise, the transform defines the clip output.
         """
         if not self._video_sampler_iter:
             # Setup MultiProcessSampler here - after PyTorch DataLoader workers are spawned.

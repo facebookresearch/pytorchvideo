@@ -139,12 +139,14 @@ def repeat_temporal_frames_subsample(
     Prepare output as a list of tensors subsampled from the input frames. Each tensor
         maintain a unique copy of subsampled frames, which corresponds to a unique
         pathway.
+
     Args:
         frames (tensor): frames of images sampled from the video. Expected to have
             torch tensor (including int, long, float, complex, etc) with dimension
             larger than one.
         frame_ratios (tuple): ratio to perform temporal down-sampling for each pathways.
         temporal_dim (int): dimension of temporal.
+
     Returns:
         frame_list (tuple): list of tensors as output.
     """
@@ -161,8 +163,11 @@ def repeat_temporal_frames_subsample(
 def convert_to_one_hot(targets: torch.Tensor, num_class: int) -> torch.Tensor:
     """
     This function converts target class indices to one-hot vectors, given the number of classes.
-    """
 
+    Args:
+        targets (torch.Tensor): index labels to be converted.
+        num_class (int): size of class dimension.
+    """
     assert (
         torch.max(targets).item() < num_class
     ), "Class Index must be less than number of classes"
@@ -180,12 +185,14 @@ def uniform_crop(frames: torch.Tensor, size: int, spatial_idx: int = 1) -> torch
     Perform uniform spatial sampling on the frames based on three-crop setting.
         If width is larger than height, take left, center and right crop.
         If height is larger than width, take top, center, and bottom crop.
+
     Args:
         frames (tensor): A video tensor of shape (C, T, H, W) to perform uniform crop.
         size (int): Desired height and weight size to crop the frames.
         spatial_idx (int): 0, 1, or 2 for left, center, and right crop if width
             is larger than height. Or 0, 1, or 2 for top, center, and bottom
             crop if height is larger than width.
+
     Returns:
         cropped (tensor): A cropped video tensor of shape (C, T, size, size).
     """

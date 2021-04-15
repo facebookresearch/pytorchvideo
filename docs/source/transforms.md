@@ -1,6 +1,6 @@
 # Overview
 
-The PyTorchVideo transforms package contains common video algorithms used for preprocessing and/or augmenting video data. The package also contains helper dictionary transforms that are useful for interoperability between PyTorchVideo datasets clip outputs (TODO link to sample datasets clip) and domain specific transforms. For example, here is a standard transform pipeline for a video model, that could be used with a PyTorchVideo dataset:
+The PyTorchVideo transforms package contains common video algorithms used for preprocessing and/or augmenting video data. The package also contains helper dictionary transforms that are useful for interoperability between PyTorchVideo [dataset's clip outputs](https://pytorchvideo.readthedocs.io/en/latest/data.html) and domain specific transforms. For example, here is a standard transform pipeline for a video model, that could be used with a PyTorchVideo dataset:
 
 ```python
 transform = torchvision.transforms.Compose([
@@ -26,8 +26,8 @@ Notice how the example also includes transforms from TorchVision? PyTorchVideo u
 
 ## Transform vs Functional interface
 
-The example above demonstrated the pytorchvideo.transforms interface. These transforms are nn.module callable classes that can be stringed together in a declarative way. PyTorchVideo also provides a pytorchvideo.transforms.functional interface, which is essentially just the functions that the nn.module classes use. These allow more fine-grained control over the transformations and may be more suitable for use outside the dataset preprocessing use case.
+The example above demonstrated the [```pytorchvideo.transforms```](https://pytorchvideo.readthedocs.io/en/latest/api/transforms/transforms.html) interface. These transforms are [```torch.nn.module```](https://pytorch.org/docs/stable/generated/torch.nn.Module.html) callable classes that can be stringed together in a declarative way. PyTorchVideo also provides a [```pytorchvideo.transforms.functional```](https://pytorchvideo.readthedocs.io/en/latest/api/transforms/transforms.html#pytorchvideo-transforms-functional) interface, which are the functions that the transform API uses. These allow more fine-grained control over the transformations and may be more suitable for use outside the dataset preprocessing use case.
 
 ## Scriptable transforms
 
-All non-OpenCV transforms are TorchScriptable, as described in the [TorchVision docs](https://pytorch.org/vision/stable/transforms.html#scriptable-transforms), in order to script the transforms together, please use torch.nn.Sequential instead of torchvision.transform.Compose.
+All non-OpenCV transforms are TorchScriptable, as described in the [TorchVision docs](https://pytorch.org/vision/stable/transforms.html#scriptable-transforms), in order to script the transforms together, please use [```ltorch.nn.Sequential```](https://pytorch.org/docs/stable/generated/torch.nn.Sequential.html) instead of [```torchvision.transform.Compose```](https://pytorch.org/vision/stable/transforms.html#torchvision.transforms.Compose).
