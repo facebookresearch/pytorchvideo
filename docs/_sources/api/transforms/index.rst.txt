@@ -1,6 +1,0 @@
-Transforms API
-==================
-
-.. toctree::
-
-    transforms
