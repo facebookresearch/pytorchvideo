@@ -1,0 +1,437 @@
+<!DOCTYPE html><html lang="en"><head><meta charSet="utf-8"/><meta http-equiv="X-UA-Compatible" content="IE=edge"/><title>Build your efficient model with PytorchVideo/Accelerator · PyTorchVideo</title><meta name="viewport" content="width=device-width, initial-scale=1.0"/><meta name="generator" content="Docusaurus"/><meta name="description" content="## Introduction"/><meta name="docsearch:language" content="en"/><meta property="og:title" content="Build your efficient model with PytorchVideo/Accelerator · PyTorchVideo"/><meta property="og:type" content="website"/><meta property="og:url" content="https://pytorchvideo.org/"/><meta property="og:description" content="## Introduction"/><meta property="og:image" content="https://pytorchvideo.org/img/logo.svg"/><meta name="twitter:card" content="summary"/><meta name="twitter:image" content="https://pytorchvideo.org/img/logo.svg"/><link rel="shortcut icon" href="/img/favicon.png"/><link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/atom-one-dark.min.css"/><script type="text/javascript" src="https://buttons.github.io/buttons.js"></script><script src="/js/scrollSpy.js"></script><link rel="stylesheet" href="/css/main.css"/><script src="/js/codetabs.js"></script></head><body class="sideNavVisible separateOnPageNav"><div class="fixedHeaderContainer"><div class="headerWrapper wrapper"><header><a href="/"><img class="logo" src="/img/logo.svg" alt="PyTorchVideo"/><h2 class="headerTitleWithLogo">PyTorchVideo</h2></a><div class="navigationWrapper navigationSlider"><nav class="slidingNav"><ul class="nav-site nav-site-internal"><li class="siteNavGroupActive"><a href="/docs/tutorial_overview" target="_self">Tutorials</a></li><li class=""><a href="/docs/index.html" target="_self">Docs</a></li><li class=""><a href="https://github.com/facebookresearch/pytorchvideo/" target="_self">GitHub</a></li></ul></nav></div></header></div></div><div class="navPusher"><div class="docMainWrapper wrapper"><div class="docsNavContainer" id="docsNav"><nav class="toc"><div class="toggleNav"><section class="navWrapper wrapper"><div class="navBreadcrumb wrapper"><div class="navToggle" id="navToggler"><div class="hamburger-menu"><div class="line1"></div><div class="line2"></div><div class="line3"></div></div></div><h2><i>›</i><span>Accelerator</span></h2><div class="tocToggler" id="tocToggler"><i class="icon-toc"></i></div></div><div class="navGroups"><div class="navGroup"><h3 class="navGroupCategoryTitle">Tutorials</h3><ul class=""><li class="navListItem"><a class="navItem" href="/docs/tutorial_overview">Overview</a></li></ul></div><div class="navGroup"><h3 class="navGroupCategoryTitle">Classification</h3><ul class=""><li class="navListItem"><a class="navItem" href="/docs/tutorial_classification">Training a PyTorchVideo classification model</a></li><li class="navListItem"><a class="navItem" href="/docs/tutorial_torchhub_inference">Running a pre-trained PyTorchVideo classification model using Torch Hub</a></li></ul></div><div class="navGroup"><h3 class="navGroupCategoryTitle">Accelerator</h3><ul class=""><li class="navListItem navListItemActive"><a class="navItem" href="/docs/tutorial_accelerator_build_your_model">Build your efficient model with PytorchVideo/Accelerator</a></li><li class="navListItem"><a class="navItem" href="/docs/tutorial_accelerator_use_accelerator_model_zoo">Use PytorchVideo/Accelerator Model Zoo</a></li><li class="navListItem"><a class="navItem" href="/docs/tutorial_accelerator_use_model_transmuter">Accelerate your model with model transmuter in PytorchVideo/Accelerator</a></li></ul></div></div></section></div><script>
+            var coll = document.getElementsByClassName('collapsible');
+            var checkActiveCategory = true;
+            for (var i = 0; i < coll.length; i++) {
+              var links = coll[i].nextElementSibling.getElementsByTagName('*');
+              if (checkActiveCategory){
+                for (var j = 0; j < links.length; j++) {
+                  if (links[j].classList.contains('navListItemActive')){
+                    coll[i].nextElementSibling.classList.toggle('hide');
+                    coll[i].childNodes[1].classList.toggle('rotate');
+                    checkActiveCategory = false;
+                    break;
+                  }
+                }
+              }
+
+              coll[i].addEventListener('click', function() {
+                var arrow = this.childNodes[1];
+                arrow.classList.toggle('rotate');
+                var content = this.nextElementSibling;
+                content.classList.toggle('hide');
+              });
+            }
+
+            document.addEventListener('DOMContentLoaded', function() {
+              createToggler('#navToggler', '#docsNav', 'docsSliderActive');
+              createToggler('#tocToggler', 'body', 'tocActive');
+
+              var headings = document.querySelector('.toc-headings');
+              headings && headings.addEventListener('click', function(event) {
+                var el = event.target;
+                while(el !== headings){
+                  if (el.tagName === 'A') {
+                    document.body.classList.remove('tocActive');
+                    break;
+                  } else{
+                    el = el.parentNode;
+                  }
+                }
+              }, false);
+
+              function createToggler(togglerSelector, targetSelector, className) {
+                var toggler = document.querySelector(togglerSelector);
+                var target = document.querySelector(targetSelector);
+
+                if (!toggler) {
+                  return;
+                }
+
+                toggler.onclick = function(event) {
+                  event.preventDefault();
+
+                  target.classList.toggle(className);
+                };
+              }
+            });
+        </script></nav></div><div class="container mainContainer docsContainer"><div class="wrapper"><div class="post"><header class="postHeader"><h1 id="__docusaurus" class="postHeaderTitle">Build your efficient model with PytorchVideo/Accelerator</h1></header><article><div><span><h2><a class="anchor" aria-hidden="true" id="introduction"></a><a href="#introduction" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Introduction</h2>
+<p>In this tutorial, we will go through:</p>
+<ul>
+<li>Basics of efficient blocks in PytorchVideo/Accelerator;</li>
+<li>Design, train and deploy a model composed of efficient blocks for mobile CPU.</li>
+</ul>
+<h2><a class="anchor" aria-hidden="true" id="basics-of-efficient-blocks-in-pytorchvideoaccelerator"></a><a href="#basics-of-efficient-blocks-in-pytorchvideoaccelerator" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Basics of efficient blocks in PytorchVideo/Accelerator</h2>
+<p>Efficient blocks are blocks with high efficiency. For a target device, we benchmark efficiency of basic network components and provide a collection of efficient blocks under <code>pytorchvideo/layers/accelerator/&lt;target_device&gt;</code> (for simple layers) and <code>pytorchvideo/models/accelerator/&lt;target_device&gt;</code> (for complex modules such as residual block). Inferencing of a model built up with corresponding efficient blocks on target device is guranteed to be efficient.</p>
+<p>Each efficient block module is an instance of nn.Module, and has two forms: <strong>original form</strong> (for training) and <strong>deploy form</strong> (for inference). When in original form, the efficient block module has exactly the same behavior as a corresponding vanilla nn.Module for both forward and backward operation. User can freely mix and match efficient blocks for the same target device and build up their own model. Once model is built and trained, user can convert each efficient block in model into deploy form. The conversion will do graph and kernel optimization on each efficient block, and efficient block in deploy form is arithmetically equivalent to original form but has much higher efficiency during inference.</p>
+<h2><a class="anchor" aria-hidden="true" id="design-train-and-deploy-a-model-composed-of-efficient-blocks-for-mobile-cpu"></a><a href="#design-train-and-deploy-a-model-composed-of-efficient-blocks-for-mobile-cpu" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Design, train and deploy a model composed of efficient blocks for mobile CPU</h2>
+<h3><a class="anchor" aria-hidden="true" id="build-a-model"></a><a href="#build-a-model" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Build a model</h3>
+<p>In this section, let's go through the process of design, train and deploy using a example toy model using efficient blocks under <code>pytorchvideo/layers/accelerator/mobile_cpu</code> and <code>pytorchvideo/models/accelerator/mobile_cpu</code>, which includes:</p>
+<ul>
+<li>One conv3d head layer with 5x1x1 kernel followed by ReLU activation;</li>
+<li>One residual block with squeeze-excite;</li>
+<li>One average pool and fully connected layer as final output.</li>
+</ul>
+<p>First, let's import efficient blocks.</p>
+<pre><code class="hljs css language-python"><span class="hljs-comment"># Imports</span>
+<span class="hljs-keyword">import</span> torch.nn <span class="hljs-keyword">as</span> nn
+<span class="hljs-keyword">from</span> pytorchvideo.layers.accelerator.mobile_cpu.activation_functions <span class="hljs-keyword">import</span> (
+    supported_act_functions,
+)
+<span class="hljs-keyword">from</span> pytorchvideo.layers.accelerator.mobile_cpu.convolutions <span class="hljs-keyword">import</span> (
+    Conv3d5x1x1BnAct,
+)
+<span class="hljs-keyword">from</span> pytorchvideo.models.accelerator.mobile_cpu.residual_blocks <span class="hljs-keyword">import</span> (
+    X3dBottleneckBlock,
+)
+<span class="hljs-keyword">from</span> pytorchvideo.layers.accelerator.mobile_cpu.pool <span class="hljs-keyword">import</span> AdaptiveAvgPool3dOutSize1
+<span class="hljs-keyword">from</span> pytorchvideo.layers.accelerator.mobile_cpu.fully_connected <span class="hljs-keyword">import</span> FullyConnected
+
+</code></pre>
+<p>Then we can build a model using those efficient blocks.</p>
+<pre><code class="hljs css language-python"><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">MyNet</span><span class="hljs-params">(nn.Module)</span>:</span>
+    <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">__init__</span><span class="hljs-params">(
+        self,
+        in_channel=<span class="hljs-number">3</span>,  <span class="hljs-comment"># input channel of first 5x1x1 layer</span>
+        residual_block_channel=<span class="hljs-number">24</span>,  <span class="hljs-comment"># input channel of residual block</span>
+        expansion_ratio=<span class="hljs-number">3</span>, <span class="hljs-comment"># expansion ratio of residual block</span>
+        num_classes=<span class="hljs-number">4</span>, <span class="hljs-comment"># final output classes</span>
+    )</span>:</span>
+        super().__init__()
+        <span class="hljs-comment"># s1 - 5x1x1 conv3d layer</span>
+        self.s1 = Conv3d5x1x1BnAct(
+            in_channel,
+            residual_block_channel,
+            bias=<span class="hljs-literal">False</span>,
+            groups=<span class="hljs-number">1</span>,
+            use_bn=<span class="hljs-literal">False</span>,
+        )
+        <span class="hljs-comment"># s2 - residual block</span>
+        mid_channel = int(residual_block_channel * expansion_ratio)
+        self.s2 = X3dBottleneckBlock(
+                in_channels=residual_block_channel,
+                mid_channels=mid_channel,
+                out_channels=residual_block_channel,
+                use_residual=<span class="hljs-literal">True</span>,
+                spatial_stride=<span class="hljs-number">1</span>,
+                se_ratio=<span class="hljs-number">0.0625</span>,
+                act_functions=(<span class="hljs-string">"relu"</span>, <span class="hljs-string">"swish"</span>, <span class="hljs-string">"relu"</span>),
+                use_bn=(<span class="hljs-literal">True</span>, <span class="hljs-literal">True</span>, <span class="hljs-literal">True</span>),
+            )
+        <span class="hljs-comment"># Average pool and fully connected layer</span>
+        self.avg_pool = AdaptiveAvgPool3dOutSize1()
+        self.projection = FullyConnected(residual_block_channel, num_classes, bias=<span class="hljs-literal">True</span>)
+        self.act = supported_act_functions[<span class="hljs-string">'relu'</span>]()
+
+    <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">forward</span><span class="hljs-params">(self, x)</span>:</span>
+        x = self.s1(x)
+        x = self.s2(x)
+        x = self.avg_pool(x)
+        <span class="hljs-comment"># (N, C, T, H, W) -&gt; (N, T, H, W, C).</span>
+        x = x.permute((<span class="hljs-number">0</span>, <span class="hljs-number">2</span>, <span class="hljs-number">3</span>, <span class="hljs-number">4</span>, <span class="hljs-number">1</span>))
+        x = self.projection(x)
+        <span class="hljs-comment"># Performs fully convolutional inference.</span>
+        <span class="hljs-keyword">if</span> <span class="hljs-keyword">not</span> self.training:
+            x = self.act(x)
+            x = x.mean([<span class="hljs-number">1</span>, <span class="hljs-number">2</span>, <span class="hljs-number">3</span>])
+        x = x.view(x.shape[<span class="hljs-number">0</span>], <span class="hljs-number">-1</span>)
+
+        <span class="hljs-keyword">return</span> x
+</code></pre>
+<p>We can instantiate MyNet and its efficient blocks will be in original form.</p>
+<pre><code class="hljs css language-python">net_inst = MyNet()
+print(net_inst)
+</code></pre>
+<pre><code class="hljs">MyNet(
+  (s1): Conv3d5x1x1BnAct(
+    (kernel): Sequential(
+      (conv): Conv3d(3, 24, kernel_size=(5, 1, 1), stride=(1, 1, 1), padding=(2, 0, 0), bias=False)
+      (act): ReLU(
+        (act): ReLU(inplace=True)
+      )
+    )
+  )
+  (s2): X3dBottleneckBlock(
+    (_residual_add_func): FloatFunctional(
+      (activation_post_process): Identity()
+    )
+    (final_act): ReLU(
+      (act): ReLU(inplace=True)
+    )
+    (layers): Sequential(
+      (conv_0): Conv3dPwBnAct(
+        (kernel): Sequential(
+          (conv): Conv3d(24, 72, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+          (bn): BatchNorm3d(72, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+          (act): ReLU(
+            (act): ReLU(inplace=True)
+          )
+        )
+      )
+      (conv_1): Conv3d3x3x3DwBnAct(
+        (kernel): Sequential(
+          (conv): Conv3d(72, 72, kernel_size=(3, 3, 3), stride=(1, 1, 1), padding=(1, 1, 1), groups=72, bias=False)
+          (bn): BatchNorm3d(72, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+          (act): Identity(
+            (act): Identity()
+          )
+        )
+      )
+      (se): SqueezeExcitation(
+        (se): SqueezeExcitation(
+          (block): Sequential(
+            (0): Conv3d(72, 8, kernel_size=(1, 1, 1), stride=(1, 1, 1))
+            (1): ReLU()
+            (2): Conv3d(8, 72, kernel_size=(1, 1, 1), stride=(1, 1, 1))
+            (3): Sigmoid()
+          )
+        )
+      )
+      (act_func_1): Swish(
+        (act): Swish()
+      )
+      (conv_2): Conv3dPwBnAct(
+        (kernel): Sequential(
+          (conv): Conv3d(72, 24, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+          (bn): BatchNorm3d(24, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+          (act): Identity(
+            (act): Identity()
+          )
+        )
+      )
+    )
+  )
+  (avg_pool): AdaptiveAvgPool3dOutSize1(
+    (pool): AdaptiveAvgPool3d(output_size=1)
+  )
+  (projection): FullyConnected(
+    (model): Linear(in_features=24, out_features=4, bias=True)
+  )
+  (act): ReLU(
+    (act): ReLU(inplace=True)
+  )
+)
+</code></pre>
+<h3><a class="anchor" aria-hidden="true" id="train-model"></a><a href="#train-model" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Train model</h3>
+<p>Then we can train the model with your dataset/optimizer. Here we skip this training step, and just leave the weight as initial value.</p>
+<h3><a class="anchor" aria-hidden="true" id="deploy-model"></a><a href="#deploy-model" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Deploy model</h3>
+<p>Now the model is ready to deploy. First of all, let's convert the model into deploy form. In order to do that, we need to use <code>convert_to_deployable_form</code> utility and provide an example input tensor to the model. Note that once the model is converted into deploy form, the input size should be the same as the example input tensor size during conversion.</p>
+<pre><code class="hljs css language-python"><span class="hljs-keyword">import</span> torch
+<span class="hljs-keyword">from</span> pytorchvideo.accelerator.deployment.mobile_cpu.utils.model_conversion <span class="hljs-keyword">import</span> (
+    convert_to_deployable_form,
+)
+input_blob_size = (<span class="hljs-number">1</span>, <span class="hljs-number">3</span>, <span class="hljs-number">4</span>, <span class="hljs-number">6</span>, <span class="hljs-number">6</span>)
+input_tensor = torch.randn(input_blob_size)
+net_inst_deploy = convert_to_deployable_form(net_inst, input_tensor)
+
+</code></pre>
+<p>We can see that the network graph has been changed after conversion, which did kernel and graph optimization.</p>
+<pre><code class="hljs css language-python">print(net_inst_deploy)
+</code></pre>
+<pre><code class="hljs">MyNet(
+  (s1): Conv3d5x1x1BnAct(
+    (kernel): Sequential(
+      (conv): _Conv3dTemporalKernel5Decomposed(
+        (_conv2d_0): Conv2d(3, 24, kernel_size=(1, 1), stride=(1, 1), bias=False)
+        (_conv2d_1): Conv2d(3, 24, kernel_size=(1, 1), stride=(1, 1), bias=False)
+        (_conv2d_2): Conv2d(3, 24, kernel_size=(1, 1), stride=(1, 1), bias=False)
+        (_conv2d_3): Conv2d(3, 24, kernel_size=(1, 1), stride=(1, 1), bias=False)
+        (_conv2d_4): Conv2d(3, 24, kernel_size=(1, 1), stride=(1, 1), bias=False)
+        (_add_funcs): ModuleList(
+          (0): FloatFunctional(
+            (activation_post_process): Identity()
+          )
+          (1): FloatFunctional(
+            (activation_post_process): Identity()
+          )
+          (2): FloatFunctional(
+            (activation_post_process): Identity()
+          )
+          (3): FloatFunctional(
+            (activation_post_process): Identity()
+          )
+          (4): FloatFunctional(
+            (activation_post_process): Identity()
+          )
+          (5): FloatFunctional(
+            (activation_post_process): Identity()
+          )
+          (6): FloatFunctional(
+            (activation_post_process): Identity()
+          )
+          (7): FloatFunctional(
+            (activation_post_process): Identity()
+          )
+          (8): FloatFunctional(
+            (activation_post_process): Identity()
+          )
+          (9): FloatFunctional(
+            (activation_post_process): Identity()
+          )
+        )
+        (_cat_func): FloatFunctional(
+          (activation_post_process): Identity()
+        )
+      )
+      (act): ReLU(
+        (act): ReLU(inplace=True)
+      )
+    )
+  )
+  (s2): X3dBottleneckBlock(
+    (_residual_add_func): FloatFunctional(
+      (activation_post_process): Identity()
+    )
+    (final_act): ReLU(
+      (act): ReLU(inplace=True)
+    )
+    (layers): Sequential(
+      (conv_0): Conv3dPwBnAct(
+        (kernel): Sequential(
+          (0): _Reshape()
+          (1): Sequential(
+            (conv): ConvReLU2d(
+              (0): Conv2d(24, 72, kernel_size=(1, 1), stride=(1, 1))
+              (1): ReLU(inplace=True)
+            )
+            (bn): Identity()
+            (act): ReLU(
+              (act): Identity()
+            )
+          )
+          (2): _Reshape()
+        )
+      )
+      (conv_1): Conv3d3x3x3DwBnAct(
+        (kernel): Sequential(
+          (conv): _Conv3dTemporalKernel3Decomposed(
+            (_conv2d_3_3_0): Conv2d(72, 72, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=72, bias=False)
+            (_conv2d_3_3_2): Conv2d(72, 72, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=72, bias=False)
+            (_conv2d_3_3_1): Conv2d(72, 72, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=72)
+            (_add_funcs): ModuleList(
+              (0): FloatFunctional(
+                (activation_post_process): Identity()
+              )
+              (1): FloatFunctional(
+                (activation_post_process): Identity()
+              )
+              (2): FloatFunctional(
+                (activation_post_process): Identity()
+              )
+              (3): FloatFunctional(
+                (activation_post_process): Identity()
+              )
+              (4): FloatFunctional(
+                (activation_post_process): Identity()
+              )
+              (5): FloatFunctional(
+                (activation_post_process): Identity()
+              )
+            )
+            (_cat_func): FloatFunctional(
+              (activation_post_process): Identity()
+            )
+          )
+          (bn): Identity()
+          (act): Identity(
+            (act): Identity()
+          )
+        )
+      )
+      (se): SqueezeExcitation(
+        (se): _SkipConnectMul(
+          (layer): Sequential(
+            (0): AdaptiveAvgPool3d(output_size=1)
+            (1): _Reshape()
+            (2): Linear(in_features=72, out_features=8, bias=True)
+            (3): ReLU()
+            (4): Linear(in_features=8, out_features=72, bias=True)
+            (5): Sigmoid()
+            (6): _Reshape()
+          )
+          (mul_func): FloatFunctional(
+            (activation_post_process): Identity()
+          )
+        )
+      )
+      (act_func_1): Swish(
+        (act): _NaiveSwish(
+          (mul_func): FloatFunctional(
+            (activation_post_process): Identity()
+          )
+        )
+      )
+      (conv_2): Conv3dPwBnAct(
+        (kernel): Sequential(
+          (0): _Reshape()
+          (1): Sequential(
+            (conv): Conv2d(72, 24, kernel_size=(1, 1), stride=(1, 1))
+            (bn): Identity()
+            (act): Identity(
+              (act): Identity()
+            )
+          )
+          (2): _Reshape()
+        )
+      )
+    )
+  )
+  (avg_pool): AdaptiveAvgPool3dOutSize1(
+    (pool): AvgPool3d(kernel_size=(4, 6, 6), stride=(4, 6, 6), padding=0)
+  )
+  (projection): FullyConnected(
+    (model): Linear(in_features=24, out_features=4, bias=True)
+  )
+  (act): ReLU(
+    (act): ReLU(inplace=True)
+  )
+)
+</code></pre>
+<p>Let's check whether the network after conversion is arithmetically equivalent. We expect the output to be very close before/after conversion, with some small difference due to numeric noise from floating point operation.</p>
+<pre><code class="hljs css language-python">net_inst.eval()
+out_ref = net_inst(input_tensor)
+out = net_inst_deploy(input_tensor)
+
+max_err = float(torch.max(torch.abs(out_ref - out)))
+print(<span class="hljs-string">f"max error is <span class="hljs-subst">{max_err}</span>"</span>)
+</code></pre>
+<pre><code class="hljs">max error is 2.9802322387695312e-08
+</code></pre>
+<p>Next we have two options: either deploy floating point model, or quantize model into int8 and then deploy.</p>
+<p>Let's first assume we want to deploy floating point model. In this case, all we need to do is to export jit trace and then apply <code>optimize_for_mobile</code> for final optimization.</p>
+<pre><code class="hljs css language-python"><span class="hljs-keyword">from</span> torch.utils.mobile_optimizer <span class="hljs-keyword">import</span> (
+    optimize_for_mobile,
+)
+traced_model = torch.jit.trace(net_inst_deploy, input_tensor, strict=<span class="hljs-literal">False</span>)
+traced_model_opt = optimize_for_mobile(traced_model)
+<span class="hljs-comment"># Here we can save the traced_model_opt to JIT file using traced_model_opt.save(&lt;file_path&gt;)</span>
+</code></pre>
+<p>Alternatively, we may also want to deploy a quantized model. Efficient blocks are quantization-friendly by design - just wrap the model in deploy form with <code>QuantStub/DeQuantStub</code> and it is ready for Pytorch eager mode quantization.</p>
+<pre><code class="hljs css language-python"><span class="hljs-comment"># Wrapper class for adding QuantStub/DeQuantStub.</span>
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">quant_stub_wrapper</span><span class="hljs-params">(nn.Module)</span>:</span>
+    <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">__init__</span><span class="hljs-params">(self, module_in)</span>:</span>
+        super().__init__()
+        self.quant = torch.quantization.QuantStub()
+        self.model = module_in
+        self.dequant = torch.quantization.DeQuantStub()
+    <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">forward</span><span class="hljs-params">(self, x)</span>:</span>
+        x = self.quant(x)
+        x = self.model(x)
+        x = self.dequant(x)
+        <span class="hljs-keyword">return</span> x
+</code></pre>
+<pre><code class="hljs css language-python">net_inst_quant_stub_wrapper = quant_stub_wrapper(net_inst_deploy)
+</code></pre>
+<p>Preparation step of quantization. Fusion has been done for efficient blocks automatically during <code>convert_to_deployable_form</code>, so we can just proceed to <code>torch.quantization.prepare</code></p>
+<pre><code class="hljs css language-python">net_inst_quant_stub_wrapper.qconfig = torch.quantization.default_qconfig
+net_inst_quant_stub_wrapper_prepared = torch.quantization.prepare(net_inst_quant_stub_wrapper)
+</code></pre>
+<p>Calibration and quantization. After preparation we will do calibration of quantization by feeding calibration dataset (skipped here) and then do quantization.</p>
+<pre><code class="hljs css language-python"><span class="hljs-comment"># calibration is skipped here.</span>
+net_inst_quant_stub_wrapper_quantized = torch.quantization.convert(net_inst_quant_stub_wrapper_prepared)
+</code></pre>
+<p>Then we can export trace of int8 model and deploy on mobile devices.</p>
+<pre><code class="hljs css language-python">traced_model_int8 = torch.jit.trace(net_inst_quant_stub_wrapper_quantized, input_tensor, strict=<span class="hljs-literal">False</span>)
+traced_model_int8_opt = optimize_for_mobile(traced_model_int8)
+<span class="hljs-comment"># Here we can save the traced_model_opt to JIT file using traced_model_int8_opt.save(&lt;file_path&gt;)</span>
+</code></pre>
+</span></div></article></div><div class="docs-prevnext"><a class="docs-prev button" href="/docs/tutorial_torchhub_inference"><span class="arrow-prev">← </span><span class="function-name-prevnext">Running a pre-trained PyTorchVideo classification model using Torch Hub</span></a><a class="docs-next button" href="/docs/tutorial_accelerator_use_accelerator_model_zoo"><span class="function-name-prevnext">Use PytorchVideo/Accelerator Model Zoo</span><span class="arrow-next"> →</span></a></div></div></div><nav class="onPageNav"><ul class="toc-headings"><li><a href="#introduction">Introduction</a></li><li><a href="#basics-of-efficient-blocks-in-pytorchvideoaccelerator">Basics of efficient blocks in PytorchVideo/Accelerator</a></li><li><a href="#design-train-and-deploy-a-model-composed-of-efficient-blocks-for-mobile-cpu">Design, train and deploy a model composed of efficient blocks for mobile CPU</a><ul class="toc-headings"><li><a href="#build-a-model">Build a model</a></li><li><a href="#train-model">Train model</a></li><li><a href="#deploy-model">Deploy model</a></li></ul></li></ul></nav></div><footer class="nav-footer" id="footer"><section class="sitemap"><div class="footerSection"><div class="social"><a class="github-button" href="https://github.com/facebookresearch/pytorchvideo" data-count-href="https://github.com/facebookresearch/pytorchvideo/stargazers" data-show-count="true" data-count-aria-label="# stargazers on GitHub" aria-label="Star PytorchVideo on GitHub">pytorchvideo</a></div></div></section><a href="https://opensource.facebook.com/" target="_blank" rel="noreferrer noopener" class="fbOpenSource"><img src="/img/oss_logo.png" alt="Facebook Open Source" width="170" height="45"/></a><section class="copyright">Copyright © 2021 Facebook, Inc<br/>Legal:<a href="https://opensource.facebook.com/legal/privacy/" target="_blank" rel="noreferrer noopener">Privacy</a><a href="https://opensource.facebook.com/legal/terms/" target="_blank" rel="noreferrer noopener">Terms</a></section></footer></div></body></html>

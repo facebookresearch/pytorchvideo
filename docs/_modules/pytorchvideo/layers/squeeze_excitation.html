@@ -1,0 +1,539 @@
+
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>pytorchvideo.layers.squeeze_excitation &mdash; PyTorchVideo  documentation</title>
+  
+
+  
+  
+    <link rel="shortcut icon" href="../../../_static/favicon.png"/>
+  
+  
+  
+    <link rel="canonical" href="https://pytorchvideo.org/docs/_modules/pytorchvideo/layers/squeeze_excitation.html"/>
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <!-- <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" /> -->
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+
+  
+  <script src="../../../_static/js/modernizr.min.js"></script>
+
+  <!-- Preload the theme fonts -->
+
+<link rel="preload" href="../../../_static/fonts/FreightSans/freight-sans-book.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../../../_static/fonts/FreightSans/freight-sans-medium.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../../../_static/fonts/IBMPlexMono/IBMPlexMono-Medium.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../../../_static/fonts/FreightSans/freight-sans-bold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../../../_static/fonts/FreightSans/freight-sans-medium-italic.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../../../_static/fonts/IBMPlexMono/IBMPlexMono-SemiBold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+
+<!-- Preload the katex fonts -->
+
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Math-Italic.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Main-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Main-Bold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size1-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size4-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size2-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size3-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Caligraphic-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.2/css/all.css" integrity="sha384-vSIIfh2YWi9wW0r9iZe7RJPrKwp6bG+s9QZMoITbCckVJqGCCRhc+ccxNcdpHuYu" crossorigin="anonymous">
+</head>
+
+<div class="container-fluid header-holder tutorials-header" id="header-holder">
+  <div class="container">
+    <div class="header-container">
+      <a class="header-logo" href="https://pytorchvideo.org" aria-label="PyTorch"></a>
+
+      <div class="main-menu">
+        <ul>
+          <li>
+            <a href="https://pytorchvideo.org">Home</a>
+          </li>
+          <li>
+            <a href="https://pytorchvideo.org/docs/tutorial_overview">Tutorials</a>
+          </li>
+          <li>
+            <a href="https://github.com/facebookresearch/pytorchvideo/">Github</a>
+          </li>
+        </ul>
+      </div>
+
+      <a class="main-menu-open-button" href="#" data-behavior="open-mobile-menu"></a>
+    </div>
+  </div>
+</div>
+
+
+<body class="pytorch-body">
+
+   
+
+    
+
+    <div class="table-of-contents-link-wrapper">
+      <span>Table of Contents</span>
+      <a href="#" class="toggle-table-of-contents" data-behavior="toggle-table-of-contents"></a>
+    </div>
+
+    <nav data-toggle="wy-nav-shift" class="pytorch-left-menu" id="pytorch-left-menu">
+      <div class="pytorch-side-scroll">
+        <div class="pytorch-menu pytorch-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          <div class="pytorch-left-menu-search">
+            
+
+            
+              
+              
+            
+
+            
+
+
+  
+
+
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search Docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+            
+          </div>
+
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Models</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../docs/models.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../docs/model_zoo.html">Model Zoo and Benchmarks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/models/index.html">Models API</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Data</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../docs/data.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../docs/data_preparation.html">Data Preparation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/data/index.html">Data API</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Transforms</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../docs/transforms.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/transforms/index.html">Transforms API</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Layers</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../docs/layers.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/layers/index.html">Layers API</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Accelerator</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../docs/accelerator.html">Overview</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <div class="pytorch-container">
+      <div class="pytorch-page-level-bar" id="pytorch-page-level-bar">
+        <div class="pytorch-breadcrumbs-wrapper">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="pytorch-breadcrumbs">
+    
+      <li>
+        <a href="../../../index.html">
+          
+            Docs
+          
+        </a> &gt;
+      </li>
+
+        
+          <li><a href="../../index.html">Module code</a> &gt;</li>
+        
+      <li>pytorchvideo.layers.squeeze_excitation</li>
+    
+    
+      <li class="pytorch-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+</div>
+        </div>
+
+        <div class="pytorch-shortcuts-wrapper" id="pytorch-shortcuts-wrapper">
+          Shortcuts
+        </div>
+      </div>
+
+      <section data-toggle="wy-nav-shift" id="pytorch-content-wrap" class="pytorch-content-wrap">
+        <div class="pytorch-content-left">
+
+        
+          
+          <div class="rst-content">
+          
+            <div role="main" class="main-content" itemscope="itemscope" itemtype="http://schema.org/Article">
+             <article itemprop="articleBody" id="pytorch-article" class="pytorch-article">
+              
+  <h1>Source code for pytorchvideo.layers.squeeze_excitation</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved.</span>
+
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Optional</span>
+
+<span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">import</span> <span class="nn">torch.nn</span> <span class="k">as</span> <span class="nn">nn</span>
+<span class="kn">from</span> <span class="nn">pytorchvideo.models.resnet</span> <span class="kn">import</span> <span class="n">ResBlock</span>
+
+
+<div class="viewcode-block" id="SqueezeAndExcitationLayer2D"><a class="viewcode-back" href="../../../api/layers/layers.html#pytorchvideo.layers.squeeze_excitation.SqueezeAndExcitationLayer2D">[docs]</a><span class="k">class</span> <span class="nc">SqueezeAndExcitationLayer2D</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;2D Squeeze and excitation layer, as per https://arxiv.org/pdf/1709.01507.pdf&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="SqueezeAndExcitationLayer2D.__init__"><a class="viewcode-back" href="../../../api/layers/layers.html#pytorchvideo.layers.squeeze_excitation.SqueezeAndExcitationLayer2D.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">in_planes</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">reduction_ratio</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="mi">16</span><span class="p">,</span>
+        <span class="n">reduced_planes</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
+
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Args:</span>
+<span class="sd">            in_planes (int): input channel dimension.</span>
+<span class="sd">            reduction_ratio (int): factor by which in_planes should be reduced to</span>
+<span class="sd">                get the output channel dimension.</span>
+<span class="sd">            reduced_planes (int): Output channel dimension. Only one of reduction_ratio</span>
+<span class="sd">                or reduced_planes should be defined.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">avgpool</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">AdaptiveAvgPool2d</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+
+        <span class="c1"># Either reduction_ratio is defined, or out_planes is defined</span>
+        <span class="k">assert</span> <span class="nb">bool</span><span class="p">(</span><span class="n">reduction_ratio</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">bool</span><span class="p">(</span>
+            <span class="n">reduced_planes</span>
+        <span class="p">),</span> <span class="s2">&quot;Only of reduction_ratio or reduced_planes should be defined for SE layer&quot;</span>
+
+        <span class="n">reduced_planes</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">in_planes</span> <span class="o">//</span> <span class="n">reduction_ratio</span> <span class="k">if</span> <span class="n">reduced_planes</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">reduced_planes</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">excitation</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">in_planes</span><span class="p">,</span> <span class="n">reduced_planes</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span><span class="p">(),</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">reduced_planes</span><span class="p">,</span> <span class="n">in_planes</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">Sigmoid</span><span class="p">(),</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="SqueezeAndExcitationLayer2D.forward"><a class="viewcode-back" href="../../../api/layers/layers.html#pytorchvideo.layers.squeeze_excitation.SqueezeAndExcitationLayer2D.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Args:</span>
+<span class="sd">            x (tensor): 2D image of format C * H * W</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">x_squeezed</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">avgpool</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">x_excited</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">excitation</span><span class="p">(</span><span class="n">x_squeezed</span><span class="p">)</span>
+        <span class="n">x_scaled</span> <span class="o">=</span> <span class="n">x</span> <span class="o">*</span> <span class="n">x_excited</span>
+        <span class="k">return</span> <span class="n">x_scaled</span></div></div>
+
+
+<div class="viewcode-block" id="create_audio_2d_squeeze_excitation_block"><a class="viewcode-back" href="../../../api/layers/layers.html#pytorchvideo.layers.squeeze_excitation.create_audio_2d_squeeze_excitation_block">[docs]</a><span class="k">def</span> <span class="nf">create_audio_2d_squeeze_excitation_block</span><span class="p">(</span>
+    <span class="n">dim_in</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">dim_out</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">use_se</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">se_reduction_ratio</span><span class="o">=</span><span class="mi">16</span><span class="p">,</span>
+    <span class="n">branch_fusion</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="n">x</span> <span class="o">+</span> <span class="n">y</span><span class="p">,</span>
+    <span class="c1"># Conv configs.</span>
+    <span class="n">conv_a_kernel_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span>
+    <span class="n">conv_a_stride</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="n">conv_a_padding</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="n">conv_b_kernel_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span>
+    <span class="n">conv_b_stride</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="n">conv_b_padding</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="c1"># Norm configs.</span>
+    <span class="n">norm</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">BatchNorm2d</span><span class="p">,</span>
+    <span class="n">norm_eps</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1e-5</span><span class="p">,</span>
+    <span class="n">norm_momentum</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.1</span><span class="p">,</span>
+    <span class="c1"># Activation configs.</span>
+    <span class="n">activation</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">:</span>
+
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    2-D Residual block with squeeze excitation (SE2D) for 2d. Performs a summation between an</span>
+<span class="sd">    identity shortcut in branch1 and a main block in branch2. When the input and</span>
+<span class="sd">    output dimensions are different, a convolution followed by a normalization</span>
+<span class="sd">    will be performed.</span>
+
+<span class="sd">    ::</span>
+
+<span class="sd">                                         Input</span>
+<span class="sd">                                           |-------+</span>
+<span class="sd">                                           ↓       |</span>
+<span class="sd">                                         conv2d    |</span>
+<span class="sd">                                           ↓       |</span>
+<span class="sd">                                          Norm     |</span>
+<span class="sd">                                           ↓       |</span>
+<span class="sd">                                       activation  |</span>
+<span class="sd">                                           ↓       |</span>
+<span class="sd">                                         conv2d    |</span>
+<span class="sd">                                           ↓       |</span>
+<span class="sd">                                          Norm     |</span>
+<span class="sd">                                           ↓       |</span>
+<span class="sd">                                          SE2D     |</span>
+<span class="sd">                                           ↓       }</span>
+<span class="sd">                                       Summation ←-+</span>
+<span class="sd">                                           ↓</span>
+<span class="sd">                                       Activation</span>
+
+<span class="sd">    Normalization examples include: BatchNorm3d and None (no normalization).</span>
+<span class="sd">    Activation examples include: ReLU, Softmax, Sigmoid, and None (no activation).</span>
+<span class="sd">    Transform examples include: BottleneckBlock.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        dim_in (int): input channel size to the bottleneck block.</span>
+<span class="sd">        dim_out (int): output channel size of the bottleneck.</span>
+<span class="sd">        use_se (bool): if true, use squeeze excitation layer in the bottleneck.</span>
+<span class="sd">        se_reduction_ratio (int): factor by which input channels should be reduced to</span>
+<span class="sd">            get the output channel dimension in SE layer.</span>
+<span class="sd">        branch_fusion (callable): a callable that constructs summation layer.</span>
+<span class="sd">            Examples include: lambda x, y: x + y, OctaveSum.</span>
+
+<span class="sd">        conv_a_kernel_size (tuple): convolutional kernel size(s) for conv_a.</span>
+<span class="sd">        conv_a_stride (tuple): convolutional stride size(s) for conv_a.</span>
+<span class="sd">        conv_a_padding (tuple): convolutional padding(s) for conv_a.</span>
+<span class="sd">        conv_b_kernel_size (tuple): convolutional kernel size(s) for conv_b.</span>
+<span class="sd">        conv_b_stride (tuple): convolutional stride size(s) for conv_b.</span>
+<span class="sd">        conv_b_padding (tuple): convolutional padding(s) for conv_b.</span>
+
+<span class="sd">        norm (callable): a callable that constructs normalization layer. Examples</span>
+<span class="sd">            include nn.BatchNorm3d, None (not performing normalization).</span>
+<span class="sd">        norm_eps (float): normalization epsilon.</span>
+<span class="sd">        norm_momentum (float): normalization momentum.</span>
+
+<span class="sd">        activation (callable): a callable that constructs activation layer in</span>
+<span class="sd">            bottleneck and block. Examples include: nn.ReLU, nn.Softmax, nn.Sigmoid,</span>
+<span class="sd">            and None (not performing activation).</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        (nn.Module): resnet basic block layer.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">branch2</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">(</span>
+            <span class="n">dim_in</span><span class="p">,</span>
+            <span class="n">dim_out</span><span class="p">,</span>
+            <span class="n">kernel_size</span><span class="o">=</span><span class="n">conv_a_kernel_size</span><span class="p">,</span>
+            <span class="n">stride</span><span class="o">=</span><span class="n">conv_a_stride</span><span class="p">,</span>
+            <span class="n">padding</span><span class="o">=</span><span class="n">conv_a_padding</span><span class="p">,</span>
+            <span class="n">bias</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="p">),</span>
+        <span class="n">norm</span><span class="p">(</span><span class="n">dim_out</span><span class="p">,</span> <span class="n">norm_eps</span><span class="p">,</span> <span class="n">norm_momentum</span><span class="p">),</span>
+        <span class="n">activation</span><span class="p">()</span> <span class="k">if</span> <span class="n">activation</span> <span class="k">else</span> <span class="n">nn</span><span class="o">.</span><span class="n">Identity</span><span class="p">(),</span>
+        <span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">(</span>
+            <span class="n">dim_out</span><span class="p">,</span>
+            <span class="n">dim_out</span><span class="p">,</span>
+            <span class="n">kernel_size</span><span class="o">=</span><span class="n">conv_b_kernel_size</span><span class="p">,</span>
+            <span class="n">stride</span><span class="o">=</span><span class="n">conv_b_stride</span><span class="p">,</span>
+            <span class="n">padding</span><span class="o">=</span><span class="n">conv_b_padding</span><span class="p">,</span>
+            <span class="n">bias</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="p">),</span>
+        <span class="n">norm</span><span class="p">(</span><span class="n">dim_out</span><span class="p">,</span> <span class="n">norm_eps</span><span class="p">,</span> <span class="n">norm_momentum</span><span class="p">),</span>
+    <span class="p">]</span>
+    <span class="k">if</span> <span class="n">use_se</span><span class="p">:</span>
+        <span class="n">branch2</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+            <span class="n">SqueezeAndExcitationLayer2D</span><span class="p">(</span><span class="n">dim_out</span><span class="p">,</span> <span class="n">reduction_ratio</span><span class="o">=</span><span class="n">se_reduction_ratio</span><span class="p">)</span>
+        <span class="p">)</span>
+    <span class="n">branch2</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span><span class="o">*</span><span class="n">branch2</span><span class="p">)</span>
+
+    <span class="n">branch1_conv</span><span class="p">,</span> <span class="n">branch1_norm</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+    <span class="k">if</span> <span class="n">conv_a_stride</span> <span class="o">*</span> <span class="n">conv_b_stride</span> <span class="o">!=</span> <span class="mi">1</span> <span class="ow">or</span> <span class="n">dim_in</span> <span class="o">!=</span> <span class="n">dim_out</span><span class="p">:</span>
+        <span class="n">branch1_conv</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">(</span>
+            <span class="n">dim_in</span><span class="p">,</span>
+            <span class="n">dim_out</span><span class="p">,</span>
+            <span class="n">kernel_size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+            <span class="n">stride</span><span class="o">=</span><span class="n">conv_a_stride</span> <span class="o">*</span> <span class="n">conv_b_stride</span><span class="p">,</span>
+            <span class="n">bias</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">branch1_norm</span> <span class="o">=</span> <span class="n">norm</span><span class="p">(</span><span class="n">dim_out</span><span class="p">,</span> <span class="n">norm_eps</span><span class="p">,</span> <span class="n">norm_momentum</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">ResBlock</span><span class="p">(</span>
+        <span class="n">branch1_conv</span><span class="o">=</span><span class="n">branch1_conv</span><span class="p">,</span>
+        <span class="n">branch1_norm</span><span class="o">=</span><span class="n">branch1_norm</span><span class="p">,</span>
+        <span class="n">branch2</span><span class="o">=</span><span class="n">branch2</span><span class="p">,</span>
+        <span class="n">activation</span><span class="o">=</span><span class="n">activation</span><span class="p">()</span> <span class="k">if</span> <span class="n">activation</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">branch_fusion</span><span class="o">=</span><span class="n">branch_fusion</span><span class="p">,</span>
+    <span class="p">)</span></div>
+</pre></div>
+
+             </article>
+             
+            </div>
+            <!-- <footer>
+  
+
+  
+
+    <hr>
+
+  
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2021, PyTorchVideo contributors.
+
+    </p>
+  </div>
+    
+      <div>
+        Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+      </div>
+     
+
+</footer>
+ -->
+          </div>
+        </div>
+
+        <div class="pytorch-content-right" id="pytorch-content-right">
+          <div class="pytorch-right-menu" id="pytorch-right-menu">
+            <div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
+              
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+  
+
+
+  
+
+     
+       <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+         <script src="../../../_static/jquery.js"></script>
+         <script src="../../../_static/underscore.js"></script>
+         <script src="../../../_static/doctools.js"></script>
+         <script src="../../../_static/language_data.js"></script>
+     
+
+  
+
+  <script type="text/javascript" src="../../../_static/js/vendor/popper.min.js"></script>
+  <script type="text/javascript" src="../../../_static/js/vendor/bootstrap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/list.js/1.5.0/list.min.js"></script>
+  <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+  <!-- Begin Footer -->
+
+
+  <div class="cookie-banner-wrapper">
+  <div class="container">
+    <p class="gdpr-notice">To analyze traffic and optimize your experience, we serve cookies on this site. By clicking or navigating, you agree to allow our usage of cookies. As the current maintainers of this site, Facebook’s Cookies Policy applies. Learn more, including about available controls: <a href="https://www.facebook.com/policies/cookies/">Cookies Policy</a>.</p>
+    <img class="close-button" src="../../../_static/images/pytorch-x.svg">
+  </div>
+</div>
+
+  <!-- End Footer -->
+
+  <!-- Begin Mobile Menu -->
+
+  <div class="mobile-main-menu">
+    <div class="container-fluid">
+      <div class="container">
+        <div class="mobile-main-menu-header-container">
+          <a class="header-logo" href="https://pytorchvideo.org" aria-label="PyTorch"></a>
+          <a class="main-menu-close-button" href="#" data-behavior="close-mobile-menu"></a>
+        </div>
+      </div>
+    </div>
+
+    <div class="mobile-main-menu-links-container">
+      <div class="main-menu">
+        <ul>
+          <li>
+            <a href="https://pytorchvideo.org">Home</a>
+          </li>
+          <li>
+            <a href="https://pytorchvideo.org/docs/tutorial_overview">Tutorials</a>
+          </li>
+          <li>
+            <a href="https://github.com/facebookresearch/pytorchvideo/">Github</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <!-- End Mobile Menu -->
+
+  <script type="text/javascript" src="../../../_static/js/vendor/anchor.min.js"></script>
+
+  <script type="text/javascript">
+    $(document).ready(function() {
+      mobileMenu.bind();
+      mobileTOC.bind();
+      pytorchAnchors.bind();
+      sideMenus.bind();
+      scrollToAnchor.bind();
+      highlightNavigation.bind();
+      mainMenuDropdown.bind();
+      filterTags.bind();
+
+      // Add class to links that have code blocks, since we cannot create links in code blocks
+      $("article.pytorch-article a span.pre").each(function(e) {
+        $(this).closest("a").addClass("has-code");
+      });
+    })
+  </script>
+</body>
+</html>

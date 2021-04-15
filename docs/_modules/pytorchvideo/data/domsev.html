@@ -1,0 +1,678 @@
+
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>pytorchvideo.data.domsev &mdash; PyTorchVideo  documentation</title>
+  
+
+  
+  
+    <link rel="shortcut icon" href="../../../_static/favicon.png"/>
+  
+  
+  
+    <link rel="canonical" href="https://pytorchvideo.org/docs/_modules/pytorchvideo/data/domsev.html"/>
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <!-- <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" /> -->
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+
+  
+  <script src="../../../_static/js/modernizr.min.js"></script>
+
+  <!-- Preload the theme fonts -->
+
+<link rel="preload" href="../../../_static/fonts/FreightSans/freight-sans-book.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../../../_static/fonts/FreightSans/freight-sans-medium.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../../../_static/fonts/IBMPlexMono/IBMPlexMono-Medium.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../../../_static/fonts/FreightSans/freight-sans-bold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../../../_static/fonts/FreightSans/freight-sans-medium-italic.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../../../_static/fonts/IBMPlexMono/IBMPlexMono-SemiBold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+
+<!-- Preload the katex fonts -->
+
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Math-Italic.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Main-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Main-Bold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size1-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size4-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size2-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size3-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Caligraphic-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.2/css/all.css" integrity="sha384-vSIIfh2YWi9wW0r9iZe7RJPrKwp6bG+s9QZMoITbCckVJqGCCRhc+ccxNcdpHuYu" crossorigin="anonymous">
+</head>
+
+<div class="container-fluid header-holder tutorials-header" id="header-holder">
+  <div class="container">
+    <div class="header-container">
+      <a class="header-logo" href="https://pytorchvideo.org" aria-label="PyTorch"></a>
+
+      <div class="main-menu">
+        <ul>
+          <li>
+            <a href="https://pytorchvideo.org">Home</a>
+          </li>
+          <li>
+            <a href="https://pytorchvideo.org/docs/tutorial_overview">Tutorials</a>
+          </li>
+          <li>
+            <a href="https://github.com/facebookresearch/pytorchvideo/">Github</a>
+          </li>
+        </ul>
+      </div>
+
+      <a class="main-menu-open-button" href="#" data-behavior="open-mobile-menu"></a>
+    </div>
+  </div>
+</div>
+
+
+<body class="pytorch-body">
+
+   
+
+    
+
+    <div class="table-of-contents-link-wrapper">
+      <span>Table of Contents</span>
+      <a href="#" class="toggle-table-of-contents" data-behavior="toggle-table-of-contents"></a>
+    </div>
+
+    <nav data-toggle="wy-nav-shift" class="pytorch-left-menu" id="pytorch-left-menu">
+      <div class="pytorch-side-scroll">
+        <div class="pytorch-menu pytorch-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          <div class="pytorch-left-menu-search">
+            
+
+            
+              
+              
+            
+
+            
+
+
+  
+
+
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search Docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+            
+          </div>
+
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Models</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../docs/models.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../docs/model_zoo.html">Model Zoo and Benchmarks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/models/index.html">Models API</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Data</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../docs/data.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../docs/data_preparation.html">Data Preparation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/data/index.html">Data API</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Transforms</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../docs/transforms.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/transforms/index.html">Transforms API</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Layers</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../docs/layers.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/layers/index.html">Layers API</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Accelerator</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../docs/accelerator.html">Overview</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <div class="pytorch-container">
+      <div class="pytorch-page-level-bar" id="pytorch-page-level-bar">
+        <div class="pytorch-breadcrumbs-wrapper">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="pytorch-breadcrumbs">
+    
+      <li>
+        <a href="../../../index.html">
+          
+            Docs
+          
+        </a> &gt;
+      </li>
+
+        
+          <li><a href="../../index.html">Module code</a> &gt;</li>
+        
+      <li>pytorchvideo.data.domsev</li>
+    
+    
+      <li class="pytorch-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+</div>
+        </div>
+
+        <div class="pytorch-shortcuts-wrapper" id="pytorch-shortcuts-wrapper">
+          Shortcuts
+        </div>
+      </div>
+
+      <section data-toggle="wy-nav-shift" id="pytorch-content-wrap" class="pytorch-content-wrap">
+        <div class="pytorch-content-left">
+
+        
+          
+          <div class="rst-content">
+          
+            <div role="main" class="main-content" itemscope="itemscope" itemtype="http://schema.org/Article">
+             <article itemprop="articleBody" id="pytorch-article" class="pytorch-article">
+              
+  <h1>Source code for pytorchvideo.data.domsev</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved.</span>
+
+<span class="kn">import</span> <span class="nn">math</span>
+<span class="kn">from</span> <span class="nn">dataclasses</span> <span class="kn">import</span> <span class="n">dataclass</span><span class="p">,</span> <span class="n">fields</span> <span class="k">as</span> <span class="n">dataclass_fields</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span>
+
+<span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">from</span> <span class="nn">pytorchvideo.data.dataset_manifest_utils</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">EncodedVideoInfo</span><span class="p">,</span>
+    <span class="n">VideoClipInfo</span><span class="p">,</span>
+    <span class="n">VideoDataset</span><span class="p">,</span>
+    <span class="n">VideoDatasetType</span><span class="p">,</span>
+    <span class="n">VideoInfo</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">pytorchvideo.data.utils</span> <span class="kn">import</span> <span class="n">DataclassFieldCaster</span><span class="p">,</span> <span class="n">load_dataclass_dict_from_csv</span>
+<span class="kn">from</span> <span class="nn">pytorchvideo.data.video</span> <span class="kn">import</span> <span class="n">Video</span>
+
+
+<span class="n">USER_SCENE_MAP</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="mi">0</span><span class="p">:</span> <span class="s2">&quot;none&quot;</span><span class="p">,</span>
+    <span class="mi">1</span><span class="p">:</span> <span class="s2">&quot;indoor&quot;</span><span class="p">,</span>
+    <span class="mi">2</span><span class="p">:</span> <span class="s2">&quot;nature&quot;</span><span class="p">,</span>
+    <span class="mi">3</span><span class="p">:</span> <span class="s2">&quot;crowded_environment&quot;</span><span class="p">,</span>
+    <span class="mi">4</span><span class="p">:</span> <span class="s2">&quot;urban&quot;</span><span class="p">,</span>
+<span class="p">}</span>
+
+<span class="n">USER_ACTIVITY_MAP</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="mi">0</span><span class="p">:</span> <span class="s2">&quot;none&quot;</span><span class="p">,</span>
+    <span class="mi">1</span><span class="p">:</span> <span class="s2">&quot;walking&quot;</span><span class="p">,</span>
+    <span class="mi">2</span><span class="p">:</span> <span class="s2">&quot;running&quot;</span><span class="p">,</span>
+    <span class="mi">3</span><span class="p">:</span> <span class="s2">&quot;standing&quot;</span><span class="p">,</span>
+    <span class="mi">4</span><span class="p">:</span> <span class="s2">&quot;biking&quot;</span><span class="p">,</span>
+    <span class="mi">5</span><span class="p">:</span> <span class="s2">&quot;driving&quot;</span><span class="p">,</span>
+    <span class="mi">6</span><span class="p">:</span> <span class="s2">&quot;playing&quot;</span><span class="p">,</span>
+    <span class="mi">7</span><span class="p">:</span> <span class="s2">&quot;cooking&quot;</span><span class="p">,</span>
+    <span class="mi">8</span><span class="p">:</span> <span class="s2">&quot;eating&quot;</span><span class="p">,</span>
+    <span class="mi">9</span><span class="p">:</span> <span class="s2">&quot;observing&quot;</span><span class="p">,</span>
+    <span class="mi">10</span><span class="p">:</span> <span class="s2">&quot;in_conversation&quot;</span><span class="p">,</span>
+    <span class="mi">11</span><span class="p">:</span> <span class="s2">&quot;browsing&quot;</span><span class="p">,</span>
+    <span class="mi">12</span><span class="p">:</span> <span class="s2">&quot;shopping&quot;</span><span class="p">,</span>
+<span class="p">}</span>
+
+<span class="n">USER_ATTENTION_MAP</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="mi">0</span><span class="p">:</span> <span class="s2">&quot;none&quot;</span><span class="p">,</span>
+    <span class="mi">1</span><span class="p">:</span> <span class="s2">&quot;paying_attention&quot;</span><span class="p">,</span>
+    <span class="mi">2</span><span class="p">:</span> <span class="s2">&quot;interacting&quot;</span><span class="p">,</span>
+<span class="p">}</span>
+
+
+<div class="viewcode-block" id="ActivityData"><a class="viewcode-back" href="../../../api/data/domsev.html#pytorchvideo.data.domsev.ActivityData">[docs]</a><span class="nd">@dataclass</span>
+<span class="k">class</span> <span class="nc">ActivityData</span><span class="p">(</span><span class="n">DataclassFieldCaster</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class representing a contiguous activity video segment from the DoMSEV dataset.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">video_id</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">start_time</span><span class="p">:</span> <span class="nb">float</span>  <span class="c1"># Start time of the activity, in seconds</span>
+    <span class="n">stop_time</span><span class="p">:</span> <span class="nb">float</span>  <span class="c1"># Stop time of the activity, in seconds</span>
+    <span class="n">start_frame</span><span class="p">:</span> <span class="nb">int</span>  <span class="c1"># 0-indexed ID of the start frame (inclusive)</span>
+    <span class="n">stop_frame</span><span class="p">:</span> <span class="nb">int</span>  <span class="c1"># 0-index ID of the stop frame (inclusive)</span>
+    <span class="n">activity_id</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">activity_name</span><span class="p">:</span> <span class="nb">str</span></div>
+
+
+<span class="c1"># Utility functions</span>
+<div class="viewcode-block" id="seconds_to_frame_index"><a class="viewcode-back" href="../../../api/data/domsev.html#pytorchvideo.data.domsev.seconds_to_frame_index">[docs]</a><span class="k">def</span> <span class="nf">seconds_to_frame_index</span><span class="p">(</span>
+    <span class="n">time_in_seconds</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">fps</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">zero_indexed</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Converts a point in time (in seconds) within a video clip to its closest</span>
+<span class="sd">    frame indexed (rounding down), based on a specified frame rate.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        time_in_seconds (float): The point in time within the video.</span>
+<span class="sd">        fps (int): The frame rate (frames per second) of the video.</span>
+<span class="sd">        zero_indexed (Optional[bool]): Whether the returned frame should be</span>
+<span class="sd">            zero-indexed (if True) or one-indexed (if False).</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        (int) The index of the nearest frame (rounding down to the nearest integer).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">frame_idx</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">time_in_seconds</span> <span class="o">*</span> <span class="n">fps</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">zero_indexed</span><span class="p">:</span>
+        <span class="n">frame_idx</span> <span class="o">+=</span> <span class="mi">1</span>
+    <span class="k">return</span> <span class="n">frame_idx</span></div>
+
+
+<div class="viewcode-block" id="frame_index_to_seconds"><a class="viewcode-back" href="../../../api/data/domsev.html#pytorchvideo.data.domsev.frame_index_to_seconds">[docs]</a><span class="k">def</span> <span class="nf">frame_index_to_seconds</span><span class="p">(</span>
+    <span class="n">frame_index</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">fps</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">zero_indexed</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Converts a frame index within a video clip to the corresponding</span>
+<span class="sd">    point in time (in seconds) within the video, based on a specified frame rate.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        frame_index (int): The index of the frame within the video.</span>
+<span class="sd">        fps (int): The frame rate (frames per second) of the video.</span>
+<span class="sd">        zero_indexed (Optional[bool]): Whether the specified frame is zero-indexed</span>
+<span class="sd">            (if True) or one-indexed (if False).</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        (float) The point in time within the video.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">zero_indexed</span><span class="p">:</span>
+        <span class="n">frame_index</span> <span class="o">-=</span> <span class="mi">1</span>
+    <span class="n">time_in_seconds</span> <span class="o">=</span> <span class="n">frame_index</span> <span class="o">/</span> <span class="n">fps</span>
+    <span class="k">return</span> <span class="n">time_in_seconds</span></div>
+
+
+<div class="viewcode-block" id="get_overlap_for_time_range_pair"><a class="viewcode-back" href="../../../api/data/domsev.html#pytorchvideo.data.domsev.get_overlap_for_time_range_pair">[docs]</a><span class="k">def</span> <span class="nf">get_overlap_for_time_range_pair</span><span class="p">(</span>
+    <span class="n">t1_start</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">t1_stop</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">t2_start</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">t2_stop</span><span class="p">:</span> <span class="nb">float</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]:</span>
+    <span class="sd">&quot;&quot;&quot;Calculates the overlap between two time ranges, if one exists.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        (Optional[Tuple]) A tuple of &lt;overlap_start_time, overlap_stop_time&gt; if</span>
+<span class="sd">        an overlap is found, or None otherwise.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Check if there is an overlap</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">t1_start</span> <span class="o">&lt;=</span> <span class="n">t2_stop</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">t2_start</span> <span class="o">&lt;=</span> <span class="n">t1_stop</span><span class="p">):</span>
+        <span class="c1"># Calculate the overlap period</span>
+        <span class="n">overlap_start_time</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">t1_start</span><span class="p">,</span> <span class="n">t2_start</span><span class="p">)</span>
+        <span class="n">overlap_stop_time</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">t1_stop</span><span class="p">,</span> <span class="n">t2_stop</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">overlap_start_time</span><span class="p">,</span> <span class="n">overlap_stop_time</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="DomsevDataset"><a class="viewcode-back" href="../../../api/data/domsev.html#pytorchvideo.data.domsev.DomsevDataset">[docs]</a><span class="k">class</span> <span class="nc">DomsevDataset</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">Dataset</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Egocentric activity classification video dataset for DoMSEV stored as</span>
+<span class="sd">    an encoded video (with frame-level labels).</span>
+<span class="sd">    &lt;https://www.verlab.dcc.ufmg.br/semantic-hyperlapse/cvpr2018-dataset/&gt;</span>
+
+<span class="sd">    This dataset handles the loading, decoding, and configurable clip</span>
+<span class="sd">    sampling for the videos.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">video_data_manifest_file_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">video_info_file_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">activities_file_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">clip_sampler</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span>
+            <span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Video</span><span class="p">],</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">ActivityData</span><span class="p">]]],</span> <span class="n">List</span><span class="p">[</span><span class="n">VideoClipInfo</span><span class="p">]</span>
+        <span class="p">],</span>
+        <span class="n">dataset_type</span><span class="p">:</span> <span class="n">VideoDatasetType</span> <span class="o">=</span> <span class="n">VideoDatasetType</span><span class="o">.</span><span class="n">Frame</span><span class="p">,</span>
+        <span class="n">frames_per_second</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="n">transform</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">[[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]],</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">frame_filter</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">[[</span><span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]],</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">multithreaded_io</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">        Args:</span>
+<span class="s2">            video_data_manifest_file_path (str):</span>
+<span class="s2">                The path to a json file outlining the available video data for the</span>
+<span class="s2">                associated videos.  File must be a csv (w/header) with columns:</span>
+<span class="s2">                </span><span class="si">{</span><span class="p">[</span><span class="n">f</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">dataclass_fields</span><span class="p">(</span><span class="n">EncodedVideoInfo</span><span class="p">)]</span><span class="si">}</span><span class="s2"></span>
+
+<span class="s2">                To generate this file from a directory of video frames, see helper</span>
+<span class="s2">                functions in Module: pytorchvideo.data.domsev.utils</span>
+
+<span class="s2">            video_info_file_path (str):</span>
+<span class="s2">                Path or URI to manifest with basic metadata of each video.</span>
+<span class="s2">                File must be a csv (w/header) with columns:</span>
+<span class="s2">                </span><span class="si">{</span><span class="p">[</span><span class="n">f</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">dataclass_fields</span><span class="p">(</span><span class="n">VideoInfo</span><span class="p">)]</span><span class="si">}</span><span class="s2"></span>
+
+<span class="s2">            activities_file_path (str):</span>
+<span class="s2">                Path or URI to manifest with activity annotations for each video.</span>
+<span class="s2">                File must be a csv (w/header) with columns:</span>
+<span class="s2">                </span><span class="si">{</span><span class="p">[</span><span class="n">f</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">dataclass_fields</span><span class="p">(</span><span class="n">ActivityData</span><span class="p">)]</span><span class="si">}</span><span class="s2"></span>
+
+<span class="s2">            clip_sampler: Callable[</span>
+<span class="s2">                [Dict[str, Video], Dict[str, List[ActivityData]]], List[VideoClipInfo]</span>
+<span class="s2">            ],</span>
+
+<span class="s2">            dataset_type (VideoDatasetType): The dataformat in which dataset</span>
+<span class="s2">                video data is store (e.g. video frames, encoded video etc).</span>
+
+<span class="s2">            frames_per_second (int): The FPS of the stored videos. (NOTE:</span>
+<span class="s2">                this is variable and may be different than the original FPS</span>
+<span class="s2">                reported on the DoMSEV dataset website -- it depends on the</span>
+<span class="s2">                subsampling and frame extraction done internally at Facebook).</span>
+
+<span class="s2">            transform (Optional[Callable[[Dict[str, Any]], Any]]):</span>
+<span class="s2">                This callable is evaluated on the clip output before the clip is returned.</span>
+<span class="s2">                It can be used for user-defined preprocessing and augmentations to the clips.</span>
+
+<span class="s2">                    The clip input is a dictionary with the following format:</span>
+<span class="s2">                        </span><span class="se">{{</span><span class="s2"></span>
+<span class="s2">                            &#39;video&#39;: &lt;video_tensor&gt;,</span>
+<span class="s2">                            &#39;audio&#39;: &lt;audio_tensor&gt;,</span>
+<span class="s2">                            &#39;activities&#39;: &lt;activities_tensor&gt;,</span>
+<span class="s2">                            &#39;start_time&#39;: &lt;float&gt;,</span>
+<span class="s2">                            &#39;stop_time&#39;: &lt;float&gt;</span>
+<span class="s2">                        </span><span class="se">}}</span><span class="s2"></span>
+
+<span class="s2">                If transform is None, the raw clip output in the above format is</span>
+<span class="s2">                returned unmodified.</span>
+
+<span class="s2">            frame_filter (Optional[Callable[[List[int]], List[int]]]):</span>
+<span class="s2">                This callable is evaluated on the set of available frame inidices to be</span>
+<span class="s2">                included in a sampled clip. This can be used to subselect frames within</span>
+<span class="s2">                a clip to be loaded.</span>
+
+<span class="s2">            multithreaded_io (bool):</span>
+<span class="s2">                Boolean to control whether parllelizable io operations are performed across</span>
+<span class="s2">                multiple threads.</span>
+<span class="s2">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="n">video_info_file_path</span>
+        <span class="k">assert</span> <span class="n">activities_file_path</span>
+        <span class="k">assert</span> <span class="n">video_data_manifest_file_path</span>
+
+        <span class="c1"># Populate video and metadata data providers</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_videos</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Video</span><span class="p">]</span> <span class="o">=</span> <span class="n">VideoDataset</span><span class="o">.</span><span class="n">_load_videos</span><span class="p">(</span>
+            <span class="n">video_data_manifest_file_path</span><span class="p">,</span>
+            <span class="n">video_info_file_path</span><span class="p">,</span>
+            <span class="n">multithreaded_io</span><span class="p">,</span>
+            <span class="n">dataset_type</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_activities</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">ActivityData</span><span class="p">]]</span> <span class="o">=</span> <span class="n">load_dataclass_dict_from_csv</span><span class="p">(</span>
+            <span class="n">activities_file_path</span><span class="p">,</span> <span class="n">ActivityData</span><span class="p">,</span> <span class="s2">&quot;video_id&quot;</span><span class="p">,</span> <span class="n">list_per_key</span><span class="o">=</span><span class="kc">True</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Sample datapoints</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_clips</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">VideoClipInfo</span><span class="p">]</span> <span class="o">=</span> <span class="n">clip_sampler</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_videos</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_activities</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_frames_per_second</span> <span class="o">=</span> <span class="n">frames_per_second</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_user_transform</span> <span class="o">=</span> <span class="n">transform</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_transform</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_transform_clip</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_frame_filter</span> <span class="o">=</span> <span class="n">frame_filter</span>
+
+<div class="viewcode-block" id="DomsevDataset.__getitem__"><a class="viewcode-back" href="../../../api/data/domsev.html#pytorchvideo.data.domsev.DomsevDataset.__getitem__">[docs]</a>    <span class="k">def</span> <span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Samples a video clip associated to the given index.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            index (int): index for the video clip.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            A video clip with the following format if transform is None:</span>
+<span class="sd">                {{</span>
+<span class="sd">                    &#39;video_id&#39;: &lt;str&gt;,</span>
+<span class="sd">                    &#39;video&#39;: &lt;video_tensor&gt;,</span>
+<span class="sd">                    &#39;audio&#39;: &lt;audio_tensor&gt;,</span>
+<span class="sd">                    &#39;activities&#39;: &lt;activities_tensor&gt;,</span>
+<span class="sd">                    &#39;start_time&#39;: &lt;float&gt;,</span>
+<span class="sd">                    &#39;stop_time&#39;: &lt;float&gt;</span>
+<span class="sd">                }}</span>
+<span class="sd">            Otherwise, the transform defines the clip output.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">clip</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_clips</span><span class="p">[</span><span class="n">index</span><span class="p">]</span>
+
+        <span class="c1"># Filter activities by only the ones that appear within the clip boundaries,</span>
+        <span class="c1"># and unpack the activities so there is one per frame in the clip</span>
+        <span class="n">activities_in_video</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_activities</span><span class="p">[</span><span class="n">clip</span><span class="o">.</span><span class="n">video_id</span><span class="p">]</span>
+        <span class="n">activities_in_clip</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">activity</span> <span class="ow">in</span> <span class="n">activities_in_video</span><span class="p">:</span>
+            <span class="n">overlap_period</span> <span class="o">=</span> <span class="n">get_overlap_for_time_range_pair</span><span class="p">(</span>
+                <span class="n">clip</span><span class="o">.</span><span class="n">start_time</span><span class="p">,</span> <span class="n">clip</span><span class="o">.</span><span class="n">stop_time</span><span class="p">,</span> <span class="n">activity</span><span class="o">.</span><span class="n">start_time</span><span class="p">,</span> <span class="n">activity</span><span class="o">.</span><span class="n">stop_time</span>
+            <span class="p">)</span>
+            <span class="k">if</span> <span class="n">overlap_period</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">overlap_start_time</span><span class="p">,</span> <span class="n">overlap_stop_time</span> <span class="o">=</span> <span class="n">overlap_period</span>
+
+                <span class="c1"># Convert the overlapping period between clip and activity to</span>
+                <span class="c1"># 0-indexed start and stop frame indexes, so we can unpack 1</span>
+                <span class="c1"># activity label per frame.</span>
+                <span class="n">overlap_start_frame</span> <span class="o">=</span> <span class="n">seconds_to_frame_index</span><span class="p">(</span>
+                    <span class="n">overlap_start_time</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_frames_per_second</span>
+                <span class="p">)</span>
+                <span class="n">overlap_stop_frame</span> <span class="o">=</span> <span class="n">seconds_to_frame_index</span><span class="p">(</span>
+                    <span class="n">overlap_stop_time</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_frames_per_second</span>
+                <span class="p">)</span>
+
+                <span class="c1"># Append 1 activity label per frame</span>
+                <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">overlap_start_frame</span><span class="p">,</span> <span class="n">overlap_stop_frame</span><span class="p">):</span>
+                    <span class="n">activities_in_clip</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">activity</span><span class="p">)</span>
+
+        <span class="c1"># Convert the list of ActivityData objects to a tensor of just the activity class IDs</span>
+        <span class="n">activity_class_ids</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">activities_in_clip</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">activity_id</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">activities_in_clip</span><span class="p">))</span>
+        <span class="p">]</span>
+        <span class="n">activity_class_ids_tensor</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">activity_class_ids</span><span class="p">)</span>
+
+        <span class="n">clip_data</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;video_id&quot;</span><span class="p">:</span> <span class="n">clip</span><span class="o">.</span><span class="n">video_id</span><span class="p">,</span>
+            <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">_videos</span><span class="p">[</span><span class="n">clip</span><span class="o">.</span><span class="n">video_id</span><span class="p">]</span><span class="o">.</span><span class="n">get_clip</span><span class="p">(</span><span class="n">clip</span><span class="o">.</span><span class="n">start_time</span><span class="p">,</span> <span class="n">clip</span><span class="o">.</span><span class="n">stop_time</span><span class="p">),</span>
+            <span class="s2">&quot;activities&quot;</span><span class="p">:</span> <span class="n">activity_class_ids_tensor</span><span class="p">,</span>
+            <span class="s2">&quot;start_time&quot;</span><span class="p">:</span> <span class="n">clip</span><span class="o">.</span><span class="n">start_time</span><span class="p">,</span>
+            <span class="s2">&quot;stop_time&quot;</span><span class="p">:</span> <span class="n">clip</span><span class="o">.</span><span class="n">stop_time</span><span class="p">,</span>
+        <span class="p">}</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_transform</span><span class="p">:</span>
+            <span class="n">clip_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_transform</span><span class="p">(</span><span class="n">clip_data</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">clip_data</span></div>
+
+<div class="viewcode-block" id="DomsevDataset.__len__"><a class="viewcode-back" href="../../../api/data/domsev.html#pytorchvideo.data.domsev.DomsevDataset.__len__">[docs]</a>    <span class="k">def</span> <span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            The number of video clips in the dataset.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_clips</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">_transform_clip</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">clip</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;Transforms a given video clip, according to some pre-defined transforms</span>
+<span class="sd">        and an optional user transform function (self._user_transform).</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            clip (Dict[str, Any]): The clip that will be transformed.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            (Dict[str, Any]) The transformed clip.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">clip</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">clip</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">clip</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([])</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_user_transform</span><span class="p">:</span>
+            <span class="n">clip</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_user_transform</span><span class="p">(</span><span class="n">clip</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">clip</span></div>
+</pre></div>
+
+             </article>
+             
+            </div>
+            <!-- <footer>
+  
+
+  
+
+    <hr>
+
+  
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2021, PyTorchVideo contributors.
+
+    </p>
+  </div>
+    
+      <div>
+        Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+      </div>
+     
+
+</footer>
+ -->
+          </div>
+        </div>
+
+        <div class="pytorch-content-right" id="pytorch-content-right">
+          <div class="pytorch-right-menu" id="pytorch-right-menu">
+            <div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
+              
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+  
+
+
+  
+
+     
+       <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+         <script src="../../../_static/jquery.js"></script>
+         <script src="../../../_static/underscore.js"></script>
+         <script src="../../../_static/doctools.js"></script>
+         <script src="../../../_static/language_data.js"></script>
+     
+
+  
+
+  <script type="text/javascript" src="../../../_static/js/vendor/popper.min.js"></script>
+  <script type="text/javascript" src="../../../_static/js/vendor/bootstrap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/list.js/1.5.0/list.min.js"></script>
+  <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+  <!-- Begin Footer -->
+
+
+  <div class="cookie-banner-wrapper">
+  <div class="container">
+    <p class="gdpr-notice">To analyze traffic and optimize your experience, we serve cookies on this site. By clicking or navigating, you agree to allow our usage of cookies. As the current maintainers of this site, Facebook’s Cookies Policy applies. Learn more, including about available controls: <a href="https://www.facebook.com/policies/cookies/">Cookies Policy</a>.</p>
+    <img class="close-button" src="../../../_static/images/pytorch-x.svg">
+  </div>
+</div>
+
+  <!-- End Footer -->
+
+  <!-- Begin Mobile Menu -->
+
+  <div class="mobile-main-menu">
+    <div class="container-fluid">
+      <div class="container">
+        <div class="mobile-main-menu-header-container">
+          <a class="header-logo" href="https://pytorchvideo.org" aria-label="PyTorch"></a>
+          <a class="main-menu-close-button" href="#" data-behavior="close-mobile-menu"></a>
+        </div>
+      </div>
+    </div>
+
+    <div class="mobile-main-menu-links-container">
+      <div class="main-menu">
+        <ul>
+          <li>
+            <a href="https://pytorchvideo.org">Home</a>
+          </li>
+          <li>
+            <a href="https://pytorchvideo.org/docs/tutorial_overview">Tutorials</a>
+          </li>
+          <li>
+            <a href="https://github.com/facebookresearch/pytorchvideo/">Github</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <!-- End Mobile Menu -->
+
+  <script type="text/javascript" src="../../../_static/js/vendor/anchor.min.js"></script>
+
+  <script type="text/javascript">
+    $(document).ready(function() {
+      mobileMenu.bind();
+      mobileTOC.bind();
+      pytorchAnchors.bind();
+      sideMenus.bind();
+      scrollToAnchor.bind();
+      highlightNavigation.bind();
+      mainMenuDropdown.bind();
+      filterTags.bind();
+
+      // Add class to links that have code blocks, since we cannot create links in code blocks
+      $("article.pytorch-article a span.pre").each(function(e) {
+        $(this).closest("a").addClass("has-code");
+      });
+    })
+  </script>
+</body>
+</html>

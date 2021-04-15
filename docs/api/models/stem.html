@@ -1,0 +1,516 @@
+
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>pytorchvideo.models.stem &mdash; PyTorchVideo  documentation</title>
+  
+
+  
+  
+    <link rel="shortcut icon" href="../../_static/favicon.png"/>
+  
+  
+  
+    <link rel="canonical" href="https://pytorchvideo.org/docs/api/models/stem.html"/>
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <!-- <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" /> -->
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="pytorchvideo.models.csn" href="csn.html" />
+    <link rel="prev" title="pytorchvideo.models.head" href="head.html" /> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+  <!-- Preload the theme fonts -->
+
+<link rel="preload" href="../../_static/fonts/FreightSans/freight-sans-book.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../../_static/fonts/FreightSans/freight-sans-medium.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../../_static/fonts/IBMPlexMono/IBMPlexMono-Medium.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../../_static/fonts/FreightSans/freight-sans-bold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../../_static/fonts/FreightSans/freight-sans-medium-italic.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../../_static/fonts/IBMPlexMono/IBMPlexMono-SemiBold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+
+<!-- Preload the katex fonts -->
+
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Math-Italic.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Main-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Main-Bold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size1-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size4-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size2-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size3-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Caligraphic-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.2/css/all.css" integrity="sha384-vSIIfh2YWi9wW0r9iZe7RJPrKwp6bG+s9QZMoITbCckVJqGCCRhc+ccxNcdpHuYu" crossorigin="anonymous">
+</head>
+
+<div class="container-fluid header-holder tutorials-header" id="header-holder">
+  <div class="container">
+    <div class="header-container">
+      <a class="header-logo" href="https://pytorchvideo.org" aria-label="PyTorch"></a>
+
+      <div class="main-menu">
+        <ul>
+          <li>
+            <a href="https://pytorchvideo.org">Home</a>
+          </li>
+          <li>
+            <a href="https://pytorchvideo.org/docs/tutorial_overview">Tutorials</a>
+          </li>
+          <li>
+            <a href="https://github.com/facebookresearch/pytorchvideo/">Github</a>
+          </li>
+        </ul>
+      </div>
+
+      <a class="main-menu-open-button" href="#" data-behavior="open-mobile-menu"></a>
+    </div>
+  </div>
+</div>
+
+
+<body class="pytorch-body">
+
+   
+
+    
+
+    <div class="table-of-contents-link-wrapper">
+      <span>Table of Contents</span>
+      <a href="#" class="toggle-table-of-contents" data-behavior="toggle-table-of-contents"></a>
+    </div>
+
+    <nav data-toggle="wy-nav-shift" class="pytorch-left-menu" id="pytorch-left-menu">
+      <div class="pytorch-side-scroll">
+        <div class="pytorch-menu pytorch-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          <div class="pytorch-left-menu-search">
+            
+
+            
+              
+              
+            
+
+            
+
+
+  
+
+
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search Docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+            
+          </div>
+
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Models</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../docs/models.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../docs/model_zoo.html">Model Zoo and Benchmarks</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Models API</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Data</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../docs/data.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../docs/data_preparation.html">Data Preparation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../data/index.html">Data API</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Transforms</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../docs/transforms.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../transforms/index.html">Transforms API</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Layers</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../docs/layers.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../layers/index.html">Layers API</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Accelerator</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../docs/accelerator.html">Overview</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <div class="pytorch-container">
+      <div class="pytorch-page-level-bar" id="pytorch-page-level-bar">
+        <div class="pytorch-breadcrumbs-wrapper">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="pytorch-breadcrumbs">
+    
+      <li>
+        <a href="../../index.html">
+          
+            Docs
+          
+        </a> &gt;
+      </li>
+
+        
+          <li><a href="index.html">Models API</a> &gt;</li>
+        
+      <li>pytorchvideo.models.stem</li>
+    
+    
+      <li class="pytorch-breadcrumbs-aside">
+        
+            
+            <a href="../../_sources/api/models/stem.rst.txt" rel="nofollow"><img src="../../_static/images/view-page-source-icon.svg"></a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+</div>
+        </div>
+
+        <div class="pytorch-shortcuts-wrapper" id="pytorch-shortcuts-wrapper">
+          Shortcuts
+        </div>
+      </div>
+
+      <section data-toggle="wy-nav-shift" id="pytorch-content-wrap" class="pytorch-content-wrap">
+        <div class="pytorch-content-left">
+
+        
+          
+          <div class="rst-content">
+          
+            <div role="main" class="main-content" itemscope="itemscope" itemtype="http://schema.org/Article">
+             <article itemprop="articleBody" id="pytorch-article" class="pytorch-article">
+              
+  <div class="section" id="module-pytorchvideo.models.stem">
+<span id="pytorchvideo-models-stem"></span><h1>pytorchvideo.models.stem<a class="headerlink" href="#module-pytorchvideo.models.stem" title="Permalink to this headline">¶</a></h1>
+<dl class="py function">
+<dt id="pytorchvideo.models.stem.create_res_basic_stem">
+<code class="sig-prename descclassname">pytorchvideo.models.stem.</code><code class="sig-name descname">create_res_basic_stem</code><span class="sig-paren">(</span><em class="sig-param">*</em>, <em class="sig-param">in_channels</em>, <em class="sig-param">out_channels</em>, <em class="sig-param">conv_kernel_size=(3</em>, <em class="sig-param">7</em>, <em class="sig-param">7)</em>, <em class="sig-param">conv_stride=(1</em>, <em class="sig-param">2</em>, <em class="sig-param">2)</em>, <em class="sig-param">conv_padding=(1</em>, <em class="sig-param">3</em>, <em class="sig-param">3)</em>, <em class="sig-param">conv_bias=False</em>, <em class="sig-param">conv=&lt;class 'torch.nn.modules.conv.Conv3d'&gt;</em>, <em class="sig-param">pool=&lt;class 'torch.nn.modules.pooling.MaxPool3d'&gt;</em>, <em class="sig-param">pool_kernel_size=(1</em>, <em class="sig-param">3</em>, <em class="sig-param">3)</em>, <em class="sig-param">pool_stride=(1</em>, <em class="sig-param">2</em>, <em class="sig-param">2)</em>, <em class="sig-param">pool_padding=(0</em>, <em class="sig-param">1</em>, <em class="sig-param">1)</em>, <em class="sig-param">norm=&lt;class 'torch.nn.modules.batchnorm.BatchNorm3d'&gt;</em>, <em class="sig-param">norm_eps=1e-05</em>, <em class="sig-param">norm_momentum=0.1</em>, <em class="sig-param">activation=&lt;class 'torch.nn.modules.activation.ReLU'&gt;</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pytorchvideo/models/stem.html#create_res_basic_stem"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytorchvideo.models.stem.create_res_basic_stem" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates the basic resnet stem layer. It performs spatiotemporal Convolution, BN, and
+Relu following by a spatiotemporal pooling.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>   Conv3d
+      ↓
+Normalization
+      ↓
+  Activation
+      ↓
+   Pool3d
+</pre></div>
+</div>
+<p>Normalization options include: BatchNorm3d and None (no normalization).
+Activation options include: ReLU, Softmax, Sigmoid, and None (no activation).
+Pool3d options include: AvgPool3d, MaxPool3d, and None (no pooling).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>in_channels</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – input channel size of the convolution.</p></li>
+<li><p><strong>out_channels</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – output channel size of the convolution.</p></li>
+<li><p><strong>conv_kernel_size</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#tuple" title="(in Python v3.6)"><em>tuple</em></a>) – convolutional kernel size(s).</p></li>
+<li><p><strong>conv_stride</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#tuple" title="(in Python v3.6)"><em>tuple</em></a>) – convolutional stride size(s).</p></li>
+<li><p><strong>conv_padding</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#tuple" title="(in Python v3.6)"><em>tuple</em></a>) – convolutional padding size(s).</p></li>
+<li><p><strong>conv_bias</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) – convolutional bias. If true, adds a learnable bias to the
+output.</p></li>
+<li><p><strong>conv</strong> (<em>callable</em>) – Callable used to build the convolution layer.</p></li>
+<li><p><strong>pool</strong> (<em>callable</em>) – a callable that constructs pooling layer, options include:
+nn.AvgPool3d, nn.MaxPool3d, and None (not performing pooling).</p></li>
+<li><p><strong>pool_kernel_size</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#tuple" title="(in Python v3.6)"><em>tuple</em></a>) – pooling kernel size(s).</p></li>
+<li><p><strong>pool_stride</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#tuple" title="(in Python v3.6)"><em>tuple</em></a>) – pooling stride size(s).</p></li>
+<li><p><strong>pool_padding</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#tuple" title="(in Python v3.6)"><em>tuple</em></a>) – pooling padding size(s).</p></li>
+<li><p><strong>norm</strong> (<em>callable</em>) – a callable that constructs normalization layer, options
+include nn.BatchNorm3d, None (not performing normalization).</p></li>
+<li><p><strong>norm_eps</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#float" title="(in Python v3.6)"><em>float</em></a>) – normalization epsilon.</p></li>
+<li><p><strong>norm_momentum</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#float" title="(in Python v3.6)"><em>float</em></a>) – normalization momentum.</p></li>
+<li><p><strong>activation</strong> (<em>callable</em>) – a callable that constructs activation layer, options
+include: nn.ReLU, nn.Softmax, nn.Sigmoid, and None (not performing
+activation).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><em>(nn.Module)</em> – resnet basic stem layer.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>torch.nn.modules.module.Module</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="pytorchvideo.models.stem.create_acoustic_res_basic_stem">
+<code class="sig-prename descclassname">pytorchvideo.models.stem.</code><code class="sig-name descname">create_acoustic_res_basic_stem</code><span class="sig-paren">(</span><em class="sig-param">*</em>, <em class="sig-param">in_channels</em>, <em class="sig-param">out_channels</em>, <em class="sig-param">conv_kernel_size=(3</em>, <em class="sig-param">7</em>, <em class="sig-param">7)</em>, <em class="sig-param">conv_stride=(1</em>, <em class="sig-param">1</em>, <em class="sig-param">1)</em>, <em class="sig-param">conv_padding=(1</em>, <em class="sig-param">3</em>, <em class="sig-param">3)</em>, <em class="sig-param">conv_bias=False</em>, <em class="sig-param">pool=&lt;class 'torch.nn.modules.pooling.MaxPool3d'&gt;</em>, <em class="sig-param">pool_kernel_size=(1</em>, <em class="sig-param">3</em>, <em class="sig-param">3)</em>, <em class="sig-param">pool_stride=(1</em>, <em class="sig-param">2</em>, <em class="sig-param">2)</em>, <em class="sig-param">pool_padding=(0</em>, <em class="sig-param">1</em>, <em class="sig-param">1)</em>, <em class="sig-param">norm=&lt;class 'torch.nn.modules.batchnorm.BatchNorm3d'&gt;</em>, <em class="sig-param">norm_eps=1e-05</em>, <em class="sig-param">norm_momentum=0.1</em>, <em class="sig-param">activation=&lt;class 'torch.nn.modules.activation.ReLU'&gt;</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pytorchvideo/models/stem.html#create_acoustic_res_basic_stem"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytorchvideo.models.stem.create_acoustic_res_basic_stem" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates the acoustic resnet stem layer. It performs a spatial and a temporal
+Convolution in parallel, then performs, BN, and Relu following by a spatiotemporal
+pooling.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Conv3d   Conv3d
+       ↓
+ Normalization
+       ↓
+   Activation
+       ↓
+    Pool3d
+</pre></div>
+</div>
+<p>Normalization options include: BatchNorm3d and None (no normalization).
+Activation options include: ReLU, Softmax, Sigmoid, and None (no activation).
+Pool3d options include: AvgPool3d, MaxPool3d, and None (no pooling).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>in_channels</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – input channel size of the convolution.</p></li>
+<li><p><strong>out_channels</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – output channel size of the convolution.</p></li>
+<li><p><strong>conv_kernel_size</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#tuple" title="(in Python v3.6)"><em>tuple</em></a>) – convolutional kernel size(s).</p></li>
+<li><p><strong>conv_stride</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#tuple" title="(in Python v3.6)"><em>tuple</em></a>) – convolutional stride size(s), it will be performed as
+temporal and spatial convolution in parallel.</p></li>
+<li><p><strong>conv_padding</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#tuple" title="(in Python v3.6)"><em>tuple</em></a>) – convolutional padding size(s), it  will be performed
+as temporal and spatial convolution in parallel.</p></li>
+<li><p><strong>conv_bias</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) – convolutional bias. If true, adds a learnable bias to the
+output.</p></li>
+<li><p><strong>pool</strong> (<em>callable</em>) – a callable that constructs pooling layer, options include:
+nn.AvgPool3d, nn.MaxPool3d, and None (not performing pooling).</p></li>
+<li><p><strong>pool_kernel_size</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#tuple" title="(in Python v3.6)"><em>tuple</em></a>) – pooling kernel size(s).</p></li>
+<li><p><strong>pool_stride</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#tuple" title="(in Python v3.6)"><em>tuple</em></a>) – pooling stride size(s).</p></li>
+<li><p><strong>pool_padding</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#tuple" title="(in Python v3.6)"><em>tuple</em></a>) – pooling padding size(s).</p></li>
+<li><p><strong>norm</strong> (<em>callable</em>) – a callable that constructs normalization layer, options
+include nn.BatchNorm3d, None (not performing normalization).</p></li>
+<li><p><strong>norm_eps</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#float" title="(in Python v3.6)"><em>float</em></a>) – normalization epsilon.</p></li>
+<li><p><strong>norm_momentum</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#float" title="(in Python v3.6)"><em>float</em></a>) – normalization momentum.</p></li>
+<li><p><strong>activation</strong> (<em>callable</em>) – a callable that constructs activation layer, options
+include: nn.ReLU, nn.Softmax, nn.Sigmoid, and None (not performing
+activation).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><em>(nn.Module)</em> – resnet basic stem layer.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>torch.nn.modules.module.Module</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt id="pytorchvideo.models.stem.ResNetBasicStem">
+<em class="property">class </em><code class="sig-prename descclassname">pytorchvideo.models.stem.</code><code class="sig-name descname">ResNetBasicStem</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span></em>, <em class="sig-param"><span class="n">conv</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">norm</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">activation</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">pool</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pytorchvideo/models/stem.html#ResNetBasicStem"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytorchvideo.models.stem.ResNetBasicStem" title="Permalink to this definition">¶</a></dt>
+<dd><p>ResNet basic 3D stem module. Performs spatiotemporal Convolution, BN, and activation
+following by a spatiotemporal pooling.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>   Conv3d
+      ↓
+Normalization
+      ↓
+  Activation
+      ↓
+   Pool3d
+</pre></div>
+</div>
+<p>The builder can be found in <cite>create_res_basic_stem</cite>.</p>
+<dl class="py method">
+<dt id="pytorchvideo.models.stem.ResNetBasicStem.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span></em>, <em class="sig-param"><span class="n">conv</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">norm</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">activation</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">pool</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pytorchvideo/models/stem.html#ResNetBasicStem.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytorchvideo.models.stem.ResNetBasicStem.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>conv</strong> (<em>torch.nn.modules</em>) – convolutional module.</p></li>
+<li><p><strong>norm</strong> (<em>torch.nn.modules</em>) – normalization module.</p></li>
+<li><p><strong>activation</strong> (<em>torch.nn.modules</em>) – activation module.</p></li>
+<li><p><strong>pool</strong> (<em>torch.nn.modules</em>) – pooling module.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.6/library/constants.html#None" title="(in Python v3.6)">None</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+             </article>
+             
+            </div>
+            <!-- <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="csn.html" class="btn btn-neutral float-right" title="pytorchvideo.models.csn" accesskey="n" rel="next">Next <img src="../../_static/images/chevron-right-orange.svg" class="next-page"></a>
+      
+      
+        <a href="head.html" class="btn btn-neutral" title="pytorchvideo.models.head" accesskey="p" rel="prev"><img src="../../_static/images/chevron-right-orange.svg" class="previous-page"> Previous</a>
+      
+    </div>
+  
+
+  
+
+    <hr>
+
+  
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2021, PyTorchVideo contributors.
+
+    </p>
+  </div>
+    
+      <div>
+        Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+      </div>
+     
+
+</footer>
+ -->
+          </div>
+        </div>
+
+        <div class="pytorch-content-right" id="pytorch-content-right">
+          <div class="pytorch-right-menu" id="pytorch-right-menu">
+            <div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
+              <ul>
+<li><a class="reference internal" href="#">pytorchvideo.models.stem</a></li>
+</ul>
+
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+  
+
+
+  
+
+     
+       <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+         <script src="../../_static/jquery.js"></script>
+         <script src="../../_static/underscore.js"></script>
+         <script src="../../_static/doctools.js"></script>
+         <script src="../../_static/language_data.js"></script>
+     
+
+  
+
+  <script type="text/javascript" src="../../_static/js/vendor/popper.min.js"></script>
+  <script type="text/javascript" src="../../_static/js/vendor/bootstrap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/list.js/1.5.0/list.min.js"></script>
+  <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+  <!-- Begin Footer -->
+
+
+  <div class="cookie-banner-wrapper">
+  <div class="container">
+    <p class="gdpr-notice">To analyze traffic and optimize your experience, we serve cookies on this site. By clicking or navigating, you agree to allow our usage of cookies. As the current maintainers of this site, Facebook’s Cookies Policy applies. Learn more, including about available controls: <a href="https://www.facebook.com/policies/cookies/">Cookies Policy</a>.</p>
+    <img class="close-button" src="../../_static/images/pytorch-x.svg">
+  </div>
+</div>
+
+  <!-- End Footer -->
+
+  <!-- Begin Mobile Menu -->
+
+  <div class="mobile-main-menu">
+    <div class="container-fluid">
+      <div class="container">
+        <div class="mobile-main-menu-header-container">
+          <a class="header-logo" href="https://pytorchvideo.org" aria-label="PyTorch"></a>
+          <a class="main-menu-close-button" href="#" data-behavior="close-mobile-menu"></a>
+        </div>
+      </div>
+    </div>
+
+    <div class="mobile-main-menu-links-container">
+      <div class="main-menu">
+        <ul>
+          <li>
+            <a href="https://pytorchvideo.org">Home</a>
+          </li>
+          <li>
+            <a href="https://pytorchvideo.org/docs/tutorial_overview">Tutorials</a>
+          </li>
+          <li>
+            <a href="https://github.com/facebookresearch/pytorchvideo/">Github</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <!-- End Mobile Menu -->
+
+  <script type="text/javascript" src="../../_static/js/vendor/anchor.min.js"></script>
+
+  <script type="text/javascript">
+    $(document).ready(function() {
+      mobileMenu.bind();
+      mobileTOC.bind();
+      pytorchAnchors.bind();
+      sideMenus.bind();
+      scrollToAnchor.bind();
+      highlightNavigation.bind();
+      mainMenuDropdown.bind();
+      filterTags.bind();
+
+      // Add class to links that have code blocks, since we cannot create links in code blocks
+      $("article.pytorch-article a span.pre").each(function(e) {
+        $(this).closest("a").addClass("has-code");
+      });
+    })
+  </script>
+</body>
+</html>
