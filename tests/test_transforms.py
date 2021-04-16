@@ -6,10 +6,10 @@ import torch
 from pytorchvideo.data.utils import thwc_to_cthw
 from pytorchvideo.transforms import (
     ApplyTransformToKey,
+    Normalize,
     RandomShortSideScale,
     UniformCropVideo,
     UniformTemporalSubsample,
-    Normalize,
 )
 from pytorchvideo.transforms.functional import (
     repeat_temporal_frames_subsample,

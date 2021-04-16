@@ -4,9 +4,7 @@ from typing import Dict
 
 from iopath.common.file_io import g_pathmgr
 from pytorchvideo.data.dataset_manifest_utils import EncodedVideoInfo, VideoFrameInfo
-from pytorchvideo.data.utils import (
-    optional_threaded_foreach,
-)
+from pytorchvideo.data.utils import optional_threaded_foreach
 
 
 def build_frame_manifest_from_flat_directory(

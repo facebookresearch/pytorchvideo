@@ -6,6 +6,7 @@ import torch.nn as nn
 from pytorchvideo.models.accelerator.mobile_cpu.efficient_x3d import create_x3d
 from torch.hub import load_state_dict_from_url
 
+
 _root_dir = "https://dl.fbaipublicfiles.com/pytorchvideo/model_zoo/kinetics"
 _checkpoint_paths = {
     "efficient_x3d_xs": f"{_root_dir}/efficient_x3d_xs_original_form.pyth",
@@ -29,7 +30,7 @@ def _efficient_x3d(
 
     if pretrained and checkpoint_path is not None:
         state_dict = load_state_dict_from_url(checkpoint_path, progress=progress)
-        model.load_state_dict(state_dict, strict=True)
+        model.load_state_dict(state_dict)
 
     return model
 

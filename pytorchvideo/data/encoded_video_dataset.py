@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import logging
 import pathlib
-from typing import Any, Callable, List, Optional, Tuple, Type, Dict
+from typing import Any, Callable, Dict, List, Optional, Tuple, Type
 
 import torch.utils.data
 from pytorchvideo.data.clip_sampling import ClipSampler

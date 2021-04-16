@@ -11,6 +11,7 @@ import pytorch_sphinx_theme
 from recommonmark.parser import CommonMarkParser
 from recommonmark.transform import AutoStructify
 
+
 # -- Path setup --------------------------------------------------------------
 sys.path.insert(0, os.path.abspath("../"))
 sys.path.insert(0, os.path.abspath("../pytorchvideo"))

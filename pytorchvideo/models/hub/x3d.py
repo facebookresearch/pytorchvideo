@@ -25,7 +25,7 @@ def _x3d(
     if pretrained and len(checkpoint_path) > 0:
         checkpoint = load_state_dict_from_url(checkpoint_path, progress=progress)
         state_dict = checkpoint["model_state"]
-        model.load_state_dict(state_dict, strict=True)
+        model.load_state_dict(state_dict)
     return model
 
 
