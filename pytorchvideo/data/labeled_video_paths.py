@@ -94,7 +94,7 @@ class LabeledVideoPaths:
 
         # Find all classes based on directory names. These classes are then sorted and indexed
         # from 0 to the number of classes.
-        classes = sorted((f for f in pathlib.Path(dir_path).iterdir() if f.is_dir()))
+        classes = sorted((os.path.basename(f) for f in pathlib.Path(dir_path).iterdir() if f.is_dir()))
         class_to_idx = {classes[i]: i for i in range(len(classes))}
         video_paths_and_label = make_dataset(
             dir_path, class_to_idx, extensions=("mp4", "avi")
