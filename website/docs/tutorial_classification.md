@@ -45,6 +45,7 @@ class KineticsDataModule(pytorch_lightning.LightningDataModule):
     train_dataset = pytorchvideo.data.Kinetics(
         data_path=os.path.join(self._DATA_PATH, "train"),
         clip_sampler=pytorchvideo.data.make_clip_sampler("random", self._CLIP_DURATION),
+        decode_audio=False,
     )
     return torch.utils.data.DataLoader(
         train_dataset,
@@ -60,6 +61,7 @@ class KineticsDataModule(pytorch_lightning.LightningDataModule):
     val_dataset = pytorchvideo.data.Kinetics(
         data_path=os.path.join(self._DATA_PATH, "val"),
         clip_sampler=pytorchvideo.data.make_clip_sampler("uniform", self._CLIP_DURATION),
+        decode_audio=False,
     )
     return torch.utils.data.DataLoader(
         val_dataset,
@@ -90,6 +92,7 @@ Below we revise the ``LightningDataModule`` from the last section to include tra
 ```python
 from pytorchvideo.transforms import (
     ApplyTransformToKey,
+    Normalize,
     RandomShortSideScale,
     RemoveKey,
     ShortSideScale,
@@ -98,7 +101,6 @@ from pytorchvideo.transforms import (
 
 from torchvision.transforms import (
     Compose,
-    Normalize,
     RandomCrop,
     RandomHorizontalFlip
 )
@@ -179,7 +181,7 @@ class VideoClassificationLightningModule(pytorch_lightning.LightningModule):
       return self.model(x)
 
   def training_step(self, batch, batch_idx):
-      # The model expects a video tensor of shape (B, C, T, H, W), which is the 
+      # The model expects a video tensor of shape (B, C, T, H, W), which is the
       # format provided by the dataset
       y_hat = self.model(batch["video"])
 

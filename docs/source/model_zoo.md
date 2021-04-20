@@ -40,12 +40,12 @@ X3D      | M     | \-       | 16x5                       | 75.94 | 92.72 | 6.72 
 ### Using PyTorchVideo model zoo
 We provide several different ways to use PyTorchVideo model zoo.
 * The models have been integrated into TorchHub, so could be loaded with TorchHub with or without pre-trained models. Additionally, we provide a [tutorial](https://pytorchvideo.org/docs/tutorial_torchhub_inference) which goes over the steps needed to load models from TorchHub and perform inference.
-* PyTorchVideo models/datasets are also supported in PySlowFast. You can use [PySlowFast workflow](https://github.com/facebookresearch/SlowFast/tree/master/projects/pytorchvideo) to train or test PyTorchVideo models/datasets.
+* PyTorchVideo models/datasets are also supported in PySlowFast. You can use [PySlowFast workflow](https://github.com/facebookresearch/SlowFast/) to train or test PyTorchVideo models/datasets.
 * You can also use [PyTorch Lightning](https://github.com/PyTorchLightning/pytorch-lightning) to build training/test pipeline for PyTorchVideo models and datasets. Please check this [tutorial](https://pytorchvideo.org/docs/tutorial_classification) for more information.
 
 
 Notes:
-* The above benchmarks are conducted by [PySlowFast workflow](https://github.com/facebookresearch/SlowFast/tree/master/projects/pytorchvideo) using PyTorchVideo datasets and models.
+* The above benchmarks are conducted by [PySlowFast workflow](https://github.com/facebookresearch/SlowFast/) using PyTorchVideo datasets and models.
 * For more details on the data preparation, you can refer to [PyTorchVideo Data Preparation](data_preparation.md).
 * For `Flops x views` column, we report the inference cost with a single “view" × the number of views (FLOPs × space_views × time_views). For example, we take 3 spatial crops for 10 temporal clips on Kinetics.
 
