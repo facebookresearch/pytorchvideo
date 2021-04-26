@@ -12,6 +12,7 @@ from pytorchvideo.transforms import (
     UniformTemporalSubsample,
 )
 from pytorchvideo.transforms.functional import (
+    convert_to_one_hot,
     repeat_temporal_frames_subsample,
     short_side_scale,
     uniform_crop,
@@ -202,3 +203,28 @@ class TestTransforms(unittest.TestCase):
         actual = transform(video)
         self.assertAlmostEqual(actual.mean().item(), 0)
         self.assertAlmostEqual(actual.std().item(), 1)
+
+    def test_convert_to_one_hot(self):
+        # Test without label smooth.
+        num_class = 5
+        num_samples = 10
+        labels = torch.arange(0, num_samples) % num_class
+        one_hot = convert_to_one_hot(labels, num_class)
+        self.assertEqual(one_hot.sum(), num_samples)
+        label_value = 1.0
+        for index in range(num_samples):
+            label = labels[index]
+
+            self.assertEqual(one_hot[index][label], label_value)
+
+        # Test with label smooth.
+        labels = torch.arange(0, num_samples) % num_class
+        label_smooth = 0.1
+        one_hot_smooth = convert_to_one_hot(
+            labels, num_class, label_smooth=label_smooth
+        )
+        self.assertEqual(one_hot_smooth.sum(), num_samples)
+        label_value_smooth = 1 - label_smooth + label_smooth / num_class
+        for index in range(num_samples):
+            label = labels[index]
+            self.assertEqual(one_hot_smooth[index][label], label_value_smooth)
