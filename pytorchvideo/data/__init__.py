@@ -7,7 +7,7 @@ from .clip_sampling import (
     UniformClipSampler,
     make_clip_sampler,
 )  # noqa
-from .domsev import DomsevDataset  # noqa
+from .domsev import DomsevFrameDataset, DomsevVideoDataset  # noqa
 from .encoded_video_dataset import (
     EncodedVideoDataset,
     labeled_encoded_video_dataset,

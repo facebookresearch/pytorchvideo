@@ -60,9 +60,58 @@ class VideoClipInfo(DataclassFieldCaster):
     stop_time: float
 
 
+@dataclass
+class ImageFrameInfo(DataclassFieldCaster):
+    """
+    Class representing the metadata (and labels) for a single frame
+    """
+
+    video_id: str
+    frame_id: str
+    frame_number: int
+    frame_file_path: str
+
+
 class VideoDatasetType(Enum):
     Frame = 1
     EncodedVideo = 2
+
+
+class ImageDataset:
+    @staticmethod
+    def _load_images(
+        frame_manifest_file_path: Optional[str],
+        video_info_file_path: str,
+        multithreaded_io: bool,
+    ) -> Dict[str, ImageFrameInfo]:
+        video_infos: Dict[str, VideoInfo] = load_dataclass_dict_from_csv(
+            video_info_file_path, VideoInfo, "video_id"
+        )
+        video_frames: Dict[str, VideoFrameInfo] = load_dataclass_dict_from_csv(
+            frame_manifest_file_path, VideoFrameInfo, "video_id"
+        )
+        VideoDataset._remove_video_info_missing_or_incomplete_videos(
+            video_frames, video_infos
+        )
+
+        image_infos = {}
+        for video_id in video_infos:
+            frame_filepaths = VideoDataset._frame_number_to_filepaths(
+                video_id, video_frames, video_infos
+            )
+            video_info = video_infos[video_id]
+            video_frame_info = video_frames[video_info.video_id]
+            for frame_filepath, frame_number in zip(
+                frame_filepaths,
+                range(
+                    video_frame_info.min_frame_number, video_frame_info.max_frame_number
+                ),
+            ):
+                frame_id = os.path.splitext(os.path.basename(frame_filepath))[0]
+                image_infos[frame_id] = ImageFrameInfo(
+                    video_id, frame_id, frame_number, frame_filepath
+                )
+        return image_infos
 
 
 class VideoDataset:
