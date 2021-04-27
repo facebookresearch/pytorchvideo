@@ -1,5 +1,6 @@
 # Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved.
 
+import math
 from typing import Callable, Tuple
 
 import numpy as np
@@ -710,8 +711,8 @@ def create_x3d(
 
     head_pool_kernel_size = (
         input_clip_length // total_temporal_stride,
-        input_crop_size // total_spatial_stride,
-        input_crop_size // total_spatial_stride,
+        int(math.ceil(input_crop_size / total_spatial_stride)),
+        int(math.ceil(input_crop_size / total_spatial_stride)),
     )
 
     head = create_x3d_head(
