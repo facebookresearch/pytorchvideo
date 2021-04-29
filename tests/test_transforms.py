@@ -1,12 +1,15 @@
 # Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved.
 
 import unittest
+from collections import Counter
 
+import numpy as np
 import torch
 from pytorchvideo.data.utils import thwc_to_cthw
 from pytorchvideo.transforms import (
     ApplyTransformToKey,
     Normalize,
+    OpSampler,
     RandomShortSideScale,
     UniformCropVideo,
     UniformTemporalSubsample,
@@ -228,3 +231,68 @@ class TestTransforms(unittest.TestCase):
         for index in range(num_samples):
             label = labels[index]
             self.assertEqual(one_hot_smooth[index][label], label_value_smooth)
+
+    def test_OpSampler(self):
+        # Test with weights.
+        n_transform = 3
+        transform_list = [lambda x, i=i: x.fill_(i) for i in range(n_transform)]
+        transform_weight = [1] * n_transform
+        transform = OpSampler(transform_list, transform_weight)
+        input_tensor = torch.rand(1)
+        out_tensor = transform(input_tensor)
+        self.assertTrue(out_tensor.sum() in list(range(n_transform)))
+
+        # Test without weights.
+        input_tensor = torch.rand(1)
+        transform_no_weight = OpSampler(transform_list)
+        out_tensor = transform_no_weight(input_tensor)
+        self.assertTrue(out_tensor.sum() in list(range(n_transform)))
+
+        # Make sure each transform is sampled without replacement.
+        transform_op_values = [3, 5, 7]
+        all_possible_out = [15, 21, 35]
+
+        transform_list = [lambda x, i=i: x * i for i in transform_op_values]
+        test_time = 100
+        transform_no_replacement = OpSampler(transform_list, num_sample_op=2)
+        for _ in range(test_time):
+            input_tensor = torch.ones(1)
+            out_tensor = transform_no_replacement(input_tensor)
+            self.assertTrue(out_tensor.sum() in all_possible_out)
+
+        # Make sure each transform is sampled with replacement.
+        transform_op_values = [3, 5, 7]
+        possible_replacement_out = [9, 25, 49]
+        input_tensor = torch.ones(1)
+        transform_list = [lambda x, i=i: x * i for i in transform_op_values]
+        test_time = 100
+        transform_no_replacement = OpSampler(
+            transform_list, replacement=True, num_sample_op=2
+        )
+        replace_time = 0
+        for _ in range(test_time):
+            input_tensor = torch.ones(1)
+            out_tensor = transform_no_replacement(input_tensor)
+            if out_tensor.sum() in possible_replacement_out:
+                replace_time += 1
+        self.assertTrue(replace_time > 0)
+
+        # Test without weights.
+        transform_op_values = [3.0, 5.0, 7.0]
+        input_tensor = torch.ones(1)
+        transform_list = [lambda x, i=i: x * i for i in transform_op_values]
+        test_time = 10000
+        weights = [10.0, 2.0, 1.0]
+        transform_no_replacement = OpSampler(transform_list, weights)
+        weight_counter = Counter()
+        for _ in range(test_time):
+            input_tensor = torch.ones(1)
+            out_tensor = transform_no_replacement(input_tensor)
+            weight_counter[out_tensor.sum().item()] += 1
+
+        for index, w in enumerate(weights):
+            gt_dis = w / sum(weights)
+            out_key = transform_op_values[index]
+            self.assertTrue(
+                np.allclose(weight_counter[out_key] / test_time, gt_dis, rtol=0.2)
+            )
