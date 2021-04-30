@@ -12,7 +12,6 @@ import cv2
 import numpy as np
 import torch
 from iopath.common.file_io import g_pathmgr
-from iopath.fb.manifold import ManifoldPathHandler
 from PIL import Image
 from pytorchvideo.data.dataset_manifest_utils import (
     EncodedVideoInfo,
@@ -28,9 +27,6 @@ from pytorchvideo.data.utils import (
     load_dataclass_dict_from_csv,
 )
 from pytorchvideo.data.video import Video
-
-
-g_pathmgr.register_handler(ManifoldPathHandler(timeout_sec=600), allow_override=True)
 
 
 USER_ENVIRONMENT_MAP = {
