@@ -14,7 +14,6 @@ from pytorchvideo.models.resnet import (
     ResStage,
     SeparableBottleneckBlock,
     create_acoustic_bottleneck_block,
-    create_acoustic_building_block,
     create_acoustic_resnet,
     create_bottleneck_block,
     create_res_block,
@@ -369,92 +368,6 @@ class TestBottleneckBlock(unittest.TestCase):
                             kernel_size=[3, 1, 1],
                             stride=[1, 1, 1],
                             padding=[1, 0, 0],
-                            dilation=1,
-                            bias=False,
-                        ),
-                    ]
-                ),
-                norm_b=nn.ModuleList([norm_model(16), norm_model(16)]),
-                act_b=nn.ModuleList([act_model(), act_model()]),
-                conv_c=nn.Conv3d(
-                    16,
-                    64,
-                    kernel_size=[1, 1, 1],
-                    stride=[1, 1, 1],
-                    padding=[0, 0, 0],
-                    bias=False,
-                ),
-                norm_c=norm_model(64),
-            )
-
-            model.load_state_dict(
-                model_gt.state_dict(), strict=True
-            )  # explicitly use strict mode.
-
-            # Test forwarding.
-            for input_tensor in TestBottleneckBlock._get_inputs(dim_in=32):
-                with torch.no_grad():
-                    if input_tensor.shape[1] != 32:
-                        with self.assertRaises(RuntimeError):
-                            output_tensor = model(input_tensor)
-                        continue
-
-                    output_tensor = model(input_tensor)
-                    output_tensor_gt = model_gt(input_tensor)
-                self.assertEqual(
-                    output_tensor.shape,
-                    output_tensor_gt.shape,
-                    "Output shape {} is different from expected shape {}".format(
-                        output_tensor.shape, output_tensor_gt.shape
-                    ),
-                )
-                self.assertTrue(
-                    np.allclose(output_tensor.numpy(), output_tensor_gt.numpy())
-                )
-
-    def test_create_acoustic_building_block_with_callable(self):
-        """
-        Test builder `create_building_bottleneck_block` with callable inputs.
-        """
-        for (norm_model, act_model) in itertools.product(
-            (nn.BatchNorm3d,), (nn.ReLU, nn.Softmax, nn.Sigmoid)
-        ):
-            model = create_acoustic_building_block(
-                dim_in=32,
-                dim_inner=16,
-                dim_out=64,
-                conv_a_kernel_size=(3, 1, 1),
-                conv_a_stride=(1, 1, 1),
-                conv_a_padding=(1, 0, 0),
-                conv_b_kernel_size=(3, 3, 3),
-                conv_b_stride=(1, 1, 1),
-                conv_b_padding=(1, 1, 1),
-                conv_b_num_groups=1,
-                conv_b_dilation=(1, 1, 1),
-                norm=norm_model,
-                activation=act_model,
-            )
-            model_gt = SeparableBottleneckBlock(
-                conv_a=None,
-                norm_a=None,
-                act_a=None,
-                conv_b=nn.ModuleList(
-                    [
-                        nn.Conv3d(
-                            32,
-                            16,
-                            kernel_size=[3, 1, 1],
-                            stride=[1, 1, 1],
-                            padding=[1, 0, 0],
-                            dilation=1,
-                            bias=False,
-                        ),
-                        nn.Conv3d(
-                            32,
-                            16,
-                            kernel_size=[1, 3, 3],
-                            stride=[1, 1, 1],
-                            padding=[0, 1, 1],
                             dilation=1,
                             bias=False,
                         ),
@@ -1322,7 +1235,8 @@ class TestResNet(unittest.TestCase):
                 stem_pool_stride=(1, 2, 2),
                 stage_conv_a_kernel_size=((3, 1, 1),) * 4,
                 stage_conv_b_kernel_size=((1, 3, 3),) * 4,
-                stage_spatial_stride=stage_spatial_stride,
+                stage_spatial_h_stride=stage_spatial_stride,
+                stage_spatial_w_stride=stage_spatial_stride,
                 stage_temporal_stride=stage_temporal_stride,
                 bottleneck=create_bottleneck_block,
                 head_pool=nn.AvgPool3d,
@@ -1370,19 +1284,19 @@ class TestResNet(unittest.TestCase):
             model = create_acoustic_resnet(
                 input_channel=_input_channel,
                 stem_conv_kernel_size=(3, 3, 3),
-                stem_conv_padding=(1, 1, 1),
                 model_depth=50,
                 model_num_class=400,
                 dropout_rate=0,
                 norm=norm,
                 activation=activation,
                 stem_dim_out=8,
-                stem_pool=nn.MaxPool3d,
+                stem_pool=None,
                 stem_pool_kernel_size=(1, 3, 3),
                 stem_pool_stride=(1, 2, 2),
                 stage_conv_a_kernel_size=(3, 1, 1),
                 stage_conv_b_kernel_size=(1, 3, 3),
-                stage_spatial_stride=(2, 1, 1, 1),
+                stage_spatial_h_stride=(2, 1, 1, 1),
+                stage_spatial_w_stride=(2, 1, 1, 1),
                 stage_temporal_stride=(2, 1, 1, 1),
                 head_pool=nn.AvgPool3d,
                 head_output_size=(1, 1, 1),
@@ -1390,7 +1304,7 @@ class TestResNet(unittest.TestCase):
             )
 
             # Test forwarding.
-            for tensor in TestResNet._get_inputs(_input_channel, 1, 56):
+            for tensor in TestResNet._get_acoustic_inputs(_input_channel, 8, 56):
                 with torch.no_grad():
                     if tensor.shape[1] != _input_channel:
                         with self.assertRaises(RuntimeError):
@@ -1435,6 +1349,24 @@ class TestResNet(unittest.TestCase):
         shapes = (
             (1, channel, clip_length, crop_size, crop_size),
             (2, channel, clip_length, crop_size, crop_size),
+        )
+        for shape in shapes:
+            yield torch.rand(shape)
+
+    @staticmethod
+    def _get_acoustic_inputs(
+        channel: int = 1, clip_length: int = 130, freq_size: int = 80
+    ) -> torch.tensor:
+        """
+        Provide different tensors as test cases.
+
+        Yield:
+            (torch.tensor): tensor as test case input.
+        """
+        # Prepare random inputs as test cases.
+        shapes = (
+            (1, channel, clip_length, 1, freq_size),
+            (2, channel, clip_length, 1, freq_size),
         )
         for shape in shapes:
             yield torch.rand(shape)
