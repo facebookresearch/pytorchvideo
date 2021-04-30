@@ -80,8 +80,6 @@ class VideoClassificationLightningModule(pytorch_lightning.LightningModule):
         # create_slowfast).
         if self.args.arch == "video_resnet":
             self.model = pytorchvideo.models.resnet.create_resnet(
-                stem_conv_kernel_size=(1, 7, 7),
-                head_pool_kernel_size=(8, 7, 7),
                 input_channel=3,
                 model_num_class=400,
             )
@@ -137,7 +135,9 @@ class VideoClassificationLightningModule(pytorch_lightning.LightningModule):
         loss = F.cross_entropy(y_hat, batch["label"])
         acc = self.train_accuracy(F.softmax(y_hat, dim=-1), batch["label"])
         self.log("train_loss", loss)
-        self.log("train_acc", acc, on_step=True, on_epoch=True, prog_bar=True)
+        self.log(
+            "train_acc", acc, on_step=True, on_epoch=True, prog_bar=True, sync_dist=True
+        )
         return loss
 
     def validation_step(self, batch, batch_idx):
@@ -150,8 +150,10 @@ class VideoClassificationLightningModule(pytorch_lightning.LightningModule):
         y_hat = self.model(x)
         loss = F.cross_entropy(y_hat, batch["label"])
         acc = self.val_accuracy(F.softmax(y_hat, dim=-1), batch["label"])
-        self.log("val_loss", loss, on_step=True)
-        self.log("val_acc", acc, on_step=True, on_epoch=True, prog_bar=True)
+        self.log("val_loss", loss)
+        self.log(
+            "val_acc", acc, on_step=True, on_epoch=True, prog_bar=True, sync_dist=True
+        )
         return loss
 
     def configure_optimizers(self):
@@ -367,11 +369,6 @@ def main():
 
     This example can be run either locally (with default parameters) or on a Slurm
     cluster. To run on a Slurm cluster provide the --on_cluster argument.
-
-    Note that for the video_resnet we currently get ~0.55 top1 accuracy, which is reasonable
-    but there is room for improvement (e.g. warmup for optimizer, test time augmentations).
-    For audio_resnet we only get 0.02 top1 accuracy, this error in performance needs
-    needs to be investigated.
     """
     setup_logger()
 
@@ -426,6 +423,7 @@ def main():
         max_epochs=200,
         callbacks=[LearningRateMonitor()],
         replace_sampler_ddp=False,
+        reload_dataloaders_every_epoch=False,
     )
 
     # Build trainer, ResNet lightning-module and Kinetics data-module.

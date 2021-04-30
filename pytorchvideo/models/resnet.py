@@ -604,31 +604,33 @@ def create_resnet(
     stem_pool: Callable = nn.MaxPool3d,
     stem_pool_kernel_size: Tuple[int] = (1, 3, 3),
     stem_pool_stride: Tuple[int] = (1, 2, 2),
+    stem: Callable = create_res_basic_stem,
     # Stage configs.
     stage1_pool: Callable = None,
     stage1_pool_kernel_size: Tuple[int] = (2, 1, 1),
-    stage_conv_a_kernel_size: Tuple[Union[Tuple[int], List[Tuple[int]]]] = (
+    stage_conv_a_kernel_size: Union[Tuple[int], Tuple[Tuple[int]]] = (
         (1, 1, 1),
         (1, 1, 1),
         (3, 1, 1),
         (3, 1, 1),
     ),
-    stage_conv_b_kernel_size: Tuple[Tuple[int]] = (
+    stage_conv_b_kernel_size: Union[Tuple[int], Tuple[Tuple[int]]] = (
         (1, 3, 3),
         (1, 3, 3),
         (1, 3, 3),
         (1, 3, 3),
     ),
     stage_conv_b_num_groups: Tuple[int] = (1, 1, 1, 1),
-    stage_conv_b_dilation: Tuple[Tuple[int]] = (
+    stage_conv_b_dilation: Union[Tuple[int], Tuple[Tuple[int]]] = (
         (1, 1, 1),
         (1, 1, 1),
         (1, 1, 1),
         (1, 1, 1),
     ),
-    stage_spatial_stride: Tuple[int] = (1, 2, 2, 2),
+    stage_spatial_h_stride: Tuple[int] = (1, 2, 2, 2),
+    stage_spatial_w_stride: Tuple[int] = (1, 2, 2, 2),
     stage_temporal_stride: Tuple[int] = (1, 1, 1, 1),
-    bottleneck: Callable = create_bottleneck_block,
+    bottleneck: Union[Tuple[Callable], Callable] = create_bottleneck_block,
     # Head configs.
     head_pool: Callable = nn.AvgPool3d,
     head_pool_kernel_size: Tuple[int] = (4, 7, 7),
@@ -679,13 +681,16 @@ def create_resnet(
         stem_pool (callable): a callable that constructs resnet head pooling layer.
         stem_pool_kernel_size (tuple): pooling kernel size(s).
         stem_pool_stride (tuple): pooling stride size(s).
+        stem (callable): a callable that constructs stem layer.
+            Examples include: create_res_video_stem.
 
         stage_conv_a_kernel_size (tuple): convolutional kernel size(s) for conv_a.
         stage_conv_b_kernel_size (tuple): convolutional kernel size(s) for conv_b.
         stage_conv_b_num_groups (tuple): number of groups for groupwise convolution
             for conv_b. 1 for ResNet, and larger than 1 for ResNeXt.
         stage_conv_b_dilation (tuple): dilation for 3D convolution for conv_b.
-        stage_spatial_stride (tuple): the spatial stride for each stage.
+        stage_spatial_h_stride (tuple): the spatial height stride for each stage.
+        stage_spatial_w_stride (tuple): the spatial width stride for each stage.
         stage_temporal_stride (tuple): the temporal stride for each stage.
         bottleneck (callable): a callable that constructs bottleneck block layer.
             Examples include: create_bottleneck_block.
@@ -709,9 +714,24 @@ def create_resnet(
     ), f"{model_depth} is not in {_MODEL_STAGE_DEPTH.keys()}"
     stage_depths = _MODEL_STAGE_DEPTH[model_depth]
 
+    # Broadcast single element to tuple if given.
+    if isinstance(stage_conv_a_kernel_size[0], int):
+        stage_conv_a_kernel_size = (stage_conv_a_kernel_size,) * len(stage_depths)
+
+    if isinstance(stage_conv_b_kernel_size[0], int):
+        stage_conv_b_kernel_size = (stage_conv_b_kernel_size,) * len(stage_depths)
+
+    if isinstance(stage_conv_b_dilation[0], int):
+        stage_conv_b_dilation = (stage_conv_b_dilation,) * len(stage_depths)
+
+    if isinstance(bottleneck, Callable):
+        bottleneck = [
+            bottleneck,
+        ] * len(stage_depths)
+
     blocks = []
     # Create stem for resnet.
-    stem = create_res_basic_stem(
+    stem = stem(
         in_channels=input_channel,
         out_channels=stem_dim_out,
         conv_kernel_size=stem_conv_kernel_size,
@@ -742,14 +762,18 @@ def create_resnet(
             else [[size // 2 for size in sizes] for sizes in stage_conv_a_kernel]
         )
 
-        stage_conv_b_stride = (1, stage_spatial_stride[idx], stage_spatial_stride[idx])
+        stage_conv_b_stride = (
+            1,
+            stage_spatial_h_stride[idx],
+            stage_spatial_w_stride[idx],
+        )
 
         stage = create_res_stage(
             depth=depth,
             dim_in=stage_dim_in,
             dim_inner=stage_dim_inner,
             dim_out=stage_dim_out,
-            bottleneck=bottleneck,
+            bottleneck=bottleneck[idx],
             conv_a_kernel_size=stage_conv_a_kernel,
             conv_a_stride=stage_conv_a_stride,
             conv_a_padding=stage_conv_a_padding,
@@ -789,167 +813,11 @@ def create_resnet(
     return Net(blocks=nn.ModuleList(blocks))
 
 
-def create_acoustic_building_block(
-    *,
-    # Convolution configs.
-    dim_in: int,
-    dim_inner: int,
-    dim_out: int,
-    conv_a_kernel_size: Tuple[int] = None,
-    conv_a_stride: Tuple[int] = None,
-    conv_a_padding: Tuple[int] = None,
-    conv_a: Callable = None,
-    # Conv b f configs.
-    conv_b_kernel_size: Tuple[int] = (1, 1, 1),
-    conv_b_stride: Tuple[int] = (1, 1, 1),
-    conv_b_padding: Tuple[int] = (0, 0, 0),
-    conv_b_num_groups: int = 1,
-    conv_b_dilation: Tuple[int] = (1, 1, 1),
-    conv_b: Callable = nn.Conv3d,
-    conv_c: Callable = nn.Conv3d,
-    # Norm configs.
-    norm: Callable = nn.BatchNorm3d,
-    norm_eps: float = 1e-5,
-    norm_momentum: float = 0.1,
-    # Activation configs.
-    activation: Callable = nn.ReLU,
-) -> nn.Module:
-    """
-    Acoustic building block: a sequence of spatiotemporal Convolution, Normalization,
-    and Activations repeated in the following order:
-
-    ::
-
-
-                                    Conv3d (conv_a)
-                                           ↓
-                                 Normalization (norm_a)
-                                           ↓
-                                   Activation (act_a)
-                                           ↓
-                           ---------------------------------
-                           ↓                               ↓
-                Temporal Conv3d (conv_b)        Spatial Conv3d (conv_b)
-                           ↓                               ↓
-                 Normalization (norm_b)         Normalization (norm_b)
-                           ↓                               ↓
-                   Activation (act_b)              Activation (act_b)
-                           ↓                               ↓
-                           ---------------------------------
-                                           ↓
-                                    Conv3d (conv_c)
-                                           ↓
-                                 Normalization (norm_c)
-
-    Normalization examples include: BatchNorm3d and None (no normalization).
-    Activation examples include: ReLU, Softmax, Sigmoid, and None (no activation).
-
-    Args:
-
-        dim_in (int): input channel size to the bottleneck block.
-        dim_inner (int): intermediate channel size of the bottleneck.
-        dim_out (int): output channel size of the bottleneck.
-        conv_a_kernel_size (tuple): convolutional kernel size(s) for conv_a.
-        conv_a_stride (tuple): convolutional stride size(s) for conv_a.
-        conv_a_padding (tuple): convolutional padding(s) for conv_a.
-        conv_a (callable): a callable that constructs the conv_a conv layer, examples
-            include nn.Conv3d, OctaveConv, etc
-        conv_b_kernel_size (tuple): convolutional kernel size(s) for conv_b.
-        conv_b_stride (tuple): convolutional stride size(s) for conv_b.
-        conv_b_padding (tuple): convolutional padding(s) for conv_b.
-        conv_b_num_groups (int): number of groups for groupwise convolution for
-            conv_b.
-        conv_b_dilation (tuple): dilation for 3D convolution for conv_b.
-        conv_b (callable): a callable that constructs the conv_b conv layer, examples
-            include nn.Conv3d, OctaveConv, etc
-        conv_c (callable): a callable that constructs the conv_c conv layer, examples
-            include nn.Conv3d, OctaveConv, etc
-
-        norm (callable): a callable that constructs normalization layer, examples
-            include nn.BatchNorm3d, None (not performing normalization).
-        norm_eps (float): normalization epsilon.
-        norm_momentum (float): normalization momentum.
-
-        activation (callable): a callable that constructs activation layer, examples
-            include: nn.ReLU, nn.Softmax, nn.Sigmoid, and None (not performing
-            activation).
-
-    Returns:
-        (nn.Module): resnet acoustic bottleneck block.
-    """
-    # Conv b f configs.
-    conv_b_1_kernel_size = [conv_b_kernel_size[0], 1, 1]
-    conv_b_2_kernel_size = [1, conv_b_kernel_size[1], conv_b_kernel_size[2]]
-
-    conv_b_1_stride = [conv_b_stride[0], 1, 1]
-    conv_b_2_stride = [1, conv_b_stride[1], conv_b_stride[2]]
-
-    conv_b_1_padding = [conv_b_padding[0], 0, 0]
-    conv_b_2_padding = [0, conv_b_padding[1], conv_b_padding[2]]
-
-    conv_b_1_num_groups, conv_b_2_num_groups = (conv_b_num_groups,) * 2
-
-    conv_b_1_dilation = [conv_b_dilation[0], 1, 1]
-    conv_b_2_dilation = [1, conv_b_dilation[1], conv_b_dilation[2]]
-
-    conv_b_1 = conv_b(
-        in_channels=dim_in,
-        out_channels=dim_inner,
-        kernel_size=conv_b_1_kernel_size,
-        stride=conv_b_1_stride,
-        padding=conv_b_1_padding,
-        bias=False,
-        groups=conv_b_1_num_groups,
-        dilation=conv_b_1_dilation,
-    )
-    norm_b_1 = (
-        None
-        if norm is None
-        else norm(num_features=dim_inner, eps=norm_eps, momentum=norm_momentum)
-    )
-    act_b_1 = None if activation is None else activation()
-
-    conv_b_2 = conv_b(
-        in_channels=dim_in,
-        out_channels=dim_inner,
-        kernel_size=conv_b_2_kernel_size,
-        stride=conv_b_2_stride,
-        padding=conv_b_2_padding,
-        bias=False,
-        groups=conv_b_2_num_groups,
-        dilation=conv_b_2_dilation,
-    )
-    norm_b_2 = (
-        None
-        if norm is None
-        else norm(num_features=dim_inner, eps=norm_eps, momentum=norm_momentum)
-    )
-    act_b_2 = None if activation is None else activation()
-
-    conv_c = conv_c(
-        in_channels=dim_inner, out_channels=dim_out, kernel_size=(1, 1, 1), bias=False
-    )
-    norm_c = (
-        None
-        if norm is None
-        else norm(num_features=dim_out, eps=norm_eps, momentum=norm_momentum)
-    )
-    return SeparableBottleneckBlock(
-        conv_a=None,
-        norm_a=None,
-        act_a=None,
-        conv_b=nn.ModuleList([conv_b_1, conv_b_2]),
-        norm_b=nn.ModuleList([norm_b_1, norm_b_2]),
-        act_b=nn.ModuleList([act_b_1, act_b_2]),
-        conv_c=conv_c,
-        norm_c=norm_c,
-    )
-
-
 def create_acoustic_resnet(
     *,
+    # Input clip configs.
+    input_channel: int = 1,
     # Model configs.
-    input_channel: int = 2,
     model_depth: int = 50,
     model_num_class: int = 400,
     dropout_rate: float = 0.5,
@@ -959,23 +827,23 @@ def create_acoustic_resnet(
     activation: Callable = nn.ReLU,
     # Stem configs.
     stem_dim_out: int = 64,
-    stem_conv_kernel_size: Tuple[int] = (9, 9, 9),
-    stem_conv_stride: Tuple[int] = (1, 1, 1),
-    stem_conv_padding: Tuple[int] = (4, 4, 4),
-    stem_pool: Callable = nn.MaxPool3d,
-    stem_pool_kernel_size: Tuple[int] = (1, 3, 3),
-    stem_pool_stride: Tuple[int] = (1, 2, 2),
+    stem_conv_kernel_size: Tuple[int] = (9, 1, 9),
+    stem_conv_stride: Tuple[int] = (1, 1, 3),
+    stem_pool: Callable = None,
+    stem_pool_kernel_size: Tuple[int] = (3, 1, 3),
+    stem_pool_stride: Tuple[int] = (2, 1, 2),
     stem: Callable = create_acoustic_res_basic_stem,
     # Stage configs.
-    stage_conv_a_kernel_size: Tuple[int] = (3, 1, 1),
-    stage_conv_a_padding: Tuple[int] = (1, 0, 0),
-    stage_conv_b_kernel_size: Tuple[int] = (1, 3, 3),
-    stage_conv_b_padding: Tuple[int] = (0, 1, 1),
-    stage_conv_b_num_groups: int = 1,
-    stage_conv_b_dilation: Tuple[int] = (1, 1, 1),
-    stage_spatial_stride: Tuple[int] = (1, 2, 2, 2),
+    stage1_pool: Callable = None,
+    stage1_pool_kernel_size: Tuple[int] = (2, 1, 1),
+    stage_conv_a_kernel_size: Union[Tuple[int], Tuple[Tuple[int]]] = (3, 1, 1),
+    stage_conv_b_kernel_size: Union[Tuple[int], Tuple[Tuple[int]]] = (3, 1, 3),
+    stage_conv_b_num_groups: Tuple[int] = (1, 1, 1, 1),
+    stage_conv_b_dilation: Union[Tuple[int], Tuple[Tuple[int]]] = (1, 1, 1),
+    stage_spatial_h_stride: Tuple[int] = (1, 1, 1, 1),
+    stage_spatial_w_stride: Tuple[int] = (1, 2, 2, 2),
     stage_temporal_stride: Tuple[int] = (1, 2, 2, 2),
-    bottleneck: Tuple[Callable] = (
+    bottleneck: Union[Tuple[Callable], Callable] = (
         create_acoustic_bottleneck_block,
         create_acoustic_bottleneck_block,
         create_bottleneck_block,
@@ -983,13 +851,18 @@ def create_acoustic_resnet(
     ),
     # Head configs.
     head_pool: Callable = nn.AvgPool3d,
+    head_pool_kernel_size: Tuple[int] = (4, 1, 2),
     head_output_size: Tuple[int] = (1, 1, 1),
-    head_activation: Callable = nn.Softmax,
-    head_pool_kernel_size: Tuple[int] = (1, 1, 1),
+    head_activation: Callable = None,
+    head_output_with_global_average: bool = True,
 ) -> nn.Module:
     """
     Build ResNet style models for acoustic recognition. ResNet has three parts:
-    Stem, Stages and Head. The three parts are assembled in the following order:
+    Stem, Stages and Head. Stem is the first Convolution layer (Conv1) with an
+    optional pooling layer. Stages are grouped residual blocks. There are usually
+    multiple stages and each stage may include multiple residual blocks. Head
+    may include pooling, dropout, a fully-connected layer and global spatial
+    temporal averaging. The three parts are assembled in the following order:
 
     ::
 
@@ -1010,12 +883,11 @@ def create_acoustic_resnet(
     Args:
 
         input_channel (int): number of channels for the input video clip.
-        input_clip_length (int): length of the input video clip.
-        input_crop_size (int): spatial resolution of the input video clip.
 
-        model_depth (int): the depth of the resnet.
+        model_depth (int): the depth of the resnet. Options include: 50, 101, 152.
         model_num_class (int): the number of classes for the video dataset.
         dropout_rate (float): dropout rate.
+
 
         norm (callable): a callable that constructs normalization layer.
 
@@ -1032,89 +904,28 @@ def create_acoustic_resnet(
 
         stage_conv_a_kernel_size (tuple): convolutional kernel size(s) for conv_a.
         stage_conv_b_kernel_size (tuple): convolutional kernel size(s) for conv_b.
-        stage_conv_b_num_groups (int): number of groups for groupwise convolution
+        stage_conv_b_num_groups (tuple): number of groups for groupwise convolution
             for conv_b. 1 for ResNet, and larger than 1 for ResNeXt.
         stage_conv_b_dilation (tuple): dilation for 3D convolution for conv_b.
-        stage_spatial_stride (tuple): the spatial stride for each stage.
+        stage_spatial_h_stride (tuple): the spatial height stride for each stage.
+        stage_spatial_w_stride (tuple): the spatial width stride for each stage.
         stage_temporal_stride (tuple): the temporal stride for each stage.
-        bottleneck (callable): a callable that constructs bottleneck block
-            layer.
+        bottleneck (callable): a callable that constructs bottleneck block layer.
             Examples include: create_bottleneck_block.
 
         head_pool (callable): a callable that constructs resnet head pooling layer.
+        head_pool_kernel_size (tuple): the pooling kernel size.
         head_output_size (tuple): the size of output tensor for head.
         head_activation (callable): a callable that constructs activation layer.
+        head_output_with_global_average (bool): if True, perform global averaging on
+            the head output.
 
     Returns:
-        (nn.Module): acoustic resnet that takes audio inputs in log-mel-spectrogram of
-            shape B x 1 x 1 x T x F.
+        (nn.Module): audio resnet, that takes spectragram image input with
+            shape: (B, C, T, 1, F), where T is the time dimension and F is the
+            frequency dimension.
     """
-    # Given a model depth, get the number of blocks for each stage.
-    _MODEL_STAGE_DEPTH = {50: (3, 4, 6, 3), 101: (3, 4, 23, 3), 152: (3, 8, 36, 3)}
-    assert model_depth in _MODEL_STAGE_DEPTH.keys()
-    stage_depths = _MODEL_STAGE_DEPTH[model_depth]
-    assert len(bottleneck) == len(stage_depths)
-
-    blocks = []
-    # Create stem for resnet.
-    stem = stem(
-        in_channels=input_channel,
-        out_channels=stem_dim_out,
-        conv_kernel_size=stem_conv_kernel_size,
-        conv_stride=stem_conv_stride,
-        conv_padding=stem_conv_padding,
-        pool=stem_pool,
-        pool_kernel_size=stem_pool_kernel_size,
-        pool_stride=stem_pool_stride,
-        pool_padding=[size // 2 for size in stem_pool_kernel_size],
-        norm=norm,
-        activation=activation,
-    )
-    blocks.append(stem)
-    stage_dim_in = stem_dim_out
-    stage_dim_out = stage_dim_in * 4
-
-    # Create each stage for resnet.
-    for idx in range(len(stage_depths)):
-        stage_dim_inner = stage_dim_out // 4
-        depth = stage_depths[idx]
-
-        stage_conv_a_stride = (stage_temporal_stride[idx], 1, 1)
-        stage_conv_b_stride = (1, stage_spatial_stride[idx], stage_spatial_stride[idx])
-
-        stage = create_res_stage(
-            depth=depth,
-            dim_in=stage_dim_in,
-            dim_inner=stage_dim_inner,
-            dim_out=stage_dim_out,
-            bottleneck=bottleneck[idx],
-            conv_a_kernel_size=stage_conv_a_kernel_size,
-            conv_a_stride=stage_conv_a_stride,
-            conv_a_padding=stage_conv_a_padding,
-            conv_b_kernel_size=stage_conv_b_kernel_size,
-            conv_b_stride=stage_conv_b_stride,
-            conv_b_padding=stage_conv_b_padding,
-            conv_b_num_groups=stage_conv_b_num_groups,
-            conv_b_dilation=stage_conv_b_dilation,
-            norm=norm,
-            activation=activation,
-        )
-        blocks.append(stage)
-        stage_dim_in = stage_dim_out
-        stage_dim_out = stage_dim_out * 2
-
-    # Create head for resnet.
-    head = create_res_basic_head(
-        in_features=stage_dim_in,
-        out_features=model_num_class,
-        pool=head_pool,
-        output_size=head_output_size,
-        pool_kernel_size=head_pool_kernel_size,
-        dropout_rate=dropout_rate,
-        activation=head_activation,
-    )
-    blocks.append(head)
-    return Net(blocks=nn.ModuleList(blocks))
+    return create_resnet(**locals())
 
 
 class ResBlock(nn.Module):
