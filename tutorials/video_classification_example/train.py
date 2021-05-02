@@ -435,7 +435,7 @@ def main():
             args,
             args.working_directory,
             job_name=args.job_name,
-            time="72:00:00",
+            time=4320,
             partition=args.partition,
             gpus_per_node=args.gpus,
             ntasks_per_node=args.gpus,
