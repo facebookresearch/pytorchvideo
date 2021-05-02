@@ -37,7 +37,8 @@ def copy_and_run_with_config(run_fn, run_config, directory, **cluster_config):
     os.chdir(working_directory)
     print(f"Running at {working_directory}")
 
-    executor = submitit.SlurmExecutor(folder=working_directory)
+    executor = submitit.SlurmExecutor(folder=working_directory,
+                                      max_num_timeout=3)
     executor.update_parameters(**cluster_config)
     job = executor.submit(InitAndRun(run_fn, run_config))
     print(f"job_id: {job}")
