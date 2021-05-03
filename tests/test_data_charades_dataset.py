@@ -8,43 +8,31 @@ import unittest
 from pytorchvideo.data import Charades
 from pytorchvideo.data.clip_sampling import make_clip_sampler
 from torch.utils.data import SequentialSampler
-from utils import temp_frame_video
+from utils import temp_frame_video_dataset, temp_frame_video
 
 
 @contextlib.contextmanager
 def temp_charades_dataset():
-    frame_names = [f"{str(i)}.png" for i in range(3)]
 
     # Create csv containing 2 test frame videos.
     with tempfile.NamedTemporaryFile(delete=False, suffix=".csv") as f:
         f.write("original_vido_id video_id frame_id path labels\n".encode())
 
-        # Frame video 1
-        with temp_frame_video(frame_names) as (frame_1_video_dir, data_1):
-            for i, frame_name in enumerate(frame_names):
-                original_video_id = str(frame_1_video_dir)
-                video_id = "1"
-                frame_id = str(i)
-                path = pathlib.Path(frame_1_video_dir) / frame_name
-                label = "0"
+        with temp_frame_video_dataset() as (video_frames, _):
+            for (
+                original_video_id,
+                video_id,
+                frame_id,
+                path,
+                label,
+                _,
+            ) in video_frames:
                 f.write(
                     f"{original_video_id} {video_id} {frame_id} {path} {label}\n".encode()
                 )
 
-            # Frame video 2
-            with temp_frame_video(frame_names) as (frame_2_video_dir, data_2):
-                for i, frame_name in enumerate(frame_names):
-                    original_video_id = str(frame_2_video_dir)
-                    video_id = "2"
-                    frame_id = str(i)
-                    path = pathlib.Path(frame_2_video_dir) / frame_name
-                    label = "1"
-                    f.write(
-                        f"{original_video_id} {video_id} {frame_id} {path} {label}\n".encode()
-                    )
-
-                f.close()
-                yield f.name, data_1, data_2
+            f.close()
+            yield f.name, video_frames[0][-1], video_frames[1][-1]
 
 
 class TestCharadesDataset(unittest.TestCase):

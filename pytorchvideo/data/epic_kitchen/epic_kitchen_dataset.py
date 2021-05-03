@@ -14,6 +14,7 @@ from pytorchvideo.data.dataset_manifest_utils import (
     VideoInfo,
     get_seconds_from_hms_time,
 )
+from pytorchvideo.data.frame_video import FrameVideo
 from pytorchvideo.data.utils import DataclassFieldCaster, load_dataclass_dict_from_csv
 from pytorchvideo.data.video import Video
 
@@ -171,12 +172,18 @@ class EpicKitchenDataset(torch.utils.data.Dataset):
             Otherwise, the transform defines the clip output.
         """
         clip = self._clips[index]
+        video = self._videos[clip.video_id]
+
+        if isinstance(video, FrameVideo):
+            clip_dict = video.get_clip(
+                clip.start_time, clip.stop_time, self._frame_filter
+            )
+        else:
+            clip_dict = video.get_clip(clip.start_time, clip.stop_time)
 
         clip_data = {
             "video_id": clip.video_id,
-            **self._videos[clip.video_id].get_clip(
-                clip.start_time, clip.stop_time, self._frame_filter
-            ),
+            **clip_dict,
             "actions": self._actions[clip.video_id],
             "start_time": clip.start_time,
             "stop_time": clip.stop_time,

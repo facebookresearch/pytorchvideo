@@ -77,7 +77,59 @@ def temp_frame_video(frame_image_file_names, height=10, width=10):
         for i, file_name in enumerate(frame_image_file_names):
             im = transforms.ToPILImage()(data[:, i])
             im.save(root_dir / file_name, compress_level=0, optimize=False)
+
         yield root_dir, data.to(torch.float32)
+
+
+@contextlib.contextmanager
+def temp_frame_video_dataset(num_frames=3, fps=30):
+    frame_names = [f"{i}.png" for i in range(num_frames)]
+    video_duration = num_frames / fps
+
+    video_frames = []
+    videos = []
+
+    # Frame video 1
+    with temp_frame_video(frame_names) as (frame_1_video_dir, data_1):
+        video_id = "1"
+        label = "0"
+        videos.append((frame_1_video_dir, video_id, label, data_1, video_duration))
+        for i, frame_name in enumerate(frame_names):
+            original_video_id = str(frame_1_video_dir)
+            frame_id = str(i)
+            path = pathlib.Path(frame_1_video_dir) / frame_name
+            video_frames.append(
+                (
+                    original_video_id,
+                    video_id,
+                    frame_id,
+                    path,
+                    label,
+                    data_1,
+                )
+            )
+
+        # Frame video 2
+        with temp_frame_video(frame_names) as (frame_2_video_dir, data_2):
+            video_id = "2"
+            label = "1"
+            videos.append((frame_2_video_dir, video_id, label, data_2, video_duration))
+            for i, frame_name in enumerate(frame_names):
+                original_video_id = str(frame_2_video_dir)
+                frame_id = str(i)
+                path = pathlib.Path(frame_2_video_dir) / frame_name
+                video_frames.append(
+                    (
+                        original_video_id,
+                        video_id,
+                        frame_id,
+                        path,
+                        label,
+                        data_2,
+                    )
+                )
+
+            yield video_frames, videos
 
 
 def write_audio_video(path, video, audio, fps=30, audio_rate=48000):

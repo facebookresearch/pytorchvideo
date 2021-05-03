@@ -11,7 +11,7 @@ import torch.utils.data
 from iopath.common.file_io import g_pathmgr
 
 from .clip_sampling import ClipSampler
-from .encoded_video_dataset import EncodedVideoDataset
+from .labeled_video_dataset import LabeledVideoDataset
 
 
 logger = logging.getLogger(__name__)
@@ -175,9 +175,9 @@ def Hmdb51(
     split_type: str = "train",
     decode_audio=True,
     decoder: str = "pyav",
-) -> EncodedVideoDataset:
+) -> LabeledVideoDataset:
     """
-    A helper function to create ``EncodedVideoDataset`` object for HMDB51 dataset
+    A helper function to create ``LabeledVideoDataset`` object for HMDB51 dataset
 
     Args:
         data_path (pathlib.Path): Path to the data. The path type defines how the data
@@ -197,11 +197,11 @@ def Hmdb51(
 
         transform (Callable): This callable is evaluated on the clip output before
             the clip is returned. It can be used for user defined preprocessing and
-            augmentations to the clips. See the ``EncodedVideoDataset`` class for
+            augmentations to the clips. See the ``LabeledVideoDataset`` class for
             clip output format.
 
         video_path_prefix (str): Path to root directory with the videos that are
-            loaded in EncodedVideoDataset. All the video paths before loading
+            loaded in LabeledVideoDataset. All the video paths before loading
             are prefixed with this path.
 
         split_id (int): Fold id to be loaded. Options are 1, 2 or 3
@@ -215,7 +215,7 @@ def Hmdb51(
         data_path, split_id=split_id, split_type=split_type
     )
     labeled_video_paths.path_prefix = video_path_prefix
-    dataset = EncodedVideoDataset(
+    dataset = LabeledVideoDataset(
         labeled_video_paths,
         clip_sampler,
         video_sampler,

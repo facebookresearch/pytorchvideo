@@ -5,6 +5,7 @@ import unittest
 
 import pytest
 from pytorchvideo.data.encoded_video import EncodedVideo
+from pytorchvideo.data.encoded_video_pyav import EncodedVideoPyAV
 from utils import temp_encoded_video, temp_encoded_video_with_audio
 
 
@@ -119,7 +120,7 @@ class TestEncodedVideo(unittest.TestCase):
         fps = 5
         with temp_encoded_video(num_frames=num_frames, fps=fps) as (file_name, data):
             with open(file_name, "rb") as f:
-                test_video = EncodedVideo(f)
+                test_video = EncodedVideoPyAV(f)
 
             self.assertAlmostEqual(test_video.duration, num_frames / fps)
             clip = test_video.get_clip(0, test_video.duration)

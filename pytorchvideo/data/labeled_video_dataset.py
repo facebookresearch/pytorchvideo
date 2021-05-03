@@ -3,12 +3,11 @@
 from __future__ import annotations
 
 import logging
-import pathlib
 from typing import Any, Callable, Dict, List, Optional, Tuple, Type
 
 import torch.utils.data
 from pytorchvideo.data.clip_sampling import ClipSampler
-from pytorchvideo.data.encoded_video import EncodedVideo
+from pytorchvideo.data.video import video_from_path
 
 from .labeled_video_paths import LabeledVideoPaths
 from .utils import MultiProcessSampler
@@ -17,10 +16,11 @@ from .utils import MultiProcessSampler
 logger = logging.getLogger(__name__)
 
 
-class EncodedVideoDataset(torch.utils.data.IterableDataset):
+class LabeledVideoDataset(torch.utils.data.IterableDataset):
     """
-    EncodedVideoDataset handles the storage, loading, decoding and clip sampling for a
-    video dataset. It assumes each video is stored as an encoded video (e.g. mp4, avi).
+    LabeledVideoDataset handles the storage, loading, decoding and clip sampling for a
+    video dataset. It assumes each video is stored as either an encoded video
+    (e.g. mp4, avi) or a frame video (e.g. a folder of jpg, or png)
     """
 
     _MAX_CONSECUTIVE_FAILURES = 10
@@ -37,7 +37,9 @@ class EncodedVideoDataset(torch.utils.data.IterableDataset):
         """
         Args:
             labeled_video_paths (List[Tuple[str, Optional[dict]]]): List containing
-                    video file paths and associated labels
+                    video file paths and associated labels. If video paths are a folder
+                    it's interpreted as a frame video, otherwise it must be an encoded
+                    video.
 
             clip_sampler (ClipSampler): Defines how clips should be sampled from each
                 video. See the clip sampling documentation for more information.
@@ -52,7 +54,8 @@ class EncodedVideoDataset(torch.utils.data.IterableDataset):
 
             decode_audio (bool): If True, also decode audio from video.
 
-            decoder (str): Defines what type of decoder used to decode a video.
+            decoder (str): Defines what type of decoder used to decode a video. Not used for
+                frame videos.
         """
         self._decode_audio = decode_audio
         self._transform = transform
@@ -82,7 +85,20 @@ class EncodedVideoDataset(torch.utils.data.IterableDataset):
 
     @property
     def video_sampler(self):
+        """
+        Returns:
+            The video sampler that defines video sample order. Note that you'll need to
+            use this property to set the epoch for a torch.utils.data.DistributedSampler.
+        """
         return self._video_sampler
+
+    @property
+    def num_videos(self):
+        """
+        Returns:
+            Number of videos in dataset.
+        """
+        return len(self.video_sampler)
 
     def __next__(self) -> dict:
         """
@@ -113,22 +129,22 @@ class EncodedVideoDataset(torch.utils.data.IterableDataset):
                 video, info_dict, video_index = self._loaded_video_label
             else:
                 video_index = next(self._video_sampler_iter)
-                try:
-                    video_path, info_dict = self._labeled_videos[video_index]
-                    video = EncodedVideo.from_path(
-                        video_path,
-                        decode_audio=self._decode_audio,
-                        decoder=self._decoder,
-                    )
-                    self._loaded_video_label = (video, info_dict, video_index)
-                except Exception as e:
-                    logger.debug(
-                        "Failed to load video with error: {}; trial {}".format(
-                            e,
-                            i_try,
-                        )
-                    )
-                    continue
+                # try:
+                video_path, info_dict = self._labeled_videos[video_index]
+                video = video_from_path(
+                    video_path,
+                    decode_audio=self._decode_audio,
+                    decoder=self._decoder,
+                )
+                self._loaded_video_label = (video, info_dict, video_index)
+                # except Exception as e:
+                #     logger.debug(
+                #         "Failed to load video with error: {}; trial {}".format(
+                #             e,
+                #             i_try,
+                #         )
+                #     )
+                #     continue
 
             (
                 clip_start,
@@ -137,25 +153,25 @@ class EncodedVideoDataset(torch.utils.data.IterableDataset):
                 aug_index,
                 is_last_clip,
             ) = self._clip_sampler(self._next_clip_start_time, video.duration)
+
             # Only load the clip once and reuse previously stored clip if there are multiple
             # views for augmentations to perform on the same clip.
             if aug_index == 0:
                 self._loaded_clip = video.get_clip(clip_start, clip_end)
+
             self._next_clip_start_time = clip_end
 
-            clip_is_null = (
-                self._loaded_clip is None
-                or self._loaded_clip["video"] is None
-                or (self._loaded_clip["audio"] is None and self._decode_audio)
+            video_is_null = (
+                self._loaded_clip is None or self._loaded_clip["video"] is None
             )
-            if is_last_clip or clip_is_null:
+            if is_last_clip or video_is_null:
                 # Close the loaded encoded video and reset the last sampled clip time ready
                 # to sample a new video on the next iteration.
                 self._loaded_video_label[0].close()
                 self._loaded_video_label = None
                 self._next_clip_start_time = 0.0
 
-                if clip_is_null:
+                if video_is_null:
                     logger.debug(
                         "Failed to load clip {}; trial {}".format(video.name, i_try)
                     )
@@ -199,24 +215,21 @@ class EncodedVideoDataset(torch.utils.data.IterableDataset):
 
         return self
 
-    def num_videos(self):
-        return len(self.video_sampler)
 
-
-def labeled_encoded_video_dataset(
-    data_path: pathlib.path,
+def labeled_video_dataset(
+    data_path: str,
     clip_sampler: ClipSampler,
     video_sampler: Type[torch.utils.data.Sampler] = torch.utils.data.RandomSampler,
     transform: Optional[Callable[[Dict[str, Any]], Dict[str, Any]]] = None,
     video_path_prefix: str = "",
     decode_audio: bool = True,
     decoder: str = "pyav",
-) -> EncodedVideoDataset:
+) -> LabeledVideoDataset:
     """
-    A helper function to create ``EncodedVideoDataset`` object for Ucf101 and Kinetics datasets.
+    A helper function to create ``LabeledVideoDataset`` object for Ucf101 and Kinetics datasets.
 
     Args:
-        data_path (pathlib.Path): Path to the data. The path type defines how the data
+        data_path (str): Path to the data. The path type defines how the data
             should be read:
 
             * For a file path, the file is read and each line is parsed into a
@@ -233,11 +246,11 @@ def labeled_encoded_video_dataset(
 
         transform (Callable): This callable is evaluated on the clip output before
                 the clip is returned. It can be used for user defined preprocessing and
-                augmentations to the clips. See the ``EncodedVideoDataset`` class for clip
+                augmentations to the clips. See the ``LabeledVideoDataset`` class for clip
                 output format.
 
         video_path_prefix (str): Path to root directory with the videos that are
-                loaded in ``EncodedVideoDataset``. All the video paths before loading
+                loaded in ``LabeledVideoDataset``. All the video paths before loading
                 are prefixed with this path.
 
         decode_audio (bool): If True, also decode audio from video.
@@ -247,7 +260,7 @@ def labeled_encoded_video_dataset(
     """
     labeled_video_paths = LabeledVideoPaths.from_path(data_path)
     labeled_video_paths.path_prefix = video_path_prefix
-    dataset = EncodedVideoDataset(
+    dataset = LabeledVideoDataset(
         labeled_video_paths,
         clip_sampler,
         video_sampler,

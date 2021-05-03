@@ -7,15 +7,15 @@ from typing import BinaryIO, Dict, List, Optional, Tuple
 import av
 import numpy as np
 import torch
+from pytorchvideo.data.encoded_video import EncodedVideo
 
 from .utils import pts_to_secs, secs_to_pts, thwc_to_cthw
-from .video import Video
 
 
 logger = logging.getLogger(__name__)
 
 
-class EncodedVideoPyAV(Video):
+class EncodedVideoPyAV(EncodedVideo):
     """
     EncodedVideoPyAV is an abstraction for accessing clips from an encoded video using
     PyAV as the decoding backend. It supports selective decoding when header information

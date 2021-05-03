@@ -20,9 +20,9 @@ import torch.distributed as dist
 from parameterized import parameterized
 from pytorchvideo.data import Hmdb51
 from pytorchvideo.data.clip_sampling import make_clip_sampler
-from pytorchvideo.data.encoded_video_dataset import (
-    EncodedVideoDataset,
-    labeled_encoded_video_dataset,
+from pytorchvideo.data.labeled_video_dataset import (
+    LabeledVideoDataset,
+    labeled_video_dataset,
 )
 from pytorchvideo.data.labeled_video_paths import LabeledVideoPaths
 from pytorchvideo.data.utils import MultiProcessSampler, thwc_to_cthw
@@ -34,26 +34,30 @@ from torch.utils.data import (
     SequentialSampler,
     TensorDataset,
 )
-from utils import create_dummy_video_frames, temp_encoded_video
+from utils import (
+    create_dummy_video_frames,
+    temp_encoded_video,
+    temp_frame_video_dataset,
+)
 
 
 DECODER_LIST = [("pyav",), ("torchvision",)]
 
 
-class TestEncodedVideoDataset(unittest.TestCase):
+class TestLabeledVideoDataset(unittest.TestCase):
     # Clip sampling is start time inclusive so we need to subtract _EPS from
     # total_duration / 2 to sample half of the frames of a video.
     _EPS = 1e-9
 
     def setUp(self):
         # Fail fast for tests
-        EncodedVideoDataset._MAX_CONSECUTIVE_FAILURES = 1
+        LabeledVideoDataset._MAX_CONSECUTIVE_FAILURES = 1
 
     @parameterized.expand(DECODER_LIST)
     def test_single_clip_per_video_works(self, decoder):
         with mock_encoded_video_dataset_file() as (mock_csv, expected, total_duration):
             clip_sampler = make_clip_sampler("uniform", total_duration)
-            dataset = labeled_encoded_video_dataset(
+            dataset = labeled_video_dataset(
                 data_path=mock_csv,
                 clip_sampler=clip_sampler,
                 video_sampler=SequentialSampler,
@@ -83,7 +87,7 @@ class TestEncodedVideoDataset(unittest.TestCase):
             total_duration = num_frames / fps
             clip_sampler = make_clip_sampler("uniform", total_duration)
             labeled_video_paths = LabeledVideoPaths.from_path(f.name)
-            dataset = EncodedVideoDataset(
+            dataset = LabeledVideoDataset(
                 labeled_video_paths,
                 clip_sampler=clip_sampler,
                 video_sampler=SequentialSampler,
@@ -106,7 +110,7 @@ class TestEncodedVideoDataset(unittest.TestCase):
             half_duration = total_duration / 2 - self._EPS
             clip_sampler = make_clip_sampler("random", half_duration)
             labeled_video_paths = LabeledVideoPaths.from_path(mock_csv)
-            dataset = EncodedVideoDataset(
+            dataset = LabeledVideoDataset(
                 labeled_video_paths,
                 clip_sampler=clip_sampler,
                 video_sampler=SequentialSampler,
@@ -239,7 +243,7 @@ class TestEncodedVideoDataset(unittest.TestCase):
                     "constant_clips_per_video", duration_for_frames, 2
                 )
                 labeled_video_paths = LabeledVideoPaths.from_path(f.name)
-                dataset = EncodedVideoDataset(
+                dataset = LabeledVideoDataset(
                     labeled_video_paths,
                     clip_sampler=clip_sampler,
                     video_sampler=SequentialSampler,
@@ -304,7 +308,7 @@ class TestEncodedVideoDataset(unittest.TestCase):
 
                 clip_sampler = make_clip_sampler("uniform", 3)
                 labeled_video_paths = LabeledVideoPaths.from_path(root_dir)
-                dataset = EncodedVideoDataset(
+                dataset = LabeledVideoDataset(
                     labeled_video_paths,
                     clip_sampler=clip_sampler,
                     video_sampler=SequentialSampler,
@@ -326,11 +330,30 @@ class TestEncodedVideoDataset(unittest.TestCase):
                     sample_2["video"].equal(thwc_to_cthw(data_1).to(torch.float32))
                 )
 
+    def test_frame_video_dataset_works(self):
+        with mock_frame_video_dataset_file() as (mock_csv, expected, total_duration):
+            clip_sampler = make_clip_sampler("uniform", total_duration)
+            dataset = labeled_video_dataset(
+                data_path=mock_csv,
+                clip_sampler=clip_sampler,
+                video_sampler=SequentialSampler,
+                decode_audio=False,
+                decoder="frame",
+            )
+
+            test_dataloader = DataLoader(dataset, batch_size=None, num_workers=2)
+
+            for _ in range(2):
+                actual = [
+                    (sample["label"], sample["video"]) for sample in test_dataloader
+                ]
+                assert_unordered_list_compare_true(self, expected, actual)
+
     @parameterized.expand(DECODER_LIST)
     def test_random_video_sampler(self, decoder):
         with mock_encoded_video_dataset_file() as (mock_csv, expected, total_duration):
             clip_sampler = make_clip_sampler("uniform", total_duration)
-            dataset = labeled_encoded_video_dataset(
+            dataset = labeled_video_dataset(
                 data_path=mock_csv,
                 clip_sampler=clip_sampler,
                 video_sampler=RandomSampler,
@@ -346,7 +369,7 @@ class TestEncodedVideoDataset(unittest.TestCase):
     def test_random_video_sampler_multiprocessing(self, num_workers, decoder):
         with mock_encoded_video_dataset_file() as (mock_csv, expected, total_duration):
             clip_sampler = make_clip_sampler("uniform", total_duration)
-            dataset = labeled_encoded_video_dataset(
+            dataset = labeled_video_dataset(
                 data_path=mock_csv,
                 clip_sampler=clip_sampler,
                 video_sampler=RandomSampler,
@@ -373,7 +396,7 @@ class TestEncodedVideoDataset(unittest.TestCase):
             half_duration = total_duration / 2 - self._EPS
             clip_sampler = make_clip_sampler("uniform", half_duration)
             labeled_video_paths = LabeledVideoPaths.from_path(mock_csv)
-            dataset = EncodedVideoDataset(
+            dataset = LabeledVideoDataset(
                 labeled_video_paths,
                 clip_sampler=clip_sampler,
                 video_sampler=SequentialSampler,
@@ -405,7 +428,7 @@ class TestEncodedVideoDataset(unittest.TestCase):
             half_duration = total_duration / 2 - self._EPS
             clip_sampler = make_clip_sampler("uniform", half_duration)
             labeled_video_paths = LabeledVideoPaths.from_path(mock_csv)
-            dataset = EncodedVideoDataset(
+            dataset = LabeledVideoDataset(
                 labeled_video_paths,
                 clip_sampler=clip_sampler,
                 video_sampler=SequentialSampler,
@@ -437,7 +460,7 @@ class TestEncodedVideoDataset(unittest.TestCase):
             half_duration = total_duration / 2 - self._EPS
             clip_sampler = make_clip_sampler("uniform", half_duration)
             labeled_video_paths = LabeledVideoPaths.from_path(mock_csv)
-            dataset = EncodedVideoDataset(
+            dataset = LabeledVideoDataset(
                 labeled_video_paths,
                 clip_sampler=clip_sampler,
                 video_sampler=SequentialSampler,
@@ -482,7 +505,7 @@ class TestEncodedVideoDataset(unittest.TestCase):
                 half_duration = total_duration / 2 - self._EPS
                 clip_sampler = make_clip_sampler("uniform", half_duration)
                 labeled_video_paths = LabeledVideoPaths.from_path(f.name)
-                dataset = EncodedVideoDataset(
+                dataset = LabeledVideoDataset(
                     labeled_video_paths,
                     clip_sampler=clip_sampler,
                     video_sampler=SequentialSampler,
@@ -636,7 +659,7 @@ def run_distributed(rank, size, decoder, clip_duration, data_name, return_dict):
     dist.init_process_group("gloo", rank=rank, world_size=size)
     clip_sampler = make_clip_sampler("uniform", clip_duration)
     labeled_video_paths = LabeledVideoPaths.from_path(data_name)
-    dataset = EncodedVideoDataset(
+    dataset = LabeledVideoDataset(
         labeled_video_paths,
         clip_sampler=clip_sampler,
         video_sampler=DistributedSampler,
@@ -684,3 +707,28 @@ def mock_encoded_video_dataset_file():
             ]
             video_duration = num_frames / fps
             yield f.name, label_videos, video_duration
+
+
+@contextlib.contextmanager
+def mock_frame_video_dataset_file():
+    """
+    Creates a temporary mock frame video dataset with 4 videos labeled from 0 - 4.
+    Returns a labeled video file which points to this mock frame video dataset, the
+    ordered label and videos tuples and the video duration in seconds.
+    """
+    with temp_frame_video_dataset() as (_, videos):
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".txt") as f:
+            f.write(f"{videos[0][0]} 0\n".encode())
+            f.write(f"{videos[1][0]} 1\n".encode())
+            f.write(f"{videos[0][0]} 2\n".encode())
+            f.write(f"{videos[1][0]} 3\n".encode())
+
+        label_videos = [
+            (0, videos[0][-2]),
+            (1, videos[1][-2]),
+            (0, videos[0][-2]),
+            (1, videos[1][-2]),
+        ]
+
+        min_duration = min(videos[0][-1], videos[1][-1])
+        yield f.name, label_videos, min_duration

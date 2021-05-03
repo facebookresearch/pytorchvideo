@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
+import glob
 import logging
+import os
 import time
 from typing import Callable, Dict, List, Optional
 
@@ -61,6 +63,7 @@ class FrameVideo(Video):
 
         self._duration = duration
         self._fps = fps
+        self._multithreaded_io = multithreaded_io
 
         assert (video_frame_to_path_fn is None) != (
             video_frame_paths is None
@@ -68,7 +71,21 @@ class FrameVideo(Video):
         self._video_frame_to_path_fn = video_frame_to_path_fn
         self._video_frame_paths = video_frame_paths
 
-        self._multithreaded_io = multithreaded_io
+        # Set the pathname to the parent directory of the first frame.
+        self._name = os.path.basename(
+            os.path.dirname(self._video_frame_to_path(frame_index=0))
+        )
+
+    @classmethod
+    def from_directory(
+        cls,
+        path: str,
+        fps: float = 30.0,
+        multithreaded_io=False,
+    ):
+        assert g_pathmgr.isdir(path), f"{path} is not a directory"
+        frame_paths = list(glob.glob(os.path.join(path, "*")))
+        return cls.from_frame_paths(frame_paths, fps, multithreaded_io)
 
     @classmethod
     def from_frame_paths(
@@ -86,13 +103,16 @@ class FrameVideo(Video):
                 performed across multiple threads.
         """
         assert len(video_frame_paths) != 0, "video_frame_paths is empty"
-
         return cls(
             len(video_frame_paths) / fps,
             fps,
             video_frame_paths=video_frame_paths,
             multithreaded_io=multithreaded_io,
         )
+
+    @property
+    def name(self) -> float:
+        return self._name
 
     @property
     def duration(self) -> float:
@@ -159,7 +179,7 @@ class FrameVideo(Video):
             clip_paths, multithreaded=self._multithreaded_io
         )
         clip_frames = thwc_to_cthw(clip_frames).to(torch.float32)
-        return {"video": clip_frames, "frame_indices": frame_indices}
+        return {"video": clip_frames, "frame_indices": frame_indices, "audio": None}
 
     def _video_frame_to_path(self, frame_index: int) -> str:
         if self._video_frame_to_path_fn:

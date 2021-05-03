@@ -202,7 +202,7 @@ class EncodedVideoTorchVision(Video):
                 audio_timebase_den,
             )
         except Exception as e:
-            logger.warning(f"Failed to decode video of name {self.video_name}. {e}")
+            logger.warning(f"Failed to decode video of name {self._video_name}. {e}")
             raise e
 
         (

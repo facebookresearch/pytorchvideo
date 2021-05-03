@@ -1,7 +1,5 @@
 # Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved.
 
-import io
-import pathlib
 from abc import ABC, abstractmethod
 from typing import BinaryIO, Dict, Optional
 
@@ -9,26 +7,48 @@ import torch
 from iopath.common.file_io import g_pathmgr
 
 
+def video_from_path(filepath, decode_audio=False, decoder="pyav", fps=30):
+    try:
+        is_file = g_pathmgr.isfile(filepath)
+        is_dir = g_pathmgr.isdir(filepath)
+    except NotImplementedError:
+
+        # Not all PathManager handlers support is{file,dir} functions, when this is the
+        # case, we default to assuming the path is a file.
+        is_file = True
+        is_dir = False
+
+    if is_file:
+        from pytorchvideo.data.encoded_video import EncodedVideo
+
+        return EncodedVideo.from_path(filepath, decode_audio, decoder)
+    elif is_dir:
+        from pytorchvideo.data.frame_video import FrameVideo
+
+        assert not decode_audio, "decode_audio must be False when using FrameVideo"
+        return FrameVideo.from_directory(filepath, fps)
+    else:
+        raise FileNotFoundError(f"{filepath} not found.")
+
+
 class Video(ABC):
     """
     Video provides an interface to access clips from a video container.
     """
 
-    @classmethod
-    def from_path(cls, file_path: str, decode_audio: bool = True):
+    @abstractmethod
+    def __init__(
+        self,
+        file: BinaryIO,
+        video_name: Optional[str] = None,
+        decode_audio: bool = True,
+    ) -> None:
         """
-        Fetches the given video path using PathManager (allowing remote uris to be
-        fetched) and constructs the EncodedVideo object.
-
         Args:
-            file_path (str): a PathManager file-path.
+            file (BinaryIO): a file-like object (e.g. io.BytesIO or io.StringIO) that
+                contains the encoded video.
         """
-        # We read the file with PathManager rather than pyav so that we can read from
-        # remote uris.
-        with g_pathmgr.open(file_path, "rb") as fh:
-            video_file = io.BytesIO(fh.read())
-
-        return cls(video_file, pathlib.Path(file_path).name, decode_audio)
+        pass
 
     @property
     @abstractmethod
@@ -57,16 +77,5 @@ class Video(ABC):
         """
         pass
 
-    @abstractmethod
-    def __init__(
-        self,
-        file: BinaryIO,
-        video_name: Optional[str] = None,
-        decode_audio: bool = True,
-    ) -> None:
-        """
-        Args:
-            file (BinaryIO): a file-like object (e.g. io.BytesIO or io.StringIO) that
-                contains the encoded video.
-        """
+    def close(self):
         pass
