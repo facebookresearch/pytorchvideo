@@ -1,6 +1,6 @@
 # Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved.
 
-from typing import Any
+from typing import Any, Optional
 
 import torch.nn as nn
 from pytorchvideo.models.accelerator.mobile_cpu.efficient_x3d import create_x3d
@@ -17,7 +17,7 @@ _checkpoint_paths = {
 def _efficient_x3d(
     pretrained: bool = False,
     progress: bool = True,
-    checkpoint_path: str = None,
+    checkpoint_path: Optional[str] = None,
     # Model params
     expansion: str = "XS",
     **kwargs: Any,
@@ -29,7 +29,10 @@ def _efficient_x3d(
     )
 
     if pretrained and checkpoint_path is not None:
-        state_dict = load_state_dict_from_url(checkpoint_path, progress=progress)
+        # All models are loaded onto CPU by default
+        state_dict = load_state_dict_from_url(
+            checkpoint_path, progress=progress, map_location="cpu"
+        )
         model.load_state_dict(state_dict)
 
     return model

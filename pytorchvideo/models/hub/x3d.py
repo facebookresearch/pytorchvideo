@@ -1,6 +1,6 @@
 # Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved.
 
-from typing import Any
+from typing import Any, Optional
 
 import torch.nn as nn
 from pytorchvideo.models.x3d import create_x3d
@@ -18,12 +18,15 @@ checkpoint_paths = {
 def _x3d(
     pretrained: bool = False,
     progress: bool = True,
-    checkpoint_path: str = "",
+    checkpoint_path: Optional[str] = None,
     **kwargs: Any,
 ) -> nn.Module:
     model = create_x3d(**kwargs)
-    if pretrained and len(checkpoint_path) > 0:
-        checkpoint = load_state_dict_from_url(checkpoint_path, progress=progress)
+    if pretrained and checkpoint_path is not None:
+        # All models are loaded onto CPU by default
+        checkpoint = load_state_dict_from_url(
+            checkpoint_path, progress=progress, map_location="cpu"
+        )
         state_dict = checkpoint["model_state"]
         model.load_state_dict(state_dict)
     return model

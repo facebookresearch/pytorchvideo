@@ -45,7 +45,10 @@ def slow_r50(
 
     if pretrained:
         path = checkpoint_paths["slow_r50"]
-        checkpoint = load_state_dict_from_url(path, progress=progress)
+        # All models are loaded onto CPU by default
+        checkpoint = load_state_dict_from_url(
+            path, progress=progress, map_location="cpu"
+        )
         state_dict = checkpoint["model_state"]
         model.load_state_dict(state_dict)
 

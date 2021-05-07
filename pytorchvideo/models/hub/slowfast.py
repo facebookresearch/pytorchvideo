@@ -22,7 +22,10 @@ def _slowfast(
 ) -> nn.Module:
     model = create_slowfast(**kwargs)
     if pretrained:
-        checkpoint = load_state_dict_from_url(checkpoint_path, progress=progress)
+        # All models are loaded onto CPU by default
+        checkpoint = load_state_dict_from_url(
+            checkpoint_path, progress=progress, map_location="cpu"
+        )
         state_dict = checkpoint["model_state"]
         model.load_state_dict(state_dict)
     return model
