@@ -7,7 +7,7 @@ from typing import Tuple
 
 import torch
 from pytorchvideo.models.slowfast import create_slowfast
-from pytorchvideo.transforms.functional import repeat_temporal_frames_subsample
+from pytorchvideo.transforms.functional import uniform_temporal_subsample_repeated
 from torch import nn
 
 
@@ -94,6 +94,6 @@ class TestSlowFast(unittest.TestCase):
         # Prepare random inputs as test cases.
         shapes = ((1, channel, clip_length, crop_size, crop_size),)
         for shape in shapes:
-            yield repeat_temporal_frames_subsample(
+            yield uniform_temporal_subsample_repeated(
                 torch.rand(shape), frame_ratios=frame_ratios, temporal_dim=2
             )

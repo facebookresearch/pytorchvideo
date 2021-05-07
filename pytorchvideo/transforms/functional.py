@@ -132,7 +132,7 @@ def short_side_scale(
         raise NotImplementedError(f"{backend} backend not supported.")
 
 
-def repeat_temporal_frames_subsample(
+def uniform_temporal_subsample_repeated(
     frames: torch.Tensor, frame_ratios: Tuple[int], temporal_dim: int = 1
 ) -> Tuple[torch.Tensor]:
     """
@@ -157,6 +157,7 @@ def repeat_temporal_frames_subsample(
             frames, temporal_length // ratio, temporal_dim
         )
         frame_list.append(pathway)
+
     return frame_list
 
 

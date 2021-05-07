@@ -1,6 +1,6 @@
 # Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved.
 
-from typing import Callable, Dict, List, Optional
+from typing import Callable, Dict, List, Optional, Tuple
 
 import pytorchvideo.transforms.functional
 import torch
@@ -66,6 +66,26 @@ class UniformTemporalSubsample(torch.nn.Module):
         """
         return pytorchvideo.transforms.functional.uniform_temporal_subsample(
             x, self._num_samples
+        )
+
+
+class UniformTemporalSubsampleRepeated(torch.nn.Module):
+    """
+    ``nn.Module`` wrapper for
+    ``pytorchvideo.transforms.functional.uniform_temporal_subsample_repeated``.
+    """
+
+    def __init__(self, frame_ratios: Tuple[int]):
+        super().__init__()
+        self._frame_ratios = frame_ratios
+
+    def forward(self, x: torch.Tensor):
+        """
+        Args:
+            x (torch.Tensor): video tensor with shape (C, T, H, W).
+        """
+        return pytorchvideo.transforms.functional.uniform_temporal_subsample_repeated(
+            x, self._frame_ratios
         )
 
 
