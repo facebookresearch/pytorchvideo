@@ -161,12 +161,13 @@ class SSv2(torch.utils.data.IterableDataset):
             self._loaded_video = (video, video_index)
 
         clip_start, clip_end, clip_index, aug_index, is_last_clip = self._clip_sampler(
-            self._next_clip_start_time, video.duration
+            self._next_clip_start_time, video.duration, {}
         )
         # Only load the clip once and reuse previously stored clip if there are multiple
         # views for augmentations to perform on the same clip.
         if aug_index == 0:
             self._loaded_clip = video.get_clip(0, video.duration, self._frame_filter)
+
         self._next_clip_start_time = clip_end
 
         if is_last_clip:

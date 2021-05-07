@@ -91,7 +91,7 @@ class TestCharadesDataset(unittest.TestCase):
 
                 clip_sampler = make_clip_sampler(
                     "random",
-                    0.1,  # Total duration of 3 frames at 30fps is 0.1 seconds.                )
+                    0.1,  # Total duration of 3 frames at 30fps is 0.1 seconds.
                 )
                 dataset = Charades(
                     f.name, clip_sampler=clip_sampler, video_sampler=SequentialSampler

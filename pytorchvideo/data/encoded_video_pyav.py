@@ -53,6 +53,11 @@ class EncodedVideoPyAV(EncodedVideo):
 
         video_duration = video_stream.duration
 
+        # If video duration is None we can set it to the container duration which may
+        # be available.
+        if video_duration is None:
+            video_duration = self._container.duration
+
         # Retrieve audio header information if available.
         audio_duration = None
         self._has_audio = None
@@ -151,6 +156,7 @@ class EncodedVideoPyAV(EncodedVideo):
             video_end_pts = secs_to_pts(
                 end_sec, self._video_time_base, self._video_start_pts
             )
+
             video_frames = [
                 f
                 for f, pts in self._video

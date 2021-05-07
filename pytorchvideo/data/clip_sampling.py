@@ -2,7 +2,7 @@
 
 import random
 from abc import ABC, abstractmethod
-from typing import NamedTuple
+from typing import NamedTuple, Dict, Any
 
 
 class ClipInfo(NamedTuple):
@@ -36,7 +36,9 @@ class ClipSampler(ABC):
         self._current_aug_index = 0
 
     @abstractmethod
-    def __call__(self, last_clip_time: float, video_duration: float) -> ClipInfo:
+    def __call__(
+        self, last_clip_time: float, video_duration: float, annotation: Dict[str, Any]
+    ) -> ClipInfo:
         pass
 
 
@@ -69,15 +71,15 @@ class UniformClipSampler(ClipSampler):
     Evenly splits the video into clips of size clip_duration.
     """
 
-    def __init__(self, clip_duration: float) -> None:
-        super().__init__(clip_duration)
-
-    def __call__(self, last_clip_time: float, video_duration: float) -> ClipInfo:
+    def __call__(
+        self, last_clip_time: float, video_duration: float, annotation: Dict[str, Any]
+    ) -> ClipInfo:
         """
         Args:
             last_clip_time (float): the last clip end time sampled from this video. This
                 should be 0.0 if the video hasn't had clips sampled yet.
             video_duration: (float): the duration of the video that's being sampled in seconds
+            annotation (Dict): Not used by this sampler.
         Returns:
             clip_info: (ClipInfo): includes the clip information (clip_start_time,
             clip_end_time, clip_index, aug_index, is_last_clip), where the times are in
@@ -98,15 +100,15 @@ class RandomClipSampler(ClipSampler):
     Randomly samples clip of size clip_duration from the videos.
     """
 
-    def __init__(self, clip_duration: float) -> None:
-        super().__init__(clip_duration)
-
-    def __call__(self, last_clip_time: float, video_duration: float) -> ClipInfo:
+    def __call__(
+        self, last_clip_time: float, video_duration: float, annotation: Dict[str, Any]
+    ) -> ClipInfo:
         """
         Args:
             last_clip_time (float): Not used for RandomClipSampler.
             video_duration: (float): the duration (in seconds) for the video that's
                 being sampled
+            annotation (Dict): Not used by this sampler.
         Returns:
             clip_info (ClipInfo): includes the clip information of (clip_start_time,
             clip_end_time, clip_index, aug_index, is_last_clip). The times are in seconds.
@@ -133,12 +135,15 @@ class ConstantClipsPerVideoSampler(ClipSampler):
         self._clips_per_video = clips_per_video
         self._augs_per_clip = augs_per_clip
 
-    def __call__(self, last_clip_time: float, video_duration: float) -> ClipInfo:
+    def __call__(
+        self, last_clip_time: float, video_duration: float, annotation: Dict[str, Any]
+    ) -> ClipInfo:
         """
         Args:
             last_clip_time (float): Not used for ConstantClipsPerVideoSampler.
             video_duration: (float): the duration (in seconds) for the video that's
                 being sampled.
+            annotation (Dict): Not used by this sampler.
         Returns:
             a named-tuple `ClipInfo`: includes the clip information of (clip_start_time,
                 clip_end_time, clip_index, aug_index, is_last_clip). The times are in seconds.

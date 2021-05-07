@@ -129,22 +129,22 @@ class LabeledVideoDataset(torch.utils.data.IterableDataset):
                 video, info_dict, video_index = self._loaded_video_label
             else:
                 video_index = next(self._video_sampler_iter)
-                # try:
-                video_path, info_dict = self._labeled_videos[video_index]
-                video = video_from_path(
-                    video_path,
-                    decode_audio=self._decode_audio,
-                    decoder=self._decoder,
-                )
-                self._loaded_video_label = (video, info_dict, video_index)
-                # except Exception as e:
-                #     logger.debug(
-                #         "Failed to load video with error: {}; trial {}".format(
-                #             e,
-                #             i_try,
-                #         )
-                #     )
-                #     continue
+                try:
+                    video_path, info_dict = self._labeled_videos[video_index]
+                    video = video_from_path(
+                        video_path,
+                        decode_audio=self._decode_audio,
+                        decoder=self._decoder,
+                    )
+                    self._loaded_video_label = (video, info_dict, video_index)
+                except Exception as e:
+                    logger.debug(
+                        "Failed to load video with error: {}; trial {}".format(
+                            e,
+                            i_try,
+                        )
+                    )
+                    continue
 
             (
                 clip_start,
@@ -152,7 +152,9 @@ class LabeledVideoDataset(torch.utils.data.IterableDataset):
                 clip_index,
                 aug_index,
                 is_last_clip,
-            ) = self._clip_sampler(self._next_clip_start_time, video.duration)
+            ) = self._clip_sampler(
+                self._next_clip_start_time, video.duration, info_dict
+            )
 
             # Only load the clip once and reuse previously stored clip if there are multiple
             # views for augmentations to perform on the same clip.
