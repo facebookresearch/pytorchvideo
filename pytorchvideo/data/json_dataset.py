@@ -7,11 +7,11 @@ from typing import Any, Callable, Dict, Optional, Type
 
 import torch
 from iopath.common.file_io import g_pathmgr
-from pytorchvideo.data.clip_sampling import ClipSampler
-from pytorchvideo.data.labeled_video_dataset import LabeledVideoDataset
 from pytorchvideo.data.clip_sampling import (
     ClipInfo,
 )
+from pytorchvideo.data.clip_sampling import ClipSampler
+from pytorchvideo.data.labeled_video_dataset import LabeledVideoDataset
 
 
 logger = logging.getLogger(__name__)
