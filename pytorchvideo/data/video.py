@@ -7,28 +7,41 @@ import torch
 from iopath.common.file_io import g_pathmgr
 
 
-def video_from_path(filepath, decode_audio=False, decoder="pyav", fps=30):
-    try:
-        is_file = g_pathmgr.isfile(filepath)
-        is_dir = g_pathmgr.isdir(filepath)
-    except NotImplementedError:
+class VideoPathHandler(object):
+    """
+    Utility class that handles all deciphering and caching of video paths for
+    encoded and frame videos.
+    """
 
-        # Not all PathManager handlers support is{file,dir} functions, when this is the
-        # case, we default to assuming the path is a file.
-        is_file = True
-        is_dir = False
+    def __init__(self) -> None:
+        # Pathmanager isn't guaranteed to be in correct order,
+        # sorting is expensive, so we cache paths in case of frame video and reuse.
+        self.path_order_cache = {}
 
-    if is_file:
-        from pytorchvideo.data.encoded_video import EncodedVideo
+    def video_from_path(self, filepath, decode_audio=False, decoder="pyav", fps=30):
+        try:
+            is_file = g_pathmgr.isfile(filepath)
+            is_dir = g_pathmgr.isdir(filepath)
+        except NotImplementedError:
 
-        return EncodedVideo.from_path(filepath, decode_audio, decoder)
-    elif is_dir:
-        from pytorchvideo.data.frame_video import FrameVideo
+            # Not all PathManager handlers support is{file,dir} functions, when this is the
+            # case, we default to assuming the path is a file.
+            is_file = True
+            is_dir = False
 
-        assert not decode_audio, "decode_audio must be False when using FrameVideo"
-        return FrameVideo.from_directory(filepath, fps)
-    else:
-        raise FileNotFoundError(f"{filepath} not found.")
+        if is_file:
+            from pytorchvideo.data.encoded_video import EncodedVideo
+
+            return EncodedVideo.from_path(filepath, decode_audio, decoder)
+        elif is_dir:
+            from pytorchvideo.data.frame_video import FrameVideo
+
+            assert not decode_audio, "decode_audio must be False when using FrameVideo"
+            return FrameVideo.from_directory(
+                filepath, fps, path_order_cache=self.path_order_cache
+            )
+        else:
+            raise FileNotFoundError(f"{filepath} not found.")
 
 
 class Video(ABC):

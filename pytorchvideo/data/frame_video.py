@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import logging
 import os
+import re
 import time
 from typing import Callable, Dict, List, Optional
 
@@ -81,10 +82,32 @@ class FrameVideo(Video):
         path: str,
         fps: float = 30.0,
         multithreaded_io=False,
+        path_order_cache: Optional[Dict[str, List[str]]] = None,
     ):
+        """
+        Args:
+            path (str): path to frame video directory.
+            fps (float): the target fps for the video. This is needed to link the frames
+                to a second timestamp in the video.
+            multithreaded_io (bool):  controls whether parllelizable io operations are
+                performed across multiple threads.
+            path_order_cache (dict): An optional mapping from directory-path to list
+                of frames in the directory in numerical order. Used for speedup by
+                caching the frame paths.
+        """
+        if path_order_cache is not None and path in path_order_cache:
+            return cls.from_frame_paths(path_order_cache[path], fps, multithreaded_io)
+
         assert g_pathmgr.isdir(path), f"{path} is not a directory"
         rel_frame_paths = g_pathmgr.ls(path)
+
+        def natural_keys(text):
+            return [int(c) if c.isdigit() else c for c in re.split("(\d+)", text)]
+
+        rel_frame_paths.sort(key=natural_keys)
         frame_paths = [os.path.join(path, f) for f in rel_frame_paths]
+        if path_order_cache is not None:
+            path_order_cache[path] = frame_paths
         return cls.from_frame_paths(frame_paths, fps, multithreaded_io)
 
     @classmethod

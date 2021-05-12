@@ -7,7 +7,7 @@ from typing import Any, Callable, Dict, List, Optional, Tuple, Type
 
 import torch.utils.data
 from pytorchvideo.data.clip_sampling import ClipSampler
-from pytorchvideo.data.video import video_from_path
+from pytorchvideo.data.video import VideoPathHandler
 
 from .labeled_video_paths import LabeledVideoPaths
 from .utils import MultiProcessSampler
@@ -82,6 +82,7 @@ class LabeledVideoDataset(torch.utils.data.IterableDataset):
         self._loaded_video_label = None
         self._loaded_clip = None
         self._next_clip_start_time = 0.0
+        self.video_path_handler = VideoPathHandler()
 
     @property
     def video_sampler(self):
@@ -131,7 +132,7 @@ class LabeledVideoDataset(torch.utils.data.IterableDataset):
                 video_index = next(self._video_sampler_iter)
                 try:
                     video_path, info_dict = self._labeled_videos[video_index]
-                    video = video_from_path(
+                    video = self.video_path_handler.video_from_path(
                         video_path,
                         decode_audio=self._decode_audio,
                         decoder=self._decoder,
