@@ -1,5 +1,6 @@
 # Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved.
 
+from .ava import Ava  # noqa
 from .charades import Charades  # noqa
 from .clip_sampling import (  # noqa
     ClipSampler,

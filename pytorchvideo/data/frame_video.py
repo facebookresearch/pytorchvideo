@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import glob
 import logging
 import os
 import time
@@ -84,7 +83,8 @@ class FrameVideo(Video):
         multithreaded_io=False,
     ):
         assert g_pathmgr.isdir(path), f"{path} is not a directory"
-        frame_paths = list(glob.glob(os.path.join(path, "*")))
+        rel_frame_paths = g_pathmgr.ls(path)
+        frame_paths = [os.path.join(path, f) for f in rel_frame_paths]
         return cls.from_frame_paths(frame_paths, fps, multithreaded_io)
 
     @classmethod
