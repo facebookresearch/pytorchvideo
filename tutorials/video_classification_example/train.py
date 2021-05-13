@@ -19,7 +19,6 @@ from pytorchvideo.transforms import (
     ShortSideScale,
     UniformTemporalSubsample,
 )
-from slurm import copy_and_run_with_config
 from torch.utils.data import DistributedSampler, RandomSampler
 from torchaudio.transforms import MelSpectrogram, Resample
 from torchvision.transforms import (
@@ -179,6 +178,9 @@ class KineticsDataModule(pytorch_lightning.LightningDataModule):
     preprocessing transforms and configures the PyTorch DataLoaders.
     """
 
+    TRAIN_PATH = 'train.csv'
+    VAL_PATH = 'val.csv'
+
     def __init__(self, args):
         self.args = args
         super().__init__()
@@ -297,11 +299,11 @@ class KineticsDataModule(pytorch_lightning.LightningDataModule):
         """
         Defines the train DataLoader that the PyTorch Lightning Trainer trains/tests with.
         """
-        sampler = DistributedSampler if self.trainer.use_ddp else RandomSampler
+        sampler = DistributedSampler if (self.trainer is not None and self.trainer.use_ddp) else RandomSampler
         train_transform = self._make_transforms(mode="train")
         self.train_dataset = LimitDataset(
             pytorchvideo.data.Kinetics(
-                data_path=os.path.join(self.args.data_path, "train.csv"),
+                data_path=os.path.join(self.args.data_path, self.TRAIN_PATH),
                 clip_sampler=pytorchvideo.data.make_clip_sampler(
                     "random", self.args.clip_duration
                 ),
@@ -320,11 +322,11 @@ class KineticsDataModule(pytorch_lightning.LightningDataModule):
         """
         Defines the train DataLoader that the PyTorch Lightning Trainer trains/tests with.
         """
-        sampler = DistributedSampler if self.trainer.use_ddp else RandomSampler
+        sampler = DistributedSampler if (self.trainer is not None and self.trainer.use_ddp) else RandomSampler
         val_transform = self._make_transforms(mode="val")
         self.val_dataset = LimitDataset(
             pytorchvideo.data.Kinetics(
-                data_path=os.path.join(self.args.data_path, "val.csv"),
+                data_path=os.path.join(self.args.data_path, self.VAL_PATH),
                 clip_sampler=pytorchvideo.data.make_clip_sampler(
                     "uniform", self.args.clip_duration
                 ),
@@ -359,7 +361,7 @@ class LimitDataset(torch.utils.data.Dataset):
         return next(self.dataset_iter)
 
     def __len__(self):
-        return self.dataset.num_videos()
+        return self.dataset.num_videos
 
 
 def main():
@@ -430,6 +432,7 @@ def main():
     args = parser.parse_args()
 
     if args.on_cluster:
+        from slurm import copy_and_run_with_config
         copy_and_run_with_config(
             train,
             args,
