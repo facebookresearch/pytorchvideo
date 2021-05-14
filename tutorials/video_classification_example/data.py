@@ -1,5 +1,4 @@
 import itertools
-from argparse import ArgumentParser, Namespace
 from pathlib import Path
 from random import shuffle
 from shutil import unpack_archive
