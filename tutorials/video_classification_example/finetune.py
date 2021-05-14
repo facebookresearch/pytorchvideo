@@ -2,12 +2,11 @@ from argparse import ArgumentParser
 
 import pytorch_lightning as pl
 import torch
+from data import KineticsDataModule, MiniKineticsDataModule, UCF11DataModule
+from models import Classifier
+from pytorchvideo.models.head import create_res_basic_head
 from torch import nn
 from torch.optim import Adam
-from pytorchvideo.models.head import create_res_basic_head
-
-from data import UCF11DataModule, KineticsDataModule, MiniKineticsDataModule
-from models import Classifier
 
 
 DATASET_MAP = {
@@ -18,13 +17,22 @@ DATASET_MAP = {
 
 
 class Classifier(pl.LightningModule):
-
-    def __init__(self, num_classes: int = 11, lr: float = 2e-4, freeze_backbone: bool = True, pretrained: bool = True):
+    def __init__(
+        self,
+        num_classes: int = 11,
+        lr: float = 2e-4,
+        freeze_backbone: bool = True,
+        pretrained: bool = True,
+    ):
         super().__init__()
         self.save_hyperparameters()
 
         # Backbone
-        resnet = torch.hub.load("facebookresearch/pytorchvideo", 'slow_r50', pretrained=self.hparams.pretrained)
+        resnet = torch.hub.load(
+            "facebookresearch/pytorchvideo",
+            "slow_r50",
+            pretrained=self.hparams.pretrained,
+        )
         self.backbone = nn.Sequential(*list(resnet.children())[0][:-1])
 
         if self.hparams.freeze_backbone:
@@ -32,13 +40,15 @@ class Classifier(pl.LightningModule):
                 param.requires_grad = False
 
         # Head
-        self.head = create_res_basic_head(in_features=2048, out_features=self.hparams.num_classes)
+        self.head = create_res_basic_head(
+            in_features=2048, out_features=self.hparams.num_classes
+        )
 
         # Metrics
         self.loss_fn = nn.CrossEntropyLoss()
         self.train_acc = pl.metrics.Accuracy()
         self.val_acc = pl.metrics.Accuracy()
-        self.accuracy = {'train': self.train_acc, 'val': self.val_acc}
+        self.accuracy = {"train": self.train_acc, "val": self.val_acc}
 
     def forward(self, x):
         if isinstance(x, dict):
