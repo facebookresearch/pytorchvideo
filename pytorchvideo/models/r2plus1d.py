@@ -2,6 +2,7 @@
 from functools import partial
 from typing import Callable, Tuple
 
+import torch
 import torch.nn as nn
 from pytorchvideo.layers.convolutions import create_conv_2plus1d
 from pytorchvideo.models.head import create_res_basic_head
@@ -235,6 +236,9 @@ def create_r2plus1d(
     Returns:
         (nn.Module): basic resnet.
     """
+
+    torch._C._log_api_usage_once("PYTORCHVIDEO.model.create_r2plus1d")
+
     # Number of blocks for different stages given the model depth.
     _MODEL_STAGE_DEPTH = {50: (3, 4, 6, 3), 101: (3, 4, 23, 3), 152: (3, 8, 36, 3)}
 

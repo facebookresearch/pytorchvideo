@@ -62,6 +62,8 @@ def video_only_dataset(
             frame videos.
     """
 
+    torch._C._log_api_usage_once("PYTORCHVIDEO.dataset.json_dataset.video_only_dataset")
+
     if g_pathmgr.isfile(data_path):
         try:
             with g_pathmgr.open(data_path, "r") as f:

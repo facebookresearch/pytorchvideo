@@ -705,6 +705,9 @@ def create_resnet(
     Returns:
         (nn.Module): basic resnet.
     """
+
+    torch._C._log_api_usage_once("PYTORCHVIDEO.model.create_resnet")
+
     # Number of blocks for different stages given the model depth.
     _MODEL_STAGE_DEPTH = {50: (3, 4, 6, 3), 101: (3, 4, 23, 3), 152: (3, 8, 36, 3)}
 

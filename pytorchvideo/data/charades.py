@@ -59,6 +59,9 @@ class Charades(torch.utils.data.IterableDataset):
 
             frames_per_clip (Optional[int]): The number of frames per clip to sample.
         """
+
+        torch._C._log_api_usage_once("PYTORCHVIDEO.dataset.Charades.__init__")
+
         self._transform = transform
         self._clip_sampler = clip_sampler
         (

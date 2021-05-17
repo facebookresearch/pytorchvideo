@@ -2,6 +2,7 @@
 
 from typing import Callable, Tuple
 
+import torch
 import torch.nn as nn
 from pytorchvideo.models.head import create_res_basic_head
 from pytorchvideo.models.resnet import Net, create_bottleneck_block, create_res_stage
@@ -110,6 +111,9 @@ def create_csn(
     Returns:
         (nn.Module): the csn model.
     """
+
+    torch._C._log_api_usage_once("PYTORCHVIDEO.model.create_csn")
+
     # Number of blocks for different stages given the model depth.
     _MODEL_STAGE_DEPTH = {50: (3, 4, 6, 3), 101: (3, 4, 23, 3), 152: (3, 8, 36, 3)}
 

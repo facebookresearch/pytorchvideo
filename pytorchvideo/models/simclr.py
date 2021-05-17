@@ -24,6 +24,9 @@ class SimCLR(nn.Module):
         temperature: float = 0.07,
     ) -> None:
         super().__init__()
+
+        torch._C._log_api_usage_once("PYTORCHVIDEO.model.SimCLR.__init__")
+
         set_attributes(self, locals())
 
     def forward(self, x1: torch.Tensor, x2: torch.Tensor) -> torch.Tensor:

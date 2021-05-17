@@ -166,6 +166,8 @@ def create_slowfast(
         (nn.Module): SlowFast model.
     """
 
+    torch._C._log_api_usage_once("PYTORCHVIDEO.model.create_slowfast")
+
     # Number of blocks for different stages given the model depth.
     _num_pathway = len(input_channels)
     _MODEL_STAGE_DEPTH = {

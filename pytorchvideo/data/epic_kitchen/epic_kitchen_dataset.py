@@ -130,6 +130,9 @@ class EpicKitchenDataset(torch.utils.data.Dataset):
                 multiple threads.
 
         """
+
+        torch._C._log_api_usage_once("PYTORCHVIDEO.dataset.EpicKitchenDataset.__init__")
+
         assert video_info_file_path
         assert actions_file_path
         assert video_data_manifest_file_path

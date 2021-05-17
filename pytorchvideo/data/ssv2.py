@@ -70,6 +70,9 @@ class SSv2(torch.utils.data.IterableDataset):
 
             rand_sample_frames (bool): If True, randomly sampling frames for each clip.
         """
+
+        torch._C._log_api_usage_once("PYTORCHVIDEO.dataset.SSv2.__init__")
+
         self._transform = transform
         self._clip_sampler = clip_sampler
         self._path_to_videos, self._labels = _read_video_paths_and_labels(

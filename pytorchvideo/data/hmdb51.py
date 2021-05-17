@@ -7,6 +7,7 @@ import os
 import pathlib
 from typing import Any, Callable, List, Optional, Tuple, Type, Union
 
+import torch
 import torch.utils.data
 from iopath.common.file_io import g_pathmgr
 
@@ -211,6 +212,9 @@ def Hmdb51(
 
         decoder (str): Defines which backend should be used to decode videos.
     """
+
+    torch._C._log_api_usage_once("PYTORCHVIDEO.dataset.Hmdb51")
+
     labeled_video_paths = Hmdb51LabeledVideoPaths.from_dir(
         data_path, split_id=split_id, split_type=split_type
     )

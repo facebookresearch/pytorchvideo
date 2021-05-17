@@ -72,6 +72,7 @@ def create_res_basic_head(
         output_with_global_average (bool): if True, perform global averaging on temporal
             and spatial dimensions and reshape output to batch_size x out_features.
     """
+
     if activation is None:
         activation_model = None
     elif activation == nn.Softmax:

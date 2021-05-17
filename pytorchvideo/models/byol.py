@@ -41,6 +41,9 @@ class BYOL(nn.Module):
                 synchronized batchnorm.
         """
         super().__init__()
+
+        torch._C._log_api_usage_once("PYTORCHVIDEO.model.BYOL.__init__")
+
         self.mmt = mmt
         self.feature_dim = feature_dim
         if projector is not None:

@@ -642,6 +642,9 @@ def create_x3d(
     Returns:
         (nn.Module): the X3D network.
     """
+
+    torch._C._log_api_usage_once("PYTORCHVIDEO.model.create_x3d")
+
     blocks = []
     # Create stem for X3D.
     stem_dim_out = round_width(stem_dim_in, width_factor)
