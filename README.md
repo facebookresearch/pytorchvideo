@@ -27,7 +27,7 @@
   </p>
  </p>
 
-|<img src="https://media.giphy.com/media/0suXICO38bkIzoFC21/giphy.gif" width="200"> | <img src="https://media.giphy.com/media/clMMFBLywc4Sa3KXDb/giphy.gif" width="200">
+|<img src="https://media.giphy.com/media/3XlWdTnKYuNm78M9iV/giphy.gif" width="200"> | <img src="https://media.giphy.com/media/clMMFBLywc4Sa3KXDb/giphy.gif" width="200">
 |:-------------------------------:|:--------------------------------------------------:|
 | A PyTorchVideo-accelerated X3D model running on a Samsung Galaxy S10 phone. The model runs ~8x faster than real time, requiring roughly 130 ms to process one second of video.| A PyTorchVideo-based SlowFast model performing video action detection.|
 
