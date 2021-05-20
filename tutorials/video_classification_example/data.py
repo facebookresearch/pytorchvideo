@@ -128,6 +128,12 @@ class LabeledVideoDataModule(pytorch_lightning.LightningDataModule):
         )
 
     def _make_ds_and_loader(self, mode: str):
+        """Creates both the dataset and dataloader for a given dataset split 'mode'. This returns
+        both the dataset and the dataloader specified, and should be called from self.{train|val|test}_dataloader().
+
+        Args:
+            mode (str): The dataset split to create. Should be 'train' or 'val'.
+        """
         ds = LimitDataset(
             labeled_video_dataset(
                 data_path=str(
@@ -259,6 +265,13 @@ class UCF11DataModule(LabeledVideoDataModule):
 
 
 def download_and_unzip(url, data_dir="./", verify=True):
+    """Download a zip file from a given URL and unpack it within data_dir.
+
+    Args:
+        url (str): A URL to a zip file.
+        data_dir (str, optional): Directory where the zip will be unpacked. Defaults to "./".
+        verify (bool, optional): Whether to verify SSL certificate when requesting the zip file. Defaults to True.
+    """
     data_dir = Path(data_dir)
     zipfile_name = url.split("/")[-1]
     data_zip_path = data_dir / zipfile_name
@@ -271,19 +284,3 @@ def download_and_unzip(url, data_dir="./", verify=True):
             f.write(resp.content)
 
     unpack_archive(data_zip_path, extract_dir=data_dir)
-
-
-if __name__ == "__main__":
-    from finetune import parse_args
-    from train import LearningRateMonitor, VideoClassificationLightningModule
-    args = parse_args("--gpus 1 --precision 16 --batch_size 8 --data_path ./yt_data".split())
-    args.max_epochs = 200
-    args.callbacks = [LearningRateMonitor()]
-    args.replace_sampler_ddp = False
-    args.reload_dataloaders_every_epoch = False
-
-    pytorch_lightning.trainer.seed_everything(244)
-    dm = UCF11DataModule(args)
-    model = VideoClassificationLightningModule(args)
-    trainer = pytorch_lightning.Trainer.from_argparse_args(args)
-    trainer.fit(model, dm)

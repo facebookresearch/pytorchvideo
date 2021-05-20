@@ -2,7 +2,7 @@ from argparse import ArgumentParser
 
 import pytorch_lightning as pl
 import torch
-from .data import KineticsDataModule, MiniKineticsDataModule, UCF11DataModule
+from data import KineticsDataModule, MiniKineticsDataModule, UCF11DataModule
 from pytorchvideo.models.head import create_res_basic_head
 from torch import nn
 from torch.optim import Adam
@@ -16,8 +16,7 @@ DATASET_MAP = {
 
 
 class Classifier(pl.LightningModule):
-    """
-    """
+
     def __init__(
         self,
         num_classes: int = 11,
@@ -35,6 +34,8 @@ class Classifier(pl.LightningModule):
             lr (float, optional): The learning rate for the Adam optimizer. Defaults to 2e-4.
             freeze_backbone (bool, optional): Whether to freeze the backbone or leave it trainable. Defaults to True.
             pretrained (bool, optional): Use the pretrained model from torchhub. When False, we initialize the slow_r50 model from scratch. Defaults to True.
+        
+        All extra kwargs will be available via self.hparams.<name-of-arg>. These will also be saved as TensorBoard Hparams.
         """
         super().__init__()
         self.save_hyperparameters()
@@ -64,9 +65,23 @@ class Classifier(pl.LightningModule):
         self.accuracy = {"train": self.train_acc, "val": self.val_acc}
 
     def forward(self, x: torch.Tensor):
+        """
+        Forward defines the prediction/inference actions.
+        """
         return self.head(self.backbone(x))
 
     def shared_step(self, batch, mode: str):
+        """This shared step handles both the training and validation steps to avoid
+        re-writing the same code more than once. The given `mode` will change the name
+        of the logged metrics.
+
+        Args:
+            batch (dict): PyTorchVideo batch dictionary containing a single batch of data.
+            mode (str): The type of step. Can be 'train', 'val', or 'test'.
+
+        Returns:
+            torch.Tensor: The loss for a single batch step.
+        """
         y_hat = self(batch["video"])
         loss = self.loss_fn(y_hat, batch["label"])
         self.log(f"{mode}_loss", loss)
@@ -79,9 +94,35 @@ class Classifier(pl.LightningModule):
         return loss
 
     def training_step(self, batch, batch_idx):
+        """
+        This function is called in the inner loop of the training epoch. It must
+        return a loss that is used for loss.backwards() internally. The self.log(...)
+        function can be used to log any training metrics.
+
+        PyTorchVideo batches are dictionaries containing each modality or metadata of
+        the batch collated video clips. Kinetics contains the following notable keys:
+           {
+               'video': <video_tensor>,
+               'audio': <audio_tensor>,
+               'label': <action_label>,
+           }
+
+        - "video" is a Tensor of shape (batch, channels, time, height, Width)
+        - "audio" is a Tensor of shape (batch, channels, time, 1, frequency)
+        - "label" is a Tensor of shape (batch, 1)
+
+        The PyTorchVideo models and transforms expect the same input shapes and
+        dictionary structure making this function just a matter of unwrapping the dict and
+        feeding it through the model/loss.
+        """
         return self.shared_step(batch, "train")
 
     def validation_step(self, batch, batch_idx):
+        """
+        This function is called in the inner loop of the evaluation cycle. For this
+        simple example it's mostly the same as the training loop but with a different
+        metric name.
+        """
         return self.shared_step(batch, "val")
 
     def test_step(self, batch, batch_idx):
@@ -133,13 +174,9 @@ def parse_args(args=None):
     parser.add_argument("--audio_logmel_mean", default=-7.03, type=float)
     parser.add_argument("--audio_logmel_std", default=4.66, type=float)
 
-    # Trainer parameters.
+    # Add PyTorch Lightning's Trainer init arguments as parser flags
     parser = pl.Trainer.add_argparse_args(parser)
-    parser.set_defaults(
-        max_epochs=200,
-        replace_sampler_ddp=False,
-        reload_dataloaders_every_epoch=False,
-    )
+
     return parser.parse_args(args=args)
 
 
