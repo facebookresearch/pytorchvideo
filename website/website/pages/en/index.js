@@ -108,13 +108,13 @@ class Index extends React.Component {
 # Import all the required components
 ...
 
-# Load Pre-trained Model 
+# Load pre-trained model 
 model = torch.hub.load('facebookresearch/pytorchvideo', 'slow_r50', pretrained=True)
 
-# Load Video
+# Load video
 video = EncodedVideo.from_path('some_video.avi')
 
-# Compose Video Data Transforms
+# Compose video data transforms
 transform =  ApplyTransformToKey(
     key="video",
     transform=Compose(
@@ -130,13 +130,13 @@ transform =  ApplyTransformToKey(
     ),
 )
 
-# Get Clip
+# Get clip
 clip_start_sec = 0.0 # secs
 clip_duration = 2.0 # secs
 video_data = video.get_clip(start_sec=clip_start_sec, end_sec=clip_start_sec + clip_duration)
 video_data = transform(video_data)
 
-# Generate Top 5 Predictions
+# Generate top 5 predictions
 post_act = F.softmax(dim=1)
 preds = post_act(preds)
 pred_class_ids = preds.topk(k=5).indices

@@ -58,6 +58,9 @@ const siteConfig = {
   ogImage: 'img/logo.svg',
   twitterImage: 'img/logo.svg',
 
+  // Google analytics
+  gaTrackingId: 'UA-154877538-1',
+
 };
 
 module.exports = siteConfig;
