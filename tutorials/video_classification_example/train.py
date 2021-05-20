@@ -80,7 +80,7 @@ class VideoClassificationLightningModule(pytorch_lightning.LightningModule):
         if self.args.arch == "video_resnet":
             self.model = pytorchvideo.models.resnet.create_resnet(
                 input_channel=3,
-                model_num_class=400,
+                model_num_class=11 # 400,
             )
             self.batch_key = "video"
         elif self.args.arch == "audio_resnet":
@@ -235,6 +235,7 @@ class KineticsDataModule(pytorch_lightning.LightningDataModule):
             transform=Compose(
                 [
                     UniformTemporalSubsample(args.video_num_subsampled),
+                    Lambda(lambda x: x/255.0),
                     Normalize(args.video_means, args.video_stds),
                 ]
                 + (

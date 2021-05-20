@@ -2,8 +2,7 @@ from argparse import ArgumentParser
 
 import pytorch_lightning as pl
 import torch
-from data import KineticsDataModule, MiniKineticsDataModule, UCF11DataModule
-from models import Classifier
+from .data import KineticsDataModule, MiniKineticsDataModule, UCF11DataModule
 from pytorchvideo.models.head import create_res_basic_head
 from torch import nn
 from torch.optim import Adam
@@ -17,17 +16,30 @@ DATASET_MAP = {
 
 
 class Classifier(pl.LightningModule):
+    """
+    """
     def __init__(
         self,
         num_classes: int = 11,
         lr: float = 2e-4,
         freeze_backbone: bool = True,
         pretrained: bool = True,
+        **kwargs
     ):
+        """A classifier for finetuning pretrained video classification backbones from
+        torchhub. We use the slow_r50 model here, but you can edit this class to
+        use whatever backbone/head you'd like.
+
+        Args:
+            num_classes (int, optional): Number of output classes. Defaults to 11.
+            lr (float, optional): The learning rate for the Adam optimizer. Defaults to 2e-4.
+            freeze_backbone (bool, optional): Whether to freeze the backbone or leave it trainable. Defaults to True.
+            pretrained (bool, optional): Use the pretrained model from torchhub. When False, we initialize the slow_r50 model from scratch. Defaults to True.
+        """
         super().__init__()
         self.save_hyperparameters()
 
-        # Backbone
+        # The pretrained resnet model - we strip off its head to get the backbone
         resnet = torch.hub.load(
             "facebookresearch/pytorchvideo",
             "slow_r50",
@@ -35,26 +47,24 @@ class Classifier(pl.LightningModule):
         )
         self.backbone = nn.Sequential(*list(resnet.children())[0][:-1])
 
+        # Freeze the backbone layers if specified
         if self.hparams.freeze_backbone:
             for param in self.backbone.parameters():
                 param.requires_grad = False
 
-        # Head
+        # Create a new head we will train on top of the backbone
         self.head = create_res_basic_head(
             in_features=2048, out_features=self.hparams.num_classes
         )
 
-        # Metrics
+        # Metrics we will keep track of
         self.loss_fn = nn.CrossEntropyLoss()
         self.train_acc = pl.metrics.Accuracy()
         self.val_acc = pl.metrics.Accuracy()
         self.accuracy = {"train": self.train_acc, "val": self.val_acc}
 
-    def forward(self, x):
-        if isinstance(x, dict):
-            x = x["video"]
-        feats = self.backbone(x)
-        return self.head(feats)
+    def forward(self, x: torch.Tensor):
+        return self.head(self.backbone(x))
 
     def shared_step(self, batch, mode: str):
         y_hat = self(batch["video"])
@@ -127,7 +137,6 @@ def parse_args(args=None):
     parser = pl.Trainer.add_argparse_args(parser)
     parser.set_defaults(
         max_epochs=200,
-        callbacks=[pl.callbacks.LearningRateMonitor()],
         replace_sampler_ddp=False,
         reload_dataloaders_every_epoch=False,
     )
@@ -138,7 +147,7 @@ def main(args):
     pl.trainer.seed_everything()
     dm_cls = DATASET_MAP.get(args.dataset)
     dm = dm_cls(args)
-    model = Classifier(num_classes=dm_cls.NUM_CLASSES)
+    model = Classifier(num_classes=dm_cls.NUM_CLASSES, **vars(args))
     trainer = pl.Trainer.from_argparse_args(args)
     trainer.fit(model, dm)
 

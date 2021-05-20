@@ -70,6 +70,7 @@ class LabeledVideoDataModule(pytorch_lightning.LightningDataModule):
             transform=Compose(
                 [
                     UniformTemporalSubsample(args.video_num_subsampled),
+                    Lambda(lambda x: x / 255.0),
                     Normalize(args.video_means, args.video_stds),
                 ]
                 + (
@@ -217,7 +218,7 @@ class UCF11DataModule(LabeledVideoDataModule):
         for c in self.classes:
 
             # Scenes within each class directory
-            scene_names = sorted(
+            scene_names = list(
                 x.name
                 for x in (root / c).glob("*")
                 if x.is_dir() and x.name != "Annotation"
@@ -273,5 +274,16 @@ def download_and_unzip(url, data_dir="./", verify=True):
 
 
 if __name__ == "__main__":
-    args = parse_args("--batch_size 4 --data_path ./yt_data".split())
+    from finetune import parse_args
+    from train import LearningRateMonitor, VideoClassificationLightningModule
+    args = parse_args("--gpus 1 --precision 16 --batch_size 8 --data_path ./yt_data".split())
+    args.max_epochs = 200
+    args.callbacks = [LearningRateMonitor()]
+    args.replace_sampler_ddp = False
+    args.reload_dataloaders_every_epoch = False
+
+    pytorch_lightning.trainer.seed_everything(244)
     dm = UCF11DataModule(args)
+    model = VideoClassificationLightningModule(args)
+    trainer = pytorch_lightning.Trainer.from_argparse_args(args)
+    trainer.fit(model, dm)
