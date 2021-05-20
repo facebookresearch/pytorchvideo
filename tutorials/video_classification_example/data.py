@@ -102,15 +102,14 @@ class LabeledVideoDataModule(pl.LightningDataModule):
                 download_and_unzip(self.SOURCE_URL, self.root, verify=self.VERIFY_SSL)
 
     def train_dataloader(self):
+        do_use_ddp = self.trainer is not None and self.trainer.use_ddp
         self.train_dataset = LimitDataset(
             labeled_video_dataset(
                 data_path=str(Path(self.data_path) / "train"),
                 clip_sampler=make_clip_sampler("random", self.clip_duration),
                 transform=self.train_transform,
                 decode_audio=False,
-                video_sampler=DistributedSampler
-                if (self.trainer is not None and self.trainer.use_ddp)
-                else RandomSampler,
+                video_sampler=DistributedSampler if do_use_ddp else RandomSampler,
             )
         )
         return DataLoader(
@@ -118,15 +117,14 @@ class LabeledVideoDataModule(pl.LightningDataModule):
         )
 
     def val_dataloader(self):
+        do_use_ddp = self.trainer is not None and self.trainer.use_ddp
         self.val_dataset = LimitDataset(
             labeled_video_dataset(
                 data_path=str(Path(self.data_path) / "val"),
                 clip_sampler=make_clip_sampler("uniform", self.clip_duration),
                 transform=self.val_transform,
                 decode_audio=False,
-                video_sampler=DistributedSampler
-                if (self.trainer is not None and self.trainer.use_ddp)
-                else RandomSampler,
+                video_sampler=DistributedSampler if do_use_ddp else RandomSampler,
             )
         )
         return DataLoader(
@@ -180,7 +178,7 @@ class UCF11DataModule(LabeledVideoDataModule):
         """
         super().__init__(**kwargs)
 
-    def setup(self, stage=None):
+    def setup(self, stage: str = None):
         """Set up anything needed for initializing train/val datasets. This runs on all nodes"""
 
         # Names of classes to predict
