@@ -27,9 +27,9 @@
   </p>
  </p>
 
-| <a href="https://drive.google.com/uc?export=view&id=1qWVrKlOiKfcSy_vXhYsY7WWk-GbB9N31"><img src=".github/media/accelerator.gif" width="200"> | <a href="https://drive.google.com/uc?export=view&id=1lcJ32LS4JI-r7H_mCG96amHgQS3mEcpd"><img src=".github/media/ava_theatre_slowfast.gif" width="2000"/>
+| <a href="https://drive.google.com/uc?export=view&id=1qWVrKlOiKfcSy_vXhYsY7WWk-GbB9N31"><img src=".github/media/accelerator.gif" width="200"> | <a href="https://drive.google.com/uc?export=view&id=1ysSQtg7lN9uVbJf6l_ew-TwnRm6IzxK5"><img src=".github/media/ava_theatre_slowfast.gif" width="2000"/>
 |:-------------------------------:|:--------------------------------------------------:|
-| A PyTorchVideo-accelerated X3D model running on a Samsung Galaxy S10 phone. The model runs ~8x faster than real time, requiring roughly 130 ms to process one second of video.| A PyTorchVideo-based ResNet model performing video action detection.|
+| A PyTorchVideo-accelerated X3D model running on a Samsung Galaxy S10 phone. The model runs ~8x faster than real time, requiring roughly 130 ms to process one second of video.| A PyTorchVideo-based SlowFast model performing video action detection.|
 
 
 ## Introduction
