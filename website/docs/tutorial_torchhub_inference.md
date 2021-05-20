@@ -9,13 +9,12 @@ PyTorchVideo provides several pretrained models through [Torch Hub](https://pyto
 
 [1] W. Kay, et al. The kinetics human action video dataset. arXiv preprint arXiv:1705.06950, 2017.
 
-NOTE: Currently, this tutorial will only work with a local clone of the PyTorchVideo GitHub repo.
 
 # Imports
 
 ```python
-import json
 import torch
+import json
 from torchvision.transforms import Compose, Lambda
 from torchvision.transforms._transforms_video import (
     CenterCropVideo,
@@ -25,28 +24,28 @@ from pytorchvideo.data.encoded_video import EncodedVideo
 from pytorchvideo.transforms import (
     ApplyTransformToKey,
     ShortSideScale,
-    UniformTemporalSubsample
+    UniformTemporalSubsample,
+    UniformCropVideo
 )
+from typing import Dict
 ```
 
 # Load Model
 
-Let's select the `slow_r50` model which was trained using a 8x8 setting on the Kinetics 400 dataset.
+Let's select the `slowfast_r50` model which was trained on the Kinetics 400 dataset.
 
 ```python
 # Device on which to run the model
-device = "cuda:0"
+# Set to cuda to load on GPU
+device = "cpu"
 
-# Pick a pretrained model
-model_name = "slow_r50"
-
-# Local path to the parent folder of hubconf.py in the pytorchvideo codebase
-path = '../'
-model = torch.hub.load(path, source="local", model=model_name, pretrained=True)
+# Pick a pretrained model and load the pretrained weights
+model_name = "slowfast_r50"
+model = torch.hub.load("facebookresearch/pytorchvideo", model=model_name, pretrained=True)
 
 # Set to eval mode and move to desired device
-model = model.eval()
 model = model.to(device)
+model = model.eval()
 ```
 
 # Setup Labels
@@ -69,19 +68,48 @@ for k, v in kinetics_classnames.items():
 
 # Input Transform
 
-Before passing the video into the model we need to apply some input transforms and sample a clip of the correct duration. We will define them below.
+Before passing the video into the model we need to apply some input transforms and sample a clip of the correct duration.
+
+NOTE: The input transforms are specific to the model. If you choose a different model than the example in this tutorial, please refer to the code provided in the Torch Hub documentation and copy over the relevant transforms:
+
+    - [SlowFast](https://pytorch.org/hub/facebookresearch_pytorchvideo_slowfast/)
+    - [X3D](https://pytorch.org/hub/facebookresearch_pytorchvideo_x3d/)
+    - [Slow](https://pytorch.org/hub/facebookresearch_pytorchvideo_resnet/)
 
 ```python
+####################
+# SlowFast transform
+####################
+
 side_size = 256
 mean = [0.45, 0.45, 0.45]
 std = [0.225, 0.225, 0.225]
 crop_size = 256
-num_frames = 8
-sampling_rate = 8
+num_frames = 32
+sampling_rate = 2
 frames_per_second = 30
+alpha = 4
 
-# Note that this transform is specific to the slow_R50 model.
-# If you want to try another of the torch hub models you will need to modify this transform
+class PackPathway(torch.nn.Module):
+    """
+    Transform for converting video frames as a list of tensors.
+    """
+    def __init__(self):
+        super().__init__()
+
+    def forward(self, frames: torch.Tensor):
+        fast_pathway = frames
+        # Perform temporal sampling from the fast pathway.
+        slow_pathway = torch.index_select(
+            frames,
+            1,
+            torch.linspace(
+                0, frames.shape[1] - 1, frames.shape[1] // alpha
+            ).long(),
+        )
+        frame_list = [slow_pathway, fast_pathway]
+        return frame_list
+
 transform =  ApplyTransformToKey(
     key="video",
     transform=Compose(
@@ -92,7 +120,8 @@ transform =  ApplyTransformToKey(
             ShortSideScale(
                 size=side_size
             ),
-            CenterCropVideo(crop_size=(crop_size, crop_size))
+            CenterCropVideo(crop_size),
+            PackPathway()
         ]
     ),
 )
@@ -132,7 +161,7 @@ video_data = transform(video_data)
 
 # Move the inputs to the desired device
 inputs = video_data["video"]
-inputs = inputs.to(device)
+inputs = [i.to(device)[None, ...] for i in inputs]
 ```
 
 ### Get model predictions
@@ -141,7 +170,7 @@ Now we are ready to pass the input into the model and classify the action.
 
 ```python
 # Pass the input clip through the model
-preds = model(inputs[None, ...])
+preds = model(inputs)
 ```
 
 Let's look at the top 5 best predictions:
@@ -161,4 +190,4 @@ print("Predicted labels: %s" % ", ".join(pred_class_names))
 
 In this tutorial we showed how to load and run a pretrained PyTorchVideo model on a test video. You can run this tutorial as a notebook in the PyTorchVideo tutorials directory.
 
-To learn more about PyTorchVideo, check out the rest of the [documentation](https://pytorchvideo.readthedocs.io/en/latest/index.html)  and [tutorials](https://pytorchvideo.org/docs/tutorial_overview).
+To learn more about PyTorchVideo, check out the rest of the [documentation](https://pytorchvideo.readthedocs.io/en/latest/index.html) and [tutorials](https://pytorchvideo.org/docs/tutorial_overview).
