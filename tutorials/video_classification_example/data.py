@@ -2,8 +2,9 @@ import itertools
 from pathlib import Path
 from random import shuffle
 from shutil import unpack_archive
+from typing import Tuple
 
-import pytorch_lightning
+import pytorch_lightning as pl
 import requests
 import torch
 from pytorchvideo.data import LabeledVideoDataset, make_clip_sampler
@@ -12,12 +13,11 @@ from pytorchvideo.transforms import (
     ApplyTransformToKey,
     Normalize,
     RandomShortSideScale,
-    RemoveKey,
     ShortSideScale,
     UniformTemporalSubsample,
 )
+
 from torch.utils.data import DataLoader, DistributedSampler, RandomSampler
-from torchaudio.transforms import MelSpectrogram, Resample
 from torchvision.transforms import (
     CenterCrop,
     Compose,
@@ -27,241 +27,234 @@ from torchvision.transforms import (
 )
 
 
-class LabeledVideoDataModule(pytorch_lightning.LightningDataModule):
+class LabeledVideoDataModule(pl.LightningDataModule):
 
-    TRAIN_PATH = "train.csv"
-    VAL_PATH = "val.csv"
-    SOURCE_URL = None
-    SOURCE_DIR_NAME = None
+    SOURCE_URL: str = None
+    SOURCE_DIR_NAME: str = ""
+    NUM_CLASSES: int = 700
+    VERIFY_SSL: bool = True
 
-    def __init__(self, args):
+    def __init__(
+        self,
+        root: str = './',
+        clip_duration: int = 2,
+        video_num_subsampled: int = 8,
+        video_crop_size: int = 224,
+        video_means: Tuple[float] = (0.45, 0.45, 0.45),
+        video_stds: Tuple[float] = (0.225, 0.225, 0.225),
+        video_min_short_side_scale: int = 256,
+        video_max_short_side_scale: int = 320,
+        video_horizontal_flip_p: float = 0.5,
+        batch_size: int = 4,
+        workers: int = 4,
+        **kwargs
+    ):
+
         super().__init__()
-        self.args = args
-        self.root = Path(self.args.data_path) / self.SOURCE_DIR_NAME
-        if not (self.SOURCE_URL is None or self.SOURCE_DIR_NAME is None):
-            if not self.root.exists():
-                download_and_unzip(
-                    self.SOURCE_URL,
-                    self.args.data_path,
-                    verify=getattr(self.args, "verify", True),
-                )
+        self.root = root
+        self.data_path = Path(self.root) / self.SOURCE_DIR_NAME
+        self.clip_duration = clip_duration
+        self.video_num_subsampled = video_num_subsampled
+        self.video_crop_size = video_crop_size
+        self.video_means = video_means
+        self.video_stds = video_stds
+        self.video_min_short_side_scale = video_min_short_side_scale
+        self.video_max_short_side_scale = video_max_short_side_scale
+        self.video_horizontal_flip_p = video_horizontal_flip_p
+        self.batch_size = batch_size
+        self.workers = workers
 
-    def _make_transforms(self, mode: str):
-
-        if self.args.data_type == "video":
-            transform = [
-                self._video_transform(mode),
-                RemoveKey("audio"),
-            ]
-        elif self.args.data_type == "audio":
-            transform = [
-                self._audio_transform(),
-                RemoveKey("video"),
-            ]
-        else:
-            raise Exception(f"{self.args.data_type} not supported")
-
-        return Compose(transform)
-
-    def _video_transform(self, mode: str):
-        args = self.args
-        return ApplyTransformToKey(
-            key="video",
+        # Transforms applied to train dataset
+        self.train_transform = ApplyTransformToKey(
+            key='video',
             transform=Compose(
                 [
-                    UniformTemporalSubsample(args.video_num_subsampled),
+                    UniformTemporalSubsample(self.video_num_subsampled),
                     Lambda(lambda x: x / 255.0),
-                    Normalize(args.video_means, args.video_stds),
-                ]
-                + (
-                    [
-                        RandomShortSideScale(
-                            min_size=args.video_min_short_side_scale,
-                            max_size=args.video_max_short_side_scale,
-                        ),
-                        RandomCrop(args.video_crop_size),
-                        RandomHorizontalFlip(p=args.video_horizontal_flip_p),
-                    ]
-                    if mode == "train"
-                    else [
-                        ShortSideScale(args.video_min_short_side_scale),
-                        CenterCrop(args.video_crop_size),
-                    ]
-                )
-            ),
-        )
-
-    def _audio_transform(self):
-        args = self.args
-        n_fft = int(
-            float(args.audio_resampled_rate) / 1000 * args.audio_mel_window_size
-        )
-        hop_length = int(
-            float(args.audio_resampled_rate) / 1000 * args.audio_mel_step_size
-        )
-        eps = 1e-10
-        return ApplyTransformToKey(
-            key="audio",
-            transform=Compose(
-                [
-                    Resample(
-                        orig_freq=args.audio_raw_sample_rate,
-                        new_freq=args.audio_resampled_rate,
+                    Normalize(self.video_means, self.video_stds),
+                    RandomShortSideScale(
+                        min_size=self.video_min_short_side_scale,
+                        max_size=self.video_max_short_side_scale,
                     ),
-                    MelSpectrogram(
-                        sample_rate=args.audio_resampled_rate,
-                        n_fft=n_fft,
-                        hop_length=hop_length,
-                        n_mels=args.audio_num_mels,
-                        center=False,
-                    ),
-                    Lambda(lambda x: x.clamp(min=eps)),
-                    Lambda(torch.log),
-                    UniformTemporalSubsample(args.audio_mel_num_subsample),
-                    Lambda(lambda x: x.transpose(1, 0)),  # (F, T) -> (T, F)
-                    Lambda(
-                        lambda x: x.view(1, x.size(0), 1, x.size(1))
-                    ),  # (T, F) -> (1, T, 1, F)
-                    Normalize((args.audio_logmel_mean,), (args.audio_logmel_std,)),
+                    RandomCrop(self.video_crop_size),
+                    RandomHorizontalFlip(p=self.video_horizontal_flip_p),
                 ]
-            ),
-        )
-
-    def _make_ds_and_loader(self, mode: str):
-        """Creates both the dataset and dataloader for a given dataset split 'mode'. This returns
-        both the dataset and the dataloader specified, and should be called from self.{train|val|test}_dataloader().
-
-        Args:
-            mode (str): The dataset split to create. Should be 'train' or 'val'.
-        """
-        ds = LimitDataset(
-            labeled_video_dataset(
-                data_path=str(
-                    Path(self.root)
-                    / (self.TRAIN_PATH if mode == "train" else self.VAL_PATH)
-                ),
-                clip_sampler=make_clip_sampler(
-                    "random" if mode == "train" else "uniform", self.args.clip_duration
-                ),
-                video_path_prefix=self.args.video_path_prefix,
-                transform=self._make_transforms(mode=mode),
-                video_sampler=DistributedSampler
-                if (self.trainer is not None and self.trainer.use_ddp)
-                else RandomSampler,
             )
         )
-        return ds, DataLoader(
-            ds, batch_size=self.args.batch_size, num_workers=self.args.workers
+
+        # Transforms applied on val dataset or for inference
+        self.val_transform = ApplyTransformToKey(
+            key='video',
+            transform=Compose(
+                [
+                    UniformTemporalSubsample(self.video_num_subsampled),
+                    Lambda(lambda x: x / 255.0),
+                    Normalize(self.video_means, self.video_stds),
+                    ShortSideScale(self.video_min_short_side_scale),
+                    CenterCrop(self.video_crop_size)
+                ]
+            )
         )
+
+    def prepare_data(self):
+        """Download the dataset if it doesn't already exist. This runs only on rank 0"""
+        if not (self.SOURCE_URL is None or self.SOURCE_DIR_NAME is None):
+            if not self.data_path.exists():
+                download_and_unzip(self.SOURCE_URL, self.root, verify=self.VERIFY_SSL)
 
     def train_dataloader(self):
-        self.train_dataset, loader = self._make_ds_and_loader("train")
-        return loader
+        self.train_dataset = LimitDataset(
+            labeled_video_dataset(
+                data_path=str(Path(self.data_path) / 'train'),
+                clip_sampler=make_clip_sampler("random", self.clip_duration),
+                transform=self.train_transform,
+                decode_audio=False,
+                video_sampler=DistributedSampler
+                if (self.trainer is not None and self.trainer.use_ddp)
+                else RandomSampler
+            )
+        )
+        return DataLoader(self.train_dataset, batch_size=self.batch_size, num_workers=self.workers)
 
     def val_dataloader(self):
-        self.val_dataset, loader = self._make_ds_and_loader("val")
-        return loader
-
-
-class LimitDataset(torch.utils.data.Dataset):
-    """
-    To ensure a constant number of samples are retrieved from the dataset we use this
-    LimitDataset wrapper. This is necessary because several of the underlying videos
-    may be corrupted while fetching or decoding, however, we always want the same
-    number of steps per epoch.
-    """
-
-    def __init__(self, dataset):
-        super().__init__()
-        self.dataset = dataset
-        self.dataset_iter = itertools.chain.from_iterable(
-            itertools.repeat(iter(dataset), 2)
+        self.val_dataset = LimitDataset(
+            labeled_video_dataset(
+                data_path=str(Path(self.data_path) / 'val'),
+                clip_sampler=make_clip_sampler("uniform", self.clip_duration),
+                transform=self.val_transform,
+                decode_audio=False,
+                video_sampler=DistributedSampler
+                if (self.trainer is not None and self.trainer.use_ddp)
+                else RandomSampler
+            )
         )
-
-    def __getitem__(self, index):
-        return next(self.dataset_iter)
-
-    def __len__(self):
-        return self.dataset.num_videos
-
-
-class KineticsDataModule(LabeledVideoDataModule):
-    TRAIN_PATH = "train.csv"
-    VAL_PATH = "val.csv"
-    NUM_CLASSES = 700
-
-
-class MiniKineticsDataModule(LabeledVideoDataModule):
-
-    TRAIN_PATH = "train"
-    VAL_PATH = "val"
-    SOURCE_URL = "https://pl-flash-data.s3.amazonaws.com/kinetics.zip"
-    SOURCE_DIR_NAME = "kinetics"
-    NUM_CLASSES = 6
+        return DataLoader(self.val_dataset, batch_size=self.batch_size, num_workers=self.workers)
 
 
 class UCF11DataModule(LabeledVideoDataModule):
-    TRAIN_PATH = None
-    VAL_PATH = None
-    SOURCE_URL = "https://www.crcv.ucf.edu/data/YouTube_DataSet_Annotated.zip"
-    SOURCE_DIR_NAME = "action_youtube_naudio"
-    NUM_CLASSES = 11
 
-    def __init__(self, args):
-        args.verify = False
-        super().__init__(args)
+    SOURCE_URL: str = "https://www.crcv.ucf.edu/data/YouTube_DataSet_Annotated.zip"
+    SOURCE_DIR_NAME: str = "action_youtube_naudio"
+    NUM_CLASSES: int = 11
+    VERIFY_SSL: bool = False
 
-        data_path = Path(self.args.data_path)
-        root = data_path / self.SOURCE_DIR_NAME
-        self.classes = [x.name for x in root.glob("*") if x.is_dir()]
-        self.id_to_label = dict(zip(range(len(self.classes)), self.classes))
-        self.class_to_label = {v: k for k, v in self.id_to_label.items()}
-        self.num_classes = len(self.classes)
+    def __init__(self, **kwargs):
+        """
+        The UCF11 Dataset contains 11 action classes: basketball shooting, biking/cycling, diving,
+        golf swinging, horse back riding, soccer juggling, swinging, tennis swinging, trampoline jumping,
+        volleyball spiking, and walking with a dog.
 
+        For each class, the videos are grouped into 25 group/scene folders containing at least 4 video clips each.
+        The video clips in the same scene folder share some common features, such as the same actor, similar
+        background, similar viewpoint, and so on.
+
+        The folder structure looks like the following:
+
+        /data_dir
+        ├── basketball                     # Class Folder Path
+        │   ├── v_shooting_01              # Scene/Group Folder Path
+        │   │   ├── v_shooting_01_01.avi   # Video Path
+        │   │   ├── v_shooting_01_02.avi
+        │   │   ├── v_shooting_01_03.avi
+        │   │   ├── ...
+        │   ├── v_shooting_02
+        │   ├── v_shooting_03
+        │   ├── ...
+        │   ...
+        ├── biking
+        │   ├── v_biking_01
+        │   │   ├── v_biking_01_01.avi
+        │   │   ├── v_biking_01_02.avi
+        │   │   ├── v_biking_01_03.avi
+        │   ├── v_biking_02
+        │   ├── v_biking_03
+        │   ...
+        ...
+
+        We take 80% of all scenes and use the videos within for training. The remaining scenes' videos
+        are used for validation. We do this so the validation data contains only videos from scenes/actors
+        that the model has not seen yet.
+        """
+        super().__init__(**kwargs)
+
+    def setup(self, stage=None):
+        """Set up anything needed for initializing train/val datasets. This runs on all nodes"""
+
+        # Names of classes to predict
+        # Ex. ['basketball', 'biking', 'diving', ...]
+        self.classes = sorted(x.name for x in self.data_path.glob("*") if x.is_dir())
+
+        # Mapping from label to class id.
+        # Ex. {'basketball': 0, 'biking': 1, 'diving': 2, ...}
+        self.label_to_id = {}
+
+        # A list to hold all available scenes across all classes
+        scene_folders = []
+
+        for class_id, class_name in enumerate(self.classes):
+
+            self.label_to_id[class_name] = class_id
+
+            # The path of a class folder within self.data_path
+            # Ex. 'action_youtube_naudio/{basketball|biking|diving|...}'
+            class_folder = self.data_path / class_name
+
+            # Collect scene folders within this class
+            # Ex. 'action_youtube_naudio/basketball/v_shooting_01'
+            for scene_folder in filter(Path.is_dir, class_folder.glob('v_*')):
+                scene_folders.append(scene_folder)
+
+        # Randomly shuffle the scene folders before splitting them into train/val
+        shuffle(scene_folders)
+
+        # Determine number of scenes in train/validation splits.
+        self.num_train_scenes = int(0.8 * len(scene_folders))
+        self.num_val_scenes = len(scene_folders) - self.num_train_scenes
+
+        # Collect train/val paths to videos within each scene folder.
+        # Validation only uses videos from scenes not seen by model during training
         self.train_paths = []
         self.val_paths = []
-        self.holdout_scenes = {}
-        for c in self.classes:
+        for i, scene_path in enumerate(scene_folders):
 
-            # Scenes within each class directory
-            scene_names = list(
-                x.name
-                for x in (root / c).glob("*")
-                if x.is_dir() and x.name != "Annotation"
-            )
-            shuffle(scene_names)
+            # The actual name of the class (Ex. 'basketball')
+            class_name = scene_path.parent.name
 
-            # Holdout a random actor/scene
-            holdout_scene = scene_names[-1]
-            scene_names = scene_names[:-1]
+            # Loop over all the videos within the given scene folder.
+            for video_path in scene_path.glob("*.avi"):
 
-            # Keep track of which scenes we held out for each class w/ a dict
-            self.holdout_scenes[c] = holdout_scene
+                # Construct a tuple containing (<path to a video>, <dict containing extra attributes/metadata>)
+                # In our case, we assign the class's ID as 'label'.
+                labeled_path = (video_path, {"label": self.label_to_id[class_name]})
 
-            for v in (root / c).glob("**/*.avi"):
-                labeled_path = (v, {"label": self.class_to_label[c]})
-                if v.parent.name != holdout_scene:
+                if i < self.num_train_scenes:
                     self.train_paths.append(labeled_path)
                 else:
                     self.val_paths.append(labeled_path)
 
-    def _make_ds_and_loader(self, mode: str):
-        ds = LimitDataset(
+    def train_dataloader(self):
+        self.train_dataset = LimitDataset(
             LabeledVideoDataset(
-                self.train_paths if mode == "train" else self.val_paths,
-                clip_sampler=make_clip_sampler(
-                    "random" if mode == "train" else "uniform", self.args.clip_duration
-                ),
+                self.train_paths,
+                clip_sampler=make_clip_sampler('random', self.clip_duration),
                 decode_audio=False,
-                transform=self._make_transforms(mode=mode),
-                video_sampler=DistributedSampler
-                if (self.trainer is not None and self.trainer.use_ddp)
-                else RandomSampler,
+                transform=self.train_transform,
+                video_sampler=RandomSampler
             )
         )
-        return ds, DataLoader(
-            ds, batch_size=self.args.batch_size, num_workers=self.args.workers
+        return DataLoader(self.train_dataset, batch_size=self.batch_size, num_workers=self.workers)
+
+    def val_dataloader(self):
+        self.val_dataset = LimitDataset(
+            LabeledVideoDataset(
+                self.val_paths,
+                clip_sampler=make_clip_sampler('uniform', self.clip_duration),
+                decode_audio=False,
+                transform=self.val_transform,
+                video_sampler=RandomSampler
+            )
         )
+        return DataLoader(self.val_dataset, batch_size=self.batch_size, num_workers=self.workers)
 
 
 def download_and_unzip(url, data_dir="./", verify=True):
@@ -284,3 +277,26 @@ def download_and_unzip(url, data_dir="./", verify=True):
             f.write(resp.content)
 
     unpack_archive(data_zip_path, extract_dir=data_dir)
+
+
+class LimitDataset(torch.utils.data.Dataset):
+
+    """
+    To ensure a constant number of samples are retrieved from the dataset we use this
+    LimitDataset wrapper. This is necessary because several of the underlying videos
+    may be corrupted while fetching or decoding, however, we always want the same
+    number of steps per epoch.
+    """
+
+    def __init__(self, dataset):
+        super().__init__()
+        self.dataset = dataset
+        self.dataset_iter = itertools.chain.from_iterable(
+            itertools.repeat(iter(dataset), 2)
+        )
+
+    def __getitem__(self, index):
+        return next(self.dataset_iter)
+
+    def __len__(self):
+        return self.dataset.num_videos
