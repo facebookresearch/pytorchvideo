@@ -48,6 +48,43 @@ class LabeledVideoDataModule(pl.LightningDataModule):
         workers: int = 4,
         **kwargs
     ):
+        """
+        A LabeledVideoDataModule expects a dataset in the following format:
+
+        /root                                      # Root Folder
+        ├── train                                  # Split Folder
+        │   ├── archery                            # Class Folder
+        │   │   ├── -1q7jA3DXQM_000005_000015.mp4  # Videos
+        │   │   ├── -5NN5hdIwTc_000036_000046.mp4
+        │   │   ...
+        │   ├── bowling
+        │   │   ├── -5ExwuF5IUI_000030_000040.mp4
+        │   │   ...
+        │   ├── high_jump
+        │   │   ├── -5ExwuF5IUI_000030_000040.mp4
+        │   │   ...
+        ├── val
+        │   ├── archery
+        │   │   ├── -1q7jA3DXQM_000005_000015.mp4
+        │   │   ├── -5NN5hdIwTc_000036_000046.mp4
+        │   │   ...
+        │   ├── bowling
+        │   │   ├── -5ExwuF5IUI_000030_000040.mp4
+        │   │   ...
+
+        Args:
+            root (str, optional): Directory where your dataset is stored. Defaults to "./".
+            clip_duration (int, optional): Duration of clip samples. Defaults to 2.
+            video_num_subsampled (int, optional): Number of subsamples to take of individual videos. Defaults to 8.
+            video_crop_size (int, optional): Size to crop the video to. Defaults to 224.
+            video_means (Tuple[float], optional): Means used to normalize dataset. Defaults to (0.45, 0.45, 0.45).
+            video_stds (Tuple[float], optional): Standard deviations used to normalized dataset. Defaults to (0.225, 0.225, 0.225).
+            video_min_short_side_scale (int, optional): min_size arg passed to pytorchvideo.transforms.RandomShortSideScale. Defaults to 256.
+            video_max_short_side_scale (int, optional): max_size arg passed to pytorchvideo.transforms.RandomShortSideScale. Defaults to 320.
+            video_horizontal_flip_p (float, optional): Probability of flipping a training example horizontally. Defaults to 0.5.
+            batch_size (int, optional): Number of examples per batch. Defaults to 4.
+            workers (int, optional): Number of DataLoader workers. Defaults to 4.
+        """
 
         super().__init__()
         self.root = root
