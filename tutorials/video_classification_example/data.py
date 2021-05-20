@@ -188,7 +188,7 @@ class UCF11DataModule(LabeledVideoDataModule):
 
         The folder structure looks like the following:
 
-        /data_dir
+        /root/action_youtube_naudio
         ├── basketball                     # Class Folder Path
         │   ├── v_shooting_01              # Scene/Group Folder Path
         │   │   ├── v_shooting_01_01.avi   # Video Path
