@@ -15,6 +15,10 @@
     <a href="https://codecov.io/gh/facebookresearch/pytorchvideo/branch/master">
     <img src="https://codecov.io/gh/facebookresearch/pytorchvideo/branch/master/graph/badge.svg?token=OSZSI6JU31"/>
   </a>
+  </a>
+    <a href="https://join.slack.com/t/pytorchvideo/shared_invite/zt-qjrkknes-7bt0qjcmVNvXcceg9zlgOA">
+    <img src="http://img.shields.io/static/v1?label=Join%20us%20on&message=%23pytorchvideo&labelColor=%234A154B&logo=slack"/>
+  </a>
   <p align="center">
     <i> A deep learning library for video understanding research.</i>
   </p>
@@ -22,7 +26,12 @@
     <i>Check the <a href="https://pytorchvideo.org/">website</a> for more information.</i>
   </p>
  </p>
- 
+
+| <a href="https://drive.google.com/uc?export=view&id=1qWVrKlOiKfcSy_vXhYsY7WWk-GbB9N31"><img src=".github/media/accelerator.gif" width="200"> | <a href="https://drive.google.com/uc?export=view&id=1lcJ32LS4JI-r7H_mCG96amHgQS3mEcpd"><img src=".github/media/ava_theatre_slowfast.gif" width="2000"/>
+|:-------------------------------:|:--------------------------------------------------:|
+| A PyTorchVideo-accelerated X3D model running on a Samsung Galaxy S10 phone. The model runs ~8x faster than real time, requiring roughly 130 ms to process one second of video.| A PyTorchVideo-based ResNet model performing video action detection.|
+
+
 ## Introduction
 
 PyTorchVideo is a deeplearning library with a focus on video understanding work. PytorchVideo provides resusable, modular and efficient components needed to accelerate the video understanding research. PyTorchVideo is developed using [PyTorch](https://pytorch.org) and supports different deeplearning video components like video models, video datasets, and video-specific transforms.
