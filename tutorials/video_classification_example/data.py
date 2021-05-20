@@ -16,7 +16,6 @@ from pytorchvideo.transforms import (
     ShortSideScale,
     UniformTemporalSubsample,
 )
-
 from torch.utils.data import DataLoader, DistributedSampler, RandomSampler
 from torchvision.transforms import (
     CenterCrop,
@@ -36,7 +35,7 @@ class LabeledVideoDataModule(pl.LightningDataModule):
 
     def __init__(
         self,
-        root: str = './',
+        root: str = "./",
         clip_duration: int = 2,
         video_num_subsampled: int = 8,
         video_crop_size: int = 224,
@@ -66,7 +65,7 @@ class LabeledVideoDataModule(pl.LightningDataModule):
 
         # Transforms applied to train dataset
         self.train_transform = ApplyTransformToKey(
-            key='video',
+            key="video",
             transform=Compose(
                 [
                     UniformTemporalSubsample(self.video_num_subsampled),
@@ -79,21 +78,21 @@ class LabeledVideoDataModule(pl.LightningDataModule):
                     RandomCrop(self.video_crop_size),
                     RandomHorizontalFlip(p=self.video_horizontal_flip_p),
                 ]
-            )
+            ),
         )
 
         # Transforms applied on val dataset or for inference
         self.val_transform = ApplyTransformToKey(
-            key='video',
+            key="video",
             transform=Compose(
                 [
                     UniformTemporalSubsample(self.video_num_subsampled),
                     Lambda(lambda x: x / 255.0),
                     Normalize(self.video_means, self.video_stds),
                     ShortSideScale(self.video_min_short_side_scale),
-                    CenterCrop(self.video_crop_size)
+                    CenterCrop(self.video_crop_size),
                 ]
-            )
+            ),
         )
 
     def prepare_data(self):
@@ -105,30 +104,34 @@ class LabeledVideoDataModule(pl.LightningDataModule):
     def train_dataloader(self):
         self.train_dataset = LimitDataset(
             labeled_video_dataset(
-                data_path=str(Path(self.data_path) / 'train'),
+                data_path=str(Path(self.data_path) / "train"),
                 clip_sampler=make_clip_sampler("random", self.clip_duration),
                 transform=self.train_transform,
                 decode_audio=False,
                 video_sampler=DistributedSampler
                 if (self.trainer is not None and self.trainer.use_ddp)
-                else RandomSampler
+                else RandomSampler,
             )
         )
-        return DataLoader(self.train_dataset, batch_size=self.batch_size, num_workers=self.workers)
+        return DataLoader(
+            self.train_dataset, batch_size=self.batch_size, num_workers=self.workers
+        )
 
     def val_dataloader(self):
         self.val_dataset = LimitDataset(
             labeled_video_dataset(
-                data_path=str(Path(self.data_path) / 'val'),
+                data_path=str(Path(self.data_path) / "val"),
                 clip_sampler=make_clip_sampler("uniform", self.clip_duration),
                 transform=self.val_transform,
                 decode_audio=False,
                 video_sampler=DistributedSampler
                 if (self.trainer is not None and self.trainer.use_ddp)
-                else RandomSampler
+                else RandomSampler,
             )
         )
-        return DataLoader(self.val_dataset, batch_size=self.batch_size, num_workers=self.workers)
+        return DataLoader(
+            self.val_dataset, batch_size=self.batch_size, num_workers=self.workers
+        )
 
 
 class UCF11DataModule(LabeledVideoDataModule):
@@ -201,7 +204,7 @@ class UCF11DataModule(LabeledVideoDataModule):
 
             # Collect scene folders within this class
             # Ex. 'action_youtube_naudio/basketball/v_shooting_01'
-            for scene_folder in filter(Path.is_dir, class_folder.glob('v_*')):
+            for scene_folder in filter(Path.is_dir, class_folder.glob("v_*")):
                 scene_folders.append(scene_folder)
 
         # Randomly shuffle the scene folders before splitting them into train/val
@@ -236,25 +239,29 @@ class UCF11DataModule(LabeledVideoDataModule):
         self.train_dataset = LimitDataset(
             LabeledVideoDataset(
                 self.train_paths,
-                clip_sampler=make_clip_sampler('random', self.clip_duration),
+                clip_sampler=make_clip_sampler("random", self.clip_duration),
                 decode_audio=False,
                 transform=self.train_transform,
-                video_sampler=RandomSampler
+                video_sampler=RandomSampler,
             )
         )
-        return DataLoader(self.train_dataset, batch_size=self.batch_size, num_workers=self.workers)
+        return DataLoader(
+            self.train_dataset, batch_size=self.batch_size, num_workers=self.workers
+        )
 
     def val_dataloader(self):
         self.val_dataset = LimitDataset(
             LabeledVideoDataset(
                 self.val_paths,
-                clip_sampler=make_clip_sampler('uniform', self.clip_duration),
+                clip_sampler=make_clip_sampler("uniform", self.clip_duration),
                 decode_audio=False,
                 transform=self.val_transform,
-                video_sampler=RandomSampler
+                video_sampler=RandomSampler,
             )
         )
-        return DataLoader(self.val_dataset, batch_size=self.batch_size, num_workers=self.workers)
+        return DataLoader(
+            self.val_dataset, batch_size=self.batch_size, num_workers=self.workers
+        )
 
 
 def download_and_unzip(url, data_dir="./", verify=True):

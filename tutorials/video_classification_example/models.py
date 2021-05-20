@@ -1,18 +1,12 @@
 import pytorch_lightning as pl
 import torch
-from torch import nn
-from pytorchvideo.models.resnet import create_resnet
 from pytorchvideo.models.head import create_res_basic_head
+from pytorchvideo.models.resnet import create_resnet
+from torch import nn
 
 
 class VideoClassificationLightningModule(pl.LightningModule):
-
-    def __init__(
-        self,
-        num_classes: int = 11,
-        lr: float = 2e-4,
-        **kwargs
-    ):
+    def __init__(self, num_classes: int = 11, lr: float = 2e-4, **kwargs):
         """A classifier for finetuning pretrained video classification backbones from
         torchhub. We use the slow_r50 model here, but you can edit this class to
         use whatever backbone/head you'd like.
@@ -125,9 +119,10 @@ class VideoClassificationLightningModule(pl.LightningModule):
 
 
 class SlowResnet50LightningModel(VideoClassificationLightningModule):
-
     def __init__(self, freeze_backbone: bool = True, pretrained: bool = True, **kwargs):
-        super().__init__(freeze_backbone=freeze_backbone, pretrained=pretrained, **kwargs)
+        super().__init__(
+            freeze_backbone=freeze_backbone, pretrained=pretrained, **kwargs
+        )
 
     def _build_model(self):
         # The pretrained resnet model - we strip off its head to get the backbone

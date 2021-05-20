@@ -1,5 +1,4 @@
 import pytorch_lightning as pl
-
 from data import UCF11DataModule
 from models import SlowResnet50LightningModel
 from train import parse_args
@@ -17,6 +16,7 @@ def main():
     args = parse_args()
     if args.on_cluster:
         from slurm import copy_and_run_with_config
+
         copy_and_run_with_config(
             train,
             args,
@@ -35,5 +35,5 @@ def main():
         train(args)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

@@ -15,7 +15,7 @@ def parse_args(args=None):
     parser.add_argument("--partition", default="dev", type=str)
 
     # Model Parameters
-    parser.add_argument('--lr', '--learning_rate', default=2e-4, type=float)
+    parser.add_argument("--lr", "--learning_rate", default=2e-4, type=float)
 
     # Data Parameters
     parser = LabeledVideoDataModule.add_argparse_args(parser)
@@ -42,6 +42,7 @@ def main():
     args = parse_args()
     if args.on_cluster:
         from slurm import copy_and_run_with_config
+
         copy_and_run_with_config(
             train,
             args,
@@ -60,5 +61,5 @@ def main():
         train(args)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
