@@ -1,5 +1,5 @@
 <p align="center">
- <img width="130%" src="./.github/logo_horizontal_color.svg" />
+ <img width="130%" src="./.github/media/logo_horizontal_color.png" />
 </p>
 
 <p align="center">
@@ -27,10 +27,9 @@
   </p>
  </p>
 
-| <a href="https://drive.google.com/uc?export=view&id=1qWVrKlOiKfcSy_vXhYsY7WWk-GbB9N31"><img src="https://drive.google.com/uc?export=view&id=1qWVrKlOiKfcSy_vXhYsY7WWk-GbB9N31" width="200"> | <a href="https://drive.google.com/uc?export=view&id=1lcJ32LS4JI-r7H_mCG96amHgQS3mEcpd"><img src="https://drive.google.com/uc?export=view&id=1lcJ32LS4JI-r7H_mCG96amHgQS3mEcpd" width="2000"/>
+|<img src="https://media.giphy.com/media/clMMFBLywc4Sa3KXDb/giphy.gif" width="200"> | <img src=".github/media/ava_slowfast.gif" width="1300">
 |:-------------------------------:|:--------------------------------------------------:|
-| A PyTorchVideo-accelerated X3D model running on a Samsung Galaxy S10 phone. The model runs ~8x faster than real time, requiring roughly 130 ms to process one second of video.| A PyTorchVideo-based ResNet model performing video action detection.|
-
+| A PyTorchVideo-accelerated X3D model running on a Samsung Galaxy S10 phone. The model runs ~8x faster than real time, requiring roughly 130 ms to process one second of video.| A PyTorchVideo-based SlowFast model performing video action detection.|
 
 ## Introduction
 

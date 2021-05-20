@@ -105,8 +105,41 @@ class Index extends React.Component {
     const pre = '```';
 
     const codeExample = `${pre}python
-from pytorchvideo import foo
-from pytorchvideo.models import bar
+# Import all the required components
+...
+
+# Load pre-trained model 
+model = torch.hub.load('facebookresearch/pytorchvideo', 'slow_r50', pretrained=True)
+
+# Load video
+video = EncodedVideo.from_path('some_video.avi')
+
+# Compose video data transforms
+transform =  ApplyTransformToKey(
+    key="video",
+    transform=Compose(
+        [
+            UniformTemporalSubsample(num_frames),
+            Lambda(lambda x: x/255.0),
+            NormalizeVideo(mean, std),
+            ShortSideScale(
+                size=side_size
+            ),
+            CenterCropVideo(crop_size=(crop_size, crop_size))
+        ]
+    ),
+)
+
+# Get clip
+clip_start_sec = 0.0 # secs
+clip_duration = 2.0 # secs
+video_data = video.get_clip(start_sec=clip_start_sec, end_sec=clip_start_sec + clip_duration)
+video_data = transform(video_data)
+
+# Generate top 5 predictions
+post_act = F.softmax(dim=1)
+preds = post_act(preds)
+pred_class_ids = preds.topk(k=5).indices
     `;
     const install = `${pre}bash
 pip install pytorchvideo
@@ -125,7 +158,8 @@ pip install pytorchvideo
               <MarkdownBlock>{install}</MarkdownBlock>
             </li>
             <li>
-              <strong>Try Video classification with Model Zoo  </strong>
+              <strong>Try Video classification with Model Zoo </strong> 
+              (For detailed instructions, refer to the <a href="https://pytorchvideo.org/docs/tutorial_torchhub_inference">PyTorchVideo Model Zoo Inference Tutorial</a> 
               <MarkdownBlock>{codeExample}</MarkdownBlock>
             </li>
           </ol>
