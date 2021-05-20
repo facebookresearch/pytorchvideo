@@ -100,7 +100,7 @@ class LabeledVideoDataModule(pl.LightningDataModule):
         self.batch_size = batch_size
         self.workers = workers
 
-        # Transforms applied to train dataset
+        # Transforms applied to train dataset.
         self.train_transform = ApplyTransformToKey(
             key="video",
             transform=Compose(
@@ -118,7 +118,7 @@ class LabeledVideoDataModule(pl.LightningDataModule):
             ),
         )
 
-        # Transforms applied on val dataset or for inference
+        # Transforms applied on val dataset or for inference.
         self.val_transform = ApplyTransformToKey(
             key="video",
             transform=Compose(
@@ -216,9 +216,9 @@ class UCF11DataModule(LabeledVideoDataModule):
         super().__init__(**kwargs)
 
     def setup(self, stage: str = None):
-        """Set up anything needed for initializing train/val datasets. This runs on all nodes"""
+        """Set up anything needed for initializing train/val datasets. This runs on all nodes."""
 
-        # Names of classes to predict
+        # Names of classes to predict.
         # Ex. ['basketball', 'biking', 'diving', ...]
         self.classes = sorted(x.name for x in self.data_path.glob("*") if x.is_dir())
 
@@ -226,23 +226,23 @@ class UCF11DataModule(LabeledVideoDataModule):
         # Ex. {'basketball': 0, 'biking': 1, 'diving': 2, ...}
         self.label_to_id = {}
 
-        # A list to hold all available scenes across all classes
+        # A list to hold all available scenes across all classes.
         scene_folders = []
 
         for class_id, class_name in enumerate(self.classes):
 
             self.label_to_id[class_name] = class_id
 
-            # The path of a class folder within self.data_path
+            # The path of a class folder within self.data_path.
             # Ex. 'action_youtube_naudio/{basketball|biking|diving|...}'
             class_folder = self.data_path / class_name
 
-            # Collect scene folders within this class
+            # Collect scene folders within this class.
             # Ex. 'action_youtube_naudio/basketball/v_shooting_01'
             for scene_folder in filter(Path.is_dir, class_folder.glob("v_*")):
                 scene_folders.append(scene_folder)
 
-        # Randomly shuffle the scene folders before splitting them into train/val
+        # Randomly shuffle the scene folders before splitting them into train/val.
         shuffle(scene_folders)
 
         # Determine number of scenes in train/validation splits.
@@ -250,18 +250,18 @@ class UCF11DataModule(LabeledVideoDataModule):
         self.num_val_scenes = len(scene_folders) - self.num_train_scenes
 
         # Collect train/val paths to videos within each scene folder.
-        # Validation only uses videos from scenes not seen by model during training
+        # Validation only uses videos from scenes not seen by model during training.
         self.train_paths = []
         self.val_paths = []
         for i, scene_path in enumerate(scene_folders):
 
-            # The actual name of the class (Ex. 'basketball')
+            # The actual name of the class (Ex. 'basketball').
             class_name = scene_path.parent.name
 
             # Loop over all the videos within the given scene folder.
             for video_path in scene_path.glob("*.avi"):
 
-                # Construct a tuple containing (<path to a video>, <dict containing extra attributes/metadata>)
+                # Construct a tuple containing (<path to a video>, <dict containing extra attributes/metadata>).
                 # In our case, we assign the class's ID as 'label'.
                 labeled_path = (video_path, {"label": self.label_to_id[class_name]})
 

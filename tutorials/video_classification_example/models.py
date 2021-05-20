@@ -26,10 +26,10 @@ class VideoClassificationLightningModule(pl.LightningModule):
         # Saves all kwargs to self.hparams. Use references to self.hparams.<var-name>, not the init args themselves.
         self.save_hyperparameters()
 
-        # Build the model in separate function so its easier to override
+        # Build the model in separate function so its easier to override.
         self.model = self._build_model()
 
-        # Metrics we will keep track of
+        # Metrics we will keep track of.
         self.loss_fn = nn.CrossEntropyLoss()
         self.train_acc = pl.metrics.Accuracy()
         self.val_acc = pl.metrics.Accuracy()
@@ -80,20 +80,20 @@ class VideoClassificationLightningModule(pl.LightningModule):
             torch.Tensor: The loss for a single batch step.
         """
 
-        # Pass video tensor through model to get outputs
+        # Pass video tensor through model to get outputs.
         outputs = self(batch["video"])
 
-        # Compute and log the cross entropy loss to {train|val}_loss in TensorBoard
+        # Compute and log the cross entropy loss to {train|val}_loss in TensorBoard.
         loss = self.loss_fn(outputs, batch["label"])
         self.log(f"{mode}_loss", loss)
 
-        # Predicted class probabilities - (BATCH_SIZE, NUM_CLASSES)
+        # Predicted class probabilities - (BATCH_SIZE, NUM_CLASSES).
         proba = outputs.softmax(dim=1)
 
-        # Predicted classes - (BATCH_SIZE,)
+        # Predicted classes - (BATCH_SIZE,).
         preds = proba.argmax(dim=1)
 
-        # Compute the predicted class accuracy and log it to {train|val}_acc in TensorBoard
+        # Compute the predicted class accuracy and log it to {train|val}_acc in TensorBoard.
         acc = self.accuracy[mode](preds, batch["label"])
         self.log(f"{mode}_acc", acc, prog_bar=True)
 
@@ -125,7 +125,7 @@ class SlowResnet50LightningModel(VideoClassificationLightningModule):
         )
 
     def _build_model(self):
-        # The pretrained resnet model - we strip off its head to get the backbone
+        # The pretrained resnet model - we strip off its head to get the backbone.
         resnet = torch.hub.load(
             "facebookresearch/pytorchvideo",
             "slow_r50",
@@ -133,12 +133,12 @@ class SlowResnet50LightningModel(VideoClassificationLightningModule):
         )
         self.backbone = nn.Sequential(*list(resnet.children())[0][:-1])
 
-        # Freeze the backbone layers if specified
+        # Freeze the backbone layers if specified.
         if self.hparams.freeze_backbone:
             for param in self.backbone.parameters():
                 param.requires_grad = False
 
-        # Create a new head we will train on top of the backbone
+        # Create a new head we will train on top of the backbone.
         self.head = create_res_basic_head(
             in_features=2048, out_features=self.hparams.num_classes
         )

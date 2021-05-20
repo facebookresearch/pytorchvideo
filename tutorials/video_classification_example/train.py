@@ -14,13 +14,13 @@ def parse_args(args=None):
     parser.add_argument("--working_directory", default=".", type=str)
     parser.add_argument("--partition", default="dev", type=str)
 
-    # Model Parameters
+    # Model Parameters.
     parser.add_argument("--lr", "--learning_rate", default=2e-4, type=float)
 
-    # Data Parameters
+    # Data Parameters.
     parser = LabeledVideoDataModule.add_argparse_args(parser)
 
-    # Training Parameters
+    # Training Parameters.
     parser = pl.Trainer.add_argparse_args(parser)
     parser.set_defaults(
         callbacks=[pl.callbacks.LearningRateMonitor()],
