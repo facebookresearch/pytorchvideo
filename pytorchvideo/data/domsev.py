@@ -8,7 +8,6 @@ from dataclasses import dataclass
 from enum import Enum
 from typing import Any, Callable, Dict, List, Optional, Tuple
 
-import cv2
 import numpy as np
 import torch
 from iopath.common.file_io import g_pathmgr
@@ -25,6 +24,14 @@ from pytorchvideo.data.utils import (
     load_dataclass_dict_from_csv,
 )
 from pytorchvideo.data.video import Video
+
+
+try:
+    import cv2
+except ImportError:
+    _HAS_CV2 = False
+else:
+    _HAS_CV2 = True
 
 
 USER_ENVIRONMENT_MAP = {
@@ -501,6 +508,12 @@ def _load_image_from_path(image_path: str, num_retries: int = 10) -> Image:
         (channel, height, width). The frames are of type np.uint8 and
         in the range [0 - 255]. Raises an exception if unable to load images.
     """
+    if not _HAS_CV2:
+        raise ImportError(
+            "opencv2 is required to use FrameVideo. Please "
+            "install with 'pip install opencv-python'"
+        )
+            
     img_arr = None
 
     for i in range(num_retries):
