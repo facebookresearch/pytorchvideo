@@ -81,6 +81,7 @@ def create_slowfast(
         ),
     ),
     # Head configs.
+    head: Callable = create_res_basic_head,
     head_pool: Callable = nn.AvgPool3d,
     head_pool_kernel_sizes: Tuple[Tuple[int]] = ((8, 7, 7), (32, 7, 7)),
     head_output_size: Tuple[int] = (1, 1, 1),
@@ -157,6 +158,8 @@ def create_slowfast(
             block layer. Examples include: create_bottleneck_block.
             Indexed by pathway and stage index
 
+        head (callable): a callable that constructs the resnet-style head.
+            Ex: create_res_basic_head
         head_pool (callable): a callable that constructs resnet head pooling layer.
         head_output_sizes (tuple): the size of output tensor for head.
         head_activation (callable): a callable that constructs activation layer.
@@ -328,17 +331,18 @@ def create_slowfast(
     head_in_features = stage_dim_in
     for reduction_ratio in slowfast_channel_reduction_ratio:
         head_in_features = head_in_features + stage_dim_in // reduction_ratio
-    stages.append(
-        create_res_basic_head(
-            in_features=head_in_features,
-            out_features=model_num_class,
-            pool=None,
-            output_size=head_output_size,
-            dropout_rate=dropout_rate,
-            activation=head_activation,
-            output_with_global_average=head_output_with_global_average,
+    if head is not None:
+        stages.append(
+            head(
+                in_features=head_in_features,
+                out_features=model_num_class,
+                pool=None,
+                output_size=head_output_size,
+                dropout_rate=dropout_rate,
+                activation=head_activation,
+                output_with_global_average=head_output_with_global_average,
+            )
         )
-    )
     return Net(blocks=nn.ModuleList(stages))
 
 

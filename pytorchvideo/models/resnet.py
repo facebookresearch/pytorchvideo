@@ -632,6 +632,7 @@ def create_resnet(
     stage_temporal_stride: Tuple[int] = (1, 1, 1, 1),
     bottleneck: Union[Tuple[Callable], Callable] = create_bottleneck_block,
     # Head configs.
+    head: Callable = create_res_basic_head,
     head_pool: Callable = nn.AvgPool3d,
     head_pool_kernel_size: Tuple[int] = (4, 7, 7),
     head_output_size: Tuple[int] = (1, 1, 1),
@@ -695,6 +696,8 @@ def create_resnet(
         bottleneck (callable): a callable that constructs bottleneck block layer.
             Examples include: create_bottleneck_block.
 
+        head (callable): a callable that constructs the resnet-style head.
+            Ex: create_res_basic_head
         head_pool (callable): a callable that constructs resnet head pooling layer.
         head_pool_kernel_size (tuple): the pooling kernel size.
         head_output_size (tuple): the size of output tensor for head.
@@ -801,18 +804,18 @@ def create_resnet(
                     padding=(0, 0, 0),
                 )
             )
-
-    head = create_res_basic_head(
-        in_features=stage_dim_in,
-        out_features=model_num_class,
-        pool=head_pool,
-        output_size=head_output_size,
-        pool_kernel_size=head_pool_kernel_size,
-        dropout_rate=dropout_rate,
-        activation=head_activation,
-        output_with_global_average=head_output_with_global_average,
-    )
-    blocks.append(head)
+    if head is not None:
+        head = head(
+            in_features=stage_dim_in,
+            out_features=model_num_class,
+            pool=head_pool,
+            output_size=head_output_size,
+            pool_kernel_size=head_pool_kernel_size,
+            dropout_rate=dropout_rate,
+            activation=head_activation,
+            output_with_global_average=head_output_with_global_average,
+        )
+        blocks.append(head)
     return Net(blocks=nn.ModuleList(blocks))
 
 
