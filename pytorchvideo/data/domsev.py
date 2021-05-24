@@ -513,7 +513,7 @@ def _load_image_from_path(image_path: str, num_retries: int = 10) -> Image:
             "opencv2 is required to use FrameVideo. Please "
             "install with 'pip install opencv-python'"
         )
-            
+
     img_arr = None
 
     for i in range(num_retries):
