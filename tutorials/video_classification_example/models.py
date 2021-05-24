@@ -80,20 +80,14 @@ class VideoClassificationLightningModule(pl.LightningModule):
             torch.Tensor: The loss for a single batch step.
         """
 
-        # Pass video tensor through model to get outputs.
         outputs = self(batch["video"])
 
-        # Compute and log the cross entropy loss to {train|val}_loss in TensorBoard.
         loss = self.loss_fn(outputs, batch["label"])
         self.log(f"{mode}_loss", loss)
 
-        # Predicted class probabilities - (BATCH_SIZE, NUM_CLASSES).
         proba = outputs.softmax(dim=1)
-
-        # Predicted classes - (BATCH_SIZE,).
         preds = proba.argmax(dim=1)
 
-        # Compute the predicted class accuracy and log it to {train|val}_acc in TensorBoard.
         acc = self.accuracy[mode](preds, batch["label"])
         self.log(f"{mode}_acc", acc, prog_bar=True)
 
