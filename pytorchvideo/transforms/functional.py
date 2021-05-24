@@ -16,7 +16,7 @@ else:
 
 
 def uniform_temporal_subsample(
-    x: torch.Tensor, num_samples: int, temporal_dim: int = 1
+    x: torch.Tensor, num_samples: int, temporal_dim: int = -3
 ) -> torch.Tensor:
     """
     Uniformly subsamples num_samples indices from the temporal dimension of the video.
@@ -133,7 +133,7 @@ def short_side_scale(
 
 
 def uniform_temporal_subsample_repeated(
-    frames: torch.Tensor, frame_ratios: Tuple[int], temporal_dim: int = 1
+    frames: torch.Tensor, frame_ratios: Tuple[int], temporal_dim: int = -3
 ) -> Tuple[torch.Tensor]:
     """
     Prepare output as a list of tensors subsampled from the input frames. Each tensor
