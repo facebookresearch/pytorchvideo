@@ -268,7 +268,14 @@ def create_slowfast(
         for pathway_idx in range(_num_pathway):
             depth = stage_depths[idx]
 
+            stage_conv_a_kernel = stage_conv_a_kernel_sizes[pathway_idx][idx]
             stage_conv_a_stride = (stage_temporal_strides[pathway_idx][idx], 1, 1)
+            stage_conv_a_padding = (
+                [size // 2 for size in stage_conv_a_kernel]
+                if isinstance(stage_conv_a_kernel[0], int)
+                else [[size // 2 for size in sizes] for sizes in stage_conv_a_kernel]
+            )
+
             stage_conv_b_stride = (
                 1,
                 stage_spatial_strides[pathway_idx][idx],
@@ -281,12 +288,9 @@ def create_slowfast(
                     dim_inner=pathway_stage_dim_inner[pathway_idx],
                     dim_out=pathway_stage_dim_out[pathway_idx],
                     bottleneck=bottleneck[pathway_idx][idx],
-                    conv_a_kernel_size=stage_conv_a_kernel_sizes[pathway_idx][idx],
+                    conv_a_kernel_size=stage_conv_a_kernel,
                     conv_a_stride=stage_conv_a_stride,
-                    conv_a_padding=[
-                        size // 2
-                        for size in stage_conv_a_kernel_sizes[pathway_idx][idx]
-                    ],
+                    conv_a_padding=stage_conv_a_padding,
                     conv_b_kernel_size=stage_conv_b_kernel_sizes[pathway_idx][idx],
                     conv_b_stride=stage_conv_b_stride,
                     conv_b_padding=[
