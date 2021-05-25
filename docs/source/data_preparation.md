@@ -43,3 +43,122 @@ We follow [PySlowFast](https://github.com/facebookresearch/SlowFast/blob/master/
     ffmpeg -i "${video}" -r 30 -q:v 1 "${out_name}"
     ```
 4. The extracted frames should be organized to be consistent with the paths in frame lists.
+
+
+### AVA (Actions V2.2)
+
+The AVA Dataset could be downloaded from the [official site](https://research.google.com/ava/download.html#ava_actions_download)
+
+We followed the same [downloading and preprocessing procedure](https://github.com/facebookresearch/video-long-term-feature-banks/blob/master/DATASET.md) as the [Long-Term Feature Banks for Detailed Video Understanding](https://arxiv.org/abs/1812.05038) do.
+
+You could follow these steps to download and preprocess the data:
+
+1. Download videos
+
+```
+DATA_DIR="../../data/ava/videos"
+
+if [[ ! -d "${DATA_DIR}" ]]; then
+  echo "${DATA_DIR} doesn't exist. Creating it.";
+  mkdir -p ${DATA_DIR}
+fi
+
+wget https://s3.amazonaws.com/ava-dataset/annotations/ava_file_names_trainval_v2.1.txt
+
+for line in $(cat ava_file_names_trainval_v2.1.txt)
+do
+  wget https://s3.amazonaws.com/ava-dataset/trainval/$line -P ${DATA_DIR}
+done
+```
+
+2. Cut each video from its 15th to 30th minute. AVA has valid annotations only in this range.
+
+```
+IN_DATA_DIR="../../data/ava/videos"
+OUT_DATA_DIR="../../data/ava/videos_15min"
+
+if [[ ! -d "${OUT_DATA_DIR}" ]]; then
+  echo "${OUT_DATA_DIR} doesn't exist. Creating it.";
+  mkdir -p ${OUT_DATA_DIR}
+fi
+
+for video in $(ls -A1 -U ${IN_DATA_DIR}/*)
+do
+  out_name="${OUT_DATA_DIR}/${video##*/}"
+  if [ ! -f "${out_name}" ]; then
+    ffmpeg -ss 900 -t 901 -i "${video}" "${out_name}"
+  fi
+done
+```
+
+3. Extract frames
+
+```
+IN_DATA_DIR="../../data/ava/videos_15min"
+OUT_DATA_DIR="../../data/ava/frames"
+
+if [[ ! -d "${OUT_DATA_DIR}" ]]; then
+  echo "${OUT_DATA_DIR} doesn't exist. Creating it.";
+  mkdir -p ${OUT_DATA_DIR}
+fi
+
+for video in $(ls -A1 -U ${IN_DATA_DIR}/*)
+do
+  video_name=${video##*/}
+
+  if [[ $video_name = *".webm" ]]; then
+    video_name=${video_name::-5}
+  else
+    video_name=${video_name::-4}
+  fi
+
+  out_video_dir=${OUT_DATA_DIR}/${video_name}/
+  mkdir -p "${out_video_dir}"
+
+  out_name="${out_video_dir}/${video_name}_%06d.jpg"
+
+  ffmpeg -i "${video}" -r 30 -q:v 1 "${out_name}"
+done
+```
+
+4. Download annotations
+
+```
+DATA_DIR="../../data/ava/annotations"
+
+if [[ ! -d "${DATA_DIR}" ]]; then
+  echo "${DATA_DIR} doesn't exist. Creating it.";
+  mkdir -p ${DATA_DIR}
+fi
+
+wget https://research.google.com/ava/download/ava_v2.2.zip -P ${DATA_DIR}
+unzip -q ${DATA_DIR}/ava_v2.2.zip -d ${DATA_DIR}
+```
+
+5. Download "frame lists" ([train](https://dl.fbaipublicfiles.com/video-long-term-feature-banks/data/ava/frame_lists/train.csv), [val](https://dl.fbaipublicfiles.com/video-long-term-feature-banks/data/ava/frame_lists/val.csv)) and put them in
+the `frame_lists` folder (see structure above).
+
+6. Download person boxes that are generated using a person detector trained on AVA - ([train](https://dl.fbaipublicfiles.com/pytorchvideo/data/ava/ava_detection_test.csv), [val](https://dl.fbaipublicfiles.com/pytorchvideo/data/ava/ava_detection_val.csv), [test](https://dl.fbaipublicfiles.com/pytorchvideo/data/ava/ava_detection_test.csv)) and put them in the `annotations` folder (see structure above). Copy files to the annotations directory mentioned in step 4. 
+If you prefer to use your own person detector, please generate detection predictions files in the suggested format in step 6.
+
+Download the ava dataset with the following structure:
+
+```
+ava
+|_ frames
+|  |_ [video name 0]
+|  |  |_ [video name 0]_000001.jpg
+|  |  |_ [video name 0]_000002.jpg
+|  |  |_ ...
+|  |_ [video name 1]
+|     |_ [video name 1]_000001.jpg
+|     |_ [video name 1]_000002.jpg
+|     |_ ...
+|_ frame_lists
+|  |_ train.csv
+|  |_ val.csv
+|_ annotations
+   |_ [official AVA annotation files]
+   |_ ava_train_predicted_boxes.csv
+   |_ ava_val_predicted_boxes.csv
+```
