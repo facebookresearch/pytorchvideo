@@ -101,6 +101,7 @@ from pytorchvideo.transforms import (
 
 from torchvision.transforms import (
     Compose,
+    Lambda,
     RandomCrop,
     RandomHorizontalFlip
 )
@@ -122,6 +123,7 @@ class KineticsDataModule(pytorch_lightning.LightningDataModule):
               transform=Compose(
                   [
                     UniformTemporalSubsample(8),
+                    Lambda(lambda x: x / 255.0),
                     Normalize((0.45, 0.45, 0.45), (0.225, 0.225, 0.225)),
                     RandomShortSideScale(min_size=256, max_size=320),
                     RandomCrop(244),
