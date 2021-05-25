@@ -2,5 +2,5 @@
 
 from .efficient_x3d_mobile_cpu import efficient_x3d_s, efficient_x3d_xs
 from .resnet import slow_r50
-from .slowfast import slowfast_r50, slowfast_r101
+from .slowfast import slowfast_r50, slowfast_r101, slowfast_16x8_r101_50_50
 from .x3d import x3d_m, x3d_s, x3d_xs
