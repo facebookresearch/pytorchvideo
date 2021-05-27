@@ -8,6 +8,7 @@ import torch
 from pytorchvideo.data.utils import thwc_to_cthw
 from pytorchvideo.transforms import (
     ApplyTransformToKey,
+    CutMix,
     MixUp,
     Normalize,
     OpSampler,
@@ -326,7 +327,6 @@ class TestTransforms(unittest.TestCase):
         self.assertTrue(np.allclose(mixed_labels.sum().item(), label_sum, rtol=0.001))
         self.assertEqual(mixed_labels.size(0), batch_size)
         self.assertEqual(mixed_labels.size(1), num_classes)
-        self.assertEqual(mixed_labels.size(1), num_classes)
 
         # Test videos.
         batch_size = 2
@@ -356,7 +356,6 @@ class TestTransforms(unittest.TestCase):
         self.assertTrue(np.allclose(mixed_labels.sum().item(), label_sum, rtol=0.001))
         self.assertEqual(mixed_labels.size(0), batch_size)
         self.assertEqual(mixed_labels.size(1), num_classes)
-        self.assertEqual(mixed_labels.size(1), num_classes)
 
         # Test videos with label smoothing.
         input_video = torch.rand(batch_size, c_size, t_size, h_size, w_size)
@@ -380,8 +379,110 @@ class TestTransforms(unittest.TestCase):
         self.assertTrue(np.allclose(mixed_labels.sum().item(), label_sum, rtol=0.001))
         self.assertEqual(mixed_labels.size(0), batch_size)
         self.assertEqual(mixed_labels.size(1), num_classes)
-        self.assertEqual(mixed_labels.size(1), num_classes)
 
-        # Check smoothing value is in label.
+        # Check the smoothing value is in label.
         smooth_value = label_smoothing / num_classes
         self.assertTrue(smooth_value in torch.unique(mixed_labels))
+
+    def test_cutmix(self):
+        # Test images.
+        batch_size = 2
+        h_size = 10
+        w_size = 10
+        c_size = 3
+        input_images = torch.rand(batch_size, c_size, h_size, w_size)
+        input_images[0, :].fill_(0)
+        input_images[1, :].fill_(1)
+        alpha = 1.0
+        label_smoothing = 0.0
+        num_classes = 5
+        transform_cutmix = CutMix(
+            alpha=alpha,
+            label_smoothing=label_smoothing,
+            num_classes=num_classes,
+        )
+        labels = torch.arange(0, batch_size) % num_classes
+        mixed_images, mixed_labels = transform_cutmix(input_images, labels)
+        gt_image_sum = h_size * w_size * c_size
+        label_sum = batch_size
+
+        self.assertTrue(
+            np.allclose(mixed_images.sum().item(), gt_image_sum, rtol=0.001)
+        )
+        self.assertTrue(np.allclose(mixed_labels.sum().item(), label_sum, rtol=0.001))
+        self.assertEqual(mixed_labels.size(0), batch_size)
+        self.assertEqual(mixed_labels.size(1), num_classes)
+
+        # Test videos.
+        batch_size = 2
+        h_size = 10
+        w_size = 10
+        c_size = 3
+        t_size = 2
+        input_video = torch.rand(batch_size, c_size, t_size, h_size, w_size)
+        input_video[0, :].fill_(0)
+        input_video[1, :].fill_(1)
+        alpha = 1.0
+        label_smoothing = 0.0
+        num_classes = 5
+        transform_cutmix = CutMix(
+            alpha=alpha,
+            label_smoothing=label_smoothing,
+            num_classes=num_classes,
+        )
+        labels = torch.arange(0, batch_size) % num_classes
+        mixed_videos, mixed_labels = transform_cutmix(input_video, labels)
+        gt_video_sum = h_size * w_size * c_size * t_size
+        label_sum = batch_size
+
+        self.assertTrue(
+            np.allclose(mixed_videos.sum().item(), gt_video_sum, rtol=0.001)
+        )
+        self.assertTrue(np.allclose(mixed_labels.sum().item(), label_sum, rtol=0.001))
+        self.assertEqual(mixed_labels.size(0), batch_size)
+        self.assertEqual(mixed_labels.size(1), num_classes)
+
+        # Test videos with label smoothing.
+        input_video = torch.rand(batch_size, c_size, t_size, h_size, w_size)
+        input_video[0, :].fill_(0)
+        input_video[1, :].fill_(1)
+        alpha = 1.0
+        label_smoothing = 0.2
+        num_classes = 5
+        transform_cutmix = CutMix(
+            alpha=alpha,
+            label_smoothing=label_smoothing,
+            num_classes=num_classes,
+        )
+        labels = torch.arange(0, batch_size) % num_classes
+        mixed_videos, mixed_labels = transform_cutmix(input_video, labels)
+        gt_video_sum = h_size * w_size * c_size * t_size
+        label_sum = batch_size
+        self.assertTrue(
+            np.allclose(mixed_videos.sum().item(), gt_video_sum, rtol=0.001)
+        )
+        self.assertTrue(np.allclose(mixed_labels.sum().item(), label_sum, rtol=0.001))
+        self.assertEqual(mixed_labels.size(0), batch_size)
+        self.assertEqual(mixed_labels.size(1), num_classes)
+
+        # Check the smoothing value is in label.
+        smooth_value = label_smoothing / num_classes
+        self.assertTrue(smooth_value in torch.unique(mixed_labels))
+
+        # Check cutmixed video has both 0 and 1.
+        # Run 20 times to avoid rare cases where the random box is empty.
+        test_times = 20
+        seen_all_value1 = False
+        seen_all_value2 = False
+        for _ in range(test_times):
+            mixed_videos, mixed_labels = transform_cutmix(input_video, labels)
+            if 0 in mixed_videos[0, :] and 1 in mixed_videos[0, :]:
+                seen_all_value1 = True
+
+            if 0 in mixed_videos[1, :] and 1 in mixed_videos[1, :]:
+                seen_all_value2 = True
+
+            if seen_all_value1 and seen_all_value2:
+                break
+        self.assertTrue(seen_all_value1)
+        self.assertTrue(seen_all_value2)
