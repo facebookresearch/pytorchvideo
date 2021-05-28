@@ -12,6 +12,7 @@ checkpoint_paths = {
     "x3d_xs": f"{root_dir}/X3D_XS.pyth",
     "x3d_s": f"{root_dir}/X3D_S.pyth",
     "x3d_m": f"{root_dir}/X3D_M.pyth",
+    "x3d_l": f"{root_dir}/X3D_L.pyth",
 }
 
 
@@ -124,5 +125,38 @@ def x3d_m(
         checkpoint_path=checkpoint_paths["x3d_m"],
         input_clip_length=16,
         input_crop_size=224,
+        **kwargs,
+    )
+
+
+def x3d_l(
+    pretrained: bool = False,
+    progress: bool = True,
+    **kwargs,
+):
+    """
+    X3D-XS model architecture [1] trained on the Kinetics dataset.
+    Model with pretrained weights has top1 accuracy of 77.44.
+
+    [1] Christoph Feichtenhofer, "X3D: Expanding Architectures for
+    Efficient Video Recognition." https://arxiv.org/abs/2004.04730
+
+    Args:
+        pretrained (bool): If True, returns a model pre-trained on the Kinetics dataset
+        progress (bool): If True, displays a progress bar of the download to stderr
+        kwargs: use these to modify any of the other model settings. All the
+            options are defined in pytorchvideo/models/x3d.py
+
+    NOTE: to use the pretrained model, do not modify the model configuration
+    via the kwargs. Only modify settings via kwargs to initialize a new model
+    without pretrained weights.
+    """
+    return _x3d(
+        pretrained=pretrained,
+        progress=progress,
+        checkpoint_path=checkpoint_paths["x3d_l"],
+        input_clip_length=16,
+        input_crop_size=312,
+        depth_factor=5.0,
         **kwargs,
     )
