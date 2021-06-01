@@ -2,7 +2,7 @@
 
 import random
 from abc import ABC, abstractmethod
-from typing import NamedTuple, Dict, Any
+from typing import Any, Dict, NamedTuple, Optional, Tuple
 
 
 class ClipInfo(NamedTuple):
@@ -71,6 +71,63 @@ class UniformClipSampler(ClipSampler):
     Evenly splits the video into clips of size clip_duration.
     """
 
+    def __init__(
+        self,
+        clip_duration: float,
+        stride: Optional[float] = None,
+        backpad_last: bool = False,
+        eps: float = 1e-6,
+    ):
+        """
+        Args:
+            clip_duration (float):
+                The length of the clip to sample (in seconds)
+            stride (float, optional):
+                The amount of seconds to offset the next clip by
+
+                default value of None is equivalent to no stride => stride == clip_duration
+            eps (float):
+                Epsilon for floating point comparisons. Used to check the last clip.
+            backpad_last (bool):
+                Whether to include the last frame(s) by "back padding".
+
+                For instance, if we have a video of 39 frames (30 fps = 1.3s)
+                with a stride of 16 (0.533s) with a clip duration of 32 frames
+                (1.0667s). The clips will be (in frame numbers):
+
+                with backpad_last = False
+                - [0, 32]
+
+                with backpad_last = True
+                - [0, 32]
+                - [8, 40], this is "back-padded" from [16, 48] to fit the last window
+        """
+        super().__init__(clip_duration)
+        self._stride = stride if stride is not None else clip_duration
+        self._eps = eps
+        self._backpad_last = backpad_last
+
+        assert (
+            self._stride > 0 and self._stride <= clip_duration
+        ), f"stride must be >0 and <= clip_duration ({clip_duration})"
+
+    def _clip_start_end(
+        self, last_clip_time: float, video_duration: float, backpad_last: bool
+    ) -> Tuple[float, float]:
+        """
+        Helper to calculate the start/end clip with backpad logic
+        """
+        clip_start = max(last_clip_time - max(0, self._clip_duration - self._stride), 0)
+        clip_end = clip_start + self._clip_duration
+
+        if backpad_last:
+            buffer_amount = max(0.0, clip_end - video_duration)
+            clip_start -= buffer_amount
+            clip_start = max(0, clip_start)  # handle rounding
+            clip_end = clip_start + self._clip_duration
+
+        return clip_start, clip_end
+
     def __call__(
         self, last_clip_time: float, video_duration: float, annotation: Dict[str, Any]
     ) -> ClipInfo:
@@ -85,14 +142,24 @@ class UniformClipSampler(ClipSampler):
             clip_end_time, clip_index, aug_index, is_last_clip), where the times are in
             seconds and is_last_clip is False when there is still more of time in the video
             to be sampled.
-
         """
-        clip_start_sec = last_clip_time
-        clip_end_sec = clip_start_sec + self._clip_duration
+        clip_start, clip_end = self._clip_start_end(
+            last_clip_time, video_duration, backpad_last=self._backpad_last
+        )
+
+        # if they both end at the same time - it's the last clip
+        _, next_clip_end = self._clip_start_end(
+            clip_end, video_duration, backpad_last=self._backpad_last
+        )
+        if self._backpad_last:
+            is_last_clip = abs(next_clip_end - clip_end) < self._eps
+        else:
+            is_last_clip = next_clip_end > video_duration
+
         clip_index = self._current_clip_index
         self._current_clip_index += 1
-        is_last_clip = (clip_end_sec + self._clip_duration) > video_duration
-        return ClipInfo(clip_start_sec, clip_end_sec, clip_index, 0, is_last_clip)
+
+        return ClipInfo(clip_start, clip_end, clip_index, 0, is_last_clip)
 
 
 class RandomClipSampler(ClipSampler):
