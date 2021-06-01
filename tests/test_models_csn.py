@@ -1,6 +1,7 @@
 # Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved.
 
 import itertools
+import os
 import unittest
 
 import numpy as np
@@ -94,3 +95,26 @@ class TestCSN(unittest.TestCase):
         )
         for shape in shapes:
             yield torch.rand(shape)
+
+    def test_load_hubconf(self):
+        path = os.path.join(
+            os.path.dirname(os.path.realpath(__file__)),
+            "..",
+        )
+        input_channel = 3
+        input_clip_length = 4
+        input_crop_size = 56
+        model = torch.hub.load(
+            repo_or_dir=path, source="local", model="csn_r101", pretrained=False
+        )
+        self.assertIsNotNone(model)
+
+        # Test forwarding.
+        for tensor in TestCSN._get_inputs(
+            input_channel, input_clip_length, input_crop_size
+        ):
+            with torch.no_grad():
+                if tensor.shape[1] != input_channel:
+                    with self.assertRaises(RuntimeError):
+                        model(tensor)
+                    continue
