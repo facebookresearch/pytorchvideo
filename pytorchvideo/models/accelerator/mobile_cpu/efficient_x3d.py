@@ -27,6 +27,7 @@ class EfficientX3d(nn.Module):
         head_act (str): The activation function to be applied in head, should be a key
             in dict supported_act_functions (see activation_functions.py for more info
             about supported activations).
+        enable_head (bool): Whether X3D model provides head.
     """
 
     def __init__(
@@ -35,6 +36,7 @@ class EfficientX3d(nn.Module):
         dropout: float = 0.5,
         expansion: str = "XS",
         head_act: str = "identity",
+        enable_head: bool = True,
     ):
         super().__init__()
         assert expansion in (
@@ -128,27 +130,29 @@ class EfficientX3d(nn.Module):
             )
             s5[f"pathway0_res{i_block}"] = cur_block
         self.s5 = nn.Sequential(s5)
-        # head
-        head = OrderedDict()
-        head["conv_5"] = Conv3dPwBnAct(
-            in_channels=192,
-            out_channels=432,
-            bias=False,
-            use_bn=True,
-        )
-        head["avg_pool"] = AdaptiveAvgPool3dOutSize1()
-        head["lin_5"] = Conv3dPwBnAct(
-            in_channels=432,
-            out_channels=2048,
-            bias=False,
-            use_bn=False,
-        )
-        self.head = nn.Sequential(head)
-        if dropout > 0:
-            self.dropout = nn.Dropout(dropout)
-        self.projection = FullyConnected(2048, num_classes, bias=True)
-        assert head_act in supported_act_functions, f"{head_act} is not supported."
-        self.act = supported_act_functions[head_act]()
+        self.enable_head = enable_head
+        if enable_head:
+            # head
+            head = OrderedDict()
+            head["conv_5"] = Conv3dPwBnAct(
+                in_channels=192,
+                out_channels=432,
+                bias=False,
+                use_bn=True,
+            )
+            head["avg_pool"] = AdaptiveAvgPool3dOutSize1()
+            head["lin_5"] = Conv3dPwBnAct(
+                in_channels=432,
+                out_channels=2048,
+                bias=False,
+                use_bn=False,
+            )
+            self.head = nn.Sequential(head)
+            if dropout > 0:
+                self.dropout = nn.Dropout(dropout)
+            self.projection = FullyConnected(2048, num_classes, bias=True)
+            assert head_act in supported_act_functions, f"{head_act} is not supported."
+            self.act = supported_act_functions[head_act]()
 
     def forward(self, x):
         x = self.s1(x)
@@ -156,17 +160,18 @@ class EfficientX3d(nn.Module):
         x = self.s3(x)
         x = self.s4(x)
         x = self.s5(x)
-        x = self.head(x)
-        # (N, C, T, H, W) -> (N, T, H, W, C).
-        x = x.permute((0, 2, 3, 4, 1))
-        if hasattr(self, "dropout"):
-            x = self.dropout(x)
-        x = self.projection(x)
-        # Performs fully convlutional inference.
-        if not self.training:
-            x = self.act(x)
-            x = x.mean([1, 2, 3])
-        x = x.view(x.shape[0], -1)
+        if self.enable_head:
+            x = self.head(x)
+            # (N, C, T, H, W) -> (N, T, H, W, C).
+            x = x.permute((0, 2, 3, 4, 1))
+            if hasattr(self, "dropout"):
+                x = self.dropout(x)
+            x = self.projection(x)
+            # Performs fully convlutional inference.
+            if not self.training:
+                x = self.act(x)
+                x = x.mean([1, 2, 3])
+            x = x.view(x.shape[0], -1)
 
         return x
 
@@ -178,6 +183,7 @@ def create_x3d(
     dropout: float = 0.5,
     expansion: str = "XS",
     head_act: str = "identity",
+    enable_head: bool = True,
 ):
     """
     This function builds a X3D network with efficient blocks.
@@ -189,7 +195,12 @@ def create_x3d(
             in dict supported_act_functions (see activation_functions.py for more info
             about supported activations). Currently ReLU ('relu'), Swish ('swish'),
             Hardswish ('hswish'), Identity ('identity') are supported.
+        enable_head (bool): Whether X3D model provides head.
     """
     return EfficientX3d(
-        num_classes=num_classes, dropout=dropout, expansion=expansion, head_act=head_act
+        num_classes=num_classes,
+        dropout=dropout,
+        expansion=expansion,
+        head_act=head_act,
+        enable_head=enable_head,
     )
