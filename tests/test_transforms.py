@@ -12,16 +12,17 @@ from pytorchvideo.transforms import (
     MixUp,
     Normalize,
     OpSampler,
+    RandAugment,
     RandomShortSideScale,
     UniformCropVideo,
     UniformTemporalSubsample,
 )
 from pytorchvideo.transforms.functional import (
     convert_to_one_hot,
-    uniform_temporal_subsample_repeated,
     short_side_scale,
     uniform_crop,
     uniform_temporal_subsample,
+    uniform_temporal_subsample_repeated,
 )
 from torchvision.transforms import Compose
 from torchvision.transforms._transforms_video import (
@@ -486,3 +487,47 @@ class TestTransforms(unittest.TestCase):
                 break
         self.assertTrue(seen_all_value1)
         self.assertTrue(seen_all_value2)
+
+    def test_randaug(self):
+        # Test default RandAugment.
+        t, c, h, w = 8, 3, 200, 200
+        test_time = 20
+        video_tensor = torch.rand(t, c, h, w)
+        video_rand_aug_fn = RandAugment()
+        for _ in range(test_time):
+            video_tensor_aug = video_rand_aug_fn(video_tensor)
+            self.assertTrue(video_tensor.size() == video_tensor_aug.size())
+            self.assertTrue(video_tensor.dtype == video_tensor_aug.dtype)
+            # Make sure the video is in range.
+            self.assertTrue(video_tensor_aug.max().item() <= 1)
+            self.assertTrue(video_tensor_aug.min().item() >= 0)
+
+        # Test RandAugment with uniform sampling.
+        t, c, h, w = 8, 3, 200, 200
+        test_time = 20
+        video_tensor = torch.rand(t, c, h, w)
+        video_rand_aug_fn = RandAugment(sampling_type="uniform")
+        for _ in range(test_time):
+            video_tensor_aug = video_rand_aug_fn(video_tensor)
+            self.assertTrue(video_tensor.size() == video_tensor_aug.size())
+            self.assertTrue(video_tensor.dtype == video_tensor_aug.dtype)
+            # Make sure the video is in range.
+            self.assertTrue(video_tensor_aug.max().item() <= 1)
+            self.assertTrue(video_tensor_aug.min().item() >= 0)
+
+        # Test if default fill color if found.
+        # Test multiple times due to randomness.
+        t, c, h, w = 8, 3, 200, 200
+        test_time = 40
+        video_tensor = torch.ones(t, c, h, w)
+        video_rand_aug_fn = RandAugment(
+            num_layers=1,
+            prob=1,
+            sampling_type="gaussian",
+        )
+        found_fill_color = 0
+        for _ in range(test_time):
+            video_tensor_aug = video_rand_aug_fn(video_tensor)
+            if 0.5 in video_tensor_aug:
+                found_fill_color += 1
+        self.assertTrue(found_fill_color >= 1)
