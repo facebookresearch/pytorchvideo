@@ -33,11 +33,11 @@
 
 ## Introduction
 
-PyTorchVideo is a deeplearning library with a focus on video understanding work. PytorchVideo provides resusable, modular and efficient components needed to accelerate the video understanding research. PyTorchVideo is developed using [PyTorch](https://pytorch.org) and supports different deeplearning video components like video models, video datasets, and video-specific transforms.
+PyTorchVideo is a deeplearning library with a focus on video understanding work. PytorchVideo provides reusable, modular and efficient components needed to accelerate the video understanding research. PyTorchVideo is developed using [PyTorch](https://pytorch.org) and supports different deeplearning video components like video models, video datasets, and video-specific transforms.
 
 Key features include:
 
-- **Based on PyTorch:** Built using PyTorch. Makes it easy to use all of the PyTorch-ecosystem components. 
+- **Based on PyTorch:** Built using PyTorch. Makes it easy to use all of the PyTorch-ecosystem components.
 - **Reproducible Model Zoo:** Variety of state of the art pretrained video models and their associated benchmarks that are ready to use.
   Complementing the model zoo, PyTorchVideo comes with extensive data loaders supporting different datasets.
 - **Efficient Video Components:** Video-focused fast and efficient components that are easy to use. Supports accelerated inference on hardware.
