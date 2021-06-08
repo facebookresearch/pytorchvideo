@@ -11,6 +11,7 @@ from pytorchvideo.models.hub import (  # noqa: F401, E402
     x3d_m,
     x3d_s,
     x3d_xs,
+    x3d_l,
     csn_r101,
     r2plus1d_r50,
     c2d_r50,
