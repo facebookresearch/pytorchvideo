@@ -171,6 +171,20 @@ class Normalize(torchvision.transforms.Normalize):
         return vid
 
 
+class ConvertUint8ToFloat(torch.nn.Module):
+    """
+    Converts a video from dtype uint8 to dtype float32.
+    """
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        """
+        Args:
+            x (torch.Tensor): video tensor with shape (C, T, H, W).
+        """
+        assert x.dtype == torch.uint8, "image must have dtype torch.uint8"
+        return torchvision.transforms.ConvertImageDtype(torch.float32)(x)
+
+
 class OpSampler(torch.nn.Module):
     """
     Given a list of transforms with weights, OpSampler applies weighted sampling to

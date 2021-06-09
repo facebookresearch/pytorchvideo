@@ -14,9 +14,11 @@ from pytorchvideo.transforms import (
     OpSampler,
     RandAugment,
     RandomShortSideScale,
+    ShortSideScale,
     UniformCropVideo,
     UniformTemporalSubsample,
 )
+from pytorchvideo.transforms import create_video_transform
 from pytorchvideo.transforms.functional import (
     convert_to_one_hot,
     short_side_scale,
@@ -32,6 +34,7 @@ from pytorchvideo.transforms.functional import (
 )
 from torchvision.transforms import Compose
 from torchvision.transforms._transforms_video import (
+    CenterCropVideo,
     NormalizeVideo,
     RandomCropVideo,
     RandomHorizontalFlipVideo,
@@ -322,6 +325,20 @@ class TestTransforms(unittest.TestCase):
         actual = transform(video)
         self.assertAlmostEqual(actual.mean().item(), 0)
         self.assertAlmostEqual(actual.std().item(), 1)
+
+    def test_center_crop(self):
+        video = thwc_to_cthw(create_dummy_video_frames(10, 30, 40)).to(
+            dtype=torch.float32
+        )
+        transform = CenterCropVideo(10)
+
+        actual = transform(video)
+        c, t, h, w = actual.shape
+        self.assertEqual(c, 3)
+        self.assertEqual(t, 10)
+        self.assertEqual(h, 10)
+        self.assertEqual(w, 10)
+        self.assertTrue(actual.equal(video[:, :, 10:20, 15:25]))
 
     def test_convert_to_one_hot(self):
         # Test without label smooth.
@@ -650,3 +667,175 @@ class TestTransforms(unittest.TestCase):
             if 0.5 in video_tensor_aug:
                 found_fill_color += 1
         self.assertTrue(found_fill_color >= 1)
+
+    def test_video_transform_factory(self):
+        self.assertRaises(TypeError, create_video_transform, mode="val", crop_size="s")
+
+        video = thwc_to_cthw(create_dummy_video_frames(20, 30, 40)).to(
+            dtype=torch.float32
+        )
+        test_clip = {"video": video, "audio1": None, "audio2": None, "label": 0}
+
+        num_subsample = 10
+        crop_size = 10
+        transform = create_video_transform(
+            mode="train",
+            num_samples=num_subsample,
+            convert_to_float=False,
+            video_mean=[video.mean()] * 3,
+            video_std=[video.std()] * 3,
+            min_size=15,
+            crop_size=crop_size,
+        )
+        transform_dict = create_video_transform(
+            mode="train",
+            video_key="video",
+            remove_key=["audio1", "audio2"],
+            num_samples=num_subsample,
+            convert_to_float=False,
+            video_mean=[video.mean()] * 3,
+            video_std=[video.std()] * 3,
+            min_size=15,
+            crop_size=crop_size,
+        )
+        transform_frame = create_video_transform(
+            mode="train",
+            num_samples=None,
+            convert_to_float=False,
+            video_mean=[video.mean()] * 3,
+            video_std=[video.std()] * 3,
+            min_size=15,
+            crop_size=crop_size,
+        )
+
+        video_tensor_transformed = transform(video)
+        video_dict_transformed = transform_dict(test_clip)
+        video_frame_transformed = transform_frame(video[:, 0:1, :, :])
+        c, t, h, w = video_tensor_transformed.shape
+        self.assertEqual(c, 3)
+        self.assertEqual(t, num_subsample)
+        self.assertEqual(h, crop_size)
+        self.assertEqual(w, crop_size)
+        c, t, h, w = video_dict_transformed["video"].shape
+        self.assertEqual(c, 3)
+        self.assertEqual(t, num_subsample)
+        self.assertEqual(h, crop_size)
+        self.assertEqual(w, crop_size)
+        self.assertFalse("audio1" in video_dict_transformed)
+        self.assertFalse("audio2" in video_dict_transformed)
+        c, t, h, w = video_frame_transformed.shape
+        self.assertEqual(c, 3)
+        self.assertEqual(t, 1)
+        self.assertEqual(h, crop_size)
+        self.assertEqual(w, crop_size)
+
+        video = thwc_to_cthw(create_dummy_video_frames(20, 30, 40)).to(
+            dtype=torch.float32
+        )
+        test_clip = {"video": video, "audio": None, "label": 0}
+        test_clip2 = {"video": video, "audio": None, "label": 0}
+
+        num_subsample = 10
+        transform = create_video_transform(
+            mode="val",
+            num_samples=num_subsample,
+            convert_to_float=False,
+            video_mean=[video.mean()] * 3,
+            video_std=[video.std()] * 3,
+            min_size=15,
+            crop_size=crop_size,
+        )
+        transform_dict = create_video_transform(
+            mode="val",
+            video_key="video",
+            num_samples=num_subsample,
+            convert_to_float=False,
+            video_mean=[video.mean()] * 3,
+            video_std=[video.std()] * 3,
+            min_size=15,
+            crop_size=crop_size,
+        )
+        transform_comp = Compose(
+            [
+                ApplyTransformToKey(
+                    key="video",
+                    transform=Compose(
+                        [
+                            UniformTemporalSubsample(num_subsample),
+                            NormalizeVideo([video.mean()] * 3, [video.std()] * 3),
+                            ShortSideScale(size=15),
+                            CenterCropVideo(crop_size),
+                        ]
+                    ),
+                )
+            ]
+        )
+        transform_frame = create_video_transform(
+            mode="val",
+            num_samples=None,
+            convert_to_float=False,
+            video_mean=[video.mean()] * 3,
+            video_std=[video.std()] * 3,
+            min_size=15,
+            crop_size=crop_size,
+        )
+
+        video_tensor_transformed = transform(video)
+        video_dict_transformed = transform_dict(test_clip)
+        video_comp_transformed = transform_comp(test_clip2)
+        video_frame_transformed = transform_frame(video[:, 0:1, :, :])
+        self.assertTrue(video_tensor_transformed.equal(video_dict_transformed["video"]))
+        self.assertTrue(
+            video_dict_transformed["video"].equal(video_comp_transformed["video"])
+        )
+        self.assertTrue(
+            video_frame_transformed.equal(video_tensor_transformed[:, 0:1, :, :])
+        )
+        c, t, h, w = video_dict_transformed["video"].shape
+        self.assertEqual(c, 3)
+        self.assertEqual(t, num_subsample)
+        self.assertEqual(h, crop_size)
+        self.assertEqual(w, crop_size)
+        self.assertTrue("audio" in video_dict_transformed)
+        c, t, h, w = video_frame_transformed.shape
+        self.assertEqual(c, 3)
+        self.assertEqual(t, 1)
+        self.assertEqual(h, crop_size)
+        self.assertEqual(w, crop_size)
+
+        video = thwc_to_cthw(create_dummy_video_frames(20, 30, 40))
+        test_clip = {"video": video, "audio": None, "label": 0}
+
+        transform_uint8 = create_video_transform(
+            mode="val",
+            num_samples=num_subsample,
+            convert_to_float=True,
+            min_size=15,
+            crop_size=crop_size,
+        )
+        transform_float32 = create_video_transform(
+            mode="val",
+            num_samples=num_subsample,
+            convert_to_float=False,
+            min_size=15,
+            crop_size=crop_size,
+        )
+
+        video_uint8_transformed = transform_uint8(video)
+        video_float32_transformed = transform_float32(
+            video.to(dtype=torch.float32) / 255.0
+        )
+        self.assertRaises(
+            AssertionError, transform_uint8, video.to(dtype=torch.float32)
+        )
+        self.assertTrue(video_uint8_transformed.equal(video_float32_transformed))
+        c, t, h, w = video_uint8_transformed.shape
+        self.assertEqual(c, 3)
+        self.assertEqual(t, num_subsample)
+        self.assertEqual(h, crop_size)
+        self.assertEqual(w, crop_size)
+        c, t, h, w = video_float32_transformed.shape
+        self.assertEqual(c, 3)
+        self.assertEqual(t, num_subsample)
+        self.assertEqual(h, crop_size)
+        self.assertEqual(w, crop_size)
