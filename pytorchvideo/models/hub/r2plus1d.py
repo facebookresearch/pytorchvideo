@@ -6,6 +6,7 @@ import torch.nn as nn
 from pytorchvideo.models.r2plus1d import create_r2plus1d
 from torch.hub import load_state_dict_from_url
 
+
 """
 R(2+1)D style models for video recognition.
 """

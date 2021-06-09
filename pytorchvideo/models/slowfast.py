@@ -5,10 +5,18 @@ from typing import Callable, List, Optional, Tuple, Union
 import torch
 import torch.nn as nn
 from pytorchvideo.layers.utils import set_attributes
-from pytorchvideo.models.head import create_res_basic_head
-from pytorchvideo.models.net import MultiPathWayWithFuse, Net
+from pytorchvideo.models.head import create_res_basic_head, create_res_roi_pooling_head
+from pytorchvideo.models.net import MultiPathWayWithFuse, Net, DetectionBBoxNetwork
 from pytorchvideo.models.resnet import create_bottleneck_block, create_res_stage
 from pytorchvideo.models.stem import create_res_basic_stem
+
+
+_MODEL_STAGE_DEPTH = {
+    18: (1, 1, 1, 1),
+    50: (3, 4, 6, 3),
+    101: (3, 4, 23, 3),
+    152: (3, 8, 36, 3),
+}
 
 
 def create_slowfast(
@@ -173,12 +181,6 @@ def create_slowfast(
 
     # Number of blocks for different stages given the model depth.
     _num_pathway = len(input_channels)
-    _MODEL_STAGE_DEPTH = {
-        18: (1, 1, 1, 1),
-        50: (3, 4, 6, 3),
-        101: (3, 4, 23, 3),
-        152: (3, 8, 36, 3),
-    }
     assert (
         model_depth in _MODEL_STAGE_DEPTH.keys()
     ), f"{model_depth} is not in {_MODEL_STAGE_DEPTH.keys()}"
@@ -293,10 +295,15 @@ def create_slowfast(
                     conv_a_padding=stage_conv_a_padding,
                     conv_b_kernel_size=stage_conv_b_kernel_sizes[pathway_idx][idx],
                     conv_b_stride=stage_conv_b_stride,
-                    conv_b_padding=[
-                        size // 2
-                        for size in stage_conv_b_kernel_sizes[pathway_idx][idx]
-                    ],
+                    conv_b_padding=(
+                        stage_conv_b_kernel_sizes[pathway_idx][idx][0] // 2,
+                        stage_conv_b_dilations[pathway_idx][idx][1]
+                        if stage_conv_b_dilations[pathway_idx][idx][1] > 1
+                        else stage_conv_b_kernel_sizes[pathway_idx][idx][1] // 2,
+                        stage_conv_b_dilations[pathway_idx][idx][2]
+                        if stage_conv_b_dilations[pathway_idx][idx][2] > 1
+                        else stage_conv_b_kernel_sizes[pathway_idx][idx][2] // 2,
+                    ),
                     conv_b_num_groups=stage_conv_b_num_groups[pathway_idx][idx],
                     conv_b_dilation=stage_conv_b_dilations[pathway_idx][idx],
                     norm=norm,
@@ -348,6 +355,227 @@ def create_slowfast(
             )
         )
     return Net(blocks=nn.ModuleList(stages))
+
+
+def create_slowfast_with_roi_head(
+    *,
+    # SlowFast configs.
+    slowfast_channel_reduction_ratio: Union[Tuple[int], int] = (8,),
+    slowfast_conv_channel_fusion_ratio: int = 2,
+    slowfast_fusion_conv_kernel_size: Tuple[int] = (
+        7,
+        1,
+        1,
+    ),  # deprecated, use fusion_builder
+    slowfast_fusion_conv_stride: Tuple[int] = (
+        4,
+        1,
+        1,
+    ),  # deprecated, use fusion_builder
+    fusion_builder: Callable[
+        [int, int], nn.Module
+    ] = None,  # Args: fusion_dim_in, stage_idx
+    # Input clip configs.
+    input_channels: Tuple[int] = (3, 3),
+    # Model configs.
+    model_depth: int = 50,
+    model_num_class: int = 80,
+    dropout_rate: float = 0.5,
+    # Normalization configs.
+    norm: Callable = nn.BatchNorm3d,
+    # Activation configs.
+    activation: Callable = nn.ReLU,
+    # Stem configs.
+    stem_function: Tuple[Callable] = (
+        create_res_basic_stem,
+        create_res_basic_stem,
+    ),
+    stem_dim_outs: Tuple[int] = (64, 8),
+    stem_conv_kernel_sizes: Tuple[Tuple[int]] = ((1, 7, 7), (5, 7, 7)),
+    stem_conv_strides: Tuple[Tuple[int]] = ((1, 2, 2), (1, 2, 2)),
+    stem_pool: Union[Callable, Tuple[Callable]] = (nn.MaxPool3d, nn.MaxPool3d),
+    stem_pool_kernel_sizes: Tuple[Tuple[int]] = ((1, 3, 3), (1, 3, 3)),
+    stem_pool_strides: Tuple[Tuple[int]] = ((1, 2, 2), (1, 2, 2)),
+    # Stage configs.
+    stage_conv_a_kernel_sizes: Tuple[Tuple[Tuple[int]]] = (
+        ((1, 1, 1), (1, 1, 1), (3, 1, 1), (3, 1, 1)),
+        ((3, 1, 1), (3, 1, 1), (3, 1, 1), (3, 1, 1)),
+    ),
+    stage_conv_b_kernel_sizes: Tuple[Tuple[Tuple[int]]] = (
+        ((1, 3, 3), (1, 3, 3), (1, 3, 3), (1, 3, 3)),
+        ((1, 3, 3), (1, 3, 3), (1, 3, 3), (1, 3, 3)),
+    ),
+    stage_conv_b_num_groups: Tuple[Tuple[int]] = ((1, 1, 1, 1), (1, 1, 1, 1)),
+    stage_conv_b_dilations: Tuple[Tuple[Tuple[int]]] = (
+        ((1, 1, 1), (1, 1, 1), (1, 1, 1), (1, 2, 2)),
+        ((1, 1, 1), (1, 1, 1), (1, 1, 1), (1, 2, 2)),
+    ),
+    stage_spatial_strides: Tuple[Tuple[int]] = ((1, 2, 2, 1), (1, 2, 2, 1)),
+    stage_temporal_strides: Tuple[Tuple[int]] = ((1, 1, 1, 1), (1, 1, 1, 1)),
+    bottleneck: Union[Callable, Tuple[Tuple[Callable]]] = (
+        (
+            create_bottleneck_block,
+            create_bottleneck_block,
+            create_bottleneck_block,
+            create_bottleneck_block,
+        ),
+        (
+            create_bottleneck_block,
+            create_bottleneck_block,
+            create_bottleneck_block,
+            create_bottleneck_block,
+        ),
+    ),
+    # Head configs.
+    head: Callable = create_res_roi_pooling_head,
+    head_pool: Callable = nn.AvgPool3d,
+    head_pool_kernel_sizes: Tuple[Tuple[int]] = ((8, 1, 1), (32, 1, 1)),
+    head_output_size: Tuple[int] = (1, 1, 1),
+    head_activation: Callable = nn.Sigmoid,
+    head_output_with_global_average: bool = False,
+    head_spatial_resolution: Tuple[int] = (7, 7),
+    head_spatial_scale: float = 1.0 / 16.0,
+    head_sampling_ratio: int = 0,
+) -> nn.Module:
+    """
+    Build SlowFast model for video detection, SlowFast model involves a Slow pathway,
+    operating at low frame rate, to capture spatial semantics, and a Fast pathway,
+    operating at high frame rate, to capture motion at fine temporal resolution. The
+    Fast pathway can be made very lightweight by reducing its channel capacity, yet can
+    learn useful temporal information for video recognition. Details can be found from
+    the paper:
+
+    Christoph Feichtenhofer, Haoqi Fan, Jitendra Malik, and Kaiming He.
+    "SlowFast networks for video recognition."
+    https://arxiv.org/pdf/1812.03982.pdf
+
+    ::
+
+                        Slow Input  Fast Input         Bounding Box Input
+                            ↓           ↓                      ↓
+                           Stem       Stem                     ↓
+                            ↓ ⭠ Fusion- ↓                     ↓
+                          Stage 1     Stage 1                  ↓
+                            ↓ ⭠ Fusion- ↓                     ↓
+                            .           .                      ↓
+                            ↓           ↓                      ↓
+                          Stage N     Stage N                  ↓
+                            ↓ ⭠ Fusion- ↓                     ↓
+                                    ↓                          ↓
+                                    ↓----------> Head <--------↓
+
+    Args:
+        slowfast_channel_reduction_ratio (int): Corresponds to the inverse of the channel
+            reduction ratio, $\beta$ between the Slow and Fast pathways.
+        slowfast_conv_channel_fusion_ratio (int): Ratio of channel dimensions
+            between the Slow and Fast pathways.
+        DEPRECATED slowfast_fusion_conv_kernel_size (tuple): the convolutional kernel
+            size used for fusion.
+        DEPRECATED slowfast_fusion_conv_stride (tuple): the convolutional stride size
+            used for fusion.
+        fusion_builder (Callable[[int, int], nn.Module]): Builder function for generating
+            the fusion modules based on stage dimension and index
+
+        input_channels (tuple): number of channels for the input video clip.
+
+        model_depth (int): the depth of the resnet.
+        model_num_class (int): the number of classes for the video dataset.
+        dropout_rate (float): dropout rate.
+
+        norm (callable): a callable that constructs normalization layer.
+
+        activation (callable): a callable that constructs activation layer.
+
+        stem_function (Tuple[Callable]): a callable that constructs stem layer.
+            Examples include create_res_basic_stem. Indexed by pathway
+        stem_dim_outs (tuple): output channel size to stem.
+        stem_conv_kernel_sizes (tuple): convolutional kernel size(s) of stem.
+        stem_conv_strides (tuple): convolutional stride size(s) of stem.
+        stem_pool (Tuple[Callable]): a callable that constructs resnet head pooling layer.
+            Indexed by pathway
+        stem_pool_kernel_sizes (tuple): pooling kernel size(s).
+        stem_pool_strides (tuple): pooling stride size(s).
+
+        stage_conv_a_kernel_sizes (tuple): convolutional kernel size(s) for conv_a.
+        stage_conv_b_kernel_sizes (tuple): convolutional kernel size(s) for conv_b.
+        stage_conv_b_num_groups (tuple): number of groups for groupwise convolution
+            for conv_b. 1 for ResNet, and larger than 1 for ResNeXt.
+        stage_conv_b_dilations (tuple): dilation for 3D convolution for conv_b.
+        stage_spatial_strides (tuple): the spatial stride for each stage.
+        stage_temporal_strides (tuple): the temporal stride for each stage.
+        bottleneck (Tuple[Tuple[Callable]]): a callable that constructs bottleneck
+            block layer. Examples include: create_bottleneck_block.
+            Indexed by pathway and stage index
+
+        head (callable): a a callable that constructs the detection head which can
+            take in the additional input of bounding boxes.
+            Ex: create_res_roi_pooling_head
+        head_pool (callable): a callable that constructs resnet head pooling layer.
+        head_output_sizes (tuple): the size of output tensor for head.
+        head_activation (callable): a callable that constructs activation layer.
+        head_output_with_global_average (bool): if True, perform global averaging on
+            the head output.
+        head_spatial_resolution (tuple): h, w sizes of the RoI interpolation.
+        head_spatial_scale (float): scale the input boxes by this number.
+        head_sampling_ratio (int): number of inputs samples to take for each output
+                sample interpolation. 0 to take samples densely.
+    Returns:
+        (nn.Module): SlowFast model.
+    """
+
+    model = create_slowfast(
+        # SlowFast configs.
+        slowfast_channel_reduction_ratio=slowfast_channel_reduction_ratio,
+        slowfast_conv_channel_fusion_ratio=slowfast_conv_channel_fusion_ratio,
+        slowfast_fusion_conv_kernel_size=slowfast_fusion_conv_kernel_size,
+        slowfast_fusion_conv_stride=slowfast_fusion_conv_stride,
+        # Input clip configs.
+        input_channels=input_channels,
+        # Model configs.
+        model_depth=model_depth,
+        model_num_class=model_num_class,
+        dropout_rate=dropout_rate,
+        # Normalization configs.
+        norm=norm,
+        # Activation configs.
+        activation=activation,
+        # Stem configs.
+        stem_dim_outs=stem_dim_outs,
+        stem_conv_kernel_sizes=stem_conv_kernel_sizes,
+        stem_conv_strides=stem_conv_strides,
+        stem_pool=stem_pool,
+        stem_pool_kernel_sizes=stem_pool_kernel_sizes,
+        stem_pool_strides=stem_pool_strides,
+        # Stage configs.
+        stage_conv_a_kernel_sizes=stage_conv_a_kernel_sizes,
+        stage_conv_b_kernel_sizes=stage_conv_b_kernel_sizes,
+        stage_conv_b_num_groups=stage_conv_b_num_groups,
+        stage_conv_b_dilations=stage_conv_b_dilations,
+        stage_spatial_strides=stage_spatial_strides,
+        stage_temporal_strides=stage_temporal_strides,
+        bottleneck=create_bottleneck_block,
+        # Head configs.
+        head=None,
+        head_pool=head_pool,
+        head_pool_kernel_sizes=head_pool_kernel_sizes,
+    )
+
+    stage_dim_out = stem_dim_outs[0] * 2 ** (len(_MODEL_STAGE_DEPTH[model_depth]) + 1)
+    slow_fast_beta = stem_dim_outs[0] // stem_dim_outs[1]
+    head_in_features = stage_dim_out + stage_dim_out // slow_fast_beta
+    head = create_res_roi_pooling_head(
+        in_features=head_in_features,
+        out_features=model_num_class,
+        pool=None,
+        output_size=head_output_size,
+        dropout_rate=dropout_rate,
+        activation=head_activation,
+        output_with_global_average=head_output_with_global_average,
+        resolution=head_spatial_resolution,
+        spatial_scale=head_spatial_scale,
+        sampling_ratio=head_sampling_ratio,
+    )
+    return DetectionBBoxNetwork(model, head)
 
 
 # TODO: move to pytorchvideo/layer once we have a common.py

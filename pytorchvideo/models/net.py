@@ -44,6 +44,36 @@ class Net(nn.Module):
         return x
 
 
+class DetectionBBoxNetwork(nn.Module):
+    """
+    A general purpose model that handles bounding boxes as part of input.
+    """
+
+    def __init__(self, model: nn.Module, detection_head: nn.Module):
+        """
+        Args:
+            model (nn.Module): a model that preceeds the head. Ex: stem + stages.
+            detection_head (nn.Module): a network head. that can take in input bounding boxes
+                and the outputs from the model.
+        """
+        super().__init__()
+        self.model = model
+        self.detection_head = detection_head
+
+    def forward(self, x: torch.Tensor, bboxes: torch.Tensor):
+        """
+        Args:
+            x (torch.tensor): input tensor
+            bboxes (torch.tensor): accociated bounding boxes.
+                The format is N*5 (Index, X_1,Y_1,X_2,Y_2) if using RoIAlign
+                and N*6 (Index, x_ctr, y_ctr, width, height, angle_degrees) if
+                using RoIAlignRotated.
+        """
+        features = self.model(x)
+        out = self.detection_head(features, bboxes)
+        return out.view(out.shape[0], -1)
+
+
 class MultiPathWayWithFuse(nn.Module):
     """
     Build multi-pathway block with fusion for video recognition, each of the pathway

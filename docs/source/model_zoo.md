@@ -39,6 +39,15 @@ X3D      | L     | \-       | 16x5                       | 77.44 | 93.31 | 26.64
 | Slow     | R50   | Kinetics 400 | 8x8                        | 34.72 | 55.10 x 3 x 10    | 31.96      | [link](https://dl.fbaipublicfiles.com/pytorchvideo/model_zoo/charades/SLOW\_8x8\_R50.pyth)  |
 | SlowFast | R50   | Kinetics 400 | 8x8                        | 37.24 | 66.60 x 3 x 10    | 34.00      | [link](https://dl.fbaipublicfiles.com/pytorchvideo/model_zoo/charades/SLOWFAST\_8x8\_R50.pyth)   |
 
+
+### AVA (V2.2)
+
+| arch     | depth | pretrain     | frame length x sample rate | MAP   | Params (M) | Model |
+| -------- | ----- | ------------ | -------------------------- | ----- | ---------- | ----- |
+| Slow     | R50   | Kinetics 400 | 4x16                       | 19.5  | 31.78 | [link](https://dl.fbaipublicfiles.com/pytorchvideo/model_zoo/ava/SLOW\_4x16\_R50\_DETECTION.pyth)  |
+| SlowFast | R50   | Kinetics 400 | 8x8                        | 24.67 | 33.82 | [link](https://dl.fbaipublicfiles.com/pytorchvideo/model_zoo/ava/SLOWFAST\_8x8\_R50\_DETECTION.pyth)   |
+
+
 ### Using PyTorchVideo model zoo
 We provide several different ways to use PyTorchVideo model zoo.
 * The models have been integrated into TorchHub, so could be loaded with TorchHub with or without pre-trained models. Additionally, we provide a [tutorial](https://pytorchvideo.org/docs/tutorial_torchhub_inference) which goes over the steps needed to load models from TorchHub and perform inference.

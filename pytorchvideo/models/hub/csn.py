@@ -6,6 +6,7 @@ import torch.nn as nn
 from pytorchvideo.models.csn import create_csn
 from torch.hub import load_state_dict_from_url
 
+
 """
 Channel-Separated Convolutional Network models for video recognition.
 """

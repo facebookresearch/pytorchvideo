@@ -20,7 +20,13 @@ from pytorchvideo.transforms import (
 from pytorchvideo.transforms.functional import (
     convert_to_one_hot,
     short_side_scale,
+    short_side_scale_with_boxes,
+    random_short_side_scale_with_boxes,
     uniform_crop,
+    uniform_crop_with_boxes,
+    random_crop_with_boxes,
+    horizontal_flip_with_boxes,
+    clip_boxes_to_image,
     uniform_temporal_subsample,
     uniform_temporal_subsample_repeated,
 )
@@ -30,7 +36,7 @@ from torchvision.transforms._transforms_video import (
     RandomCropVideo,
     RandomHorizontalFlipVideo,
 )
-from utils import create_dummy_video_frames
+from utils import create_dummy_video_frames, create_random_bbox
 
 
 class TestTransforms(unittest.TestCase):
@@ -128,6 +134,33 @@ class TestTransforms(unittest.TestCase):
         actual = short_side_scale(video, 10, backend="opencv")
         self.assertEqual(actual.shape, (3, 20, 10, 10))
 
+    def test_random_short_side_scale_height_shorter_pytorch_with_boxes(self):
+        video = thwc_to_cthw(create_dummy_video_frames(20, 10, 20)).to(
+            dtype=torch.float32
+        )
+        boxes = create_random_bbox(7, 10, 20)
+        actual, scaled_boxes = random_short_side_scale_with_boxes(
+            video, min_size=4, max_size=8, backend="pytorch", boxes=boxes
+        )
+        self.assertEqual(actual.shape[0], 3)
+        self.assertEqual(actual.shape[1], 20)
+        self.assertTrue(actual.shape[2] <= 8 and actual.shape[2] >= 4)
+        self._check_boxes(7, actual.shape[2], actual.shape[3], boxes)
+
+    def test_short_side_scale_height_shorter_pytorch_with_boxes(self):
+        video = thwc_to_cthw(create_dummy_video_frames(20, 10, 20)).to(
+            dtype=torch.float32
+        )
+        boxes = create_random_bbox(7, 10, 20)
+        actual, scaled_boxes = short_side_scale_with_boxes(
+            video,
+            boxes=boxes,
+            size=5,
+            backend="pytorch",
+        )
+        self.assertEqual(actual.shape, (3, 20, 5, 10))
+        self._check_boxes(7, 5, 10, boxes)
+
     def test_torchscriptable_input_output(self):
         video = thwc_to_cthw(create_dummy_video_frames(20, 30, 40)).to(
             dtype=torch.float32
@@ -184,6 +217,66 @@ class TestTransforms(unittest.TestCase):
         actual = uniform_crop(video, size=20, spatial_idx=2)
         self.assertTrue(actual.equal(video[:, :, 20:, 5:25]))
 
+    def test_uniform_crop_with_boxes(self):
+        # For videos with height < width.
+        video = thwc_to_cthw(create_dummy_video_frames(20, 30, 40)).to(
+            dtype=torch.float32
+        )
+        boxes_inp = create_random_bbox(7, 30, 40)
+
+        # Left crop.
+        actual, boxes = uniform_crop_with_boxes(
+            video, size=20, spatial_idx=0, boxes=boxes_inp
+        )
+        self.assertTrue(actual.equal(video[:, :, 5:25, :20]))
+        self._check_boxes(7, actual.shape[-2], actual.shape[-1], boxes)
+        # Center crop.
+        actual, boxes = uniform_crop_with_boxes(
+            video, size=20, spatial_idx=1, boxes=boxes_inp
+        )
+        self.assertTrue(actual.equal(video[:, :, 5:25, 10:30]))
+        self._check_boxes(7, actual.shape[-2], actual.shape[-1], boxes)
+        # Right crop.
+        actual, boxes = uniform_crop_with_boxes(
+            video, size=20, spatial_idx=2, boxes=boxes_inp
+        )
+        self.assertTrue(actual.equal(video[:, :, 5:25, 20:]))
+        self._check_boxes(7, actual.shape[-2], actual.shape[-1], boxes)
+
+        # For videos with height > width.
+        video = thwc_to_cthw(create_dummy_video_frames(20, 40, 30)).to(
+            dtype=torch.float32
+        )
+        # Top crop.
+        actual, boxes = uniform_crop_with_boxes(
+            video, size=20, spatial_idx=0, boxes=boxes_inp
+        )
+        self.assertTrue(actual.equal(video[:, :, :20, 5:25]))
+        self._check_boxes(7, actual.shape[-2], actual.shape[-1], boxes)
+        # Center crop.
+        actual, boxes = uniform_crop_with_boxes(
+            video, size=20, spatial_idx=1, boxes=boxes_inp
+        )
+        self.assertTrue(actual.equal(video[:, :, 10:30, 5:25]))
+        self._check_boxes(7, actual.shape[-2], actual.shape[-1], boxes)
+        # Bottom crop.
+        actual, boxes = uniform_crop_with_boxes(
+            video, size=20, spatial_idx=2, boxes=boxes_inp
+        )
+        self.assertTrue(actual.equal(video[:, :, 20:, 5:25]))
+        self._check_boxes(7, actual.shape[-2], actual.shape[-1], boxes)
+
+    def test_random_crop_with_boxes(self):
+        # For videos with height < width.
+        video = thwc_to_cthw(create_dummy_video_frames(15, 30, 40)).to(
+            dtype=torch.float32
+        )
+        boxes_inp = create_random_bbox(7, 30, 40)
+
+        actual, boxes = random_crop_with_boxes(video, size=20, boxes=boxes_inp)
+        self.assertEqual(actual.shape, (3, 15, 20, 20))
+        self._check_boxes(7, actual.shape[2], actual.shape[3], boxes)
+
     def test_uniform_crop_transform(self):
         video = thwc_to_cthw(create_dummy_video_frames(10, 30, 40)).to(
             dtype=torch.float32
@@ -199,6 +292,26 @@ class TestTransforms(unittest.TestCase):
         self.assertEqual(h, 20)
         self.assertEqual(w, 20)
         self.assertTrue(actual["video"].equal(video[:, :, 5:25, 10:30]))
+
+    def test_clip_boxes(self):
+        boxes_inp = create_random_bbox(7, 40, 80)
+        clipped_boxes = clip_boxes_to_image(boxes_inp, 20, 40)
+        self._check_boxes(7, 20, 40, clipped_boxes)
+
+    def test_horizontal_flip_with_boxes(self):
+        video = thwc_to_cthw(create_dummy_video_frames(10, 20, 40)).to(
+            dtype=torch.float32
+        )
+        boxes_inp = create_random_bbox(7, 20, 40)
+
+        actual, boxes = horizontal_flip_with_boxes(0.0, video, boxes_inp)
+        self.assertTrue(actual.equal(video))
+        self.assertTrue(boxes.equal(boxes_inp))
+
+        actual, boxes = horizontal_flip_with_boxes(1.0, video, boxes_inp)
+        self.assertEqual(actual.shape, video.shape)
+        self._check_boxes(7, actual.shape[-2], actual.shape[-1], boxes)
+        self.assertTrue(actual.flip((-1)).equal(video))
 
     def test_normalize(self):
         video = thwc_to_cthw(create_dummy_video_frames(10, 30, 40)).to(
@@ -386,6 +499,7 @@ class TestTransforms(unittest.TestCase):
         self.assertTrue(smooth_value in torch.unique(mixed_labels))
 
     def test_cutmix(self):
+        torch.manual_seed(0)
         # Test images.
         batch_size = 2
         h_size = 10
@@ -488,6 +602,11 @@ class TestTransforms(unittest.TestCase):
         self.assertTrue(seen_all_value1)
         self.assertTrue(seen_all_value2)
 
+    def _check_boxes(self, num_boxes, height, width, boxes):
+        self.assertEqual(boxes.shape, (num_boxes, 4))
+        self.assertTrue(boxes[:, [0, 2]].min() >= 0 and boxes[:, [0, 2]].max() < width)
+        self.assertTrue(boxes[:, [1, 3]].min() >= 0 and boxes[:, [1, 3]].max() < height)
+        
     def test_randaug(self):
         # Test default RandAugment.
         t, c, h, w = 8, 3, 200, 200

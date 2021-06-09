@@ -6,7 +6,7 @@ import unittest
 from typing import Tuple
 
 import torch
-from pytorchvideo.models.slowfast import create_slowfast
+from pytorchvideo.models.slowfast import create_slowfast, create_slowfast_with_roi_head
 from pytorchvideo.transforms.functional import uniform_temporal_subsample_repeated
 from torch import nn
 
@@ -40,7 +40,52 @@ class TestSlowFast(unittest.TestCase):
                             model(tensor)
                         continue
 
-                    model(tensor)
+    def test_load_hubconf_detection(self):
+        path = os.path.join(
+            os.path.dirname(os.path.realpath(__file__)),
+            "..",
+        )
+        input_clip_length = 32
+        input_crop_size = 224
+        input_channel = 3
+        model = torch.hub.load(
+            repo_or_dir=path,
+            source="local",
+            model="slowfast_r50_detection",
+            pretrained=False,
+        )
+        self.assertIsNotNone(model)
+
+        # Test forwarding.
+        bbox_test_imputs = torch.tensor([[0.0, 10, 15, 20, 25], [0.0, 11, 16, 21, 26]])
+        for tensor in TestSlowFast._get_inputs(
+            input_channel, input_clip_length, input_crop_size
+        ):
+            with torch.no_grad():
+                if tensor[0].shape[1] != input_channel:
+                    with self.assertRaises(RuntimeError):
+                        model(tensor, bbox_test_imputs)
+                    continue
+                model(tensor, bbox_test_imputs)
+
+    def test_create_slowfast_with_roi_head_with_callable(self):
+        input_clip_length = 32
+        input_crop_size = 224
+        input_channel = 3
+        model = create_slowfast_with_roi_head()
+        self.assertIsNotNone(model)
+
+        # Test forwarding.
+        bbox_test_imputs = torch.tensor([[0.0, 10, 15, 20, 25], [0.0, 11, 16, 21, 26]])
+        for tensor in TestSlowFast._get_inputs(
+            input_channel, input_clip_length, input_crop_size
+        ):
+            with torch.no_grad():
+                if tensor[0].shape[1] != input_channel:
+                    with self.assertRaises(RuntimeError):
+                        model(tensor, bbox_test_imputs)
+                    continue
+                model(tensor, bbox_test_imputs)
 
     def test_create_slowfast_with_callable(self):
         """

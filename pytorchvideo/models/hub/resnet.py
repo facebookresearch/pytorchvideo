@@ -1,9 +1,9 @@
 # Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved.
 
-from typing import Any
+from typing import Any, Callable
 
 import torch.nn as nn
-from pytorchvideo.models.resnet import create_resnet
+from pytorchvideo.models.resnet import create_resnet, create_resnet_with_roi_head
 from torch.hub import load_state_dict_from_url
 
 
@@ -11,11 +11,12 @@ from torch.hub import load_state_dict_from_url
 ResNet style models for video recognition.
 """
 
-root_dir = "https://dl.fbaipublicfiles.com/pytorchvideo/model_zoo/kinetics"
+root_dir = "https://dl.fbaipublicfiles.com/pytorchvideo/model_zoo"
 checkpoint_paths = {
-    "slow_r50": f"{root_dir}/SLOW_8x8_R50.pyth",
-    "c2d_r50": f"{root_dir}/C2D_8x8_R50.pyth",
-    "i3d_r50": f"{root_dir}/I3D_8x8_R50.pyth",
+    "slow_r50": f"{root_dir}/kinetics/SLOW_8x8_R50.pyth",
+    "slow_r50_detection": f"{root_dir}/ava/SLOW_4x16_R50_DETECTION.pyth",
+    "c2d_r50": f"{root_dir}/kinetics/C2D_8x8_R50.pyth",
+    "i3d_r50": f"{root_dir}/kinetics/I3D_8x8_R50.pyth",
 }
 
 
@@ -23,9 +24,10 @@ def _resnet(
     pretrained: bool = False,
     progress: bool = True,
     checkpoint_path: str = "",
+    model_builder: Callable = create_resnet,
     **kwargs: Any,
 ) -> nn.Module:
-    model = create_resnet(**kwargs)
+    model = model_builder(**kwargs)
     if pretrained:
         # All models are loaded onto CPU by default
         checkpoint = load_state_dict_from_url(
@@ -64,6 +66,26 @@ def slow_r50(
         stem_conv_kernel_size=(1, 7, 7),
         head_pool_kernel_size=(8, 7, 7),
         model_depth=50,
+        **kwargs,
+    )
+
+
+def slow_r50_detection(
+    pretrained: bool = False, progress: bool = True, **kwargs: Any
+) -> nn.Module:
+    r"""
+    Slow R50 model architecture [1] with pretrained weights based on 4x16 setting.
+    The model is initially trained on Kinetics dataset for classification and later
+    finetuned on AVA dataset for detection.
+
+    [1] Christoph Feichtenhofer et al, "SlowFast Networks for Video Recognition"
+        https://arxiv.org/pdf/1812.03982.pdf
+    """
+    return _resnet(
+        pretrained=pretrained,
+        progress=progress,
+        checkpoint_path=checkpoint_paths["slow_r50_detection"],
+        model_builder=create_resnet_with_roi_head,
         **kwargs,
     )
 

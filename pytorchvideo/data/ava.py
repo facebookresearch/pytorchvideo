@@ -4,11 +4,11 @@ from __future__ import annotations
 
 import os
 from collections import defaultdict
-from typing import Any, Callable, Optional, Tuple, Dict, Set, Type
+from typing import Any, Callable, Dict, Optional, Set, Tuple, Type
 
 import torch
 from iopath.common.file_io import g_pathmgr
-from pytorchvideo.data.clip_sampling import ClipSampler, ClipInfo
+from pytorchvideo.data.clip_sampling import ClipInfo, ClipSampler
 from pytorchvideo.data.labeled_video_dataset import LabeledVideoDataset
 
 
@@ -16,7 +16,6 @@ class AvaLabeledVideoFramePaths:
     """
     Pre-processor for Ava Actions Dataset stored as image frames -
         `<https://research.google.com/ava/download.html>_`
-
     This class handles the parsing of all the necessary
     csv files containing frame paths and frame labels.
     """
@@ -80,14 +79,11 @@ class AvaLabeledVideoFramePaths:
                 Type 2:
                     <original_vido_id, frame_time_stamp, bbox_x_1, bbox_y_1, ...
                     bbox_x_2, bbox_y_2, action_lable, person_label>
-
             frame_paths_file (str): Path to a file containing relative paths
                 to all the frames in the video. Each line in the file is of the
                 form <original_vido_id video_id frame_id rel_path labels>
-
             video_path_prefix (str): Path to be augumented to the each relative frame
                 path to get the global frame path.
-
             label_map_file (str): Path to a .pbtxt containing class id's and class names.
                 If not set, label_map is not loaded and bbox labels are not pruned
                 based on allowable class_id's in label_map.
@@ -137,7 +133,6 @@ class AvaLabeledVideoFramePaths:
     ):
         """
         Parses AVA per frame labels .csv file.
-
         Args:
             frame_labels_file (str): Path to the file containing labels
                 per key frame. Acceptible file formats are,
@@ -147,9 +142,7 @@ class AvaLabeledVideoFramePaths:
                 Type 2:
                     <original_vido_id, frame_time_stamp, bbox_x_1, bbox_y_1, ...
                     bbox_x_2, bbox_y_2, action_lable, person_label>
-
             video_name_to_idx (dict): Dictionary mapping video names to indices.
-
             allowed_class_ids (set): A set of integer unique class (bbox label)
                 id's that are allowed in the dataset. If not set, all class id's
                 are allowed in the bbox labels.
@@ -210,15 +203,12 @@ class AvaLabeledVideoFramePaths:
     def load_image_lists(frame_paths_file: str, video_path_prefix: str) -> Tuple:
         """
         Loading image paths from the corresponding file.
-
         Args:
             frame_paths_file (str): Path to a file containing relative paths
                 to all the frames in the video. Each line in the file is of the
                 form <original_vido_id video_id frame_id rel_path labels>
-
             video_path_prefix (str): Path to be augumented to the each relative
                 frame path to get the global frame path.
-
         Returns:
             (tuple): A tuple of the following,
                 image_paths_list: List of list containing absolute frame paths.
@@ -317,7 +307,6 @@ class TimeStampClipSampler:
             clip_info (ClipInfo): includes the clip information of (clip_start_time,
             clip_end_time, clip_index, aug_index, is_last_clip). The times are in seconds.
             clip_index, aux_index and is_last_clip are always 0, 0 and True, respectively.
-
         """
         center_frame_sec = annotation["clip_index"]  # a.k.a timestamp
         clip_start_sec = center_frame_sec - self.clip_sampler._clip_duration / 2.0
@@ -344,7 +333,6 @@ def Ava(
         frame_paths_file (str): Path to a file containing relative paths
             to all the frames in the video. Each line in the file is of the
             form <original_vido_id video_id frame_id rel_path labels>
-
         frame_labels_file (str): Path to the file containing containing labels
             per key frame. Acceptible file formats are,
             Type 1:
@@ -353,21 +341,16 @@ def Ava(
             Type 2:
                 <original_vido_id, frame_time_stamp, bbox_x_1, bbox_y_1, ...
                 bbox_x_2, bbox_y_2, action_lable, person_label>
-
         video_path_prefix (str): Path to be augumented to the each relative frame
             path to get the global frame path.
-
         label_map_file (str): Path to a .pbtxt containing class id's
             and class names. If not set, label_map is not loaded and bbox labels are
             not pruned based on allowable class_id's in label_map.
-
         clip_sampler (ClipSampler): Defines how clips should be sampled from each
                 video.
-
         video_sampler (Type[torch.utils.data.Sampler]): Sampler for the internal
                 video container. This defines the order videos are decoded and,
                 if necessary, the distributed split.
-
         transform (Optional[Callable]): This callable is evaluated on the clip output
             and the corresponding bounding boxes before the clip and the bounding boxes
             are returned. It can be used for user defined preprocessing and

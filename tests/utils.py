@@ -29,6 +29,15 @@ def create_dummy_video_frames(num_frames: int, height: int, width: int):
     return torch.stack(data, 0)
 
 
+def create_random_bbox(num_boxes: int, height: int, width: int):
+    bboxes = torch.rand(num_boxes, 4)
+    bboxes[:, 0] *= float(width) / 2.0
+    bboxes[:, 2] = bboxes[:, 2] * float(width) / 2.0 + float(width) / 2.0
+    bboxes[:, 1] *= float(height) / 2.0
+    bboxes[:, 3] = bboxes[:, 3] * float(height) / 2.0 + float(height) / 2.0
+    return torch.floor(bboxes)
+
+
 @contextlib.contextmanager
 def temp_encoded_video(num_frames: int, fps: int, height=10, width=10, prefix=None):
     """

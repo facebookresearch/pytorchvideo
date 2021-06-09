@@ -19,6 +19,7 @@ from pytorchvideo.models.resnet import (
     create_res_block,
     create_res_stage,
     create_resnet,
+    create_resnet_with_roi_head,
 )
 from pytorchvideo.models.stem import ResNetBasicStem
 from torch import nn
@@ -1334,6 +1335,53 @@ class TestResNet(unittest.TestCase):
                     with self.assertRaises(RuntimeError):
                         model(tensor)
                     continue
+
+    def test_load_hubconf_detection(self):
+        path = os.path.join(
+            os.path.dirname(os.path.realpath(__file__)),
+            "..",
+        )
+        input_channel = 3
+        input_clip_length = 4
+        input_crop_size = 56
+        model = torch.hub.load(
+            repo_or_dir=path,
+            source="local",
+            model="slow_r50_detection",
+            pretrained=False,
+        )
+        self.assertIsNotNone(model)
+
+        # Test forwarding.
+        bbox_test_imputs = torch.tensor([[0.0, 10, 15, 20, 25], [0.0, 11, 16, 21, 26]])
+        for tensor in TestResNet._get_inputs(
+            input_channel, input_clip_length, input_crop_size
+        ):
+            with torch.no_grad():
+                if tensor.shape[1] != input_channel:
+                    with self.assertRaises(RuntimeError):
+                        model(tensor, bbox_test_imputs)
+                    continue
+                model(tensor, bbox_test_imputs)
+
+    def test_create_resnet_with_roi_head_with_callable(self):
+        input_channel = 3
+        input_clip_length = 4
+        input_crop_size = 56
+        model = create_resnet_with_roi_head()
+        self.assertIsNotNone(model)
+
+        # Test forwarding.
+        bbox_test_imputs = torch.tensor([[0.0, 10, 15, 20, 25], [0.0, 11, 16, 21, 26]])
+        for tensor in TestResNet._get_inputs(
+            input_channel, input_clip_length, input_crop_size
+        ):
+            with torch.no_grad():
+                if tensor.shape[1] != input_channel:
+                    with self.assertRaises(RuntimeError):
+                        model(tensor, bbox_test_imputs)
+                    continue
+                model(tensor, bbox_test_imputs)
 
     @staticmethod
     def _get_inputs(
