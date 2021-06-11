@@ -1,0 +1,269 @@
+<!DOCTYPE html><html lang="en"><head><meta charSet="utf-8"/><meta http-equiv="X-UA-Compatible" content="IE=edge"/><title>Running a pre-trained PyTorchVideo classification model using Torch Hub · PyTorchVideo</title><meta name="viewport" content="width=device-width, initial-scale=1.0"/><meta name="generator" content="Docusaurus"/><meta name="description" content="# Introduction"/><meta name="docsearch:language" content="en"/><meta property="og:title" content="Running a pre-trained PyTorchVideo classification model using Torch Hub · PyTorchVideo"/><meta property="og:type" content="website"/><meta property="og:url" content="https://pytorchvideo.org/"/><meta property="og:description" content="# Introduction"/><meta property="og:image" content="https://pytorchvideo.org/img/logo.svg"/><meta name="twitter:card" content="summary"/><meta name="twitter:image" content="https://pytorchvideo.org/img/logo.svg"/><link rel="shortcut icon" href="/img/favicon.png"/><link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/atom-one-dark.min.css"/><script>
+              (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+              (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+              m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+              })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+              ga('create', 'UA-154877538-1', 'auto');
+              ga('send', 'pageview');
+            </script><script type="text/javascript" src="https://buttons.github.io/buttons.js"></script><script src="/js/scrollSpy.js"></script><link rel="stylesheet" href="/css/main.css"/><script src="/js/codetabs.js"></script></head><body class="sideNavVisible separateOnPageNav"><div class="fixedHeaderContainer"><div class="headerWrapper wrapper"><header><a href="/"><img class="logo" src="/img/logo.svg" alt="PyTorchVideo"/><h2 class="headerTitleWithLogo">PyTorchVideo</h2></a><div class="navigationWrapper navigationSlider"><nav class="slidingNav"><ul class="nav-site nav-site-internal"><li class="siteNavGroupActive"><a href="/docs/tutorial_overview" target="_self">Tutorials</a></li><li class=""><a href="https://pytorchvideo.readthedocs.io/en/latest/index.html" target="_self">Docs</a></li><li class=""><a href="https://github.com/facebookresearch/pytorchvideo/" target="_self">GitHub</a></li></ul></nav></div></header></div></div><div class="navPusher"><div class="docMainWrapper wrapper"><div class="docsNavContainer" id="docsNav"><nav class="toc"><div class="toggleNav"><section class="navWrapper wrapper"><div class="navBreadcrumb wrapper"><div class="navToggle" id="navToggler"><div class="hamburger-menu"><div class="line1"></div><div class="line2"></div><div class="line3"></div></div></div><h2><i>›</i><span>Detection</span></h2><div class="tocToggler" id="tocToggler"><i class="icon-toc"></i></div></div><div class="navGroups"><div class="navGroup"><h3 class="navGroupCategoryTitle">Tutorials</h3><ul class=""><li class="navListItem"><a class="navItem" href="/docs/tutorial_overview">Overview</a></li></ul></div><div class="navGroup"><h3 class="navGroupCategoryTitle">Classification</h3><ul class=""><li class="navListItem"><a class="navItem" href="/docs/tutorial_classification">Training a PyTorchVideo classification model</a></li><li class="navListItem"><a class="navItem" href="/docs/tutorial_torchhub_inference">Running a pre-trained PyTorchVideo classification model using Torch Hub</a></li></ul></div><div class="navGroup"><h3 class="navGroupCategoryTitle">Detection</h3><ul class=""><li class="navListItem navListItemActive"><a class="navItem" href="/docs/tutorial_torchhub_detection_inference">Running a pre-trained PyTorchVideo classification model using Torch Hub</a></li></ul></div><div class="navGroup"><h3 class="navGroupCategoryTitle">Accelerator</h3><ul class=""><li class="navListItem"><a class="navItem" href="/docs/tutorial_accelerator_build_your_model">Build your efficient model with PytorchVideo/Accelerator</a></li><li class="navListItem"><a class="navItem" href="/docs/tutorial_accelerator_use_accelerator_model_zoo">Use PytorchVideo/Accelerator Model Zoo</a></li><li class="navListItem"><a class="navItem" href="/docs/tutorial_accelerator_use_model_transmuter">Accelerate your model with model transmuter in PytorchVideo/Accelerator</a></li></ul></div></div></section></div><script>
+            var coll = document.getElementsByClassName('collapsible');
+            var checkActiveCategory = true;
+            for (var i = 0; i < coll.length; i++) {
+              var links = coll[i].nextElementSibling.getElementsByTagName('*');
+              if (checkActiveCategory){
+                for (var j = 0; j < links.length; j++) {
+                  if (links[j].classList.contains('navListItemActive')){
+                    coll[i].nextElementSibling.classList.toggle('hide');
+                    coll[i].childNodes[1].classList.toggle('rotate');
+                    checkActiveCategory = false;
+                    break;
+                  }
+                }
+              }
+
+              coll[i].addEventListener('click', function() {
+                var arrow = this.childNodes[1];
+                arrow.classList.toggle('rotate');
+                var content = this.nextElementSibling;
+                content.classList.toggle('hide');
+              });
+            }
+
+            document.addEventListener('DOMContentLoaded', function() {
+              createToggler('#navToggler', '#docsNav', 'docsSliderActive');
+              createToggler('#tocToggler', 'body', 'tocActive');
+
+              var headings = document.querySelector('.toc-headings');
+              headings && headings.addEventListener('click', function(event) {
+                var el = event.target;
+                while(el !== headings){
+                  if (el.tagName === 'A') {
+                    document.body.classList.remove('tocActive');
+                    break;
+                  } else{
+                    el = el.parentNode;
+                  }
+                }
+              }, false);
+
+              function createToggler(togglerSelector, targetSelector, className) {
+                var toggler = document.querySelector(togglerSelector);
+                var target = document.querySelector(targetSelector);
+
+                if (!toggler) {
+                  return;
+                }
+
+                toggler.onclick = function(event) {
+                  event.preventDefault();
+
+                  target.classList.toggle(className);
+                };
+              }
+            });
+        </script></nav></div><div class="container mainContainer docsContainer"><div class="wrapper"><div class="post"><header class="postHeader"><h1 id="__docusaurus" class="postHeaderTitle">Running a pre-trained PyTorchVideo classification model using Torch Hub</h1></header><article><div><span><h1><a class="anchor" aria-hidden="true" id="introduction"></a><a href="#introduction" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Introduction</h1>
+<p>PyTorchVideo provides several pretrained models through <a href="https://pytorch.org/hub/">Torch Hub</a>. In this tutorial we will show how to load a pre trained video classification model in PyTorchVideo and run it on a test video. The PyTorchVideo Torch Hub models were trained on the Kinetics 400 dataset and finetuned specifically for detection on AVA v2.2 dataset.  Available models are described in <a href="https://pytorchvideo.readthedocs.io/en/latest/model_zoo.html">model zoo documentation</a>.</p>
+<p>NOTE: Currently, this tutorial only works if ran on local clone from the directory <code>pytorchvideo/tutorials/video_detection_example</code></p>
+<p>This tutorial assumes that you have installed <a href="(https://github.com/facebookresearch/detectron2/blob/master/INSTALL.md)">Detectron2</a> and <a href="https://pypi.org/project/opencv-python/">Opencv-python</a> on your machine.</p>
+<h1><a class="anchor" aria-hidden="true" id="imports"></a><a href="#imports" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Imports</h1>
+<pre><code class="hljs css language-python"><span class="hljs-keyword">from</span> functools <span class="hljs-keyword">import</span> partial
+<span class="hljs-keyword">import</span> numpy <span class="hljs-keyword">as</span> np
+
+<span class="hljs-keyword">import</span> cv2
+<span class="hljs-keyword">import</span> torch
+
+<span class="hljs-keyword">import</span> detectron2
+<span class="hljs-keyword">from</span> detectron2.config <span class="hljs-keyword">import</span> get_cfg
+<span class="hljs-keyword">from</span> detectron2 <span class="hljs-keyword">import</span> model_zoo
+<span class="hljs-keyword">from</span> detectron2.engine <span class="hljs-keyword">import</span> DefaultPredictor
+
+<span class="hljs-keyword">import</span> pytorchvideo
+<span class="hljs-keyword">from</span> pytorchvideo.transforms.functional <span class="hljs-keyword">import</span> (
+    uniform_temporal_subsample,
+    short_side_scale_with_boxes,
+    clip_boxes_to_image,
+)
+<span class="hljs-keyword">from</span> torchvision.transforms._functional_video <span class="hljs-keyword">import</span> normalize
+<span class="hljs-keyword">from</span> pytorchvideo.data.ava <span class="hljs-keyword">import</span> AvaLabeledVideoFramePaths
+<span class="hljs-keyword">from</span> pytorchvideo.models.hub <span class="hljs-keyword">import</span> slow_r50_detection <span class="hljs-comment"># Another option is slowfast_r50_detection</span>
+
+<span class="hljs-keyword">from</span> visualization <span class="hljs-keyword">import</span> VideoVisualizer
+</code></pre>
+<h1><a class="anchor" aria-hidden="true" id="load-model-using-torch-hub-api"></a><a href="#load-model-using-torch-hub-api" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Load Model using Torch Hub API</h1>
+<p>PyTorchVideo provides several pretrained models through Torch Hub. Available models are described in <a href="https://github.com/facebookresearch/pytorchvideo/blob/master/docs/source/model_zoo.md">model zoo documentation.</a></p>
+<p>Here we are selecting the slow_r50_detection model which was trained using a 4x16 setting on the Kinetics 400 dataset and fine tuned on AVA V2.2 actions dataset.</p>
+<p>NOTE: to run on GPU in Google Colab, in the menu bar selet: Runtime -&gt; Change runtime type -&gt; Harware Accelerator -&gt; GPU</p>
+<pre><code class="hljs css language-python">device = <span class="hljs-string">'cuda'</span> <span class="hljs-comment"># or 'cpu'</span>
+video_model = slow_r50_detection(<span class="hljs-literal">True</span>) <span class="hljs-comment"># Another option is slowfast_r50_detection</span>
+video_model = video_model.eval().to(device)
+</code></pre>
+<h1><a class="anchor" aria-hidden="true" id="load-an-off-the-shelf-detectron2-object-detector"></a><a href="#load-an-off-the-shelf-detectron2-object-detector" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Load an off-the-shelf Detectron2 object detector</h1>
+<p>We use the object detector to detect bounding boxes for the people.
+These bounding boxes later feed into our video action detection model.
+For more details, please refer to the Detectron2's object detection tutorials.</p>
+<p>To install Detectron2, please follow the instructions mentioned <a href="https://github.com/facebookresearch/detectron2/blob/master/INSTALL.md">here</a></p>
+<pre><code class="hljs css language-python">cfg = get_cfg()
+cfg.merge_from_file(model_zoo.get_config_file(<span class="hljs-string">"COCO-Detection/faster_rcnn_R_50_FPN_3x.yaml"</span>))
+cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = <span class="hljs-number">0.55</span>  <span class="hljs-comment"># set threshold for this model</span>
+cfg.MODEL.WEIGHTS = model_zoo.get_checkpoint_url(<span class="hljs-string">"COCO-Detection/faster_rcnn_R_50_FPN_3x.yaml"</span>)
+predictor = DefaultPredictor(cfg)
+
+<span class="hljs-comment"># This method takes in an image and generates the bounding boxes for people in the image.</span>
+<span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">get_person_bboxes</span><span class="hljs-params">(inp_img, predictor)</span>:</span>
+    predictions = predictor(inp_img.cpu().detach().numpy())[<span class="hljs-string">'instances'</span>].to(<span class="hljs-string">'cpu'</span>)
+    boxes = predictions.pred_boxes <span class="hljs-keyword">if</span> predictions.has(<span class="hljs-string">"pred_boxes"</span>) <span class="hljs-keyword">else</span> <span class="hljs-literal">None</span>
+    scores = predictions.scores <span class="hljs-keyword">if</span> predictions.has(<span class="hljs-string">"scores"</span>) <span class="hljs-keyword">else</span> <span class="hljs-literal">None</span>
+    classes = np.array(predictions.pred_classes.tolist() <span class="hljs-keyword">if</span> predictions.has(<span class="hljs-string">"pred_classes"</span>) <span class="hljs-keyword">else</span> <span class="hljs-literal">None</span>)
+    predicted_boxes = boxes[np.logical_and(classes==<span class="hljs-number">0</span>, scores&gt;<span class="hljs-number">0.75</span> )].tensor.cpu() <span class="hljs-comment"># only person</span>
+    <span class="hljs-keyword">return</span> predicted_boxes
+</code></pre>
+<h1><a class="anchor" aria-hidden="true" id="define-the-transformations-for-the-input-required-by-the-model"></a><a href="#define-the-transformations-for-the-input-required-by-the-model" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Define the transformations for the input required by the model</h1>
+<p>Before passing the video and bounding boxes into the model we need to apply some input transforms and sample a clip of the correct frame rate in the clip.</p>
+<p>Here, below we define a method that can pre-process the clip and bounding boxes. It generates inputs accordingly for both Slow (Resnet) and SlowFast models depending on the parameterization of the variable <code>slow_fast_alpha</code>.</p>
+<pre><code class="hljs css language-python"><span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">ava_inference_transform</span><span class="hljs-params">(
+    clip,
+    boxes,
+    num_frames = <span class="hljs-number">4</span>, <span class="hljs-comment">#if using slowfast_r50_detection, change this to 32</span>
+    crop_size = <span class="hljs-number">256</span>,
+    data_mean = [<span class="hljs-number">0.45</span>, <span class="hljs-number">0.45</span>, <span class="hljs-number">0.45</span>],
+    data_std = [<span class="hljs-number">0.225</span>, <span class="hljs-number">0.225</span>, <span class="hljs-number">0.225</span>],
+    slow_fast_alpha = None, <span class="hljs-comment">#if using slowfast_r50_detection, change this to 4</span>
+)</span>:</span>
+
+    boxes = np.array(boxes)
+    ori_boxes = boxes.copy()
+
+    <span class="hljs-comment"># Image [0, 255] -&gt; [0, 1].</span>
+    clip = uniform_temporal_subsample(clip, num_frames)
+    clip = clip.float()
+    clip = clip / <span class="hljs-number">255.0</span>
+
+    height, width = clip.shape[<span class="hljs-number">2</span>], clip.shape[<span class="hljs-number">3</span>]
+    <span class="hljs-comment"># The format of boxes is [x1, y1, x2, y2]. The input boxes are in the</span>
+    <span class="hljs-comment"># range of [0, width] for x and [0,height] for y</span>
+    boxes = clip_boxes_to_image(boxes, height, width)
+
+    <span class="hljs-comment"># Resize short side to crop_size. Non-local and STRG uses 256.</span>
+    clip, boxes = short_side_scale_with_boxes(
+        clip,
+        size=crop_size,
+        boxes=boxes,
+    )
+
+    <span class="hljs-comment"># Normalize images by mean and std.</span>
+    clip = normalize(
+        clip,
+        np.array(data_mean, dtype=np.float32),
+        np.array(data_std, dtype=np.float32),
+    )
+
+    boxes = clip_boxes_to_image(
+        boxes, clip.shape[<span class="hljs-number">2</span>],  clip.shape[<span class="hljs-number">3</span>]
+    )
+
+    <span class="hljs-comment"># Incase of slowfast, generate both pathways</span>
+    <span class="hljs-keyword">if</span> slow_fast_alpha <span class="hljs-keyword">is</span> <span class="hljs-keyword">not</span> <span class="hljs-literal">None</span>:
+        fast_pathway = clip
+        <span class="hljs-comment"># Perform temporal sampling from the fast pathway.</span>
+        slow_pathway = torch.index_select(
+            clip,
+            <span class="hljs-number">1</span>,
+            torch.linspace(
+                <span class="hljs-number">0</span>, clip.shape[<span class="hljs-number">1</span>] - <span class="hljs-number">1</span>, clip.shape[<span class="hljs-number">1</span>] // slow_fast_alpha
+            ).long(),
+        )
+        clip = [slow_pathway, fast_pathway]
+
+    <span class="hljs-keyword">return</span> clip, torch.from_numpy(boxes), ori_boxes
+</code></pre>
+<h1><a class="anchor" aria-hidden="true" id="setup"></a><a href="#setup" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Setup</h1>
+<p>Download the id to label mapping for the AVA V2.2 dataset on which the Torch Hub models were finetuned.
+This will be used to get the category label names from the predicted class ids.</p>
+<p>Create a visualizer to visualize and plot the results(labels + bounding boxes).</p>
+<pre><code class="hljs css language-python"><span class="hljs-comment"># Dowload the action text to id mapping</span>
+!wget https://dl.fbaipublicfiles.com/pytorchvideo/data/class_names/ava_action_list.pbtxt
+
+<span class="hljs-comment"># Create an id to label name mapping</span>
+label_map, allowed_class_ids = AvaLabeledVideoFramePaths.read_label_map(<span class="hljs-string">'ava_action_list.pbtxt'</span>)
+<span class="hljs-comment"># Create a video visualizer that can plot bounding boxes and visualize actions on bboxes.</span>
+video_visualizer = VideoVisualizer(<span class="hljs-number">81</span>, label_map, top_k=<span class="hljs-number">3</span>, mode=<span class="hljs-string">"thres"</span>,thres=<span class="hljs-number">0.5</span>)
+</code></pre>
+<h1><a class="anchor" aria-hidden="true" id="load-an-example-video"></a><a href="#load-an-example-video" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Load an example video</h1>
+<p>We get an opensourced video off the web from WikiMedia.</p>
+<pre><code class="hljs css language-python"><span class="hljs-comment"># Download the demo video.</span>
+!wget https://dl.fbaipublicfiles.com/pytorchvideo/projects/theatre.webm
+
+<span class="hljs-comment"># Load the video</span>
+encoded_vid = pytorchvideo.data.encoded_video.EncodedVideo.from_path(<span class="hljs-string">'theatre.webm'</span>)
+print(<span class="hljs-string">'Completed loading encoded video.'</span>)
+</code></pre>
+<h1><a class="anchor" aria-hidden="true" id="get-model-predictions"></a><a href="#get-model-predictions" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Get model predictions</h1>
+<p>Generate bounding boxes and action predictions for a 10 second clip in the video.</p>
+<pre><code class="hljs css language-python"><span class="hljs-comment"># Video predictions are generated at an internal of 1 sec from 90 seconds to 100 seconds in the video.</span>
+time_stamp_range = range(<span class="hljs-number">90</span>,<span class="hljs-number">100</span>) <span class="hljs-comment"># time stamps in video for which clip is sampled.</span>
+clip_duration = <span class="hljs-number">1.0</span> <span class="hljs-comment"># Duration of clip used for each inference step.</span>
+gif_imgs = []
+
+<span class="hljs-keyword">for</span> time_stamp <span class="hljs-keyword">in</span> time_stamp_range:
+    print(<span class="hljs-string">"Generating predictions for time stamp: {} sec"</span>.format(time_stamp))
+
+    <span class="hljs-comment"># Generate clip around the designated time stamps</span>
+    inp_imgs = encoded_vid.get_clip(
+        time_stamp - clip_duration/<span class="hljs-number">2.0</span>, <span class="hljs-comment"># start second</span>
+        time_stamp + clip_duration/<span class="hljs-number">2.0</span>  <span class="hljs-comment"># end second</span>
+    )
+    inp_imgs = inp_imgs[<span class="hljs-string">'video'</span>]
+
+    <span class="hljs-comment"># Generate people bbox predictions using Detectron2's off the self pre-trained predictor</span>
+    <span class="hljs-comment"># We use the the middle image in each clip to generate the bounding boxes.</span>
+    inp_img = inp_imgs[:,inp_imgs.shape[<span class="hljs-number">1</span>]//<span class="hljs-number">2</span>,:,:]
+    inp_img = inp_img.permute(<span class="hljs-number">1</span>,<span class="hljs-number">2</span>,<span class="hljs-number">0</span>)
+
+    <span class="hljs-comment"># Predicted boxes are of the form List[(x_1, y_1, x_2, y_2)]</span>
+    predicted_boxes = get_person_bboxes(inp_img, predictor)
+    <span class="hljs-keyword">if</span> len(predicted_boxes) == <span class="hljs-number">0</span>:
+        print(<span class="hljs-string">"Skipping clip no frames detected at time stamp: "</span>, time_stamp)
+        <span class="hljs-keyword">continue</span>
+
+    <span class="hljs-comment"># Preprocess clip and bounding boxes for video action recognition.</span>
+    inputs, inp_boxes, _ = ava_inference_transform(inp_imgs, predicted_boxes.numpy())
+    <span class="hljs-comment"># Prepend data sample id for each bounding box.</span>
+    <span class="hljs-comment"># For more details refere to the RoIAlign in Detectron2</span>
+    inp_boxes = torch.cat([torch.zeros(inp_boxes.shape[<span class="hljs-number">0</span>],<span class="hljs-number">1</span>), inp_boxes], dim=<span class="hljs-number">1</span>)
+
+    <span class="hljs-comment"># Generate actions predictions for the bounding boxes in the clip.</span>
+    <span class="hljs-comment"># The model here takes in the pre-processed video clip and the detected bounding boxes.</span>
+    preds = video_model(inputs.unsqueeze(<span class="hljs-number">0</span>).to(device), inp_boxes.to(device))
+
+
+    preds= preds.to(<span class="hljs-string">'cpu'</span>)
+    <span class="hljs-comment"># The model is trained on AVA and AVA labels are 1 indexed so, prepend 0 to convert to 0 index.</span>
+    preds = torch.cat([torch.zeros(preds.shape[<span class="hljs-number">0</span>],<span class="hljs-number">1</span>), preds], dim=<span class="hljs-number">1</span>)
+
+    <span class="hljs-comment"># Plot predictions on the video and save for later visualization.</span>
+    inp_imgs = inp_imgs.permute(<span class="hljs-number">1</span>,<span class="hljs-number">2</span>,<span class="hljs-number">3</span>,<span class="hljs-number">0</span>)
+    inp_imgs = inp_imgs/<span class="hljs-number">255.0</span>
+    out_img_pred = video_visualizer.draw_clip_range(inp_imgs, preds, predicted_boxes)
+    gif_imgs += out_img_pred
+
+print(<span class="hljs-string">"Finished generating predictions."</span>)
+</code></pre>
+<p>We now save the predicted video containing bounding boxes and action labels for the bounding boxes.</p>
+<pre><code class="hljs css language-python">height, width = gif_imgs[<span class="hljs-number">0</span>].shape[<span class="hljs-number">0</span>], gif_imgs[<span class="hljs-number">0</span>].shape[<span class="hljs-number">1</span>]
+
+vide_save_path = <span class="hljs-string">'output.mp4'</span>
+video = cv2.VideoWriter(vide_save_path,cv2.VideoWriter_fourcc(*<span class="hljs-string">'DIVX'</span>), <span class="hljs-number">7</span>, (width,height))
+
+<span class="hljs-keyword">for</span> image <span class="hljs-keyword">in</span> gif_imgs:
+    img = (<span class="hljs-number">255</span>*image).astype(np.uint8)
+    img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    video.write(img)
+video.release()
+
+print(<span class="hljs-string">'Predictions are saved to the video file: '</span>, vide_save_path)
+</code></pre>
+<h1><a class="anchor" aria-hidden="true" id="conclusion"></a><a href="#conclusion" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Conclusion</h1>
+<p>In this tutorial we showed how to load and run a pretrained PyTorchVideo detection model on a test video. You can run this tutorial as a notebook in the PyTorchVideo tutorials directory.</p>
+<p>To learn more about PyTorchVideo, check out the rest of the <a href="https://pytorchvideo.readthedocs.io/en/latest/index.html">documentation</a>  and <a href="https://pytorchvideo.org/docs/tutorial_overview">tutorials</a>.</p>
+</span></div></article></div><div class="docs-prevnext"><a class="docs-prev button" href="/docs/tutorial_torchhub_inference"><span class="arrow-prev">← </span><span class="function-name-prevnext">Running a pre-trained PyTorchVideo classification model using Torch Hub</span></a><a class="docs-next button" href="/docs/tutorial_accelerator_build_your_model"><span class="function-name-prevnext">Build your efficient model with PytorchVideo/Accelerator</span><span class="arrow-next"> →</span></a></div></div></div><nav class="onPageNav"></nav></div><footer class="nav-footer" id="footer"><section class="sitemap"><div class="footerSection"><div class="social"><a class="github-button" href="https://github.com/facebookresearch/pytorchvideo" data-count-href="https://github.com/facebookresearch/pytorchvideo/stargazers" data-show-count="true" data-count-aria-label="# stargazers on GitHub" aria-label="Star PytorchVideo on GitHub">pytorchvideo</a></div></div></section><a href="https://opensource.facebook.com/" target="_blank" rel="noreferrer noopener" class="fbOpenSource"><img src="/img/oss_logo.png" alt="Facebook Open Source" width="170" height="45"/></a><section class="copyright">Copyright © 2021 Facebook, Inc<br/>Legal:<a href="https://opensource.facebook.com/legal/privacy/" target="_blank" rel="noreferrer noopener">Privacy</a><a href="https://opensource.facebook.com/legal/terms/" target="_blank" rel="noreferrer noopener">Terms</a></section></footer></div></body></html>
