@@ -623,7 +623,7 @@ class TestTransforms(unittest.TestCase):
         self.assertEqual(boxes.shape, (num_boxes, 4))
         self.assertTrue(boxes[:, [0, 2]].min() >= 0 and boxes[:, [0, 2]].max() < width)
         self.assertTrue(boxes[:, [1, 3]].min() >= 0 and boxes[:, [1, 3]].max() < height)
-        
+
     def test_randaug(self):
         # Test default RandAugment.
         t, c, h, w = 8, 3, 200, 200
