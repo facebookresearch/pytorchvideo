@@ -185,6 +185,51 @@ class ConvertUint8ToFloat(torch.nn.Module):
         return torchvision.transforms.ConvertImageDtype(torch.float32)(x)
 
 
+class RandomResizedCrop(torch.nn.Module):
+    """
+    ``nn.Module`` wrapper for ``pytorchvideo.transforms.functional.random_resized_crop``.
+    """
+
+    def __init__(
+        self,
+        target_height: int,
+        target_width: int,
+        scale: Tuple[float, float],
+        aspect_ratio: Tuple[float, float],
+        shift: bool = False,
+        log_uniform_ratio: bool = True,
+        interpolation: str = "bilinear",
+        num_tries: int = 10,
+    ) -> None:
+
+        super().__init__()
+        self._target_height = target_height
+        self._target_width = target_width
+        self._scale = scale
+        self._aspect_ratio = aspect_ratio
+        self._shift = shift
+        self._log_uniform_ratio = log_uniform_ratio
+        self._interpolation = interpolation
+        self._num_tries = num_tries
+
+    def __call__(self, x: torch.Tensor) -> torch.Tensor:
+        """
+        Args:
+            x (torch.Tensor): Input video tensor with shape (C, T, H, W).
+        """
+        return pytorchvideo.transforms.functional.random_resized_crop(
+            x,
+            self._target_height,
+            self._target_width,
+            self._scale,
+            self._aspect_ratio,
+            self._shift,
+            self._log_uniform_ratio,
+            self._interpolation,
+            self._num_tries,
+        )
+
+
 class OpSampler(torch.nn.Module):
     """
     Given a list of transforms with weights, OpSampler applies weighted sampling to

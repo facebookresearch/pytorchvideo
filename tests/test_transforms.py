@@ -17,6 +17,7 @@ from pytorchvideo.transforms import (
     ShortSideScale,
     UniformCropVideo,
     UniformTemporalSubsample,
+    RandomResizedCrop,
 )
 from pytorchvideo.transforms import create_video_transform
 from pytorchvideo.transforms.functional import (
@@ -667,6 +668,115 @@ class TestTransforms(unittest.TestCase):
             if 0.5 in video_tensor_aug:
                 found_fill_color += 1
         self.assertTrue(found_fill_color >= 1)
+
+    def test_random_resized_crop(self):
+        # Test default parameters.
+        crop_size = 10
+        video = thwc_to_cthw(create_dummy_video_frames(20, 30, 40)).to(
+            dtype=torch.float32
+        )
+
+        transform = RandomResizedCrop(
+            target_height=crop_size,
+            target_width=crop_size,
+            scale=(0.08, 1.0),
+            aspect_ratio=(3.0 / 4.0, 4.0 / 3.0),
+        )
+
+        video_resized = transform(video)
+        c, t, h, w = video_resized.shape
+        self.assertEqual(c, 3)
+        self.assertEqual(t, 20)
+        self.assertEqual(h, crop_size)
+        self.assertEqual(w, crop_size)
+        self.assertEqual(video_resized.dtype, torch.float32)
+
+        # Test reversed parameters.
+        crop_size = 29
+        video = thwc_to_cthw(create_dummy_video_frames(20, 30, 40)).to(
+            dtype=torch.float32
+        )
+
+        transform = RandomResizedCrop(
+            target_height=crop_size,
+            target_width=crop_size,
+            scale=(1.8, 0.08),
+            aspect_ratio=(4.0 / 3.0, 3.0 / 4.0),
+            shift=True,
+        )
+
+        video_resized = transform(video)
+        c, t, h, w = video_resized.shape
+        self.assertEqual(c, 3)
+        self.assertEqual(t, 20)
+        self.assertEqual(h, crop_size)
+        self.assertEqual(w, crop_size)
+        self.assertEqual(video_resized.dtype, torch.float32)
+
+        # Test one channel.
+        crop_size = 10
+        video = thwc_to_cthw(create_dummy_video_frames(20, 30, 40)).to(
+            dtype=torch.float32
+        )
+
+        transform = RandomResizedCrop(
+            target_height=crop_size,
+            target_width=crop_size,
+            scale=(1.8, 1.2),
+            aspect_ratio=(4.0 / 3.0, 3.0 / 4.0),
+        )
+
+        video_resized = transform(video[0:1, :, :, :])
+        c, t, h, w = video_resized.shape
+        self.assertEqual(c, 1)
+        self.assertEqual(t, 20)
+        self.assertEqual(h, crop_size)
+        self.assertEqual(w, crop_size)
+        self.assertEqual(video_resized.dtype, torch.float32)
+
+        # Test interpolation.
+        crop_size = 10
+        video = thwc_to_cthw(create_dummy_video_frames(20, 30, 40)).to(
+            dtype=torch.float32
+        )
+
+        transform = RandomResizedCrop(
+            target_height=crop_size,
+            target_width=crop_size,
+            scale=(0.08, 1.0),
+            aspect_ratio=(3.0 / 4.0, 4.0 / 3.0),
+            interpolation="bicubic",
+        )
+
+        video_resized = transform(video)
+        c, t, h, w = video_resized.shape
+        self.assertEqual(c, 3)
+        self.assertEqual(t, 20)
+        self.assertEqual(h, crop_size)
+        self.assertEqual(w, crop_size)
+        self.assertEqual(video_resized.dtype, torch.float32)
+
+        # Test log_uniform_ratio.
+        crop_size = 10
+        video = thwc_to_cthw(create_dummy_video_frames(20, 30, 40)).to(
+            dtype=torch.float32
+        )
+
+        transform = RandomResizedCrop(
+            target_height=crop_size,
+            target_width=crop_size,
+            scale=(0.08, 1.0),
+            aspect_ratio=(3.0 / 4.0, 4.0 / 3.0),
+            log_uniform_ratio=False,
+        )
+
+        video_resized = transform(video)
+        c, t, h, w = video_resized.shape
+        self.assertEqual(c, 3)
+        self.assertEqual(t, 20)
+        self.assertEqual(h, crop_size)
+        self.assertEqual(w, crop_size)
+        self.assertEqual(video_resized.dtype, torch.float32)
 
     def test_video_transform_factory(self):
         self.assertRaises(TypeError, create_video_transform, mode="val", crop_size="s")
