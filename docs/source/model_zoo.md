@@ -69,6 +69,7 @@ Accelerator model zoo provides a set of efficient models on target device with p
 All top1/top5 accuracies are measured with 10-clip evaluation. Latency is benchmarked on Samsung S8 phone with 1s input clip length.
 
 | model  | model builder                                                            | top 1 | top 5 | latency (ms) | params (M) | checkpoint          |
-|--------|--------------------------------------------------------------------------|-------|-------|--------------|----------------|---------------------|
-| X3D_XS | models. accelerator. mobile_cpu. efficient_x3d. EfficientX3d (expansion="XS") | 68.5  | 88.0  |          233 | 3.8            | [link](https://dl.fbaipublicfiles.com/pytorchvideo/model_zoo/kinetics/efficient_x3d_xs_original_form.pyth) |
-| X3D_S  | models. accelerator. mobile_cpu. efficient_x3d. EfficientX3d (expansion="S")  | 73.0  | 90.6  |          764 | 3.8            | [link](https://dl.fbaipublicfiles.com/pytorchvideo/model_zoo/kinetics/efficient_x3d_s_original_form.pyth) |
+|--------------|--------------------------------------------------------------------------|-------|-------|--------------|----------------|---------------------|
+| X3D_XS (fp32)| models. accelerator. mobile_cpu. efficient_x3d. EfficientX3d (expansion="XS") | 68.5  | 88.0  |          233 | 3.8            | [link](https://dl.fbaipublicfiles.com/pytorchvideo/model_zoo/kinetics/efficient_x3d_xs_original_form.pyth) |
+| X3D_XS (int8)| N/A (Use the TorchScript file in checkpoint link directly)                    | 66.9  | 87.2  |          165 | 3.8            | [link](https://dl.fbaipublicfiles.com/pytorchvideo/model_zoo/kinetics/x3d_xs_efficient_converted_qnnpack.pt) |
+| X3D_S (fp32) | models. accelerator. mobile_cpu. efficient_x3d. EfficientX3d (expansion="S")  | 73.0  | 90.6  |          764 | 3.8            | [link](https://dl.fbaipublicfiles.com/pytorchvideo/model_zoo/kinetics/efficient_x3d_s_original_form.pyth) |
