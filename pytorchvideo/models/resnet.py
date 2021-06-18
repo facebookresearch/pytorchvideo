@@ -868,10 +868,10 @@ def create_resnet_with_roi_head(
         (1, 1, 1),
         (1, 1, 1),
         (1, 1, 1),
-        (1, 1, 1),
+        (1, 2, 2),
     ),
-    stage_spatial_h_stride: Tuple[int] = (1, 2, 2, 2),
-    stage_spatial_w_stride: Tuple[int] = (1, 2, 2, 2),
+    stage_spatial_h_stride: Tuple[int] = (1, 2, 2, 1),
+    stage_spatial_w_stride: Tuple[int] = (1, 2, 2, 1),
     stage_temporal_stride: Tuple[int] = (1, 1, 1, 1),
     bottleneck: Union[Tuple[Callable], Callable] = create_bottleneck_block,
     # Head configs.
