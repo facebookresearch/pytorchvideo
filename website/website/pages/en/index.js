@@ -137,8 +137,7 @@ video_data = video.get_clip(start_sec=clip_start_sec, end_sec=clip_start_sec + c
 video_data = transform(video_data)
 
 # Generate top 5 predictions
-post_act = F.softmax(dim=1)
-preds = post_act(preds)
+preds = torch.nn.functional.softmax(preds)
 pred_class_ids = preds.topk(k=5).indices
     `;
     const install = `${pre}bash
