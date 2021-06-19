@@ -1,0 +1,45 @@
+seed: 3
+resume: True
+stats_print_interval: 10
+validation_epoch_interval: 5
+checkpoint_epoch_interval: 30
+checkpoint_path: 'checkpoints/objectron.pth'
+data:
+  dataset_name: 'objectron'
+  image_size: [1440, 1920] # [height, width]
+  precache_rays: True
+test:
+  mode: 'evaluation'
+  trajectory_type: 'circular'
+  up: [0.0, 1.0, 0.0]
+  scene_center: [-0.5365, -1.05,  7.6191]
+  n_frames: 50
+  fps: 1
+  trajectory_scale: 0.2
+optimizer:
+  max_epochs: 20000
+  lr: 0.0005
+  lr_scheduler_step_size: 5000
+  lr_scheduler_gamma: 0.1
+visualization:
+  history_size: 10
+  visdom: True
+  visdom_server: 'localhost'
+  visdom_port: 8097
+  visdom_env: 'objectron'
+raysampler:
+  n_pts_per_ray: 64
+  n_pts_per_ray_fine: 64
+  n_rays_per_image: 1024
+  min_depth: 0.1
+  max_depth: 100.0
+  stratified: True
+  stratified_test: False
+  chunk_size_test: 6000
+implicit_function:
+  n_harmonic_functions_xyz: 10
+  n_harmonic_functions_dir: 4
+  n_hidden_neurons_xyz: 256
+  n_hidden_neurons_dir: 128
+  density_noise_std: 0.0
+  n_layers_xyz: 8
