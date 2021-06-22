@@ -51,7 +51,7 @@ setup(
     description="A video understanding deep learning library.",
     python_requires=">=3.7",
     install_requires=[
-        "fvcore>=0.1.4",
+        "fvcore",
         "av",
         "parameterized",
         "iopath",
