@@ -359,7 +359,7 @@ class LimitDataset(torch.utils.data.Dataset):
         return next(self.dataset_iter)
 
     def __len__(self):
-        return self.dataset.num_videos()
+        return self.dataset.num_videos
 
 
 def main():
