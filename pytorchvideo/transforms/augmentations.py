@@ -77,7 +77,10 @@ def _solarize(video: torch.Tensor, factor: float, **kwargs) -> torch.Tensor:
     Args:
         video (torch.Tensor): Video tensor with shape (T, C, H, W).
     """
-    return torchvision.transforms.functional.solarize(video, factor)
+    if video.dtype == torch.uint8:
+        return torchvision.transforms.functional.solarize(video, int(factor * 255.0))
+    else:
+        return torchvision.transforms.functional.solarize(video, factor)
 
 
 def _adjust_contrast(video: torch.Tensor, factor: float, **kwargs) -> torch.Tensor:
@@ -393,8 +396,8 @@ class AugmentTransform:
             transform_max_paras (Optional[Dict[str, Tuple]]): A Dictionary that
                 contains mapping of the transform name to its maximum transform
                 magnitude.
-            transform_hparas (Optional[Dict[Any]]): Transform hyper parameters. If
-                needs to have key fill. By default, it uses transform_default_hparas.
+            transform_hparas (Optional[Dict[Any]]): Transform hyper parameters.
+                Needs to have key fill. By default, it uses transform_default_hparas.
             sampling_type (str): Sampling method for magnitude of transform. It should
                 be either gaussian or uniform.
             sampling_hparas (Optional[Dict[Any]]): Hyper parameters for sampling. If
@@ -412,6 +415,13 @@ class AugmentTransform:
         assert "fill" in self.transform_hparas
         if self.sampling_type == "gaussian":
             assert "sampling_std" in self.sampling_hparas
+        if self.sampling_type == "uniform":
+            assert "sampling_data_type" in self.sampling_hparas
+            assert "sampling_min" in self.sampling_hparas
+            if self.sampling_hparas["sampling_data_type"] == "int":
+                assert isinstance(self.sampling_hparas["sampling_min"], int)
+            elif self.sampling_hparas["sampling_data_type"] == "float":
+                assert isinstance(self.sampling_hparas["sampling_min"], (int, float))
         assert transform_name in name_to_transform_func
 
         self.max_level = _AUGMENTATION_MAX_LEVEL
@@ -438,7 +448,18 @@ class AugmentTransform:
                 ),
             )
         elif self.sampling_type == "uniform":
-            return torch.randint(0, self.magnitude + 1, size=(1,)).item()
+            if self.sampling_hparas["sampling_data_type"] == "int":
+                return torch.randint(
+                    self.sampling_hparas["sampling_min"], self.magnitude + 1, size=(1,)
+                ).item()
+            elif self.sampling_hparas["sampling_data_type"] == "float":
+                return (
+                    torch.rand(size=(1,)).item()
+                    * (self.magnitude - self.sampling_hparas["sampling_min"])
+                    + self.sampling_hparas["sampling_min"]
+                )
+            else:
+                raise ValueError("sampling_data_type must be either 'int' or 'float'")
         else:
             raise NotImplementedError
 

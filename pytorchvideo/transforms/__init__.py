@@ -1,5 +1,6 @@
 # Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved.
 
+from .augmix import AugMix  # noqa
 from .mix import CutMix, MixUp  # noqa
 from .rand_augment import RandAugment  # noqa
 from .transforms import *  # noqa

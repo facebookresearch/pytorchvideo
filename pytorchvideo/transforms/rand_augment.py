@@ -26,7 +26,15 @@ _TRANSFORM_RANDAUG_MAX_PARAMS = {
 }
 
 # Hyperparameters for sampling magnitude.
-SAMPLING_RANDAUG_DEFAULT_HPARAS = {"sampling_std": 0.5}
+# sampling_data_type determines whether uniform sampling samples among ints or floats.
+# sampling_min determines the minimum possible value obtained from uniform
+# sampling among floats.
+# sampling_std determines the standard deviation for gaussian sampling.
+SAMPLING_RANDAUG_DEFAULT_HPARAS = {
+    "sampling_data_type": "int",
+    "sampling_min": 0,
+    "sampling_std": 0.5,
+}
 
 
 class RandAugment:
@@ -43,6 +51,7 @@ class RandAugment:
         magnitude: int = 9,
         num_layers: int = 2,
         prob: float = 0.5,
+        transform_hparas: Optional[Dict[str, Any]] = None,
         sampling_type: str = "gaussian",
         sampling_hparas: Optional[Dict[str, Any]] = None,
     ) -> None:
@@ -54,11 +63,13 @@ class RandAugment:
             num_layers (int): How many transform functions to apply for each
                 augmentation.
             prob (float): The probablity of applying each transform function.
+            transform_hparas (Optional[Dict[Any]]): Transform hyper parameters.
+                Needs to have key fill. By default, it uses transform_default_hparas.
             sampling_type (str): Sampling method for magnitude of transform. It should
                 be either gaussian or uniform.
             sampling_hparas (Optional[Dict[Any]]): Hyper parameters for sampling. If
                 gaussian sampling is used, it needs to have key sampling_std. By
-                default, it uses transform_default_hparas.
+                default, it uses SAMPLING_RANDAUG_DEFAULT_HPARAS.
         """
         assert sampling_type in ["gaussian", "uniform"]
         sampling_hparas = sampling_hparas or SAMPLING_RANDAUG_DEFAULT_HPARAS
@@ -71,6 +82,7 @@ class RandAugment:
                 magnitude,
                 prob=prob,
                 transform_max_paras=_TRANSFORM_RANDAUG_MAX_PARAMS,
+                transform_hparas=transform_hparas,
                 sampling_type=sampling_type,
                 sampling_hparas=sampling_hparas,
             )

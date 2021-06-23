@@ -7,6 +7,7 @@ import numpy as np
 import torch
 from pytorchvideo.data.utils import thwc_to_cthw
 from pytorchvideo.transforms import (
+    AugMix,
     ApplyTransformToKey,
     CutMix,
     MixUp,
@@ -777,6 +778,84 @@ class TestTransforms(unittest.TestCase):
         self.assertEqual(h, crop_size)
         self.assertEqual(w, crop_size)
         self.assertEqual(video_resized.dtype, torch.float32)
+
+    def test_augmix(self):
+        # Test default AugMix.
+        t, c, h, w = 8, 3, 200, 200
+        test_time = 20
+        video_tensor = torch.rand(t, c, h, w)
+        video_augmix_fn = AugMix()
+        for _ in range(test_time):
+            video_tensor_aug = video_augmix_fn(video_tensor)
+            self.assertTrue(video_tensor.size() == video_tensor_aug.size())
+            self.assertTrue(video_tensor.dtype == video_tensor_aug.dtype)
+            # Make sure the video is in range.
+            self.assertTrue(video_tensor_aug.max().item() <= 1)
+            self.assertTrue(video_tensor_aug.min().item() >= 0)
+
+        # Test AugMix with non-default parameters.
+        t, c, h, w = 8, 3, 200, 200
+        test_time = 20
+        video_tensor = torch.rand(t, c, h, w)
+        video_augmix_fn = AugMix(magnitude=9, alpha=0.5, width=4, depth=3)
+        for _ in range(test_time):
+            video_tensor_aug = video_augmix_fn(video_tensor)
+            self.assertTrue(video_tensor.size() == video_tensor_aug.size())
+            self.assertTrue(video_tensor.dtype == video_tensor_aug.dtype)
+            # Make sure the video is in range.
+            self.assertTrue(video_tensor_aug.max().item() <= 1)
+            self.assertTrue(video_tensor_aug.min().item() >= 0)
+
+        # Test AugMix with uint8 video.
+        t, c, h, w = 8, 3, 200, 200
+        test_time = 20
+        video_tensor = torch.randint(0, 255, (t, c, h, w)).type(torch.uint8)
+        video_augmix_fn = AugMix(transform_hparas={"fill": (128, 128, 128)})
+        for _ in range(test_time):
+            video_tensor_aug = video_augmix_fn(video_tensor)
+            self.assertTrue(video_tensor.size() == video_tensor_aug.size())
+            self.assertTrue(video_tensor.dtype == video_tensor_aug.dtype)
+            # Make sure the video is in range.
+            self.assertTrue(video_tensor_aug.max().item() <= 255)
+            self.assertTrue(video_tensor_aug.min().item() >= 0)
+
+        # Compare results of AugMix for uint8 and float.
+        t, c, h, w = 8, 3, 200, 200
+        test_time = 40
+        video_tensor_uint8 = torch.randint(0, 255, (t, c, h, w)).type(torch.uint8)
+        video_tensor_float = (video_tensor_uint8 / 255.0).type(torch.float32)
+        video_augmix_fn_uint8 = AugMix(
+            width=1, depth=1, transform_hparas={"fill": (128, 128, 128)}
+        )
+        video_augmix_fn_float = AugMix(width=1, depth=1)
+        for i in range(test_time):
+            torch.set_rng_state(torch.manual_seed(i).get_state())
+            video_tensor_uint8_aug = video_augmix_fn_uint8(video_tensor_uint8)
+            torch.set_rng_state(torch.manual_seed(i).get_state())
+            video_tensor_float_aug = video_augmix_fn_float(video_tensor_float)
+
+            self.assertTrue(
+                torch.mean(
+                    torch.abs((video_tensor_uint8_aug / 255.0) - video_tensor_float_aug)
+                )
+                < 0.01
+            )
+
+            self.assertTrue(video_tensor_uint8.size() == video_tensor_uint8_aug.size())
+            self.assertTrue(video_tensor_uint8.dtype == video_tensor_uint8_aug.dtype)
+            self.assertTrue(video_tensor_float.size() == video_tensor_float_aug.size())
+            self.assertTrue(video_tensor_float.dtype == video_tensor_float_aug.dtype)
+            # Make sure the video is in range.
+            self.assertTrue(video_tensor_uint8_aug.max().item() <= 255)
+            self.assertTrue(video_tensor_uint8_aug.min().item() >= 0)
+            self.assertTrue(video_tensor_float_aug.max().item() <= 255)
+            self.assertTrue(video_tensor_float_aug.min().item() >= 0)
+
+        # Test asserts.
+        self.assertRaises(AssertionError, AugMix, magnitude=11)
+        self.assertRaises(AssertionError, AugMix, magnitude=1.1)
+        self.assertRaises(AssertionError, AugMix, alpha=-0.3)
+        self.assertRaises(AssertionError, AugMix, width=0)
 
     def test_video_transform_factory(self):
         self.assertRaises(TypeError, create_video_transform, mode="val", crop_size="s")

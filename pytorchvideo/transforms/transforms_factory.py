@@ -7,6 +7,7 @@ from pytorchvideo.transforms import (
     ApplyTransformToKey,
     ConvertUint8ToFloat,
     Normalize,
+    RandomResizedCrop,
     RandomShortSideScale,
     RemoveKey,
     ShortSideScale,

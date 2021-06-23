@@ -241,6 +241,7 @@ class OpSampler(torch.nn.Module):
         transforms_list: List[Callable],
         transforms_prob: Optional[List[float]] = None,
         num_sample_op: int = 1,
+        randomly_sample_depth: bool = False,
         replacement: bool = False,
     ):
         """
@@ -252,6 +253,8 @@ class OpSampler(torch.nn.Module):
                 uniform distribution over all transforms. They do not need to sum up to one
                 but weights need to be positive.
             num_sample_op (int): Number of transforms to sample and apply to input.
+            randomly_sample_depth (bool): If randomly_sample_depth is True, then uniformly
+                sample the number of transforms to apply, between 1 and num_sample_op.
             replacement (bool): If replacement is True, transforms are drawn with replacement.
         """
         super().__init__()
@@ -277,6 +280,7 @@ class OpSampler(torch.nn.Module):
             else [1] * len(transforms_list)
         )
         self.num_sample_op = num_sample_op
+        self.randomly_sample_depth = randomly_sample_depth
         self.replacement = replacement
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
@@ -284,8 +288,13 @@ class OpSampler(torch.nn.Module):
         Args:
             x (torch.Tensor): Input tensor.
         """
+        depth = (
+            torch.randint(1, self.num_sample_op + 1, (1,)).item()
+            if self.randomly_sample_depth
+            else self.num_sample_op
+        )
         index_list = torch.multinomial(
-            self.transforms_prob, self.num_sample_op, replacement=self.replacement
+            self.transforms_prob, depth, replacement=self.replacement
         )
 
         for index in index_list:
