@@ -411,11 +411,12 @@ class quant_stub_wrapper(nn.Module):
 net_inst_quant_stub_wrapper = quant_stub_wrapper(net_inst_deploy)
 ```
 
-Preparation step of quantization. Fusion has been done for efficient blocks automatically during `convert_to_deployable_form`, so we can just proceed to `torch.quantization.prepare`
+Preparation step of quantization. Fusion has been done for efficient blocks automatically during `convert_to_deployable_form`, so we can just proceed to `torch.quantization.prepare`. Assume we are quantizing model for mobile devices in this tutorial (e.g., using `qnnpack` as backend) - please switch to proper backend and set corresponding quantization `qconfig` for your case.
 
 
 ```python
-net_inst_quant_stub_wrapper.qconfig = torch.quantization.default_qconfig
+net_inst_quant_stub_wrapper.qconfig = torch.quantization.torch.quantization.get_default_qconfig("qnnpack")
+torch.backends.quantized.engine = "qnnpack"
 net_inst_quant_stub_wrapper_prepared = torch.quantization.prepare(net_inst_quant_stub_wrapper)
 ```
 
