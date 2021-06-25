@@ -429,8 +429,9 @@ traced_model_opt = optimize_for_mobile(traced_model)
 </code></pre>
 <pre><code class="hljs css language-python">net_inst_quant_stub_wrapper = quant_stub_wrapper(net_inst_deploy)
 </code></pre>
-<p>Preparation step of quantization. Fusion has been done for efficient blocks automatically during <code>convert_to_deployable_form</code>, so we can just proceed to <code>torch.quantization.prepare</code></p>
-<pre><code class="hljs css language-python">net_inst_quant_stub_wrapper.qconfig = torch.quantization.default_qconfig
+<p>Preparation step of quantization. Fusion has been done for efficient blocks automatically during <code>convert_to_deployable_form</code>, so we can just proceed to <code>torch.quantization.prepare</code>. Assume we are quantizing model for mobile devices in this tutorial (e.g., using <code>qnnpack</code> as backend) - please switch to proper backend and set corresponding quantization <code>qconfig</code> for your case.</p>
+<pre><code class="hljs css language-python">net_inst_quant_stub_wrapper.qconfig = torch.quantization.torch.quantization.get_default_qconfig(<span class="hljs-string">"qnnpack"</span>)
+torch.backends.quantized.engine = <span class="hljs-string">"qnnpack"</span>
 net_inst_quant_stub_wrapper_prepared = torch.quantization.prepare(net_inst_quant_stub_wrapper)
 </code></pre>
 <p>Calibration and quantization. After preparation we will do calibration of quantization by feeding calibration dataset (skipped here) and then do quantization.</p>
