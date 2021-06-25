@@ -2,6 +2,7 @@
 
 import unittest
 from collections import Counter
+from itertools import permutations
 
 import numpy as np
 import torch
@@ -13,6 +14,7 @@ from pytorchvideo.transforms import (
     MixUp,
     Normalize,
     OpSampler,
+    Permute,
     RandAugment,
     RandomShortSideScale,
     ShortSideScale,
@@ -857,9 +859,45 @@ class TestTransforms(unittest.TestCase):
         self.assertRaises(AssertionError, AugMix, alpha=-0.3)
         self.assertRaises(AssertionError, AugMix, width=0)
 
-    def test_video_transform_factory(self):
-        self.assertRaises(TypeError, create_video_transform, mode="val", crop_size="s")
+    def test_permute(self):
+        video = thwc_to_cthw(create_dummy_video_frames(20, 30, 40)).to(
+            dtype=torch.float32
+        )
 
+        for p in list(permutations(range(0, 4))):
+            self.assertTrue(video.permute(*p).equal(Permute(p)(video)))
+
+    def test_video_transform_factory(self):
+        # Test asserts/raises.
+        self.assertRaises(TypeError, create_video_transform, mode="val", crop_size="s")
+        self.assertRaises(
+            AssertionError,
+            create_video_transform,
+            mode="val",
+            crop_size=30,
+            min_size=10,
+        )
+        self.assertRaises(
+            AssertionError,
+            create_video_transform,
+            mode="val",
+            crop_size=(30, 40),
+            min_size=35,
+        )
+        self.assertRaises(
+            AssertionError, create_video_transform, mode="val", remove_key="key"
+        )
+        self.assertRaises(
+            AssertionError,
+            create_video_transform,
+            mode="val",
+            aug_paras={"magnitude": 10},
+        )
+        self.assertRaises(
+            NotImplementedError, create_video_transform, mode="train", aug_type="xyz"
+        )
+
+        # Test train mode.
         video = thwc_to_cthw(create_dummy_video_frames(20, 30, 40)).to(
             dtype=torch.float32
         )
@@ -918,6 +956,7 @@ class TestTransforms(unittest.TestCase):
         self.assertEqual(h, crop_size)
         self.assertEqual(w, crop_size)
 
+        # Test val mode.
         video = thwc_to_cthw(create_dummy_video_frames(20, 30, 40)).to(
             dtype=torch.float32
         )
@@ -992,6 +1031,7 @@ class TestTransforms(unittest.TestCase):
         self.assertEqual(h, crop_size)
         self.assertEqual(w, crop_size)
 
+        # Test uint8 video.
         video = thwc_to_cthw(create_dummy_video_frames(20, 30, 40))
         test_clip = {"video": video, "audio": None, "label": 0}
 
@@ -1024,6 +1064,88 @@ class TestTransforms(unittest.TestCase):
         self.assertEqual(h, crop_size)
         self.assertEqual(w, crop_size)
         c, t, h, w = video_float32_transformed.shape
+        self.assertEqual(c, 3)
+        self.assertEqual(t, num_subsample)
+        self.assertEqual(h, crop_size)
+        self.assertEqual(w, crop_size)
+
+        # Test augmentations.
+        video = thwc_to_cthw(create_dummy_video_frames(20, 30, 40))
+
+        transform_randaug = create_video_transform(
+            mode="train",
+            num_samples=num_subsample,
+            min_size=15,
+            crop_size=crop_size,
+            aug_type="randaug",
+        )
+        transform_augmix = create_video_transform(
+            mode="train",
+            num_samples=num_subsample,
+            min_size=15,
+            crop_size=crop_size,
+            aug_type="augmix",
+        )
+        transform_randaug_paras = create_video_transform(
+            mode="train",
+            num_samples=num_subsample,
+            min_size=15,
+            crop_size=crop_size,
+            aug_type="randaug",
+            aug_paras={
+                "magnitude": 8,
+                "num_layers": 3,
+                "prob": 0.7,
+                "sampling_type": "uniform",
+            },
+        )
+        transform_augmix_paras = create_video_transform(
+            mode="train",
+            num_samples=num_subsample,
+            min_size=15,
+            crop_size=crop_size,
+            aug_type="augmix",
+            aug_paras={"magnitude": 5, "alpha": 0.5, "width": 2, "depth": 3},
+        )
+
+        video_randaug_transformed = transform_randaug(video)
+        video_augmix_transformed = transform_augmix(video)
+        video_randaug_paras_transformed = transform_randaug_paras(video)
+        video_augmix_paras_transformed = transform_augmix_paras(video)
+        c, t, h, w = video_randaug_transformed.shape
+        self.assertEqual(c, 3)
+        self.assertEqual(t, num_subsample)
+        self.assertEqual(h, crop_size)
+        self.assertEqual(w, crop_size)
+        c, t, h, w = video_augmix_transformed.shape
+        self.assertEqual(c, 3)
+        self.assertEqual(t, num_subsample)
+        self.assertEqual(h, crop_size)
+        self.assertEqual(w, crop_size)
+        c, t, h, w = video_randaug_paras_transformed.shape
+        self.assertEqual(c, 3)
+        self.assertEqual(t, num_subsample)
+        self.assertEqual(h, crop_size)
+        self.assertEqual(w, crop_size)
+        c, t, h, w = video_augmix_paras_transformed.shape
+        self.assertEqual(c, 3)
+        self.assertEqual(t, num_subsample)
+        self.assertEqual(h, crop_size)
+        self.assertEqual(w, crop_size)
+
+        # Test Inception-style cropping.
+        video = thwc_to_cthw(create_dummy_video_frames(20, 30, 40))
+
+        transform_inception = create_video_transform(
+            mode="train",
+            num_samples=num_subsample,
+            min_size=15,
+            crop_size=crop_size,
+            random_resized_crop_paras={},
+        )
+
+        video_inception_transformed = transform_inception(video)
+        c, t, h, w = video_inception_transformed.shape
         self.assertEqual(c, 3)
         self.assertEqual(t, num_subsample)
         self.assertEqual(h, crop_size)

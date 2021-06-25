@@ -230,6 +230,31 @@ class RandomResizedCrop(torch.nn.Module):
         )
 
 
+class Permute(torch.nn.Module):
+    """
+    Permutes the dimensions of a video.
+    """
+
+    def __init__(self, dims: Tuple[int]):
+        """
+        Args:
+            dims (Tuple[int]): The desired ordering of dimensions.
+        """
+        assert (
+            (d in dims) for d in range(len(dims))
+        ), "dims must contain every dimension (0, 1, 2, ...)"
+
+        super().__init__()
+        self._dims = dims
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        """
+        Args:
+            x (torch.Tensor): video tensor whose dimensions are to be permuted.
+        """
+        return x.permute(*self._dims)
+
+
 class OpSampler(torch.nn.Module):
     """
     Given a list of transforms with weights, OpSampler applies weighted sampling to
