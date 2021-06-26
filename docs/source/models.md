@@ -16,6 +16,7 @@ The models subpackage contains definitions for the following model architectures
     * [R2+1D](https://openaccess.thecvf.com/content_cvpr_2018/papers/Tran_A_Closer_Look_CVPR_2018_paper.pdf)
     * CSN
     * [SlowFast](https://arxiv.org/pdf/1812.03982.pdf)
+    * [Audiovisual SlowFast](https://arxiv.org/pdf/2001.08740.pdf)
     * [X3D](https://arxiv.org/pdf/2004.04730.pdf)
 * Self-Supervised Learning
     * [SimCLR](https://arxiv.org/pdf/2002.05709.pdf)
