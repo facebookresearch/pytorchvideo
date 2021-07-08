@@ -73,3 +73,7 @@ All top1/top5 accuracies are measured with 10-clip evaluation. Latency is benchm
 | X3D_XS (fp32)| models. accelerator. mobile_cpu. efficient_x3d. EfficientX3d (expansion="XS") | 68.5  | 88.0  |          233 | 3.8            | [link](https://dl.fbaipublicfiles.com/pytorchvideo/model_zoo/kinetics/efficient_x3d_xs_original_form.pyth) |
 | X3D_XS (int8)| N/A (Use the TorchScript file in checkpoint link directly)                    | 66.9  | 87.2  |          165 | 3.8            | [link](https://dl.fbaipublicfiles.com/pytorchvideo/model_zoo/kinetics/x3d_xs_efficient_converted_qnnpack.pt) |
 | X3D_S (fp32) | models. accelerator. mobile_cpu. efficient_x3d. EfficientX3d (expansion="S")  | 73.0  | 90.6  |          764 | 3.8            | [link](https://dl.fbaipublicfiles.com/pytorchvideo/model_zoo/kinetics/efficient_x3d_s_original_form.pyth) |
+
+
+### TorchHub models
+We provide a large set of [TorchHub](https://pytorch.org/hub/) models for the above video models with pre-trained weights. So it's easy to construct the networks and load pre-trained weights. Please refer to [PytorchVideo TorchHub models](https://github.com/facebookresearch/pytorchvideo/blob/master/pytorchvideo/models/hub/README.md) for more details.
