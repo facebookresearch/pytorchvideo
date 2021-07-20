@@ -46,6 +46,13 @@ def cython_bbox_ious(atlbrs, btlbrs):
 def iou_distance(atracks, btracks):
     """
     Compute cost based on IoU between two list[STrack].
+
+    Args:
+        atracks (list): first list of STracks
+        btracks (list): second list of STracks
+
+    Returns:
+        (ndarray): The cost matrix result (calculated as 1 - IOUs)
     """
     if (len(atracks) > 0 and isinstance(atracks[0], np.ndarray)) or (
             len(btracks) > 0 and isinstance(btracks[0], np.ndarray)):

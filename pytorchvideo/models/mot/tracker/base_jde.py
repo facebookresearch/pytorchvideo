@@ -2,17 +2,24 @@ import numpy as np
 from collections import OrderedDict
 from numba import jit
 from collections import deque
-import torch
 
 from ..motion.kalman_filter import KalmanFilter
 from ..matching import jde_matching
-from typing import Any, Optional
-
 
 # from utils.log import logger
 # from models import *
 
 class TrackState(object):
+    """
+    Class to store the TrackState
+    Each BaseTrack class' (or its child class') object will have a TrackState defined
+
+    Values are as follows:
+    New = 0
+    Tracked = 1
+    Lost = 2
+    Removed = 3
+    """
     New = 0
     Tracked = 1
     Lost = 2
@@ -63,14 +70,23 @@ class BaseTrack(object):
 
 
 class STrack(BaseTrack):
-
+    """
+    Core class for storing and operating on a tracklet
+    """
     def __init__(self,
                  tlwh: np.ndarray,
                  score: float,
                  temp_feat: np.ndarray,
                  buffer_size: int = 30
     ) -> None:
-
+        """
+        Args:
+            tlwh (ndarray): Position of the bounding box obtained post detection
+                            in the format`(top left x, top left y, width, height)`.
+            score (float):
+            temp_feat (ndarray): Embedding feature vector
+            buffer_size (int): Maximum buffer size of the feature deque of the STrack
+        """
         # wait activate
         self._tlwh = np.asarray(tlwh, dtype=np.float)
         self.kalman_filter = None
@@ -172,8 +188,9 @@ class STrack(BaseTrack):
     @property
     @jit
     def tlwh(self):
-        """Get current position in bounding box format `(top left x, top left y,
-                width, height)`.
+        """
+        Get current position in bounding box format `(top left x, top left y,
+        width, height)`.
         """
         if self.mean is None:
             return self._tlwh.copy()
@@ -185,7 +202,8 @@ class STrack(BaseTrack):
     @property
     @jit
     def tlbr(self):
-        """Convert bounding box to format `(min x, min y, max x, max y)`, i.e.,
+        """
+        Convert bounding box to format `(min x, min y, max x, max y)`, i.e.,
         `(top left, bottom right)`.
         """
         ret = self.tlwh.copy()
@@ -195,7 +213,8 @@ class STrack(BaseTrack):
     @staticmethod
     @jit
     def tlwh_to_xyah(tlwh):
-        """Convert bounding box to format `(center x, center y, aspect ratio,
+        """
+        Convert bounding box to format `(center x, center y, aspect ratio,
         height)`, where the aspect ratio is `width / height`.
         """
         ret = np.asarray(tlwh).copy()
@@ -225,6 +244,16 @@ class STrack(BaseTrack):
 
 
 def joint_stracks(tlista: list, tlistb: list) -> list:
+    """
+    Returns a union of the two input list STracks
+
+    Args:
+        tlista (list): first list of STracks
+        tlistb (list): second list of STracks
+
+    Returns:
+        (list): Union of the two list of STracks
+    """
     exists = {}
     res = []
     for t in tlista:
@@ -239,6 +268,17 @@ def joint_stracks(tlista: list, tlistb: list) -> list:
 
 
 def sub_stracks(tlista: list, tlistb: list) -> list:
+    """
+    Subtracts a list of STracks from another i.e.
+    subtracts 'tlistb' from 'tlista'
+
+    Args:
+        tlista (list): first list of STracks
+        tlistb (list): second list of STracks
+
+    Returns:
+        (list): A list of track-id values obtained post subtraction.
+    """
     stracks = {}
     for t in tlista:
         stracks[t.track_id] = t
@@ -250,6 +290,18 @@ def sub_stracks(tlista: list, tlistb: list) -> list:
 
 
 def remove_duplicate_stracks(stracksa, stracksb):
+    """
+    Remove duplicate stracks
+
+    Args:
+        stracksa(list): first list of STracks
+        stracksb(list): second list of STracks
+
+    Returns:
+        (list): first list of STracks with the duplicates removed.
+        (list): second list of STracks with the duplicates removed.
+
+    """
     pdist = jde_matching.iou_distance(stracksa, stracksb)
     pairs = np.where(pdist < 0.15)
     dupa, dupb = list(), list()
