@@ -213,12 +213,12 @@ class STrack(BaseTrack):
         ret[2:] -= ret[:2]
         return ret
 
-    @staticmethod
-    @jit
-    def tlwh_to_tlbr(tlwh):
-        ret = np.asarray(tlwh).copy()
-        ret[2:] += ret[:2]
-        return ret
+    # @staticmethod
+    # @jit
+    # def tlwh_to_tlbr(tlwh):
+    #     ret = np.asarray(tlwh).copy()
+    #     ret[2:] += ret[:2]
+    #     return ret
 
     def __repr__(self):
         return 'OT_{}_({}-{})'.format(self.track_id, self.start_frame, self.end_frame)

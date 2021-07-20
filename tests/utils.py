@@ -276,3 +276,8 @@ def get_encoded_video_infos(directory, exit_stack=None):
         )
         encoded_video_infos[video_id] = EncodedVideoInfo(video_id, file_path)
     return encoded_video_infos
+
+
+def get_jde_tracker_inputs(directory, file_name):
+    tracker_inputs = torch.load(os.path.join(directory, file_name))
+    return tracker_inputs

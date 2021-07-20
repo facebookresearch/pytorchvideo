@@ -1,4 +1,5 @@
 import logging
+
 import torch
 
 from .base_jde import TrackState, BaseTrack, STrack
