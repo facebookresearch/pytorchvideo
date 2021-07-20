@@ -69,8 +69,9 @@ class JDETracker(object):
         self.lost_stracks: list[STrack] = []
         self.removed_stracks: list[STrack] = []
 
-        self.max_time_lost = 0
         # max_time_lost will be calculated: int(frame_rate / 30.0 * track_buffer)
+        self.max_time_lost = 0
+
 
     def update(self,
                pred_dets: torch.Tensor,
@@ -78,13 +79,17 @@ class JDETracker(object):
         """
         Processes the detections(post NMS) and the embedding values.
         Associates the detection with corresponding tracklets and also handles
-            lost, removed, refound and active tracklets.
-        Note that the detections and their corresponding embeddings need to be
-        input only after being processed via techniques such as NMS.
+            lost, removed, refind and active tracklets.
+        Note: that the detections and their corresponding embeddings need to be
+        input only after being processed via techniques such as NMS. Also scale
+        the detections to the original image size before passing to this method
 
         Args:
             pred_dets (torch.Tensor): Detection results of the image, shape is [N, 5].
-            pred_embs (torch.Tensor): Embedding results of the image, shape is [N, 512].
+                                      i.e. (batch_id, x1, y1, x2, y2, object_conf)
+            pred_embs (torch.Tensor): Embedding results of the image, shape is [N, 512]
+                                      (as in the paper) or [N, M] where M = any sized feature
+                                      embedding vector.
 
         Return:
             output_stracks (list): The list contains information regarding the
@@ -92,40 +97,11 @@ class JDETracker(object):
                 of the corresponding image.
         """
         self.frame_id += 1
-        activated_stracks = []
-        # for storing active tracks, for the current frame
-        refind_stracks = []
-        # Lost Tracks whose detections are obtained in the current frame
-        lost_stracks = []
-        # The tracks which are not obtained in the current frame but are not
-        # removed. (Lost for some time lesser than the threshold for removing)
+        activated_stracks = []  # for storing active tracks, for the current frame
+        refind_stracks = []  # Lost Tracks whose detections are obtained in the current frame
+        lost_stracks = []  # The tracks which are not obtained in the current frame but are not removed. (Lost for
+        # some time lesser than the threshold for removing)
         removed_stracks = []
-
-        # TODO - Shall we keep NMS in this code or outside?
-        # pred_dets = pred_dets[pred_dets[:, :, 4] > self.opt.conf_thresh]
-        # if(len(pred_dets > 0)):
-        #
-        # remain_inds = paddle.nonzero(pred_dets[:, 4] > self.conf_thres)
-        # if remain_inds.shape[0] == 0:
-        #     pred_dets = paddle.zeros([0, 1])
-        #     pred_embs = paddle.zeros([0, 1])
-        # else:
-        #     pred_dets = paddle.gather(pred_dets, remain_inds)
-        #     pred_embs = paddle.gather(pred_embs, remain_inds)
-        #
-        # # Filter out the image with box_num = 0. pred_dets = [[0.0, 0.0, 0.0 ,0.0]]
-        # empty_pred = True if len(pred_dets) == 1 and paddle.sum(
-        #     pred_dets) == 0.0 else False
-        # """ Step 1: Network forward, get detections & embeddings"""
-        # if len(pred_dets) > 0 and not empty_pred:
-        #     pred_dets = pred_dets.numpy()
-        #     pred_embs = pred_embs.numpy()
-        #     detections = [
-        #         STrack(STrack.tlbr_to_tlwh(tlbrs[:4]), tlbrs[4], f, 30)
-        #         for (tlbrs, f) in zip(pred_dets, pred_embs)
-        #     ]
-        # else:
-        #     detections = []
 
         if len(pred_dets) > 0:
             pred_dets = pred_dets.numpy()
@@ -151,21 +127,21 @@ class JDETracker(object):
         """ Step 2: First association, with embedding"""
         # Combining currently tracked_stracks and lost_stracks
         strack_pool = joint_stracks(tracked_stracks, self.lost_stracks)
-        # Predict the current location with KF
+        # Predict the current location with Kalman Filter
         STrack.multi_predict(strack_pool, self.motion)
 
+        # The dists is the list of distances of the detection with the tracks in strack_pool
         dists = matching.embedding_distance(
             strack_pool, detections, metric=self.metric_type)
         dists = matching.fuse_motion(self.motion, dists, strack_pool,
                                      detections)
 
-        # The dists is the list of distances of the detection with the tracks in strack_pool
+        # The matches is the array for corresponding matches of the detection with the corresponding strack_pool
         matches, u_track, u_detection = matching.linear_assignment(
             dists, thresh=self.tracked_thresh)
-        # The matches is the array for corresponding matches of the detection with the corresponding strack_pool
 
+        # itracked is the id of the track and idet is the detection
         for itracked, idet in matches:
-            # itracked is the id of the track and idet is the detection
             track = strack_pool[itracked]
             det = detections[idet]
             if track.state == TrackState.Tracked:
@@ -180,20 +156,22 @@ class JDETracker(object):
 
         # None of the steps below happen if there are no undetected tracks.
         """ Step 3: Second association, with IOU"""
-        detections = [detections[i] for i in u_detection]
         # detections is now a list of the unmatched detections
-        r_tracked_stracks = []
-        # This is container for stracks which were tracked till the previous
+        detections = [detections[i] for i in u_detection]
+
+        # r_tracked_stracks is a container for stracks which were tracked till the previous
         # frame but no detection was found for it in the current frame.
+        r_tracked_stracks = []
 
         for i in u_track:
             if strack_pool[i].state == TrackState.Tracked:
                 r_tracked_stracks.append(strack_pool[i])
+        # Same process done for some unmatched detections, but now considering IOU_distance as measure
         dists = matching.iou_distance(r_tracked_stracks, detections)
-        matches, u_track, u_detection = matching.linear_assignment(
-            dists, thresh=self.r_tracked_thresh)
         # matches is the list of detections which matched with corresponding
         # tracks by IOU distance method.
+        matches, u_track, u_detection = matching.linear_assignment(
+            dists, thresh=self.r_tracked_thresh)
 
         for itracked, idet in matches:
             track = r_tracked_stracks[itracked]
@@ -204,14 +182,14 @@ class JDETracker(object):
             else:
                 track.re_activate(det, self.frame_id, new_id=False)
                 refind_stracks.append(track)
-        # Same process done for some unmatched detections, but now considering IOU_distance as measure
 
+        # If no detections are obtained for tracks (u_track), the tracks are added to lost_tracks list
+        # and are marked lost
         for it in u_track:
             track = r_tracked_stracks[it]
             if not track.state == TrackState.Lost:
                 track.mark_lost()
                 lost_stracks.append(track)
-        # If no detections are obtained for tracks (u_track), the tracks are added to lost_tracks list and are marked lost
 
         '''Deal with unconfirmed tracks, usually tracks with only one beginning frame'''
         detections = [detections[i] for i in u_detection]
@@ -236,6 +214,7 @@ class JDETracker(object):
                 continue
             track.activate(self.motion, self.frame_id)
             activated_stracks.append(track)
+
         """ Step 5: Update state"""
         # If the tracks are lost for more frames than the threshold number, the tracks are removed.
         for track in self.lost_stracks:

@@ -102,6 +102,12 @@ class STrack(BaseTrack):
         self.alpha = 0.9
 
     def update_features(self, feat: np.ndarray) -> None:
+        """
+        Update features of the STrack
+
+        Args:
+            feat(np.ndarray): Feature embedding vector of the new detection to be added to the STrack.
+        """
         feat /= np.linalg.norm(feat)
         self.curr_feat = feat
         if self.smooth_feat is None:
@@ -118,8 +124,16 @@ class STrack(BaseTrack):
         self.mean, self.covariance = self.kalman_filter.predict(mean_state, self.covariance)
 
     @staticmethod
-    def multi_predict(stracks,
+    def multi_predict(stracks: list,
                       kalman_filter: KalmanFilter):
+        """
+        Passes list of STracks through the Kalman filter to obtain the mean
+        and covariance values of the predicted state
+
+        Args:
+            stracks(list): list of input STracks
+            kalman_filter(KalmanFilter): KalmanFilter Object
+        """
         if len(stracks) > 0:
             multi_mean = np.asarray([st.mean.copy() for st in stracks])
             multi_covariance = np.asarray([st.covariance for st in stracks])
@@ -136,7 +150,13 @@ class STrack(BaseTrack):
                  kalman_filter: KalmanFilter,
                  frame_id: int
     ) -> None:
-        """Start a new tracklet"""
+        """
+        Start a new tracklet
+
+        Args:
+            kalman_filter(KalmanFilter): For Motion prediction
+            frame_id(int): The frame_id where the new STrack starts
+        """
         self.kalman_filter = kalman_filter
         self.track_id = self.next_id()
         self.mean, self.covariance = self.kalman_filter.initiate(self.tlwh_to_xyah(self._tlwh))
@@ -152,6 +172,14 @@ class STrack(BaseTrack):
                     frame_id: int,
                     new_id: bool=False
     ) -> None:
+        """
+        Reactivate the unactive STrack
+
+        Args:
+            new_track: the new detection(STrack) to be added to the STrack
+            frame_id(int): The frame id where this new detection was made
+            new_id(bool): If true, updates the track_id of the STrack
+        """
         self.mean, self.covariance = self.kalman_filter.update(
             self.mean, self.covariance, self.tlwh_to_xyah(new_track.tlwh)
         )
@@ -171,6 +199,11 @@ class STrack(BaseTrack):
     ) -> None:
         """
         Update a matched track
+
+        Args:
+            new_track: the new detection(STrack) to be added to the STrack
+            frame_id(int): The frame id where this new detection was made
+            update_feature(bool): If true, update the feature deque of this STrack.
         """
         self.frame_id = frame_id
         self.tracklet_len += 1

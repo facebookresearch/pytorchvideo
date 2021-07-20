@@ -9,6 +9,20 @@ from ..motion import kalman_filter
 
 
 def linear_assignment(cost_matrix, thresh):
+    """
+    Use the cost matrix to decide the corresponding matches using a threshold.
+
+    Args:
+        cost_matrix(np.ndarray): Cost Matrix to be used for deciding the matches
+        thresh(float): The threshold to be used to decide the match
+
+    Returns:
+     matches(np.ndarray): List containing the indices of the matches made from the two STrack Lists from which the
+                          cost matrix was calculated. Each item in the list contains two indices -
+                          the index from the first STrack List followed by the index from the second STrack List
+     unmatched_a(np.ndarray): Indices of the STracks from the first STrack list whose matches were not found.
+     unmatched_b(np.ndarray): Indices of the STracks from the second STrack list whose matches were not found.
+    """
     if cost_matrix.size == 0:
         return np.empty(
             (0, 2), dtype=int), tuple(range(cost_matrix.shape[0])), tuple(
@@ -69,6 +83,14 @@ def iou_distance(atracks, btracks):
 def embedding_distance(tracks, detections, metric='euclidean'):
     """
     Compute cost based on features between two list[STrack].
+    Args:
+        tracks(list): first list of STracks
+        detections(list): second list of STracks
+        metric(str): Metric to be used to calculate the cost matrix
+
+    Returns:
+        (np.ndarray): Cost Matrix obtained from the two lists using the metric specified.
+
     """
     cost_matrix = np.zeros((len(tracks), len(detections)), dtype=np.float)
     if cost_matrix.size == 0:
