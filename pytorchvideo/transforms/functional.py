@@ -599,3 +599,17 @@ def random_resized_crop(
             mode=interpolation,
         )
     return cropped
+
+
+def div_255(x: torch.Tensor) -> torch.Tensor:
+    """
+    Divide the given tensor x by 255.
+
+    Args:
+        x (torch.Tensor): The input tensor.
+
+    Returns:
+        y (torch.Tensor): Scaled tensor by dividing 255.
+    """
+    y = x / 255.0
+    return y

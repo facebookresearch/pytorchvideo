@@ -35,6 +35,7 @@ from pytorchvideo.transforms.functional import (
     clip_boxes_to_image,
     uniform_temporal_subsample,
     uniform_temporal_subsample_repeated,
+    div_255,
 )
 from torchvision.transforms import Compose
 from torchvision.transforms._transforms_video import (
@@ -1150,3 +1151,12 @@ class TestTransforms(unittest.TestCase):
         self.assertEqual(t, num_subsample)
         self.assertEqual(h, crop_size)
         self.assertEqual(w, crop_size)
+
+    def test_div_255(self):
+        t, c, h, w = 8, 3, 200, 200
+        video_tensor = torch.rand(t, c, h, w)
+        output_tensor = div_255(video_tensor)
+        expect_tensor = video_tensor / 255
+
+        self.assertEqual(output_tensor.shape, video_tensor.shape)
+        self.assertTrue(bool(torch.all(torch.eq(output_tensor, expect_tensor))))

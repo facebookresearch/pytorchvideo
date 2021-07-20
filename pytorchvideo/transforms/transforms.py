@@ -326,3 +326,22 @@ class OpSampler(torch.nn.Module):
             x = self.transforms_list[index](x)
 
         return x
+
+
+class Div255(torch.nn.Module):
+    """
+    ``nn.Module`` wrapper for ``pytorchvideo.transforms.functional.div_255``.
+    """
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        """
+        Scale clip frames from [0, 255] to [0, 1].
+        Args:
+            x (Tensor): A tensor of the clip's RGB frames with shape:
+                (C, T, H, W).
+        Returns:
+            x (Tensor): Scaled tensor by dividing 255.
+        """
+        return torchvision.transforms.Lambda(
+            pytorchvideo.transforms.functional.div_255
+        )(x)
