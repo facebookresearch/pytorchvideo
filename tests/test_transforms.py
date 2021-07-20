@@ -10,6 +10,7 @@ from pytorchvideo.data.utils import thwc_to_cthw
 from pytorchvideo.transforms import (
     AugMix,
     ApplyTransformToKey,
+    MixVideo,
     CutMix,
     MixUp,
     Normalize,
@@ -623,6 +624,72 @@ class TestTransforms(unittest.TestCase):
                 break
         self.assertTrue(seen_all_value1)
         self.assertTrue(seen_all_value2)
+
+    def test_mixvideo(self):
+
+        self.assertRaises(AssertionError, MixVideo, cutmix_prob=2.0)
+
+        torch.manual_seed(0)
+        # Test images.
+        batch_size = 2
+        h_size = 10
+        w_size = 10
+        c_size = 3
+        input_images = torch.rand(batch_size, c_size, h_size, w_size)
+        input_images[0, :].fill_(0)
+        input_images[1, :].fill_(1)
+        mixup_alpha = 1.0
+        cutmix_alpha = 1.0
+        label_smoothing = 0.0
+        num_classes = 5
+        transform_mix = MixVideo(
+            mixup_alpha=mixup_alpha,
+            cutmix_alpha=cutmix_alpha,
+            label_smoothing=label_smoothing,
+            num_classes=num_classes,
+        )
+        labels = torch.arange(0, batch_size) % num_classes
+        mixed_images, mixed_labels = transform_mix(input_images, labels)
+        gt_image_sum = h_size * w_size * c_size
+        label_sum = batch_size
+
+        self.assertTrue(
+            np.allclose(mixed_images.sum().item(), gt_image_sum, rtol=0.001)
+        )
+        self.assertTrue(np.allclose(mixed_labels.sum().item(), label_sum, rtol=0.001))
+        self.assertEqual(mixed_labels.size(0), batch_size)
+        self.assertEqual(mixed_labels.size(1), num_classes)
+
+        # Test videos.
+        batch_size = 2
+        h_size = 10
+        w_size = 10
+        c_size = 3
+        t_size = 2
+        input_video = torch.rand(batch_size, c_size, t_size, h_size, w_size)
+        input_video[0, :].fill_(0)
+        input_video[1, :].fill_(1)
+        mixup_alpha = 1.0
+        cutmix_alpha = 1.0
+        label_smoothing = 0.0
+        num_classes = 5
+        transform_mix = MixVideo(
+            mixup_alpha=mixup_alpha,
+            cutmix_alpha=cutmix_alpha,
+            label_smoothing=label_smoothing,
+            num_classes=num_classes,
+        )
+        labels = torch.arange(0, batch_size) % num_classes
+        mixed_videos, mixed_labels = transform_mix(input_video, labels)
+        gt_video_sum = h_size * w_size * c_size * t_size
+        label_sum = batch_size
+
+        self.assertTrue(
+            np.allclose(mixed_videos.sum().item(), gt_video_sum, rtol=0.001)
+        )
+        self.assertTrue(np.allclose(mixed_labels.sum().item(), label_sum, rtol=0.001))
+        self.assertEqual(mixed_labels.size(0), batch_size)
+        self.assertEqual(mixed_labels.size(1), num_classes)
 
     def _check_boxes(self, num_boxes, height, width, boxes):
         self.assertEqual(boxes.shape, (num_boxes, 4))

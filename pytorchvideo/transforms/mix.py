@@ -64,15 +64,16 @@ class MixUp(torch.nn.Module):
         """
         assert x.size(0) > 1, "MixUp cannot be applied to a single instance."
 
-        mixup_lamda = self.mixup_beta_sampler.sample()
-        x_mixed = x * mixup_lamda + x.flip(0) * (1.0 - mixup_lamda)
+        mixup_lambda = self.mixup_beta_sampler.sample()
+        x_flipped = x.flip(0).mul_(1.0 - mixup_lambda)
+        x.mul_(mixup_lambda).add_(x_flipped)
         new_labels = _mix_labels(
             labels,
             self.num_classes,
-            mixup_lamda,
+            mixup_lambda,
             self.label_smoothing,
         )
-        return x_mixed, new_labels
+        return x, new_labels
 
 
 class CutMix(torch.nn.Module):
@@ -159,3 +160,54 @@ class CutMix(torch.nn.Module):
             self.label_smoothing,
         )
         return x, new_labels
+
+
+class MixVideo(torch.nn.Module):
+    """
+    Stochastically applies either MixUp or CutMix to the input video.
+    """
+
+    def __init__(
+        self,
+        cutmix_prob: float = 0.5,
+        mixup_alpha: float = 1.0,
+        cutmix_alpha: float = 1.0,
+        label_smoothing: float = 0.0,
+        num_classes: int = 400,
+    ):
+        """
+        Args:
+            cutmix_prob (float): Probability of using CutMix. MixUp will be used with
+                probability 1 - cutmix_prob. If cutmix_prob is 0, then MixUp is always
+                used. If cutmix_prob is 1, then CutMix is always used.
+            mixup_alpha (float): MixUp alpha value.
+            cutmix_alpha (float): CutMix alpha value.
+            label_smoothing (float): Label smoothing value.
+            num_classes (int): Number of total classes.
+        """
+
+        assert 0.0 <= cutmix_prob <= 1.0, "cutmix_prob should be between 0.0 and 1.0"
+
+        super().__init__()
+        self.cutmix_prob = cutmix_prob
+        self.mixup = MixUp(
+            alpha=mixup_alpha, label_smoothing=label_smoothing, num_classes=num_classes
+        )
+        self.cutmix = CutMix(
+            alpha=cutmix_alpha, label_smoothing=label_smoothing, num_classes=num_classes
+        )
+
+    def forward(self, x: torch.Tensor, labels: torch.Tensor):
+        """
+        The input is a batch of samples and their corresponding labels.
+
+        Args:
+            x (torch.Tensor): Input tensor. The input should be a batch of videos with
+                shape (B, C, T, H, W).
+            labels (torch.Tensor): Labels for input with shape (B).
+        """
+
+        if torch.rand(1).item() < self.cutmix_prob:
+            return self.cutmix(x, labels)
+        else:
+            return self.mixup(x, labels)
