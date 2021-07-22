@@ -41,6 +41,33 @@ def uniform_temporal_subsample(
     return torch.index_select(x, temporal_dim, indices)
 
 
+def random_temporal_subsample(
+    x: torch.Tensor, num_samples: int, temporal_dim: int = 1
+) -> torch.Tensor:
+    """
+    Random subsamples num_samples indices from the temporal dimension of the video.
+    When num_samples is larger than the size of temporal dimension of the video, it
+    will randomly sample the same frames multiple times.
+
+    Args:
+        x (torch.Tensor): A video tensor with dimension larger than one with torch
+            tensor type includes int, long, float, complex, etc.
+        num_samples (int): The number of equispaced samples to be selected
+        temporal_dim (int): dimension of temporal to perform temporal subsample.
+
+    Returns:
+        An x-like Tensor with subsampled temporal dimension.
+    """
+    t = x.shape[temporal_dim]
+    assert num_samples > 0 and t > 0
+    indices = torch.randperm(t)
+    # Repeat indices ntimes if num_samples > t.
+    ntimes = math.ceil(num_samples / t)
+    indices = indices.repeat(ntimes)[:num_samples]
+    indices, _ = torch.sort(indices)
+    return torch.index_select(x, temporal_dim, indices.long())
+
+
 @torch.jit.ignore
 def _interpolate_opencv(
     x: torch.Tensor, size: Tuple[int, int], interpolation: str
