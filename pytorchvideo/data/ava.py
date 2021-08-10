@@ -168,7 +168,7 @@ class AvaLabeledVideoFramePaths:
 
                 frame_sec = float(row[1])
                 if (
-                    frame_sec > AvaLabeledVideoFramePaths.AVA_VALID_FRAMES[1]
+                    frame_sec > AvaLabeledVideoFramePaths.AVA_VALID_FRAMES[-1]
                     or frame_sec < AvaLabeledVideoFramePaths.AVA_VALID_FRAMES[0]
                 ):
                     continue
