@@ -8,6 +8,34 @@ from pytorchvideo.layers.utils import set_attributes
 from torchvision.ops import RoIAlign
 
 
+class SequencePool(nn.Module):
+    """
+    Sequence pool produces a single embedding from a sequence of embeddings. Currently
+    it supports "mean" and "cls".
+
+    """
+
+    def __init__(self, mode: str) -> None:
+        """
+        Args:
+            mode (str): Optionals include "cls" and "mean". If set to "cls", it assumes
+                the first element in the input is the cls token and returns it. If set
+                to "mean", it returns the mean of the entire sequence.
+        """
+        super().__init__()
+        assert mode in ["cls", "mean"], "Unsupported mode for SequencePool."
+        self.mode = mode
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        if self.mode == "cls":
+            x = x[:, 0]
+        elif self.mode == "mean":
+            x = x.mean(1)
+        else:
+            raise NotImplementedError
+        return x
+
+
 def create_res_basic_head(
     *,
     # Projection configs.
@@ -100,6 +128,75 @@ def create_res_basic_head(
         pool=pool_model,
         dropout=nn.Dropout(dropout_rate) if dropout_rate > 0 else None,
         output_pool=output_pool,
+    )
+
+
+def create_vit_basic_head(
+    *,
+    # Projection configs.
+    in_features: int,
+    out_features: int,
+    # Pooling configs.
+    seq_pool_type: str = "cls",
+    # Dropout configs.
+    dropout_rate: float = 0.5,
+    # Activation configs.
+    activation: Callable = None,
+) -> nn.Module:
+    """
+    Creates vision transformer basic head.
+
+    ::
+
+
+                                        Pooling
+                                           ↓
+                                        Dropout
+                                           ↓
+                                       Projection
+                                           ↓
+                                       Activation
+
+
+    Activation examples include: ReLU, Softmax, Sigmoid, and None.
+    Pool type examples include: cls, mean and none.
+
+    Args:
+
+        in_features: input channel size of the resnet head.
+        out_features: output channel size of the resnet head.
+
+        pool_type (str): Pooling type. It supports "cls", "mean " and "none". If set to
+            "cls", it assumes the first element in the input is the cls token and
+            returns it. If set to "mean", it returns the mean of the entire sequence.
+
+        activation (callable): a callable that constructs vision transformer head
+            activation layer, examples include: nn.ReLU, nn.Softmax, nn.Sigmoid, and
+            None (not applying activation).
+
+        dropout_rate (float): dropout rate.
+    """
+    assert seq_pool_type in ["cls", "meam", "none"]
+
+    if seq_pool_type in ["cls", "mean"]:
+        seq_pool_model = SequencePool(seq_pool_type)
+    elif seq_pool_type == "none":
+        seq_pool_model = None
+    else:
+        raise NotImplementedError
+
+    if activation is None:
+        activation_model = None
+    elif activation == nn.Softmax:
+        activation_model = activation(dim=1)
+    else:
+        activation_model = activation()
+
+    return VisionTransformerBasicHead(
+        sequence_pool=seq_pool_model,
+        dropout=nn.Dropout(dropout_rate) if dropout_rate > 0.0 else None,
+        proj=nn.Linear(in_features, out_features),
+        activation=activation_model,
     )
 
 
@@ -380,4 +477,56 @@ class ResNetRoIHead(nn.Module):
             # Performs global averaging.
             x = self.output_pool(x)
             x = x.view(x.shape[0], -1)
+        return x
+
+
+class VisionTransformerBasicHead(nn.Module):
+    """
+    Vision transformer basic head.
+
+    ::
+
+                                      SequencePool
+                                           ↓
+                                        Dropout
+                                           ↓
+                                       Projection
+                                           ↓
+                                       Activation
+
+
+    The builder can be found in `create_vit_basic_head`.
+    """
+
+    def __init__(
+        self,
+        sequence_pool: nn.Module = None,
+        dropout: nn.Module = None,
+        proj: nn.Module = None,
+        activation: nn.Module = None,
+    ) -> None:
+        """
+        Args:
+            sequence_pool (torch.nn.modules): pooling module.
+            dropout(torch.nn.modules): dropout module.
+            proj (torch.nn.modules): project module.
+            activation (torch.nn.modules): activation module.
+        """
+        super().__init__()
+        set_attributes(self, locals())
+        assert self.proj is not None
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        # Performs pooling.
+        if self.sequence_pool is not None:
+            x = self.sequence_pool(x)
+
+        # Performs dropout.
+        if self.dropout is not None:
+            x = self.dropout(x)
+        # Performs projection.
+        x = self.proj(x)
+        # Performs activation.
+        if self.activation is not None:
+            x = self.activation(x)
         return x

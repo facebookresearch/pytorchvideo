@@ -14,5 +14,6 @@ from .masked_multistream import (
 from .net import MultiPathWayWithFuse, Net
 from .resnet import BottleneckBlock, create_bottleneck_block, create_resnet
 from .slowfast import create_slowfast
-from .stem import ResNetBasicStem, create_res_basic_stem
+from .stem import ResNetBasicStem, create_conv_patch_embed, create_res_basic_stem
+from .vision_transformers import create_multiscale_vision_transformers
 from .weight_init import init_net_weights

@@ -4,7 +4,7 @@ import math
 import unittest
 
 import torch
-from pytorchvideo.layers import PositionalEncoding
+from pytorchvideo.layers import PositionalEncoding, SpatioTemporalClsPositionalEncoding
 
 
 class TestPositionalEncoding(unittest.TestCase):
@@ -67,3 +67,40 @@ class TestPositionalEncoding(unittest.TestCase):
         model = PositionalEncoding(self.feature_dim, positional_encoding_seq_len)
         with self.assertRaises(AssertionError):
             output = model(self.fake_input)
+
+    def test_SpatioTemporalClsPositionalEncoding(self):
+        # Test with cls token.
+        batch_dim = 4
+        dim = 16
+        video_shape = (1, 2, 4)
+        video_sum = math.prod(video_shape)
+        has_cls = True
+        model = SpatioTemporalClsPositionalEncoding(
+            embed_dim=dim,
+            patch_embed_shape=video_shape,
+            has_cls=has_cls,
+        )
+        fake_input = torch.rand(batch_dim, video_sum, dim)
+        output = model(fake_input)
+        output_gt_shape = (batch_dim, video_sum + 1, dim)
+        self.assertEqual(tuple(output.shape), output_gt_shape)
+
+        # Test without cls token.
+        has_cls = False
+        model = SpatioTemporalClsPositionalEncoding(
+            embed_dim=dim,
+            patch_embed_shape=video_shape,
+            has_cls=has_cls,
+        )
+        fake_input = torch.rand(batch_dim, video_sum, dim)
+        output = model(fake_input)
+        output_gt_shape = (batch_dim, video_sum, dim)
+        self.assertEqual(tuple(output.shape), output_gt_shape)
+
+        # Mismatch in dimension for patch_embed_shape.
+        with self.assertRaises(AssertionError):
+            model = SpatioTemporalClsPositionalEncoding(
+                embed_dim=dim,
+                patch_embed_shape=(1, 2),
+                has_cls=has_cls,
+            )

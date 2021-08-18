@@ -8,8 +8,10 @@ import torch
 from pytorchvideo.models.head import (
     ResNetBasicHead,
     ResNetRoIHead,
+    SequencePool,
     create_res_basic_head,
     create_res_roi_pooling_head,
+    create_vit_basic_head,
 )
 from torch import nn
 from torchvision.ops import RoIAlign
@@ -215,6 +217,29 @@ class TestRoIHeadHelper(unittest.TestCase):
                         output_shape, output_shape_gt
                     ),
                 )
+
+    def test_create_vit_basic_head(self):
+        batch_size = 8
+        seq_len = 10
+        input_dim = 10
+        out_dim = 20
+        head = create_vit_basic_head(
+            in_features=input_dim,
+            out_features=out_dim,
+        )
+        fake_input = torch.rand(batch_size, seq_len, input_dim)
+        output = head(fake_input)
+        gt_shape = (batch_size, out_dim)
+        self.assertEqual(tuple(output.shape), gt_shape)
+
+    def test_sequence_pool(self):
+        model = SequencePool("cls")
+        fake_input = torch.rand(8, 10, 10)
+        output = model(fake_input)
+        self.assertTrue(torch.equal(output, fake_input[:, 0]))
+        model = SequencePool("mean")
+        output = model(fake_input)
+        self.assertTrue(torch.equal(output, fake_input.mean(1)))
 
     def test_build_complex_head(self):
         """
