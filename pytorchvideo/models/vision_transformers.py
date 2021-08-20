@@ -237,12 +237,12 @@ def create_multiscale_vision_transformers(
     )
 
     input_dims = [temporal_size, spatial_size, spatial_size]
-    input_stirde = (
+    input_stride = (
         (1,) + conv_patch_embed_stride if use_2d_patch else conv_patch_embed_stride
     )
 
     patch_embed_dims = [
-        input_dims[i] // input_stirde[i] for i in range(len(input_dims))
+        input_dims[i] // input_stride[i] for i in range(len(input_dims))
     ]
     cls_positional_encoding = SpatioTemporalClsPositionalEncoding(
         embed_dim=patch_embed_dim,
