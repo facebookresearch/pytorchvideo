@@ -17,8 +17,10 @@ class DemoJDETracker():
         self.frame_dir = os.path.join(self.result_root, 'frame')
         os.makedirs(self.frame_dir, exist_ok=True)
 
+        # set dataloader
         self.dataloader = LoadVideo(opt.input_video, opt.img_size)
 
+        # load detector model
         self.model = Darknet(opt.cfg, nID=14455)
         self.model.load_state_dict(torch.load(opt.weights, map_location='cpu')['model'], strict=False)
 
@@ -29,6 +31,7 @@ class DemoJDETracker():
 
         print("Model load complete")
 
+        # initialise JDE Tracker
         self.tracker = JDETracker()
 
     def track_video(self):
@@ -70,15 +73,11 @@ class DemoJDETracker():
                 cv2.imwrite(os.path.join(self.frame_dir, '{:05d}.jpg'.format(frame_id)), online_im)
 
             frame_id += 1
-            print(frame_id)
-            if(frame_id == 20):
-                break
 
         # save results as video after the loop
-        if self.opt.output_format == 'video':
-            output_video_path = os.path.join(self.result_root, 'result.mp4')
-            cmd_str = 'ffmpeg -f image2 -i {}/%05d.jpg -c:v copy {}'.format(self.frame_dir, output_video_path)
-            os.system(cmd_str)
+        output_video_path = os.path.join(self.result_root, 'result.mp4')
+        cmd_str = 'ffmpeg -f image2 -i {}/%05d.jpg -c:v copy {}'.format(self.frame_dir, output_video_path)
+        os.system(cmd_str)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(prog='demo.py')
