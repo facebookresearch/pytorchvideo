@@ -258,3 +258,81 @@ class ResNetBasicStem(nn.Module):
         if self.pool is not None:
             x = self.pool(x)
         return x
+
+
+class PatchEmbed(nn.Module):
+    """
+    Transformer basic patch embedding module. Performs patchifying input, flatten and
+    and transpose.
+
+    ::
+
+                                       PatchModel
+                                           ↓
+                                        flatten
+                                           ↓
+                                       transpose
+
+    The builder can be found in `create_patch_embed`.
+
+    """
+
+    def __init__(
+        self,
+        *,
+        patch_model: nn.Module = None,
+    ) -> None:
+        super().__init__()
+        set_attributes(self, locals())
+        assert self.patch_model is not None
+
+    def forward(self, x) -> torch.Tensor:
+        x = self.patch_model(x)
+        # B C (T) H W -> B (T)HW C
+        return x.flatten(2).transpose(1, 2)
+
+
+def create_conv_patch_embed(
+    *,
+    in_channels: int,
+    out_channels: int,
+    conv_kernel_size: Tuple[int] = (1, 16, 16),
+    conv_stride: Tuple[int] = (1, 4, 4),
+    conv_padding: Tuple[int] = (1, 7, 7),
+    conv_bias: bool = False,
+    conv: Callable = nn.Conv3d,
+) -> nn.Module:
+    """
+    Creates the transformer basic patch embedding. It performs Convolution, flatten and
+    transpose.
+
+    ::
+
+                                        Conv3d
+                                           ↓
+                                        flatten
+                                           ↓
+                                       transpose
+
+    Args:
+        in_channels (int): input channel size of the convolution.
+        out_channels (int): output channel size of the convolution.
+        conv_kernel_size (tuple): convolutional kernel size(s).
+        conv_stride (tuple): convolutional stride size(s).
+        conv_padding (tuple): convolutional padding size(s).
+        conv_bias (bool): convolutional bias. If true, adds a learnable bias to the
+            output.
+        conv (callable): Callable used to build the convolution layer.
+
+    Returns:
+        (nn.Module): transformer patch embedding layer.
+    """
+    conv_module = conv(
+        in_channels=in_channels,
+        out_channels=out_channels,
+        kernel_size=conv_kernel_size,
+        stride=conv_stride,
+        padding=conv_padding,
+        bias=conv_bias,
+    )
+    return PatchEmbed(patch_model=conv_module)
