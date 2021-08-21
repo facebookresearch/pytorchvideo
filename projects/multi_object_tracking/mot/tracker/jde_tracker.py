@@ -85,7 +85,7 @@ class JDETracker(object):
         the detections to the original image size before passing to this method
 
         Args:
-            pred_dets (torch.Tensor): Detection results of the image, shape is [N, 5].
+            pred_   dets (torch.Tensor): Detection results of the image, shape is [N, 5].
                                       i.e. (batch_id, x1, y1, x2, y2, object_conf)
             pred_embs (torch.Tensor): Embedding results of the image, shape is [N, 512]
                                       (as in the paper) or [N, M] where M = any sized feature
