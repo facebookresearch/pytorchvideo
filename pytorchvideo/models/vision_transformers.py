@@ -238,7 +238,9 @@ def create_multiscale_vision_transformers(
 
     input_dims = [temporal_size, spatial_size, spatial_size]
     input_stirde = (
-        (1,) + conv_patch_embed_stride if use_2d_patch else conv_patch_embed_stride
+        (1,) + tuple(conv_patch_embed_stride)
+        if use_2d_patch
+        else conv_patch_embed_stride
     )
 
     patch_embed_dims = [

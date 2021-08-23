@@ -299,7 +299,7 @@ def create_conv_patch_embed(
     conv_kernel_size: Tuple[int] = (1, 16, 16),
     conv_stride: Tuple[int] = (1, 4, 4),
     conv_padding: Tuple[int] = (1, 7, 7),
-    conv_bias: bool = False,
+    conv_bias: bool = True,
     conv: Callable = nn.Conv3d,
 ) -> nn.Module:
     """
