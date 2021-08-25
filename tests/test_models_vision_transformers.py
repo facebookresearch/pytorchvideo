@@ -19,27 +19,31 @@ class TestVisionTransformers(unittest.TestCase):
         """
         # Test MViT with 3D case.
         num_head = 100
-        batch_size = 4
-        fake_input = torch.rand(batch_size, 3, 16, 224, 224)
+        batch_size = 1
+        fake_input = torch.rand(batch_size, 3, 4, 28, 28)
         model = create_multiscale_vision_transformers(
-            spatial_size=224,
-            temporal_size=16,
-            depth=2,
+            spatial_size=28,
+            temporal_size=4,
+            patch_embed_dim=12,
+            depth=1,
             head_num_classes=num_head,
+            pool_kv_stride_adaptive=[1, 2, 2],
         )
         output = model(fake_input)
         gt_shape_tensor = torch.rand(batch_size, num_head)
         self.assertEqual(output.shape, gt_shape_tensor.shape)
         # Test MViT with 3D case with pool first.
         num_head = 100
-        batch_size = 4
-        fake_input = torch.rand(batch_size, 3, 16, 224, 224)
+        batch_size = 1
+        fake_input = torch.rand(batch_size, 3, 4, 28, 28)
         model = create_multiscale_vision_transformers(
-            spatial_size=224,
-            temporal_size=16,
-            depth=2,
+            spatial_size=28,
+            temporal_size=4,
+            patch_embed_dim=12,
+            depth=1,
             head_num_classes=num_head,
             pool_first=True,
+            pool_q_stride_size=[[0, 1, 2, 2]],
         )
         output = model(fake_input)
         gt_shape_tensor = torch.rand(batch_size, num_head)
@@ -50,12 +54,13 @@ class TestVisionTransformers(unittest.TestCase):
         conv_patch_stride = (4, 4)
         conv_patch_padding = (3, 3)
         num_head = 100
-        batch_size = 4
-        fake_input = torch.rand(batch_size, 3, 224, 224)
+        batch_size = 1
+        fake_input = torch.rand(batch_size, 3, 28, 28)
         model = create_multiscale_vision_transformers(
-            spatial_size=224,
+            spatial_size=28,
             temporal_size=1,
-            depth=2,
+            patch_embed_dim=12,
+            depth=1,
             head_num_classes=num_head,
             use_2d_patch=True,
             conv_patch_embed_kernel=conv_patch_kernel,
@@ -65,3 +70,28 @@ class TestVisionTransformers(unittest.TestCase):
         output = model(fake_input)
         gt_shape_tensor = torch.rand(batch_size, num_head)
         self.assertEqual(output.shape, gt_shape_tensor.shape)
+
+        self.assertRaises(
+            AssertionError,
+            create_multiscale_vision_transformers,
+            spatial_size=28,
+            temporal_size=4,
+            use_2d_patch=True,
+        )
+
+        self.assertRaises(
+            AssertionError,
+            create_multiscale_vision_transformers,
+            spatial_size=28,
+            temporal_size=1,
+            pool_kv_stride_adaptive=[[2, 2, 2]],
+            pool_kv_stride_size=[[1, 1, 2, 2]],
+        )
+
+        self.assertRaises(
+            NotImplementedError,
+            create_multiscale_vision_transformers,
+            spatial_size=28,
+            temporal_size=1,
+            norm="fakenorm",
+        )

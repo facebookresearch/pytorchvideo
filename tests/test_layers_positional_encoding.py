@@ -73,7 +73,7 @@ class TestPositionalEncoding(unittest.TestCase):
         batch_dim = 4
         dim = 16
         video_shape = (1, 2, 4)
-        video_sum = math.prod(video_shape)
+        video_sum = video_shape[0] * video_shape[1] * video_shape[2]
         has_cls = True
         model = SpatioTemporalClsPositionalEncoding(
             embed_dim=dim,
@@ -85,7 +85,12 @@ class TestPositionalEncoding(unittest.TestCase):
         output_gt_shape = (batch_dim, video_sum + 1, dim)
         self.assertEqual(tuple(output.shape), output_gt_shape)
 
+    def test_SpatioTemporalClsPositionalEncoding_nocls(self):
         # Test without cls token.
+        batch_dim = 4
+        dim = 16
+        video_shape = (1, 2, 4)
+        video_sum = video_shape[0] * video_shape[1] * video_shape[2]
         has_cls = False
         model = SpatioTemporalClsPositionalEncoding(
             embed_dim=dim,
@@ -97,10 +102,10 @@ class TestPositionalEncoding(unittest.TestCase):
         output_gt_shape = (batch_dim, video_sum, dim)
         self.assertEqual(tuple(output.shape), output_gt_shape)
 
+    def test_SpatioTemporalClsPositionalEncoding_mismatch(self):
         # Mismatch in dimension for patch_embed_shape.
         with self.assertRaises(AssertionError):
-            model = SpatioTemporalClsPositionalEncoding(
-                embed_dim=dim,
+            SpatioTemporalClsPositionalEncoding(
+                embed_dim=16,
                 patch_embed_shape=(1, 2),
-                has_cls=has_cls,
             )
