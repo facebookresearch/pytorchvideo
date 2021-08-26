@@ -21,6 +21,7 @@ from pytorchvideo.transforms import (
     ShortSideScale,
     UniformCropVideo,
     UniformTemporalSubsample,
+    RandomTemporalSubsample,
     RandomResizedCrop,
 )
 from pytorchvideo.transforms import create_video_transform
@@ -1227,3 +1228,25 @@ class TestTransforms(unittest.TestCase):
 
         self.assertEqual(output_tensor.shape, video_tensor.shape)
         self.assertTrue(bool(torch.all(torch.eq(output_tensor, expect_tensor))))
+
+    def test_random_temporal_subsample(self):
+        subsample = RandomTemporalSubsample(10)
+        c, t, h, w = 3, 100, 200, 200
+        in_tensor = torch.rand(c, t, h, w)
+        out_tensor = subsample(in_tensor)
+        co, to, ho, wo = out_tensor.shape
+        self.assertEqual(co, 3)
+        self.assertEqual(to, 10)
+        self.assertEqual(ho, 200)
+        self.assertEqual(wo, 200)
+
+        # num subsampled > num frames
+        subsample = RandomTemporalSubsample(95)
+        c, t, h, w = 3, 10, 200, 200
+        in_tensor = torch.rand(c, t, h, w)
+        out_tensor = subsample(in_tensor)
+        co, to, ho, wo = out_tensor.shape
+        self.assertEqual(co, 3)
+        self.assertEqual(to, 95)
+        self.assertEqual(ho, 200)
+        self.assertEqual(wo, 200)

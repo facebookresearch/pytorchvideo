@@ -89,6 +89,23 @@ class UniformTemporalSubsampleRepeated(torch.nn.Module):
         )
 
 
+class RandomTemporalSubsample(torch.nn.Module):
+    """
+    ``nn.Module`` wrapper for ``pytorchvideo.transforms.functional.random_temporal_subsample``.
+    """
+
+    def __init__(self, num_samples: int):
+        super().__init__()
+        self._num_samples = num_samples
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        """
+        Args:
+            x (torch.Tensor): video tensor with shape (C, T, H, W).
+        """
+        return pytorchvideo.transforms.functional.random_temporal_subsample(x, self._num_samples)
+
+
 class ShortSideScale(torch.nn.Module):
     """
     ``nn.Module`` wrapper for ``pytorchvideo.transforms.functional.short_side_scale``.
