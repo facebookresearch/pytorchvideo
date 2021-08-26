@@ -2,20 +2,21 @@
 
 dependencies = ["torch"]
 from pytorchvideo.models.hub import (  # noqa: F401, E402
+    c2d_r50,
+    csn_r101,
     efficient_x3d_s,
     efficient_x3d_xs,
+    i3d_r50,
+    mvit_base_16x4,
+    r2plus1d_r50,
     slow_r50,
     slow_r50_detection,
+    slowfast_16x8_r101_50_50,
     slowfast_r50,
     slowfast_r50_detection,
     slowfast_r101,
-    slowfast_16x8_r101_50_50,
+    x3d_l,
     x3d_m,
     x3d_s,
     x3d_xs,
-    x3d_l,
-    csn_r101,
-    r2plus1d_r50,
-    c2d_r50,
-    i3d_r50,
 )

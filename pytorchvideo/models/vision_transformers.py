@@ -1,7 +1,7 @@
 # Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved.
 
 from functools import partial
-from typing import Tuple, Callable, List, Optional
+from typing import Callable, List, Optional, Tuple
 
 import torch
 import torch.nn as nn

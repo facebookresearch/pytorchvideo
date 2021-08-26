@@ -10,4 +10,5 @@ from .slowfast import (
     slowfast_r50_detection,
     slowfast_r101,
 )
+from .vision_transformers import mvit_base_16x4
 from .x3d import x3d_l, x3d_m, x3d_s, x3d_xs
