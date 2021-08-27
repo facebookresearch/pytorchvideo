@@ -108,7 +108,7 @@ def create_multiscale_vision_transformers(
     conv_patch_embed_kernel: Tuple[int] = (3, 7, 7),
     conv_patch_embed_stride: Tuple[int] = (2, 4, 4),
     conv_patch_embed_padding: Tuple[int] = (1, 3, 3),
-    enable_patch_embed_norm: bool = True,
+    enable_patch_embed_norm: bool = False,
     use_2d_patch: bool = False,
     # Attention block config.
     num_heads: int = 1,
