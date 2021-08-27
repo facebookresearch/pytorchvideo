@@ -73,3 +73,16 @@ Here is the growing list of PyTorchVideo contributors in alphabetical order (let
 ## Development
 
 We welcome new contributions to PyTorchVideo and we will be actively maintaining this library! Please refer to [`CONTRIBUTING.md`](./.github/CONTRIBUTING.md) for full instructions on how to run the code, tests and linter, and submit your pull requests.
+
+## Citing PyTorchVideo
+
+If you find PyTorchVideo useful in your work, please use the following BibTeX entry for citation.
+```BibTeX
+@inproceedings{fan2021pytorchvideo,
+    author =       {Haoqi Fan and Tullie Murrell and Heng Wang and Kalyan Vasudev Alwala and Yanghao Li and Yilei Li and Bo Xiong and Nikhila Ravi and Meng Li and Haichuan Yang and  Jitendra Malik and Ross Girshick and Matt Feiszli and Aaron Adcock and Wan-Yen Lo and Christoph Feichtenhofer},
+    title = {{PyTorchVideo}: A Deep Learning Library for Video Understanding},
+    booktitle = {Proceedings of the 29th ACM International Conference on Multimedia},
+    year = {2021},
+    note = {\url{https://pytorchvideo.org/}},
+}
+```
