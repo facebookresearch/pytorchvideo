@@ -23,12 +23,16 @@ class TestHubVisionTransformers(unittest.TestCase):
                 repo_or_dir=path,
                 source="local",
                 model=model_name,
-                pretrained=False,
+                pretrained=pretrained,
             )
             self.assertIsNotNone(model)
 
-        models = ["mvit_base_16x4", "mvit_base_16x4"]
-        pretrains = [True, False]
+        models = [
+            "mvit_base_16x4",
+            "mvit_base_16",
+            "mvit_base_32x3",
+        ]
+        pretrains = [False, False, False]
 
         for model_name, pretrain in zip(models, pretrains):
             test_load_mvit_(model_name, pretrain)
