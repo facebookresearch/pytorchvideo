@@ -62,7 +62,7 @@ def mvit_base_16x4(
     """
     Multiscale Vision Transformers model architecture [1] trained with an 16x4
     setting on the Kinetics400 dataset. Model with pretrained weights has top1
-    accuracy of 79.0%.
+    accuracy of 78.9%.
 
     [1] Haoqi Fan, Bo Xiong, Karttikeya Mangalam, Yanghao Li, Zhicheng Yan, Jitendra
     Malik, Christoph Feichtenhofer, "Multiscale Vision Transformers"
