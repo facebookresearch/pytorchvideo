@@ -42,6 +42,9 @@ Key features include:
   Complementing the model zoo, PyTorchVideo comes with extensive data loaders supporting different datasets.
 - **Efficient Video Components:** Video-focused fast and efficient components that are easy to use. Supports accelerated inference on hardware.
 
+## Updates
+
+- Aug 2021: [Multiscale Vision Transformers](https://arxiv.org/abs/2104.11227) has been released in PyTorchVideo, details can be found from [here](https://github.com/facebookresearch/pytorchvideo/blob/master/pytorchvideo/models/vision_transformers.py#L97).
 
 ## Installation
 
