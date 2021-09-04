@@ -13,7 +13,7 @@ const siteConfig = {
   title: 'PyTorchVideo', // Title for your website.
   tagline: 'A deep learning library for video understanding research',
   url: 'https://pytorchvideo.org', // Your website URL
-  baseUrl: '/', 
+  baseUrl: '/',
 
   // Used for publishing and more
   projectName: 'pytorchvideo',
@@ -24,6 +24,7 @@ const siteConfig = {
     {doc: 'tutorial_overview', label: 'Tutorials'},
     {href: "https://pytorchvideo.readthedocs.io/en/latest/index.html", label: 'Docs'}, // TODO: Change this after the repo becomes public.
     {href: "https://github.com/facebookresearch/pytorchvideo/", label: 'GitHub'}, //TODO: Change this after repo becomes public
+    {href: "tutorial_download_datasets", label: 'Downloads'}, // TODO: Change this after the repo becomes public.
   ],
 
 

@@ -10,5 +10,8 @@
   },
   "devDependencies": {
     "docusaurus": "^1.14.6"
+  },
+  "dependencies": {
+    "docusaurus-init": "^1.14.7"
   }
 }
