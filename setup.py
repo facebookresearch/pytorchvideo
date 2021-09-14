@@ -55,6 +55,7 @@ setup(
         "av",
         "parameterized",
         "iopath",
+        "networkx",
     ],
     extras_require={
         "test": ["coverage", "pytest", "opencv-python"],

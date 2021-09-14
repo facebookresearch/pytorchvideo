@@ -11,6 +11,7 @@ from pytorchvideo.data import Ava
 from pytorchvideo.data.clip_sampling import make_clip_sampler
 from utils import temp_frame_video
 
+
 AVA_FPS = 30
 
 

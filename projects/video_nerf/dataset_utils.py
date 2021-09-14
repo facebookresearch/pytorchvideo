@@ -7,18 +7,19 @@ from typing import List, Tuple
 
 import numpy as np
 import torch
-from PIL import Image
-from pytorch3d.transforms import Rotate, RotateAxisAngle, Translate
-
-# Imports from Objectron
-module_path = os.path.abspath(os.path.join("..."))
-if module_path not in sys.path:
-    sys.path.append("../Objectron")
 
 # The AR Metadata captured with each frame in the video
 from objectron.schema import (  # noqa: E402
     a_r_capture_metadata_pb2 as ar_metadata_protocol,
 )
+from PIL import Image
+from pytorch3d.transforms import Rotate, RotateAxisAngle, Translate
+
+
+# Imports from Objectron
+module_path = os.path.abspath(os.path.join("..."))
+if module_path not in sys.path:
+    sys.path.append("../Objectron")
 
 
 def objectron_to_pytorch3d(

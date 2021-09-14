@@ -7,7 +7,7 @@ import torch
 import torch.nn as nn
 from pytorchvideo.layers.utils import set_attributes
 from pytorchvideo.models.head import create_res_basic_head, create_res_roi_pooling_head
-from pytorchvideo.models.net import Net, DetectionBBoxNetwork
+from pytorchvideo.models.net import DetectionBBoxNetwork, Net
 from pytorchvideo.models.stem import (
     create_acoustic_res_basic_stem,
     create_res_basic_stem,

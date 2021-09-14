@@ -6,6 +6,7 @@ import torch
 from pytorchvideo.transforms.augmentations import AugmentTransform
 from pytorchvideo.transforms.transforms import OpSampler
 
+
 # A dictionary that contains transform names (key) and their corresponding maximum
 # transform magnitude (value).
 _TRANSFORM_RANDAUG_MAX_PARAMS = {

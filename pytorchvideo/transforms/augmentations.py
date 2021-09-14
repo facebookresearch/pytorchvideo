@@ -9,6 +9,7 @@ import torchvision
 import torchvision.transforms.functional_tensor as F_t
 from torchvision.transforms.functional import InterpolationMode
 
+
 # Maximum global magnitude used for video augmentation.
 _AUGMENTATION_MAX_LEVEL = 10
 

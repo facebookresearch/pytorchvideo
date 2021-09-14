@@ -4,6 +4,7 @@ import os
 
 import requests
 
+
 # URLs for downloading the Objectron dataset
 public_url = "https://storage.googleapis.com/objectron"
 blob_path = public_url + "/v1/index/chair_annotations_train"

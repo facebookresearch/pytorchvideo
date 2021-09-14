@@ -8,7 +8,7 @@ import unittest
 from pytorchvideo.data import Charades
 from pytorchvideo.data.clip_sampling import make_clip_sampler
 from torch.utils.data import SequentialSampler
-from utils import temp_frame_video_dataset, temp_frame_video
+from utils import temp_frame_video, temp_frame_video_dataset
 
 
 @contextlib.contextmanager

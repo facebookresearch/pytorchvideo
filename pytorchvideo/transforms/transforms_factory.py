@@ -8,20 +8,15 @@ from pytorchvideo.transforms import (
     AugMix,
     ConvertUint8ToFloat,
     Normalize,
-    RandomResizedCrop,
     Permute,
-    RandomShortSideScale,
     RandAugment,
+    RandomResizedCrop,
+    RandomShortSideScale,
     RemoveKey,
     ShortSideScale,
     UniformTemporalSubsample,
 )
-from torchvision.transforms import (
-    CenterCrop,
-    Compose,
-    RandomCrop,
-    RandomHorizontalFlip,
-)
+from torchvision.transforms import CenterCrop, Compose, RandomCrop, RandomHorizontalFlip
 
 
 _RANDAUG_DEFAULT_PARAS = {

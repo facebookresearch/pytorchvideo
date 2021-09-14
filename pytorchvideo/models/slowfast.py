@@ -6,7 +6,7 @@ import torch
 import torch.nn as nn
 from pytorchvideo.layers.utils import set_attributes
 from pytorchvideo.models.head import create_res_basic_head, create_res_roi_pooling_head
-from pytorchvideo.models.net import MultiPathWayWithFuse, Net, DetectionBBoxNetwork
+from pytorchvideo.models.net import DetectionBBoxNetwork, MultiPathWayWithFuse, Net
 from pytorchvideo.models.resnet import create_bottleneck_block, create_res_stage
 from pytorchvideo.models.stem import create_res_basic_stem
 

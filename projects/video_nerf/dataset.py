@@ -13,12 +13,13 @@ from pytorchvideo.data.encoded_video import EncodedVideo
 from torch.utils.data import Dataset
 
 from .dataset_utils import (
-    resize_images,
-    objectron_to_pytorch3d,
-    get_geometry_data,
     generate_splits,
+    get_geometry_data,
+    objectron_to_pytorch3d,
+    resize_images,
 )
 from .nerf_dataset import ListDataset
+
 
 DEFAULT_DATA_ROOT = os.path.join(
     os.path.dirname(os.path.realpath(__file__)), "..", "data", "objectron"

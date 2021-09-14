@@ -10,8 +10,8 @@ import torch
 from parameterized import parameterized
 from pytorchvideo.data.dataset_manifest_utils import VideoClipInfo, VideoDatasetType
 from pytorchvideo.data.domsev import (
-    LabelData,
     DomsevVideoDataset,
+    LabelData,
     _get_overlap_for_time_range_pair,
     _seconds_to_frame_index,
 )
