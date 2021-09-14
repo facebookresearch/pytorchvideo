@@ -9,7 +9,7 @@ from pytorchvideo.layers import MultiScaleBlock, SpatioTemporalClsPositionalEnco
 from pytorchvideo.layers.utils import round_width, set_attributes
 from pytorchvideo.models.head import create_vit_basic_head
 from pytorchvideo.models.weight_init import init_net_weights
-from torch.nn.common_types import _size_3_t
+from torch.nn.common_types import _size_2_t, _size_3_t
 
 from .stem import create_conv_patch_embed
 
@@ -50,7 +50,7 @@ class MultiscaleVisionTransformers(nn.Module):
     def __init__(
         self,
         *,
-        patch_embed: nn.Module,
+        patch_embed: Optional[nn.Module],
         cls_positional_encoding: nn.Module,
         pos_drop: Optional[nn.Module],
         norm_patch_embed: Optional[nn.Module],
@@ -75,7 +75,8 @@ class MultiscaleVisionTransformers(nn.Module):
         init_net_weights(self, init_std=0.02, style="vit")
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        x = self.patch_embed(x)
+        if self.patch_embed is not None:
+            x = self.patch_embed(x)
         x = self.cls_positional_encoding(x)
 
         if self.pos_drop is not None:
@@ -96,13 +97,14 @@ class MultiscaleVisionTransformers(nn.Module):
 
 def create_multiscale_vision_transformers(
     *,
-    spatial_size: int,
+    spatial_size: _size_2_t,
     temporal_size: int,
     cls_embed_on: bool = True,
     sep_pos_embed: bool = True,
     depth: int = 16,
     norm: str = "layernorm",
     # Patch embed config.
+    enable_patch_embed: bool = True,
     input_channels: int = 3,
     patch_embed_dim: int = 96,
     conv_patch_embed_kernel: Tuple[int] = (3, 7, 7),
@@ -135,8 +137,8 @@ def create_multiscale_vision_transformers(
     (ViT) is a specific case of MViT that only uses a single scale attention block.
 
     Args:
-        spatial_size (int): Input video spatial resolution. It assumes the width and
-            the height of the videos are the same.
+        spatial_size (_size_2_t): Input video spatial resolution (H, W). If a single
+            int is given, it assumes the width and the height are the same.
         temporal_size (int): Number of frames in the input video.
         cls_embed_on (bool): If True, use cls embed in the model. Otherwise features
             are average pooled before going to the final classifier.
@@ -144,6 +146,8 @@ def create_multiscale_vision_transformers(
         depth (int): The depth of the model.
         norm (str): Normalization layer. It currently supports "layernorm".
 
+        enable_patch_embed (bool): If true, patchify the input video. If false, it
+            assumes the input should have the feature dimension of patch_embed_dim.
         input_channels (int): Channel dimension of the input video.
         patch_embed_dim (int): Embedding dimension after patchifing the video input.
         conv_patch_embed_kernel (Tuple[int]): Kernel size of the convolution for
@@ -224,31 +228,40 @@ def create_multiscale_vision_transformers(
         norm_layer = partial(nn.LayerNorm, eps=1e-6)
     else:
         raise NotImplementedError("Only supports layernorm.")
+    if isinstance(spatial_size, int):
+        spatial_size = (spatial_size, spatial_size)
 
     conv_patch_op = nn.Conv2d if use_2d_patch else nn.Conv3d
 
-    patch_embed = create_conv_patch_embed(
-        in_channels=input_channels,
-        out_channels=patch_embed_dim,
-        conv_kernel_size=conv_patch_embed_kernel,
-        conv_stride=conv_patch_embed_stride,
-        conv_padding=conv_patch_embed_padding,
-        conv=conv_patch_op,
+    patch_embed = (
+        create_conv_patch_embed(
+            in_channels=input_channels,
+            out_channels=patch_embed_dim,
+            conv_kernel_size=conv_patch_embed_kernel,
+            conv_stride=conv_patch_embed_stride,
+            conv_padding=conv_patch_embed_padding,
+            conv=conv_patch_op,
+        )
+        if enable_patch_embed
+        else None
     )
 
-    input_dims = [temporal_size, spatial_size, spatial_size]
+    input_dims = [temporal_size, spatial_size[0], spatial_size[1]]
     input_stirde = (
         (1,) + tuple(conv_patch_embed_stride)
         if use_2d_patch
         else conv_patch_embed_stride
     )
 
-    patch_embed_dims = [
-        input_dims[i] // input_stirde[i] for i in range(len(input_dims))
-    ]
+    patch_embed_shape = (
+        [input_dims[i] // input_stirde[i] for i in range(len(input_dims))]
+        if enable_patch_embed
+        else input_dims
+    )
+
     cls_positional_encoding = SpatioTemporalClsPositionalEncoding(
         embed_dim=patch_embed_dim,
-        patch_embed_shape=patch_embed_dims,
+        patch_embed_shape=patch_embed_shape,
         sep_pos_embed=sep_pos_embed,
         has_cls=cls_embed_on,
     )

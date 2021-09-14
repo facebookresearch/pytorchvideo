@@ -57,7 +57,7 @@ class TestVisionTransformers(unittest.TestCase):
         batch_size = 1
         fake_input = torch.rand(batch_size, 3, 28, 28)
         model = create_multiscale_vision_transformers(
-            spatial_size=28,
+            spatial_size=(28, 28),
             temporal_size=1,
             patch_embed_dim=12,
             depth=1,
@@ -66,6 +66,25 @@ class TestVisionTransformers(unittest.TestCase):
             conv_patch_embed_kernel=conv_patch_kernel,
             conv_patch_embed_stride=conv_patch_stride,
             conv_patch_embed_padding=conv_patch_padding,
+        )
+        output = model(fake_input)
+        gt_shape_tensor = torch.rand(batch_size, num_head)
+        self.assertEqual(output.shape, gt_shape_tensor.shape)
+
+        # Test MViT without patch_embed.
+        conv_patch_kernel = (7, 7)
+        conv_patch_stride = (4, 4)
+        conv_patch_padding = (3, 3)
+        num_head = 100
+        batch_size = 1
+        fake_input = torch.rand(batch_size, 8, 12)
+        model = create_multiscale_vision_transformers(
+            spatial_size=(8, 1),
+            temporal_size=1,
+            patch_embed_dim=12,
+            depth=1,
+            enable_patch_embed=False,
+            head_num_classes=num_head,
         )
         output = model(fake_input)
         gt_shape_tensor = torch.rand(batch_size, num_head)
