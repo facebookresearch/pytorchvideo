@@ -3,17 +3,17 @@
 </p>
 
 <p align="center">
-   <a href="https://github.com/facebookresearch/pytorchvideo/blob/master/LICENSE">
+   <a href="https://github.com/facebookresearch/pytorchvideo/blob/main/LICENSE">
     <img src="https://img.shields.io/pypi/l/pytorchvideo" alt="CircleCI" />
   </a>
    <a href="https://pypi.org/project/pytorchvideo/">
     <img src="https://img.shields.io/pypi/v/pytorchvideo?color=blue&label=release" alt="CircleCI" />
   </a>
-    <a href="https://circleci.com/gh/facebookresearch/pytorchvideo/tree/master">
-    <img src="https://img.shields.io/circleci/build/github/facebookresearch/pytorchvideo/master?token=efdf3ff5b6f6acf44f4af39b683dea31d40e5901" alt="Coverage" />
+    <a href="https://circleci.com/gh/facebookresearch/pytorchvideo/tree/main">
+    <img src="https://img.shields.io/circleci/build/github/facebookresearch/pytorchvideo/main?token=efdf3ff5b6f6acf44f4af39b683dea31d40e5901" alt="Coverage" />
   </a>
-    <a href="https://codecov.io/gh/facebookresearch/pytorchvideo/branch/master">
-    <img src="https://codecov.io/gh/facebookresearch/pytorchvideo/branch/master/graph/badge.svg?token=OSZSI6JU31"/>
+    <a href="https://codecov.io/gh/facebookresearch/pytorchvideo/branch/main">
+    <img src="https://codecov.io/gh/facebookresearch/pytorchvideo/branch/main/graph/badge.svg?token=OSZSI6JU31"/>
   </a>
   </a>
     <a href="https://join.slack.com/t/pytorchvideo/shared_invite/zt-qjrkknes-7bt0qjcmVNvXcceg9zlgOA">
@@ -44,7 +44,7 @@ Key features include:
 
 ## Updates
 
-- Aug 2021: [Multiscale Vision Transformers](https://arxiv.org/abs/2104.11227) has been released in PyTorchVideo, details can be found from [here](https://github.com/facebookresearch/pytorchvideo/blob/master/pytorchvideo/models/vision_transformers.py#L97).
+- Aug 2021: [Multiscale Vision Transformers](https://arxiv.org/abs/2104.11227) has been released in PyTorchVideo, details can be found from [here](https://github.com/facebookresearch/pytorchvideo/blob/main/pytorchvideo/models/vision_transformers.py#L97).
 
 ## Installation
 
@@ -65,7 +65,7 @@ Get started with PyTorchVideo by trying out one of our [tutorials](https://pytor
 
 
 ## Model Zoo and Baselines
-We provide a large set of baseline results and trained models available for download in the [PyTorchVideo Model Zoo](https://github.com/facebookresearch/pytorchvideo/blob/master/docs/source/model_zoo.md).
+We provide a large set of baseline results and trained models available for download in the [PyTorchVideo Model Zoo](https://github.com/facebookresearch/pytorchvideo/blob/main/docs/source/model_zoo.md).
 
 ## Contributors
 

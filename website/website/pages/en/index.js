@@ -153,7 +153,7 @@ pip install pytorchvideo
         <Container>
           <ol>
             <li>
-              <strong>Install pytorchvideo  </strong> (Confirm requirements following the instructions <a href="https://github.com/facebookresearch/pytorchvideo/blob/master/INSTALL.md">here</a>)
+              <strong>Install pytorchvideo  </strong> (Confirm requirements following the instructions <a href="https://github.com/facebookresearch/pytorchvideo/blob/main/INSTALL.md">here</a>)
               <MarkdownBlock>{install}</MarkdownBlock>
             </li>
             <li>

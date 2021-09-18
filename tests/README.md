@@ -2,7 +2,7 @@
 
 
 Before running the tests, please ensure that you installed the necessary additional test dependencies. 
-If not installed, check the [install-README](https://github.com/facebookresearch/pytorchvideo/blob/master/INSTALL.md) on how to do it.
+If not installed, check the [install-README](https://github.com/facebookresearch/pytorchvideo/blob/main/INSTALL.md) on how to do it.
 
 Use the the following command to run the tests:
 ```

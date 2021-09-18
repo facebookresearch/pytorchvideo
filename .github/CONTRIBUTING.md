@@ -16,7 +16,7 @@ We do not always accept new features, and we take the following factors into con
 
 When sending a PR, please ensure you complete the following steps:
 
-1. Fork the repo and create your branch from `master`. Follow the instructions
+1. Fork the repo and create your branch from `main`. Follow the instructions
    in [INSTALL.md](../INSTALL.md) to build the repo.
 2. If you've added code that should be tested, add tests.
 3. If you've changed any APIs, please update the documentation.

@@ -1,6 +1,6 @@
 # Train a NeRF model with PyTorchVideo and PyTorch3D
 
-This project demonstrates how to use the video decoder from PyTorchVideo to load frames from a video of an object from the [Objectron dataset](https://github.com/google-research-datasets/Objectron), and use this to train a NeRF [1] model with [PyTorch3D](https://github.com/facebookresearch/pytorch3d). Instead of decoding and storing all the video frames as images, PyTorchVideo offers an easy alternative to load and access frames on the fly.  For this project we will be using the [NeRF implementation from PyTorch3D](https://github.com/facebookresearch/pytorch3d/tree/master/projects/nerf).
+This project demonstrates how to use the video decoder from PyTorchVideo to load frames from a video of an object from the [Objectron dataset](https://github.com/google-research-datasets/Objectron), and use this to train a NeRF [1] model with [PyTorch3D](https://github.com/facebookresearch/pytorch3d). Instead of decoding and storing all the video frames as images, PyTorchVideo offers an easy alternative to load and access frames on the fly.  For this project we will be using the [NeRF implementation from PyTorch3D](https://github.com/facebookresearch/pytorch3d/tree/main/projects/nerf).
 
 ### Set up
 
@@ -116,7 +116,7 @@ python test_nerf.py --config-name objectron test.mode='export_video' data.image_
 
 For a higher resolution video you can increase the image size to e.g. [192, 256] (note that this will slow down inference).
 
-You will need to specify the `scene_center` for the video in the `objectron.yaml` file. This is set for the demo video specified in `download_objectron_data.py`. For a different video you can calculate the scene center inside [`eval_video_utils.py`](https://github.com/facebookresearch/pytorch3d/blob/master/projects/nerf/nerf/eval_video_utils.py#L99). After line 99 you can add the following code to compute the center:
+You will need to specify the `scene_center` for the video in the `objectron.yaml` file. This is set for the demo video specified in `download_objectron_data.py`. For a different video you can calculate the scene center inside [`eval_video_utils.py`](https://github.com/facebookresearch/pytorch3d/blob/main/projects/nerf/nerf/eval_video_utils.py#L99). After line 99 you can add the following code to compute the center:
 
 ```python
 # traj is the circular camera trajectory on the camera mean plane.

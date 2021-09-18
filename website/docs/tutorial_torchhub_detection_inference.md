@@ -9,7 +9,7 @@ PyTorchVideo provides several pretrained models through [Torch Hub](https://pyto
 
 NOTE: Currently, this tutorial only works if ran on local clone from the directory `pytorchvideo/tutorials/video_detection_example`
 
-This tutorial assumes that you have installed [Detectron2]((https://github.com/facebookresearch/detectron2/blob/master/INSTALL.md)) and [Opencv-python](https://pypi.org/project/opencv-python/) on your machine.
+This tutorial assumes that you have installed [Detectron2]((https://github.com/facebookresearch/detectron2/blob/main/INSTALL.md)) and [Opencv-python](https://pypi.org/project/opencv-python/) on your machine.
 
 # Imports
 ```python
@@ -38,7 +38,7 @@ from visualization import VideoVisualizer
 ```
 
 # Load Model using Torch Hub API
-PyTorchVideo provides several pretrained models through Torch Hub. Available models are described in [model zoo documentation.](https://github.com/facebookresearch/pytorchvideo/blob/master/docs/source/model_zoo.md)
+PyTorchVideo provides several pretrained models through Torch Hub. Available models are described in [model zoo documentation.](https://github.com/facebookresearch/pytorchvideo/blob/main/docs/source/model_zoo.md)
 
 Here we are selecting the slow_r50_detection model which was trained using a 4x16 setting on the Kinetics 400 dataset and fine tuned on AVA V2.2 actions dataset.
 
@@ -56,7 +56,7 @@ We use the object detector to detect bounding boxes for the people.
 These bounding boxes later feed into our video action detection model.
 For more details, please refer to the Detectron2's object detection tutorials.
 
-To install Detectron2, please follow the instructions mentioned [here](https://github.com/facebookresearch/detectron2/blob/master/INSTALL.md)
+To install Detectron2, please follow the instructions mentioned [here](https://github.com/facebookresearch/detectron2/blob/main/INSTALL.md)
 
 ```python
 cfg = get_cfg()
