@@ -5,7 +5,7 @@ PyTorchVideo provides a large set of [TorchHub](https://pytorch.org/hub/) models
 
 ### Kinetics-400
 
-Models are trained on Kinetics-400. For more benchmarking and model details, please check the [PyTorchVideo Model Zoo](https://github.com/facebookresearch/pytorchvideo/blob/master/docs/source/model_zoo.md)
+Models are trained on Kinetics-400. For more benchmarking and model details, please check the [PyTorchVideo Model Zoo](https://github.com/facebookresearch/pytorchvideo/blob/main/docs/source/model_zoo.md)
 
 torchhub name            | arch     | depth | frame length x sample rate | top 1 | top 5 |
 ------------------------ | -------- | ----- | -------------------------- | ----- | ----- |
@@ -45,4 +45,4 @@ model = torch.hub.load("facebookresearch/pytorchvideo", model=model_name, pretra
 
 Notes:
 * Please check [torchhub inference tutorial](https://pytorchvideo.org/docs/tutorial_torchhub_inference) for more details about how to load models from TorchHub and perform inference.
-* Check [Model Zoo](https://github.com/facebookresearch/pytorchvideo/blob/master/docs/source/model_zoo.md) for the full set of supported PytorchVideo model zoo and more details about how the model zoo is prepared.
+* Check [Model Zoo](https://github.com/facebookresearch/pytorchvideo/blob/main/docs/source/model_zoo.md) for the full set of supported PytorchVideo model zoo and more details about how the model zoo is prepared.

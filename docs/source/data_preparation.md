@@ -18,12 +18,12 @@ path_to_video_3 label_3
 path_to_video_N label_N
 ```
 
-All the Kinetics models in the Model Zoo are trained and tested with the same data as [Non-local Network](https://github.com/facebookresearch/video-nonlocal-net/blob/master/DATASET.md) and [PySlowFast](https://github.com/facebookresearch/SlowFast/blob/master/slowfast/datasets/DATASET.md). For dataset specific issues, please reach out to the [dataset provider](https://deepmind.com/research/open-source/kinetics).
+All the Kinetics models in the Model Zoo are trained and tested with the same data as [Non-local Network](https://github.com/facebookresearch/video-nonlocal-net/blob/main/DATASET.md) and [PySlowFast](https://github.com/facebookresearch/SlowFast/blob/main/slowfast/datasets/DATASET.md). For dataset specific issues, please reach out to the [dataset provider](https://deepmind.com/research/open-source/kinetics).
 
 
 ### Charades
 
-We follow [PySlowFast](https://github.com/facebookresearch/SlowFast/blob/master/slowfast/datasets/DATASET.md) to prepare the Charades dataset as follow:
+We follow [PySlowFast](https://github.com/facebookresearch/SlowFast/blob/main/slowfast/datasets/DATASET.md) to prepare the Charades dataset as follow:
 
 1. Download the Charades RGB frames from [official website](http://ai2-website.s3.amazonaws.com/data/Charades_v1_rgb.tar).
 
@@ -32,7 +32,7 @@ We follow [PySlowFast](https://github.com/facebookresearch/SlowFast/blob/master/
 
 ### Something-Something V2
 
-We follow [PySlowFast](https://github.com/facebookresearch/SlowFast/blob/master/slowfast/datasets/DATASET.md) to prepare the Something-Something V2 dataset as follow:
+We follow [PySlowFast](https://github.com/facebookresearch/SlowFast/blob/main/slowfast/datasets/DATASET.md) to prepare the Something-Something V2 dataset as follow:
 
 1. Download the dataset and annotations from [official website](https://20bn.com/datasets/something-something).
 
@@ -49,7 +49,7 @@ We follow [PySlowFast](https://github.com/facebookresearch/SlowFast/blob/master/
 
 The AVA Dataset could be downloaded from the [official site](https://research.google.com/ava/download.html#ava_actions_download)
 
-We followed the same [downloading and preprocessing procedure](https://github.com/facebookresearch/video-long-term-feature-banks/blob/master/DATASET.md) as the [Long-Term Feature Banks for Detailed Video Understanding](https://arxiv.org/abs/1812.05038) do.
+We followed the same [downloading and preprocessing procedure](https://github.com/facebookresearch/video-long-term-feature-banks/blob/main/DATASET.md) as the [Long-Term Feature Banks for Detailed Video Understanding](https://arxiv.org/abs/1812.05038) do.
 
 You could follow these steps to download and preprocess the data:
 

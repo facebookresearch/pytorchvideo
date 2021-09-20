@@ -53,7 +53,7 @@ class ImgVisualizer(Visualizer):
         self, img_rgb: torch.Tensor, meta: Optional[SimpleNamespace] = None, **kwargs
     ) -> None:
         """
-        See https://github.com/facebookresearch/detectron2/blob/master/detectron2/utils/visualizer.py
+        See https://github.com/facebookresearch/detectron2/blob/main/detectron2/utils/visualizer.py
         for more details.
         Args:
             img_rgb: a tensor or numpy array of shape (H, W, C), where H and W correspond to

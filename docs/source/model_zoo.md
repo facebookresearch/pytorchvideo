@@ -78,4 +78,4 @@ All top1/top5 accuracies are measured with 10-clip evaluation. Latency is benchm
 
 
 ### TorchHub models
-We provide a large set of [TorchHub](https://pytorch.org/hub/) models for the above video models with pre-trained weights. So it's easy to construct the networks and load pre-trained weights. Please refer to [PytorchVideo TorchHub models](https://github.com/facebookresearch/pytorchvideo/blob/master/pytorchvideo/models/hub/README.md) for more details.
+We provide a large set of [TorchHub](https://pytorch.org/hub/) models for the above video models with pre-trained weights. So it's easy to construct the networks and load pre-trained weights. Please refer to [PytorchVideo TorchHub models](https://github.com/facebookresearch/pytorchvideo/blob/main/pytorchvideo/models/hub/README.md) for more details.

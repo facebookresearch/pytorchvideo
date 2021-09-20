@@ -175,7 +175,7 @@ texinfo_documents = [
     )
 ]
 
-github_doc_root = "https://github.com/facebookresearch/pytorchvideo/tree/master"
+github_doc_root = "https://github.com/facebookresearch/pytorchvideo/tree/main"
 
 
 def setup(app):

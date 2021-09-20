@@ -5,7 +5,7 @@ possible.
 ## Pull Requests
 We actively welcome your pull requests.
 
-1. Fork the repo and create your branch from `master`.
+1. Fork the repo and create your branch from `main`.
 2. If you've added code that should be tested, add tests.
 3. If you've changed APIs, update the documentation.
 4. Ensure the test suite passes.
@@ -14,12 +14,12 @@ We actively welcome your pull requests.
 
 ## Testing
 
-Please follow the instructions mentioned in [test-README](https://github.com/facebookresearch/pytorchvideo/blob/master/tests/README.md) to run the existing and your newly added tests.
+Please follow the instructions mentioned in [test-README](https://github.com/facebookresearch/pytorchvideo/blob/main/tests/README.md) to run the existing and your newly added tests.
 
 ## Linting
 
 We provide a linting script to correctly format your code changes.
-Please follow the instructions mentioned in [dev-README](https://github.com/facebookresearch/pytorchvideo/blob/master/dev/README.md) to run the linter.
+Please follow the instructions mentioned in [dev-README](https://github.com/facebookresearch/pytorchvideo/blob/main/dev/README.md) to run the linter.
 
 
 ## Contributor License Agreement ("CLA")
