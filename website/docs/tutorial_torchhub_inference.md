@@ -41,7 +41,7 @@ device = "cpu"
 
 # Pick a pretrained model and load the pretrained weights
 model_name = "slowfast_r50"
-model = torch.hub.load("facebookresearch/pytorchvideo", model=model_name, pretrained=True)
+model = torch.hub.load("facebookresearch/pytorchvideo:main", model=model_name, pretrained=True)
 
 # Set to eval mode and move to desired device
 model = model.to(device)

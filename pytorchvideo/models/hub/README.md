@@ -40,7 +40,7 @@ The models have been integrated into TorchHub, so could be loaded with TorchHub 
 ```Python
 # Pick a pretrained model
 model_name = "slowfast_r50"
-model = torch.hub.load("facebookresearch/pytorchvideo", model=model_name, pretrained=True)
+model = torch.hub.load("facebookresearch/pytorchvideo:main", model=model_name, pretrained=True)
 ```
 
 Notes:

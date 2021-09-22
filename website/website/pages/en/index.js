@@ -108,8 +108,8 @@ class Index extends React.Component {
 # Import all the required components
 ...
 
-# Load pre-trained model 
-model = torch.hub.load('facebookresearch/pytorchvideo', 'slow_r50', pretrained=True)
+# Load pre-trained model
+model = torch.hub.load('facebookresearch/pytorchvideo:main', 'slow_r50', pretrained=True)
 
 # Load video
 video = EncodedVideo.from_path('some_video.avi')
@@ -157,8 +157,8 @@ pip install pytorchvideo
               <MarkdownBlock>{install}</MarkdownBlock>
             </li>
             <li>
-              <strong>Try Video classification with Model Zoo </strong> 
-              (For detailed instructions, refer to the <a href="https://pytorchvideo.org/docs/tutorial_torchhub_inference">PyTorchVideo Model Zoo Inference Tutorial</a> 
+              <strong>Try Video classification with Model Zoo </strong>
+              (For detailed instructions, refer to the <a href="https://pytorchvideo.org/docs/tutorial_torchhub_inference">PyTorchVideo Model Zoo Inference Tutorial</a>
               <MarkdownBlock>{codeExample}</MarkdownBlock>
             </li>
           </ol>
@@ -171,17 +171,17 @@ pip install pytorchvideo
         <h1>Some use cases</h1>
         <div className="column">
           <div className="row">
-            
+
             <br></br>
             <h3>Detection (Add GIF)</h3>
           </div>
           <div className="row">
-            
+
             <br></br>
             <h3>Tracking (Add GIF)</h3>
           </div>
           <div className="row">
-            
+
             <br></br>
             <h3>Classification (Add GIF)</h3>
           </div>
