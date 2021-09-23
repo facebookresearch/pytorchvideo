@@ -58,9 +58,10 @@ setup(
         "networkx",
     ],
     extras_require={
-        "test": ["coverage", "pytest", "opencv-python"],
+        "test": ["coverage", "pytest", "opencv-python", "decord"],
         "dev": [
             "opencv-python",
+            "decord",
             "black==20.8b1",
             "sphinx",
             "isort==4.3.21",
