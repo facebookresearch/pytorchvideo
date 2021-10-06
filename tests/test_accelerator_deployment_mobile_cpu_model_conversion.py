@@ -3,6 +3,7 @@
 import logging
 import unittest
 from collections import OrderedDict
+from typing import Tuple
 
 import torch
 import torch.nn as nn
@@ -16,6 +17,12 @@ from pytorchvideo.models.accelerator.mobile_cpu.residual_blocks import (
     X3dBottleneckBlock,
 )
 
+TORCH_VERSION: Tuple[int, ...] = tuple(int(x) for x in torch.__version__.split(".")[:2])
+if TORCH_VERSION >= (1, 11):
+    from torch.ao.quantization import QuantStub, DeQuantStub
+else:
+    from torch.quantization import QuantStub, DeQuantStub
+
 
 class TestDeploymentModelConversion(unittest.TestCase):
     def test_X3dBottleneckBlock_model_conversion(self):
@@ -28,14 +35,14 @@ class TestDeploymentModelConversion(unittest.TestCase):
             # A common config where user model is wrapped by QuantStub/DequantStub
             def __init__(self):
                 super().__init__()
-                self.quant = torch.quantization.QuantStub()  # Non efficient block
+                self.quant = QuantStub()  # Non efficient block
                 # X3dBottleneckBlock is efficient block consists of multiple efficient blocks
                 self.model = X3dBottleneckBlock(
                     3,
                     12,
                     3,
                 )
-                self.dequant = torch.quantization.DeQuantStub()  # Non efficient block
+                self.dequant = DeQuantStub()  # Non efficient block
 
             def forward(self, x):
                 x = self.quant(x)
