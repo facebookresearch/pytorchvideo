@@ -2,12 +2,10 @@
 
 import logging
 import unittest
-from typing import Callable
+from typing import Tuple, Callable
 
 import torch
 import torch.nn as nn
-
-# import torch.quantization.quantize_fx as quantize_fx
 from fvcore.common.benchmark import benchmark
 from pytorchvideo.layers.accelerator.mobile_cpu.convolutions import (
     Conv3d3x3x3DwBnAct,
@@ -17,6 +15,28 @@ from pytorchvideo.models.accelerator.mobile_cpu.residual_blocks import (
     X3dBottleneckBlock,
 )
 from torch.utils.mobile_optimizer import optimize_for_mobile
+
+TORCH_VERSION: Tuple[int, ...] = tuple(int(x) for x in torch.__version__.split(".")[:2])
+if TORCH_VERSION >= (1, 10):
+    from torch.ao.quantization import (
+        get_default_qconfig,
+        prepare,
+        convert,
+        fuse_modules,
+        QuantStub,
+        DeQuantStub,
+        # quantize_fx
+    )
+else:
+    from torch.quantization import (
+        get_default_qconfig,
+        prepare,
+        convert,
+        fuse_modules,
+        QuantStub,
+        DeQuantStub,
+        # quantize_fx
+    )
 
 
 class TestBenchmarkEfficientBlocks(unittest.TestCase):
@@ -86,19 +106,19 @@ class TestBenchmarkEfficientBlocks(unittest.TestCase):
             conv_block.eval()
             if kwargs["quantize"] is True:
                 if kwargs["mode"] == "original":  # manually fuse conv and relu
-                    conv_block.kernel = torch.quantization.fuse_modules(
+                    conv_block.kernel = fuse_modules(
                         conv_block.kernel, ["conv", "act.act"]
                     )
                 conv_block = nn.Sequential(
-                    torch.quantization.QuantStub(),
+                    QuantStub(),
                     conv_block,
-                    torch.quantization.DeQuantStub(),
+                    DeQuantStub(),
                 )
 
-                conv_block.qconfig = torch.quantization.get_default_qconfig("qnnpack")
-                conv_block = torch.quantization.prepare(conv_block)
+                conv_block.qconfig = get_default_qconfig("qnnpack")
+                conv_block = prepare(conv_block)
                 try:
-                    conv_block = torch.quantization.convert(conv_block)
+                    conv_block = convert(conv_block)
                 except Exception as e:
                     logging.info(
                         "benchmark_conv3d_pw_bn_relu: "
@@ -191,19 +211,19 @@ class TestBenchmarkEfficientBlocks(unittest.TestCase):
             conv_block.eval()
             if kwargs["quantize"] is True:
                 if kwargs["mode"] == "original":  # manually fuse conv and relu
-                    conv_block.kernel = torch.quantization.fuse_modules(
+                    conv_block.kernel = fuse_modules(
                         conv_block.kernel, ["conv", "act.act"]
                     )
                 conv_block = nn.Sequential(
-                    torch.quantization.QuantStub(),
+                    QuantStub(),
                     conv_block,
-                    torch.quantization.DeQuantStub(),
+                    DeQuantStub(),
                 )
 
-                conv_block.qconfig = torch.quantization.get_default_qconfig("qnnpack")
-                conv_block = torch.quantization.prepare(conv_block)
+                conv_block.qconfig = get_default_qconfig("qnnpack")
+                conv_block = prepare(conv_block)
                 try:
-                    conv_block = torch.quantization.convert(conv_block)
+                    conv_block = convert(conv_block)
                 except Exception as e:
                     logging.info(
                         "benchmark_conv3d_3x3x3_dw_bn_relu: "
@@ -306,15 +326,15 @@ class TestBenchmarkEfficientBlocks(unittest.TestCase):
             conv_block.eval()
             if kwargs["quantize"] is True:
                 conv_block = nn.Sequential(
-                    torch.quantization.QuantStub(),
+                    QuantStub(),
                     conv_block,
-                    torch.quantization.DeQuantStub(),
+                    DeQuantStub(),
                 )
 
-                conv_block.qconfig = torch.quantization.get_default_qconfig("qnnpack")
-                conv_block = torch.quantization.prepare(conv_block)
+                conv_block.qconfig = get_default_qconfig("qnnpack")
+                conv_block = prepare(conv_block)
                 try:
-                    conv_block = torch.quantization.convert(conv_block)
+                    conv_block = convert(conv_block)
                 except Exception as e:
                     logging.info(
                         "benchmark_x3d_bottleneck_forward: "

@@ -18,6 +18,12 @@ from .conv_helper import (
     _Reshape,
 )
 
+TORCH_VERSION: Tuple[int, ...] = tuple(int(x) for x in torch.__version__.split(".")[:2])
+if TORCH_VERSION >= (1, 10):
+    from torch.ao.quantization import fuse_modules
+else:
+    from torch.quantization import fuse_modules
+
 
 class Conv3dPwBnAct(EfficientBlockBase):
     """
@@ -106,7 +112,7 @@ class Conv3dPwBnAct(EfficientBlockBase):
         self.kernel.eval()
         # First fuse conv and bn if bn exists.
         if hasattr(self.kernel, "bn"):
-            self.kernel = torch.quantization.fuse_modules(self.kernel, ["conv", "bn"])
+            self.kernel = fuse_modules(self.kernel, ["conv", "bn"])
 
         batch_size = input_blob_size[0]
         input_THW_tuple = input_blob_size[2:]
@@ -137,9 +143,7 @@ class Conv3dPwBnAct(EfficientBlockBase):
         self.kernel.act.convert(input_blob_size, **kwargs)
         # Fuse act with conv after conv3d -> conv2d if act is relu
         if self.act == "relu":
-            self.kernel = torch.quantization.fuse_modules(
-                self.kernel, ["conv", "act.act"]
-            )
+            self.kernel = fuse_modules(self.kernel, ["conv", "act.act"])
         # Insert reshape layers before/after conv2d
         self.kernel = nn.Sequential(
             _Reshape(self._input_tensor_reshape_size),
@@ -245,7 +249,7 @@ class Conv3d3x3x3DwBnAct(EfficientBlockBase):
         self.kernel.eval()
         # Fuse conv and bn if bn exists.
         if hasattr(self.kernel, "bn"):
-            self.kernel = torch.quantization.fuse_modules(self.kernel, ["conv", "bn"])
+            self.kernel = fuse_modules(self.kernel, ["conv", "bn"])
         self.kernel.conv = _Conv3dTemporalKernel3Decomposed(
             self.kernel.conv, input_blob_size[2:]
         )
@@ -364,7 +368,7 @@ class Conv3dTemporalKernel1BnAct(EfficientBlockBase):
         self.kernel.eval()
         # First fuse conv and bn if bn exists.
         if hasattr(self.kernel, "bn"):
-            self.kernel = torch.quantization.fuse_modules(self.kernel, ["conv", "bn"])
+            self.kernel = fuse_modules(self.kernel, ["conv", "bn"])
 
         self.kernel.conv = _Conv3dTemporalKernel1Decomposed(
             self.kernel.conv, input_blob_size[2:]
@@ -479,7 +483,7 @@ class Conv3d3x1x1BnAct(EfficientBlockBase):
         self.kernel.eval()
         # Fuse conv and bn if bn exists.
         if hasattr(self.kernel, "bn"):
-            self.kernel = torch.quantization.fuse_modules(self.kernel, ["conv", "bn"])
+            self.kernel = fuse_modules(self.kernel, ["conv", "bn"])
         self.kernel.conv = _Conv3dTemporalKernel3Decomposed(
             self.kernel.conv, input_blob_size[2:]
         )
@@ -576,7 +580,7 @@ class Conv3d5x1x1BnAct(EfficientBlockBase):
         self.kernel.eval()
         # Fuse conv and bn if bn exists.
         if hasattr(self.kernel, "bn"):
-            self.kernel = torch.quantization.fuse_modules(self.kernel, ["conv", "bn"])
+            self.kernel = fuse_modules(self.kernel, ["conv", "bn"])
         self.kernel.conv = _Conv3dTemporalKernel5Decomposed(
             self.kernel.conv, input_blob_size[2:]
         )
