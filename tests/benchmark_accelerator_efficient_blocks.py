@@ -105,6 +105,10 @@ class TestBenchmarkEfficientBlocks(unittest.TestCase):
             if kwargs["mode"] == "deployable":
                 conv_block.convert(kwargs["input_blob_size"])
             conv_block.eval()
+
+            def func_to_benchmark_dummy() -> None:
+                return
+
             if kwargs["quantize"] is True:
                 if kwargs["mode"] == "original":  # manually fuse conv and relu
                     conv_block.kernel = fuse_modules(
@@ -120,17 +124,24 @@ class TestBenchmarkEfficientBlocks(unittest.TestCase):
                 conv_block = prepare(conv_block)
                 try:
                     conv_block = convert(conv_block)
+
                 except Exception as e:
                     logging.info(
                         "benchmark_conv3d_pw_bn_relu: "
                         "catch exception '{}' with kwargs of {}".format(e, kwargs)
                     )
 
-                    def func_to_benchmark_dummy() -> None:
-                        return
-
                     return func_to_benchmark_dummy
-            traced_model = torch.jit.trace(conv_block, input_tensor, strict=False)
+            try:
+                traced_model = torch.jit.trace(conv_block, input_tensor, strict=False)
+            except Exception as e:
+                logging.info(
+                    "benchmark_conv3d_pw_bn_relu: "
+                    "catch exception '{}' with kwargs of {}".format(e, kwargs)
+                )
+
+                return func_to_benchmark_dummy
+
             if kwargs["quantize"] is False:
                 traced_model = optimize_for_mobile(traced_model)
 
@@ -207,6 +218,9 @@ class TestBenchmarkEfficientBlocks(unittest.TestCase):
                 use_bn=False,  # assume BN has already been fused for forward
             )
 
+            def func_to_benchmark_dummy() -> None:
+                return
+
             if kwargs["mode"] == "deployable":
                 conv_block.convert(kwargs["input_blob_size"])
             conv_block.eval()
@@ -231,12 +245,16 @@ class TestBenchmarkEfficientBlocks(unittest.TestCase):
                         "catch exception '{}' with kwargs of {}".format(e, kwargs)
                     )
 
-                    def func_to_benchmark_dummy() -> None:
-                        return
-
                     return func_to_benchmark_dummy
+            try:
+                traced_model = torch.jit.trace(conv_block, input_tensor, strict=False)
+            except Exception as e:
+                logging.info(
+                    "benchmark_conv3d_3x3x3_dw_bn_relu: "
+                    "catch exception '{}' with kwargs of {}".format(e, kwargs)
+                )
 
-            traced_model = torch.jit.trace(conv_block, input_tensor, strict=False)
+                return func_to_benchmark_dummy
             if kwargs["quantize"] is False:
                 traced_model = optimize_for_mobile(traced_model)
 
@@ -325,6 +343,10 @@ class TestBenchmarkEfficientBlocks(unittest.TestCase):
             if kwargs["mode"] == "deployable":
                 conv_block.convert(kwargs["input_blob_size"])
             conv_block.eval()
+
+            def func_to_benchmark_dummy() -> None:
+                return
+
             if kwargs["quantize"] is True:
                 conv_block = nn.Sequential(
                     QuantStub(),
@@ -336,18 +358,27 @@ class TestBenchmarkEfficientBlocks(unittest.TestCase):
                 conv_block = prepare(conv_block)
                 try:
                     conv_block = convert(conv_block)
+                    traced_model = torch.jit.trace(
+                        conv_block, input_tensor, strict=False
+                    )
                 except Exception as e:
                     logging.info(
                         "benchmark_x3d_bottleneck_forward: "
                         "catch exception '{}' with kwargs of {}".format(e, kwargs)
                     )
 
-                    def func_to_benchmark_dummy() -> None:
-                        return
-
                     return func_to_benchmark_dummy
 
-            traced_model = torch.jit.trace(conv_block, input_tensor, strict=False)
+            try:
+                traced_model = torch.jit.trace(conv_block, input_tensor, strict=False)
+            except Exception as e:
+                logging.info(
+                    "benchmark_x3d_bottleneck_forward: "
+                    "catch exception '{}' with kwargs of {}".format(e, kwargs)
+                )
+
+                return func_to_benchmark_dummy
+
             if kwargs["quantize"] is False:
                 traced_model = optimize_for_mobile(traced_model)
 
