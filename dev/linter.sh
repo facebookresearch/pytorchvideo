@@ -3,13 +3,6 @@
 
 # Run this script at project root with "./dev/linter.sh" before you commit.
 
-{
-  black --version | grep "20.8b1" > /dev/null
-} || {
-  echo "Linter requires black==20.8b1 !"
-  exit 1
-}
-
 echo "Running autoflake..."
 python -m autoflake --remove-all-unused-imports -i .
 

@@ -2,7 +2,7 @@
 
 import logging
 import unittest
-from typing import Tuple, Callable
+from typing import Callable, Tuple
 
 import torch
 import torch.nn as nn
@@ -15,6 +15,7 @@ from pytorchvideo.models.accelerator.mobile_cpu.residual_blocks import (
     X3dBottleneckBlock,
 )
 from torch.utils.mobile_optimizer import optimize_for_mobile
+
 
 TORCH_VERSION: Tuple[int, ...] = tuple(int(x) for x in torch.__version__.split(".")[:2])
 if TORCH_VERSION >= (1, 11):
