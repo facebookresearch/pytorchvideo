@@ -28,6 +28,8 @@ class HookBase:
     """
 
     executor: Callable = attr.ib()
+    conditional_execution_func: Callable = attr.ib()
+    exit_func: Callable = attr.ib()
     inputs: List[str] = attr.ib(default=())
     outputs: List[str] = attr.ib(default=())
     fail_strategy: str = attr.ib(
@@ -38,8 +40,6 @@ class HookBase:
         default=1,
         validator=lambda self_, attr_, val_: val_ >= 1,
     )
-    conditional_execution_func: Callable = attr.ib()
-    exit_func: Callable = attr.ib()
     status: str = "PENDING"
 
     def run(
