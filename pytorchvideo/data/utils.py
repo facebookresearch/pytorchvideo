@@ -27,32 +27,41 @@ def thwc_to_cthw(data: torch.Tensor) -> torch.Tensor:
     return data.permute(3, 0, 1, 2)
 
 
-def secs_to_pts(time_in_seconds: float, time_base: float, start_pts: float) -> float:
+def secs_to_pts(
+    time_in_seconds: float,
+    time_base: float,
+    start_pts: int,
+    round_mode: str = "floor",
+) -> int:
     """
     Converts a time (in seconds) to the given time base and start_pts offset
-    presentation time.
+    presentation time. Round_mode specifies the mode of rounding when converting time.
 
     Returns:
-        pts (float): The time in the given time base.
+        pts (int): The time in the given time base.
     """
     if time_in_seconds == math.inf:
         return math.inf
 
-    time_base = float(time_base)
-    return int(time_in_seconds / time_base) + start_pts
+    assert round_mode in ["floor", "ceil"], f"round_mode={round_mode} is not supported!"
+
+    if round_mode == "floor":
+        return math.floor(time_in_seconds / time_base) + start_pts
+    else:
+        return math.ceil(time_in_seconds / time_base) + start_pts
 
 
-def pts_to_secs(time_in_seconds: float, time_base: float, start_pts: float) -> float:
+def pts_to_secs(pts: int, time_base: float, start_pts: int) -> float:
     """
     Converts a present time with the given time base and start_pts offset to seconds.
 
     Returns:
         time_in_seconds (float): The corresponding time in seconds.
     """
-    if time_in_seconds == math.inf:
+    if pts == math.inf:
         return math.inf
 
-    return (time_in_seconds - start_pts) * float(time_base)
+    return int(pts - start_pts) * time_base
 
 
 class MultiProcessSampler(torch.utils.data.Sampler):

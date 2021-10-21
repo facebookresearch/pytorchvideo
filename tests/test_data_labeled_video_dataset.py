@@ -10,6 +10,7 @@ import pathlib
 import tempfile
 import unittest
 import unittest.mock
+from fractions import Fraction
 from typing import List, Tuple
 from unittest.mock import Mock, patch
 
@@ -45,10 +46,6 @@ DECODER_LIST = [("pyav",), ("torchvision",)]
 
 
 class TestLabeledVideoDataset(unittest.TestCase):
-    # Clip sampling is start time inclusive so we need to subtract _EPS from
-    # total_duration / 2 to sample half of the frames of a video.
-    _EPS = 1e-9
-
     def setUp(self):
         # Fail fast for tests
         LabeledVideoDataset._MAX_CONSECUTIVE_FAILURES = 1
@@ -107,7 +104,7 @@ class TestLabeledVideoDataset(unittest.TestCase):
             label_videos,
             total_duration,
         ):
-            half_duration = total_duration / 2 - self._EPS
+            half_duration = total_duration / 2
             clip_sampler = make_clip_sampler("random", half_duration)
             labeled_video_paths = LabeledVideoPaths.from_path(mock_csv)
             dataset = LabeledVideoDataset(
@@ -220,7 +217,7 @@ class TestLabeledVideoDataset(unittest.TestCase):
                 )
 
     @parameterized.expand(DECODER_LIST)
-    def test_constant_clips_per_video_sampling_works(self, decoder):
+    def test_constant_clips_per_video_sampling_works_with_fraction(self, decoder):
         # Make one video with 15 frames and one with 10 frames, producing 3 clips and 2
         # clips respectively.
         num_frames = 10
@@ -238,7 +235,7 @@ class TestLabeledVideoDataset(unittest.TestCase):
                     f.write(f"{video_file_name_2} 1\n".encode())
 
                 clip_frames = 2
-                duration_for_frames = clip_frames / fps - self._EPS
+                duration_for_frames = Fraction(clip_frames, fps)
                 clip_sampler = make_clip_sampler(
                     "constant_clips_per_video", duration_for_frames, 2
                 )
@@ -393,7 +390,7 @@ class TestLabeledVideoDataset(unittest.TestCase):
             label_videos,
             total_duration,
         ):
-            half_duration = total_duration / 2 - self._EPS
+            half_duration = total_duration / 2
             clip_sampler = make_clip_sampler("uniform", half_duration)
             labeled_video_paths = LabeledVideoPaths.from_path(mock_csv)
             dataset = LabeledVideoDataset(
@@ -425,7 +422,7 @@ class TestLabeledVideoDataset(unittest.TestCase):
             label_videos,
             total_duration,
         ):
-            half_duration = total_duration / 2 - self._EPS
+            half_duration = total_duration / 2
             clip_sampler = make_clip_sampler("uniform", half_duration)
             labeled_video_paths = LabeledVideoPaths.from_path(mock_csv)
             dataset = LabeledVideoDataset(
@@ -457,7 +454,7 @@ class TestLabeledVideoDataset(unittest.TestCase):
             label_videos,
             total_duration,
         ):
-            half_duration = total_duration / 2 - self._EPS
+            half_duration = total_duration / 2
             clip_sampler = make_clip_sampler("uniform", half_duration)
             labeled_video_paths = LabeledVideoPaths.from_path(mock_csv)
             dataset = LabeledVideoDataset(
@@ -502,7 +499,7 @@ class TestLabeledVideoDataset(unittest.TestCase):
                     f.write(f"{video_file_name_2} 1\n".encode())
 
                 total_duration = num_frames / fps
-                half_duration = total_duration / 2 - self._EPS
+                half_duration = total_duration / 2
                 clip_sampler = make_clip_sampler("uniform", half_duration)
                 labeled_video_paths = LabeledVideoPaths.from_path(f.name)
                 dataset = LabeledVideoDataset(
@@ -562,7 +559,7 @@ class TestLabeledVideoDataset(unittest.TestCase):
                     f.write(f"{video_file_name_2} 1\n".encode())
 
                 total_duration = num_frames / fps
-                half_duration = total_duration / 2 - self._EPS
+                half_duration = total_duration / 2
 
                 # Create several processes initialized in a PyTorch distributed process
                 # group so that distributed sampler is setup correctly when dataset is

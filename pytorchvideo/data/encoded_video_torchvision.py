@@ -1,6 +1,7 @@
 # Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved.
 
 import logging
+from fractions import Fraction
 from typing import BinaryIO, Dict, Optional
 
 import numpy as np
@@ -93,7 +94,11 @@ class EncodedVideoTorchVision(Video):
     ) -> Dict[str, Optional[torch.Tensor]]:
         """
         Retrieves frames from the encoded video at the specified start and end times
-        in seconds (the video always starts at 0 seconds).
+        in seconds (the video always starts at 0 seconds). Returned frames will be in
+        [start_sec, end_sec). Note that 1) if you want to avoid float precision issue
+        and need accurate frames, please use Fraction for start_sec and end_sec.
+        2) As end_sec is exclusive, so you may need to use
+        `get_clip(start_sec, duration + EPS)` to get the last frame.
 
         Args:
             start_sec (float): the clip start time in seconds
@@ -116,29 +121,41 @@ class EncodedVideoTorchVision(Video):
         video_frames = None
         if self._video is not None:
             video_start_pts = secs_to_pts(
-                start_sec, self._video_time_base, self._video_start_pts
+                start_sec,
+                self._video_time_base,
+                self._video_start_pts,
+                round_mode="ceil",
             )
             video_end_pts = secs_to_pts(
-                end_sec, self._video_time_base, self._video_start_pts
+                end_sec,
+                self._video_time_base,
+                self._video_start_pts,
+                round_mode="ceil",
             )
             video_frames = [
                 f
                 for f, pts in self._video
-                if pts >= video_start_pts and pts <= video_end_pts
+                if pts >= video_start_pts and pts < video_end_pts
             ]
 
         audio_samples = None
         if self._decode_audio and self._audio:
             audio_start_pts = secs_to_pts(
-                start_sec, self._audio_time_base, self._audio_start_pts
+                start_sec,
+                self._audio_time_base,
+                self._audio_start_pts,
+                round_mode="ceil",
             )
             audio_end_pts = secs_to_pts(
-                end_sec, self._audio_time_base, self._audio_start_pts
+                end_sec,
+                self._audio_time_base,
+                self._audio_start_pts,
+                round_mode="ceil",
             )
             audio_samples = [
                 f
                 for f, pts in self._audio
-                if pts >= audio_start_pts and pts <= audio_end_pts
+                if pts >= audio_start_pts and pts < audio_end_pts
             ]
             audio_samples = torch.cat(audio_samples, axis=0)
             audio_samples = audio_samples.to(torch.float32)
@@ -220,13 +237,13 @@ class EncodedVideoTorchVision(Video):
 
         if vduration < 0:
             # No header information to infer video duration
-            video_duration = float(vframes_pts[-1])
+            video_duration = int(vframes_pts[-1])
         else:
-            video_duration = float(vduration)
+            video_duration = int(vduration)
 
         video_and_pts = list(zip(vframes, vframes_pts))
         video_start_pts = int(vframes_pts[0])
-        video_time_base = float(vtimebase[0] / vtimebase[1])
+        video_time_base = Fraction(int(vtimebase[0]), int(vtimebase[1]))
 
         audio_and_pts = None
         audio_time_base = None
@@ -235,13 +252,13 @@ class EncodedVideoTorchVision(Video):
         if self._decode_audio:
             if aduration < 0:
                 # No header information to infer audio duration
-                audio_duration = float(aframe_pts[-1])
+                audio_duration = int(aframe_pts[-1])
             else:
-                audio_duration = float(aduration)
+                audio_duration = int(aduration)
 
             audio_and_pts = list(zip(aframes, aframe_pts))
             audio_start_pts = int(aframe_pts[0])
-            audio_time_base = float(atimebase[0] / atimebase[1])
+            audio_time_base = Fraction(int(atimebase[0]), int(atimebase[1]))
 
         return (
             video_and_pts,

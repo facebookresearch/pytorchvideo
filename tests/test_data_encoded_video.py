@@ -10,6 +10,10 @@ from utils import temp_encoded_video, temp_encoded_video_with_audio
 
 
 class TestEncodedVideo(unittest.TestCase):
+    # Clip sampling is end time exclusive so we need to add _EPS to sample
+    # all the frames of a video.
+    _EPS = 1e-9
+
     def test_video_works(self):
         num_frames = 11
         fps = 5
@@ -18,7 +22,7 @@ class TestEncodedVideo(unittest.TestCase):
             self.assertAlmostEqual(test_video.duration, num_frames / fps)
 
             # All frames (0 - test_video.duration seconds)
-            clip = test_video.get_clip(0, test_video.duration)
+            clip = test_video.get_clip(0, test_video.duration + self._EPS)
             frames, audio_samples = clip["video"], clip["audio"]
             self.assertTrue(frames.equal(data))
             self.assertEqual(audio_samples, None)
@@ -52,8 +56,8 @@ class TestEncodedVideo(unittest.TestCase):
             # Duration is max of both streams, therefore, the video duration will be expected.
             self.assertEqual(test_video.duration, num_frames / fps)
 
-            # All audio (0 - 2 seconds)
-            clip = test_video.get_clip(0, test_video.duration)
+            # All audio (0 - 1 seconds)
+            clip = test_video.get_clip(0, test_video.duration + self._EPS)
             frames, audio_samples = clip["video"], clip["audio"]
             self.assertTrue(frames.equal(video_data))
             self.assertTrue(audio_samples.equal(audio_data))
@@ -81,7 +85,7 @@ class TestEncodedVideo(unittest.TestCase):
             test_video = EncodedVideo.from_path(file_name)
 
             # All audio
-            clip = test_video.get_clip(0, test_video.duration)
+            clip = test_video.get_clip(0, test_video.duration + self._EPS)
             frames, audio_samples = clip["video"], clip["audio"]
             self.assertTrue(frames.equal(video_data))
             self.assertTrue(audio_samples.equal(audio_data))
@@ -108,7 +112,7 @@ class TestEncodedVideo(unittest.TestCase):
             test_video = EncodedVideo.from_path(file_name, decode_audio=False)
 
             # All audio
-            clip = test_video.get_clip(0, test_video.duration)
+            clip = test_video.get_clip(0, test_video.duration + self._EPS)
             frames, audio_samples = clip["video"], clip["audio"]
             self.assertTrue(frames.equal(video_data))
             self.assertEqual(audio_samples, None)
@@ -123,7 +127,7 @@ class TestEncodedVideo(unittest.TestCase):
                 test_video = EncodedVideoPyAV(f)
 
             self.assertAlmostEqual(test_video.duration, num_frames / fps)
-            clip = test_video.get_clip(0, test_video.duration)
+            clip = test_video.get_clip(0, test_video.duration + self._EPS)
             frames, audio_samples = clip["video"], clip["audio"]
             self.assertTrue(frames.equal(data))
             self.assertEqual(audio_samples, None)

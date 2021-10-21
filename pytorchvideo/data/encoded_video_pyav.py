@@ -120,7 +120,11 @@ class EncodedVideoPyAV(EncodedVideo):
     ) -> Dict[str, Optional[torch.Tensor]]:
         """
         Retrieves frames from the encoded video at the specified start and end times
-        in seconds (the video always starts at 0 seconds).
+        in seconds (the video always starts at 0 seconds). Returned frames will be in
+        [start_sec, end_sec). Note that 1) if you want to avoid float precision issue
+        and need accurate frames, please use Fraction for start_sec and end_sec.
+        2) As end_sec is exclusive, so you may need to use
+        `get_clip(start_sec, duration + EPS)` to get the last frame.
 
         Args:
             start_sec (float): the clip start time in seconds
@@ -146,30 +150,42 @@ class EncodedVideoPyAV(EncodedVideo):
         video_frames = None
         if self._video is not None:
             video_start_pts = secs_to_pts(
-                start_sec, self._video_time_base, self._video_start_pts
+                start_sec,
+                self._video_time_base,
+                self._video_start_pts,
+                round_mode="ceil",
             )
             video_end_pts = secs_to_pts(
-                end_sec, self._video_time_base, self._video_start_pts
+                end_sec,
+                self._video_time_base,
+                self._video_start_pts,
+                round_mode="ceil",
             )
 
             video_frames = [
                 f
                 for f, pts in self._video
-                if pts >= video_start_pts and pts <= video_end_pts
+                if pts >= video_start_pts and pts < video_end_pts
             ]
 
         audio_samples = None
         if self._has_audio and self._audio is not None:
             audio_start_pts = secs_to_pts(
-                start_sec, self._audio_time_base, self._audio_start_pts
+                start_sec,
+                self._audio_time_base,
+                self._audio_start_pts,
+                round_mode="ceil",
             )
             audio_end_pts = secs_to_pts(
-                end_sec, self._audio_time_base, self._audio_start_pts
+                end_sec,
+                self._audio_time_base,
+                self._audio_start_pts,
+                round_mode="ceil",
             )
             audio_samples = [
                 f
                 for f, pts in self._audio
-                if pts >= audio_start_pts and pts <= audio_end_pts
+                if pts >= audio_start_pts and pts < audio_end_pts
             ]
             audio_samples = torch.cat(audio_samples, axis=0)
             audio_samples = audio_samples.to(torch.float32)
@@ -209,8 +225,18 @@ class EncodedVideoPyAV(EncodedVideo):
         try:
             pyav_video_frames, _ = _pyav_decode_stream(
                 self._container,
-                secs_to_pts(start_secs, self._video_time_base, self._video_start_pts),
-                secs_to_pts(end_secs, self._video_time_base, self._video_start_pts),
+                secs_to_pts(
+                    start_secs,
+                    self._video_time_base,
+                    self._video_start_pts,
+                    round_mode="ceil",
+                ),
+                secs_to_pts(
+                    end_secs,
+                    self._video_time_base,
+                    self._video_start_pts,
+                    round_mode="ceil",
+                ),
                 self._container.streams.video[0],
                 {"video": 0},
             )
@@ -224,9 +250,17 @@ class EncodedVideoPyAV(EncodedVideo):
                 pyav_audio_frames, _ = _pyav_decode_stream(
                     self._container,
                     secs_to_pts(
-                        start_secs, self._audio_time_base, self._audio_start_pts
+                        start_secs,
+                        self._audio_time_base,
+                        self._audio_start_pts,
+                        round_mode="ceil",
                     ),
-                    secs_to_pts(end_secs, self._audio_time_base, self._audio_start_pts),
+                    secs_to_pts(
+                        end_secs,
+                        self._audio_time_base,
+                        self._audio_start_pts,
+                        round_mode="ceil",
+                    ),
                     self._container.streams.audio[0],
                     {"audio": 0},
                 )
@@ -248,8 +282,8 @@ class EncodedVideoPyAV(EncodedVideo):
 
 def _pyav_decode_stream(
     container: av.container.input.InputContainer,
-    start_pts: float,
-    end_pts: float,
+    start_pts: int,
+    end_pts: int,
     stream: av.video.stream.VideoStream,
     stream_name: dict,
     buffer_size: int = 0,
@@ -278,9 +312,9 @@ def _pyav_decode_stream(
     max_pts = 0
     for frame in container.decode(**stream_name):
         max_pts = max(max_pts, frame.pts)
-        if frame.pts >= start_pts and frame.pts <= end_pts:
+        if frame.pts >= start_pts and frame.pts < end_pts:
             frames[frame.pts] = frame
-        elif frame.pts > end_pts:
+        elif frame.pts >= end_pts:
             break
 
     result = [frames[pts] for pts in sorted(frames)]

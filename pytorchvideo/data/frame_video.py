@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+import math
 import os
 import re
 import time
@@ -146,7 +147,7 @@ class FrameVideo(Video):
         return self._duration
 
     def _get_frame_index_for_time(self, time_sec: float) -> int:
-        return int(np.round(self._fps * time_sec))
+        return math.ceil(self._fps * time_sec)
 
     def get_clip(
         self,
@@ -156,9 +157,11 @@ class FrameVideo(Video):
     ) -> Dict[str, Optional[torch.Tensor]]:
         """
         Retrieves frames from the stored video at the specified start and end times
-        in seconds (the video always starts at 0 seconds). Given that PathManager may
+        in seconds (the video always starts at 0 seconds). Returned frames will be
+        in [start_sec, end_sec). Given that PathManager may
         be fetching the frames from network storage, to handle transient errors, frame
-        reading is retried N times.
+        reading is retried N times.  Note that as end_sec is exclusive, so you may need
+        to use `get_clip(start_sec, duration + EPS)` to get the last frame.
 
         Args:
             start_sec (float): the clip start time in seconds
@@ -191,7 +194,9 @@ class FrameVideo(Video):
         end_sec = min(end_sec, self._duration)
 
         start_frame_index = self._get_frame_index_for_time(start_sec)
-        end_frame_index = self._get_frame_index_for_time(end_sec)
+        end_frame_index = min(
+            self._get_frame_index_for_time(end_sec), len(self._video_frame_paths)
+        )
         frame_indices = list(range(start_frame_index, end_frame_index))
         # Frame filter function to allow for subsampling before loading
         if frame_filter:
