@@ -16,6 +16,9 @@ from pytorchvideo.transforms import (
 from torchvision.transforms import Compose, Lambda
 from torchvision.transforms._transforms_video import CenterCropVideo, NormalizeVideo
 
+import cv2
+import numpy as np
+from PIL import Image
 
 FAIL_STRATEGY = ("RANDOM_FILL", "ZERO_FILL", "RETURN_NONE", "RAISE_ERROR")
 HOOK_STATUS = ("PENDING", "SCHEDULED", "EXECUTING", "EXECUTED", "FAILED", "EARLY_EXIT")
@@ -153,5 +156,25 @@ class X3DClsHook(HookBase):
         output = self.model(inputs)
         return {"action_class": output}
 
+
+def image_load_executor(status: OrderedDict, **args):
+    backend = args.get("backend", "cv2")
+
+    # Using CV2
+    if backend == "cv2":
+        return cv2.imread(status["image_path"])
+    # Using Pillow
+    elif backend.lower() == "pillow":
+        return np.array(Image.open(status["image_path"]))
+    else:
+        raise ValueError("We currently only support cv2 and pillow.")
 class ImageLoadHook(HookBase):
-    pass
+    def __init__(self, executor: Callable = image_load_executor, backend="cv2"):
+        self.executor = executor
+        self.inputs = ["image_path"]
+        self.outputs = ["loaded_image"]
+        self.backend = backend
+
+    def _run(self, status: OrderedDict):
+        image_arr = self.executor(status, backend=self.backend)
+        return {"loaded_image": image_arr}
