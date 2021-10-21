@@ -16,6 +16,10 @@ from pytorchvideo.transforms import (
 from torchvision.transforms import Compose, Lambda
 from torchvision.transforms._transforms_video import CenterCropVideo, NormalizeVideo
 
+from detectron2.engine import DefaultPredictor
+from detectron2.config import get_cfg
+from detectron2 import model_zoo
+
 import cv2
 import numpy as np
 from PIL import Image
@@ -178,3 +182,45 @@ class ImageLoadHook(HookBase):
     def _run(self, status: OrderedDict):
         image_arr = self.executor(status, backend=self.backend)
         return {"loaded_image": image_arr}
+
+
+def people_detection_executor(status: OrderedDict, **args):
+    predictor = args.get("predictor")
+    outputs = predictor(status["loaded_image"])
+
+    people_bbox = outputs["instances"][
+        outputs["instances"].pred_classes == 0
+    ].pred_boxes
+    return people_bbox
+
+
+class PeopleDetectionHook(HookBase):
+    def __init__(
+        self,
+        executor: Callable = people_detection_executor,
+    ):
+        self.inputs = ["loaded_image"]
+        self.outputs = ["people_bbox"]
+        self.executor = executor
+
+        # Configure detectron2
+        self.cfg = get_cfg()
+        model_config_file = "COCO-Detection/faster_rcnn_R_50_C4_1x.yaml"
+        self.cfg.merge_from_file(model_zoo.get_config_file(model_config_file))
+        self.cfg.MODEL.WEIGHTS = model_zoo.get_checkpoint_url(model_config_file)
+        self.cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = 0.7
+
+        if not torch.cuda.is_available():
+            self.cfg.MODEL.DEVICE = "cpu"
+
+        self.predictor = DefaultPredictor(self.cfg)
+
+    def _run(
+        self,
+        status,
+    ):
+        people_bbox = self.executor(
+            status,
+            predictor=self.predictor,
+        )
+        return {"people_bbox": people_bbox}
