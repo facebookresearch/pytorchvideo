@@ -152,3 +152,7 @@ class X3DClsHook(HookBase):
         inputs = inputs[None, ...]
         output = self.model(inputs)
         return {"action_class": output}
+
+
+class PeopleKeypointDetectionHook(HookBase):
+    pass
