@@ -208,4 +208,5 @@ class PeopleKeypointDetectionHook(HookBase):
             outputs["instances"].pred_classes == 0
         ].pred_keypoints
 
+        # keypoints is a tensor of shape (num_people, num_keypoint, (x, y, score))
         return {"keypoint_coordinates": keypoints}
