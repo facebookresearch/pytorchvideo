@@ -176,7 +176,14 @@ model_config = {
 
 def people_keypoints_executor(image, cfg):
     predictor = DefaultPredictor(cfg)
-    return predictor(image)
+    outputs = predictor(image)
+
+    # keypoints is a tensor of shape (num_people, num_keypoint, (x, y, score))
+    keypoints = outputs["instances"][
+        outputs["instances"].pred_classes == 0
+    ].pred_keypoints
+
+    return keypoints
 
 
 class PeopleKeypointDetectionHook(HookBase):
@@ -186,7 +193,7 @@ class PeopleKeypointDetectionHook(HookBase):
         executor: Callable = people_keypoints_executor,
     ):
         self.executor = executor
-        self.inputs = ["image", "bbox"]
+        self.inputs = ["loaded_image", "bbox_coordinates"]
         self.outputs = ["keypoint_coordinates"]
         self.model_config = model_config
 
@@ -203,10 +210,6 @@ class PeopleKeypointDetectionHook(HookBase):
 
     def _run(self, status: OrderedDict):
         inputs = status["loaded_image"]
-        outputs = self.executor(image=inputs, cfg=self.cfg)
-        keypoints = outputs["instances"][
-            outputs["instances"].pred_classes == 0
-        ].pred_keypoints
+        keypoints = self.executor(image=inputs, cfg=self.cfg)
 
-        # keypoints is a tensor of shape (num_people, num_keypoint, (x, y, score))
         return {"keypoint_coordinates": keypoints}
