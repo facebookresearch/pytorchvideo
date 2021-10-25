@@ -179,31 +179,38 @@ class ImageLoadHook(HookBase):
         return {"loaded_image": image_arr}
 
 
-def people_detection_executor(status: OrderedDict, **args):
-    predictor = args.get("predictor")
-    outputs = predictor(status["loaded_image"])
+def people_detection_executor(loaded_image, predictor):
+    outputs = predictor(loaded_image)
 
     people_bbox = outputs["instances"][
         outputs["instances"].pred_classes == 0
     ].pred_boxes
+
+    # Returns a detectron2.structures.Boxes object 
+    # that stores a list of boxes as a Nx4 torch.Tensor.
     return people_bbox
 
 
-class PeopleDetectionHook(HookBase):
+model_config = {
+    "model": "COCO-Detection/faster_rcnn_R_50_C4_3x.yaml",
+    "threshold": 0.7
+}
+class Detectron2PeopleDetectionHook(HookBase):
     def __init__(
         self,
         executor: Callable = people_detection_executor,
+        model_config: dict = model_config
     ):
         self.inputs = ["loaded_image"]
-        self.outputs = ["people_bbox"]
+        self.outputs = ["bbox_coordinates"]
         self.executor = executor
 
         # Configure detectron2
         self.cfg = get_cfg()
-        model_config_file = "COCO-Detection/faster_rcnn_R_50_C4_1x.yaml"
-        self.cfg.merge_from_file(model_zoo.get_config_file(model_config_file))
-        self.cfg.MODEL.WEIGHTS = model_zoo.get_checkpoint_url(model_config_file)
-        self.cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = 0.7
+        self.model_config = model_config
+        self.cfg.merge_from_file(model_zoo.get_config_file(self.model_config["model"]))
+        self.cfg.MODEL.WEIGHTS = model_zoo.get_checkpoint_url(self.model_config["model"])
+        self.cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = self.model_config["threshold"]
 
         if not torch.cuda.is_available():
             self.cfg.MODEL.DEVICE = "cpu"
@@ -214,8 +221,9 @@ class PeopleDetectionHook(HookBase):
         self,
         status,
     ):
-        people_bbox = self.executor(
-            status,
+        inputs = status["loaded_image"]
+        bbox_coordinates = self.executor(
+            loaded_image=inputs,
             predictor=self.predictor,
         )
-        return {"people_bbox": people_bbox}
+        return {"bbox_coordinates": bbox_coordinates}
