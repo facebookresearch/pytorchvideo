@@ -7,6 +7,7 @@ from typing import Callable, List
 
 
 import attr
+import detectron2
 import torch
 
 from pytorchvideo.data.decoder import DecoderType
@@ -167,25 +168,38 @@ class X3DClsHook(HookBase):
         return {"action_class": output}
 
 
-def get_keypoints(image, cfg):
+model_config = {
+    "model": "COCO-Keypoints/keypoint_rcnn_R_50_FPN_3x.yaml",
+    "threshold": 0.7,
+}
+
+
+def people_keypoints_executor(image, cfg):
     predictor = DefaultPredictor(cfg)
     return predictor(image)
 
 
 class PeopleKeypointDetectionHook(HookBase):
-    def __init__(self, device, executor: Callable = get_keypoints):
+    def __init__(
+        self,
+        model_config: dict = model_config,
+        executor: Callable = people_keypoints_executor,
+    ):
         self.executor = executor
         self.inputs = ["image", "bbox"]
         self.outputs = ["keypoint_coordinates"]
+        self.model_config = model_config
 
         # detectron2 config
-        self.model_config_file = "COCO-Keypoints/keypoint_rcnn_R_50_FPN_3x.yaml"
-
         self.cfg = get_cfg()
-        self.cfg.MODEL.DEVICE = device
-        self.cfg.merge_from_file(model_zoo.get_config_file(self.model_config_file))
-        self.cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = 0.7
-        self.cfg.MODEL.WEIGHTS = model_zoo.get_checkpoint_url(self.model_config_file)
+        self.cfg.MODEL.DEVICE = torch.device(
+            "cuda" if torch.cuda.is_available() else "cpu"
+        )
+        self.cfg.merge_from_file(model_zoo.get_config_file(self.model_config["model"]))
+        self.cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = self.model_config["threshold"]
+        self.cfg.MODEL.WEIGHTS = model_zoo.get_checkpoint_url(
+            self.model_config["model"]
+        )
 
     def _run(self, status: OrderedDict):
         inputs = status["loaded_image"]
