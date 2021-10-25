@@ -5,6 +5,7 @@ from collections import OrderedDict
 from typing import Callable, List
 
 import attr
+import cv2
 import torch
 from pytorchvideo.data.decoder import DecoderType
 from pytorchvideo.data.encoded_video import EncodedVideo
@@ -16,14 +17,16 @@ from pytorchvideo.transforms import (
 from torchvision.transforms import Compose, Lambda
 from torchvision.transforms._transforms_video import CenterCropVideo, NormalizeVideo
 
+
 try:
     from detectron2.engine import DefaultPredictor
     from detectron2.config import get_cfg
     from detectron2 import model_zoo
 except:
-    raise ImportError("Install Detectron2: https://detectron2.readthedocs.io/en/latest/tutorials/install.html")
+    raise ImportError(
+        "Install Detectron2: https://detectron2.readthedocs.io/en/latest/tutorials/install.html"
+    )
 
-import cv2
 
 FAIL_STRATEGY = ("RANDOM_FILL", "ZERO_FILL", "RETURN_NONE", "RAISE_ERROR")
 HOOK_STATUS = ("PENDING", "SCHEDULED", "EXECUTING", "EXECUTED", "FAILED", "EARLY_EXIT")
@@ -165,7 +168,8 @@ class X3DClsHook(HookBase):
 def image_load_executor(image_path):
     # Returns an numpy array of shape (H,W,C) and dtype (uint8)
     return cv2.imread(image_path)
-        
+
+
 class ImageLoadHook(HookBase):
     def __init__(self, executor: Callable = image_load_executor):
         self.executor = executor
@@ -186,20 +190,19 @@ def people_detection_executor(loaded_image, predictor):
         outputs["instances"].pred_classes == 0
     ].pred_boxes
 
-    # Returns a detectron2.structures.Boxes object 
+    # Returns a detectron2.structures.Boxes object
     # that stores a list of boxes as a Nx4 torch.Tensor.
     return people_bbox
 
 
-model_config = {
-    "model": "COCO-Detection/faster_rcnn_R_50_C4_3x.yaml",
-    "threshold": 0.7
-}
+model_config = {"model": "COCO-Detection/faster_rcnn_R_50_C4_3x.yaml", "threshold": 0.7}
+
+
 class Detectron2PeopleDetectionHook(HookBase):
     def __init__(
         self,
         executor: Callable = people_detection_executor,
-        model_config: dict = model_config
+        model_config: dict = model_config,
     ):
         self.inputs = ["loaded_image"]
         self.outputs = ["bbox_coordinates"]
@@ -209,7 +212,9 @@ class Detectron2PeopleDetectionHook(HookBase):
         self.cfg = get_cfg()
         self.model_config = model_config
         self.cfg.merge_from_file(model_zoo.get_config_file(self.model_config["model"]))
-        self.cfg.MODEL.WEIGHTS = model_zoo.get_checkpoint_url(self.model_config["model"])
+        self.cfg.MODEL.WEIGHTS = model_zoo.get_checkpoint_url(
+            self.model_config["model"]
+        )
         self.cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = self.model_config["threshold"]
 
         if not torch.cuda.is_available():
