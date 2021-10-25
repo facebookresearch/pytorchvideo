@@ -6,7 +6,6 @@ from os import stat
 from typing import Callable, List
 
 import attr
-import detectron2
 import torch
 from pytorchvideo.data.decoder import DecoderType
 from pytorchvideo.data.encoded_video import EncodedVideo
