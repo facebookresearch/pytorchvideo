@@ -9,6 +9,7 @@ from typing import Callable, List
 import attr
 import detectron2
 import torch
+from torch._C import Value
 
 from pytorchvideo.data.decoder import DecoderType
 from pytorchvideo.data.encoded_video import EncodedVideo
@@ -169,21 +170,33 @@ class X3DClsHook(HookBase):
 
 
 model_config = {
+    "backend": "detectron2",
     "model": "COCO-Keypoints/keypoint_rcnn_R_50_FPN_3x.yaml",
     "threshold": 0.7,
 }
 
 
-def people_keypoints_executor(image, cfg):
-    predictor = DefaultPredictor(cfg)
-    outputs = predictor(image)
+def generate_predictor(model_config, *args):
+    if model_config["backend"] == "detectron2":
+        cfg = get_cfg()
+        cfg.MODEL.DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        cfg.merge_from_file(model_zoo.get_config_file(model_config["model"]))
+        cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = model_config["threshold"]
+        cfg.MODEL.WEIGHTS = model_zoo.get_checkpoint_url(model_config["model"])
 
-    # keypoints is a tensor of shape (num_people, num_keypoint, (x, y, score))
-    keypoints = outputs["instances"][
-        outputs["instances"].pred_classes == 0
-    ].pred_keypoints
+        predictor = DefaultPredictor(
+            cfg,
+        )
+    # elif backend == "some_other_backend":
+    #     predictor = some_other_backend.init_predictor(cfg, args)
+    else:
+        raise ValueError("Incorrect backend.")
 
-    return keypoints
+    return predictor
+
+
+def people_keypoints_executor(image, predictor):
+    return predictor(image)
 
 
 class PeopleKeypointDetectionHook(HookBase):
@@ -193,23 +206,22 @@ class PeopleKeypointDetectionHook(HookBase):
         executor: Callable = people_keypoints_executor,
     ):
         self.executor = executor
+        self.model_config = model_config
         self.inputs = ["loaded_image", "bbox_coordinates"]
         self.outputs = ["keypoint_coordinates"]
-        self.model_config = model_config
 
-        # detectron2 config
-        self.cfg = get_cfg()
-        self.cfg.MODEL.DEVICE = torch.device(
-            "cuda" if torch.cuda.is_available() else "cpu"
-        )
-        self.cfg.merge_from_file(model_zoo.get_config_file(self.model_config["model"]))
-        self.cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = self.model_config["threshold"]
-        self.cfg.MODEL.WEIGHTS = model_zoo.get_checkpoint_url(
-            self.model_config["model"]
-        )
+        self.predictor = generate_predictor(model_config=self.model_config)
 
     def _run(self, status: OrderedDict):
         inputs = status["loaded_image"]
-        keypoints = self.executor(image=inputs, cfg=self.cfg)
+        outputs = self.executor(image=inputs, predictor=self.predictor)
+
+        if model_config["backend"] == "detectron2":
+            # keypoints is a tensor of shape (num_people, num_keypoint, (x, y, score))
+            keypoints = outputs["instances"][
+                outputs["instances"].pred_classes == 0
+            ].pred_keypoints
+        # elif model_config["backend"] == "some_other_backend":
+        #     keypoints = filter_keypoints()
 
         return {"keypoint_coordinates": keypoints}
