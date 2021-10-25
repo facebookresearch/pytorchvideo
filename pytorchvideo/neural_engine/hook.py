@@ -5,8 +5,10 @@ from collections import OrderedDict
 from os import stat
 from typing import Callable, List
 
+
 import attr
 import torch
+
 from pytorchvideo.data.decoder import DecoderType
 from pytorchvideo.data.encoded_video import EncodedVideo
 from pytorchvideo.transforms import (
@@ -17,13 +19,16 @@ from pytorchvideo.transforms import (
 from torchvision.transforms import Compose, Lambda
 from torchvision.transforms._transforms_video import CenterCropVideo, NormalizeVideo
 
-import detectron2
-from detectron2 import model_zoo
-from detectron2.config import get_cfg
-from detectron2.engine import DefaultPredictor
-from detectron2.utils.video_visualizer import VideoVisualizer
-from detectron2.utils.visualizer import ColorMode, Visualizer
-from detectron2.data import MetadataCatalog, DatasetCatalog
+
+try:
+    from detectron2 import model_zoo
+    from detectron2.config import get_cfg
+    from detectron2.engine import DefaultPredictor
+except:
+    raise ImportError(
+        "Install detectron2: https://detectron2.readthedocs.io/en/latest/tutorials/install.html"
+    )
+
 
 FAIL_STRATEGY = ("RANDOM_FILL", "ZERO_FILL", "RETURN_NONE", "RAISE_ERROR")
 HOOK_STATUS = ("PENDING", "SCHEDULED", "EXECUTING", "EXECUTED", "FAILED", "EARLY_EXIT")
