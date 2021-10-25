@@ -16,13 +16,14 @@ from pytorchvideo.transforms import (
 from torchvision.transforms import Compose, Lambda
 from torchvision.transforms._transforms_video import CenterCropVideo, NormalizeVideo
 
-from detectron2.engine import DefaultPredictor
-from detectron2.config import get_cfg
-from detectron2 import model_zoo
+try:
+    from detectron2.engine import DefaultPredictor
+    from detectron2.config import get_cfg
+    from detectron2 import model_zoo
+except:
+    raise ImportError("Install Detectron2: https://detectron2.readthedocs.io/en/latest/tutorials/install.html")
 
 import cv2
-import numpy as np
-from PIL import Image
 
 FAIL_STRATEGY = ("RANDOM_FILL", "ZERO_FILL", "RETURN_NONE", "RAISE_ERROR")
 HOOK_STATUS = ("PENDING", "SCHEDULED", "EXECUTING", "EXECUTED", "FAILED", "EARLY_EXIT")
@@ -161,28 +162,19 @@ class X3DClsHook(HookBase):
         return {"action_class": output}
 
 
-def image_load_executor(image_path, backend):
+def image_load_executor(image_path):
     # Returns an numpy array of shape (H,W,C) and dtype (uint8)
-
-    # Using CV2
-    if backend == "cv2":
-        return cv2.imread(image_path)
-    # Using Pillow
-    elif backend == "pillow":
-        return np.array(Image.open(image_path))
-    else:
-        raise ValueError("Unsupported backend, please use cv2 or pillow.")
+    return cv2.imread(image_path)
         
 class ImageLoadHook(HookBase):
-    def __init__(self, executor: Callable = image_load_executor, backend="cv2"):
+    def __init__(self, executor: Callable = image_load_executor):
         self.executor = executor
         self.inputs = ["image_path"]
         self.outputs = ["loaded_image"]
-        self.backend = backend
 
     def _run(self, status: OrderedDict):
         inputs = status["image_path"]
-        image_arr = self.executor(image_path=inputs, backend=self.backend)
+        image_arr = self.executor(image_path=inputs)
 
         return {"loaded_image": image_arr}
 
