@@ -161,17 +161,18 @@ class X3DClsHook(HookBase):
         return {"action_class": output}
 
 
-def image_load_executor(status: OrderedDict, **args):
-    backend = args.get("backend", "cv2")
+def image_load_executor(image_path, backend):
+    # Returns an numpy array of shape (H,W,C) and dtype (uint8)
 
     # Using CV2
     if backend == "cv2":
-        return cv2.imread(status["image_path"])
+        return cv2.imread(image_path)
     # Using Pillow
-    elif backend.lower() == "pillow":
-        return np.array(Image.open(status["image_path"]))
+    elif backend == "pillow":
+        return np.array(Image.open(image_path))
     else:
-        raise ValueError("We currently only support cv2 and pillow.")
+        raise ValueError("Unsupported backend, please use cv2 or pillow.")
+        
 class ImageLoadHook(HookBase):
     def __init__(self, executor: Callable = image_load_executor, backend="cv2"):
         self.executor = executor
@@ -180,7 +181,9 @@ class ImageLoadHook(HookBase):
         self.backend = backend
 
     def _run(self, status: OrderedDict):
-        image_arr = self.executor(status, backend=self.backend)
+        inputs = status["image_path"]
+        image_arr = self.executor(image_path=inputs, backend=self.backend)
+
         return {"loaded_image": image_arr}
 
 
