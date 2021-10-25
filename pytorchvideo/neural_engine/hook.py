@@ -5,12 +5,9 @@ from collections import OrderedDict
 from os import stat
 from typing import Callable, List
 
-
 import attr
 import detectron2
 import torch
-from torch._C import Value
-
 from pytorchvideo.data.decoder import DecoderType
 from pytorchvideo.data.encoded_video import EncodedVideo
 from pytorchvideo.transforms import (
@@ -18,6 +15,7 @@ from pytorchvideo.transforms import (
     ShortSideScale,
     UniformTemporalSubsample,
 )
+from torch._C import Value
 from torchvision.transforms import Compose, Lambda
 from torchvision.transforms._transforms_video import CenterCropVideo, NormalizeVideo
 
