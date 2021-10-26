@@ -14,6 +14,16 @@ construct them.
 """
 
 
+def max_fusion(x):
+    return torch.max(x, dim=0).values
+
+def sum_fusion(x):
+    return torch.sum(x, dim=0)
+
+def prod_fusion(x):
+    return torch.prod(x, dim=0)
+
+
 def make_fusion_layer(method: str, feature_dims: List[int]):
     """
     Args:
@@ -34,11 +44,11 @@ def make_fusion_layer(method: str, feature_dims: List[int]):
     elif method == "temporal_concat":
         return TemporalConcatFusion(feature_dims)
     elif method == "max":
-        return ReduceFusion(feature_dims, lambda x: torch.max(x, dim=0).values)
+        return ReduceFusion(feature_dims, max_fusion)
     elif method == "sum":
-        return ReduceFusion(feature_dims, lambda x: torch.sum(x, dim=0))
+        return ReduceFusion(feature_dims, sum_fusion)
     elif method == "prod":
-        return ReduceFusion(feature_dims, lambda x: torch.prod(x, dim=0))
+        return ReduceFusion(feature_dims, prod_fusion)
     else:
         raise NotImplementedError(f"Fusion {method} not available.")
 

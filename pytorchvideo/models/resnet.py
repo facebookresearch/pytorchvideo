@@ -315,6 +315,8 @@ def create_acoustic_bottleneck_block(
         norm_c=norm_c,
     )
 
+def sum_fusion(x, y):
+    return x + y
 
 def create_res_block(
     *,
@@ -324,7 +326,7 @@ def create_res_block(
     dim_out: int,
     bottleneck: Callable,
     use_shortcut: bool = False,
-    branch_fusion: Callable = lambda x, y: x + y,
+    branch_fusion: Callable = sum_fusion,
     # Conv configs.
     conv_a_kernel_size: Tuple[int] = (3, 1, 1),
     conv_a_stride: Tuple[int] = (2, 1, 1),

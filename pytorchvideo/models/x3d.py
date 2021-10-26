@@ -12,7 +12,7 @@ from pytorchvideo.layers.swish import Swish
 from pytorchvideo.layers.utils import round_repeats, round_width, set_attributes
 from pytorchvideo.models.head import ResNetBasicHead
 from pytorchvideo.models.net import Net
-from pytorchvideo.models.resnet import BottleneckBlock, ResBlock, ResStage
+from pytorchvideo.models.resnet import BottleneckBlock, ResBlock, ResStage, sum_fusion
 from pytorchvideo.models.stem import ResNetBasicStem
 
 
@@ -318,7 +318,7 @@ def create_x3d_res_block(
             inner_act=inner_act,
         ),
         activation=None if activation is None else activation(),
-        branch_fusion=lambda x, y: x + y,
+        branch_fusion=sum_fusion,
     )
 
 
