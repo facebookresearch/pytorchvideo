@@ -322,16 +322,14 @@ class KineticsDataModule(pytorch_lightning.LightningDataModule):
         """
         sampler = DistributedSampler if self.trainer.use_ddp else RandomSampler
         val_transform = self._make_transforms(mode="val")
-        self.val_dataset = LimitDataset(
-            pytorchvideo.data.Kinetics(
-                data_path=os.path.join(self.args.data_path, "val.csv"),
-                clip_sampler=pytorchvideo.data.make_clip_sampler(
-                    "uniform", self.args.clip_duration
-                ),
-                video_path_prefix=self.args.video_path_prefix,
-                transform=val_transform,
-                video_sampler=sampler,
-            )
+        self.val_dataset = pytorchvideo.data.Kinetics(
+            data_path=os.path.join(self.args.data_path, "val.csv"),
+            clip_sampler=pytorchvideo.data.make_clip_sampler(
+                "uniform", self.args.clip_duration
+            ),
+            video_path_prefix=self.args.video_path_prefix,
+            transform=val_transform,
+            video_sampler=sampler,
         )
         return torch.utils.data.DataLoader(
             self.val_dataset,

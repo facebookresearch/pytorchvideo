@@ -173,7 +173,7 @@ class LabeledVideoDataset(torch.utils.data.IterableDataset):
                 self._loaded_video_label[0].close()
                 self._loaded_video_label = None
                 self._next_clip_start_time = 0.0
-
+                self._clip_sampler.reset()
                 if video_is_null:
                     logger.debug(
                         "Failed to load clip {}; trial {}".format(video.name, i_try)

@@ -16,7 +16,7 @@
     <img src="https://codecov.io/gh/facebookresearch/pytorchvideo/branch/main/graph/badge.svg?token=OSZSI6JU31"/>
   </a>
   </a>
-    <a href="https://join.slack.com/t/pytorchvideo/shared_invite/zt-qjrkknes-7bt0qjcmVNvXcceg9zlgOA">
+    <a href="https://pytorchvideo.slack.com/join/shared_invite/zt-wx8xsblj-eAfx6wox9tSuFrAm8KaiPg#/shared-invite/email">
     <img src="http://img.shields.io/static/v1?label=Join%20us%20on&message=%23pytorchvideo&labelColor=%234A154B&logo=slack"/>
   </a>
   <p align="center">

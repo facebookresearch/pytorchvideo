@@ -55,9 +55,15 @@ class UniformTemporalSubsample(torch.nn.Module):
     ``nn.Module`` wrapper for ``pytorchvideo.transforms.functional.uniform_temporal_subsample``.
     """
 
-    def __init__(self, num_samples: int):
+    def __init__(self, num_samples: int, temporal_dim: int = -3):
+        """
+        Args:
+            num_samples (int): The number of equispaced samples to be selected
+            temporal_dim (int): dimension of temporal to perform temporal subsample.
+        """
         super().__init__()
         self._num_samples = num_samples
+        self._temporal_dim = temporal_dim
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         """
@@ -65,7 +71,7 @@ class UniformTemporalSubsample(torch.nn.Module):
             x (torch.Tensor): video tensor with shape (C, T, H, W).
         """
         return pytorchvideo.transforms.functional.uniform_temporal_subsample(
-            x, self._num_samples
+            x, self._num_samples, self._temporal_dim
         )
 
 
@@ -75,9 +81,10 @@ class UniformTemporalSubsampleRepeated(torch.nn.Module):
     ``pytorchvideo.transforms.functional.uniform_temporal_subsample_repeated``.
     """
 
-    def __init__(self, frame_ratios: Tuple[int]):
+    def __init__(self, frame_ratios: Tuple[int], temporal_dim: int = -3):
         super().__init__()
         self._frame_ratios = frame_ratios
+        self._temporal_dim = temporal_dim
 
     def forward(self, x: torch.Tensor):
         """
@@ -85,7 +92,7 @@ class UniformTemporalSubsampleRepeated(torch.nn.Module):
             x (torch.Tensor): video tensor with shape (C, T, H, W).
         """
         return pytorchvideo.transforms.functional.uniform_temporal_subsample_repeated(
-            x, self._frame_ratios
+            x, self._frame_ratios, self._temporal_dim
         )
 
 
@@ -94,16 +101,22 @@ class ShortSideScale(torch.nn.Module):
     ``nn.Module`` wrapper for ``pytorchvideo.transforms.functional.short_side_scale``.
     """
 
-    def __init__(self, size: int):
+    def __init__(
+        self, size: int, interpolation: str = "bilinear", backend: str = "pytorch"
+    ):
         super().__init__()
         self._size = size
+        self._interpolation = interpolation
+        self._backend = backend
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         """
         Args:
             x (torch.Tensor): video tensor with shape (C, T, H, W).
         """
-        return pytorchvideo.transforms.functional.short_side_scale(x, self._size)
+        return pytorchvideo.transforms.functional.short_side_scale(
+            x, self._size, self._interpolation, self._backend
+        )
 
 
 class RandomShortSideScale(torch.nn.Module):
@@ -112,10 +125,18 @@ class RandomShortSideScale(torch.nn.Module):
     parameter is chosen randomly in [min_size, max_size].
     """
 
-    def __init__(self, min_size: int, max_size: int):
+    def __init__(
+        self,
+        min_size: int,
+        max_size: int,
+        interpolation: str = "bilinear",
+        backend: str = "pytorch",
+    ):
         super().__init__()
         self._min_size = min_size
         self._max_size = max_size
+        self._interpolation = interpolation
+        self._backend = backend
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         """
@@ -123,7 +144,9 @@ class RandomShortSideScale(torch.nn.Module):
             x (torch.Tensor): video tensor with shape (C, T, H, W).
         """
         size = torch.randint(self._min_size, self._max_size + 1, (1,)).item()
-        return pytorchvideo.transforms.functional.short_side_scale(x, size)
+        return pytorchvideo.transforms.functional.short_side_scale(
+            x, size, self._interpolation, self._backend
+        )
 
 
 class UniformCropVideo(torch.nn.Module):

@@ -45,6 +45,10 @@ class ClipSampler(ABC):
     ) -> ClipInfo:
         pass
 
+    def reset(self) -> None:
+        """Resets any video-specific attributes in preperation for next video"""
+        pass
+
 
 def make_clip_sampler(sampling_type: str, *args) -> ClipSampler:
     """
@@ -168,7 +172,13 @@ class UniformClipSampler(ClipSampler):
         clip_index = self._current_clip_index
         self._current_clip_index += 1
 
+        if is_last_clip:
+            self.reset()
+
         return ClipInfo(clip_start, clip_end, clip_index, 0, is_last_clip)
+
+    def reset(self):
+        self._current_clip_index = 0
 
 
 class RandomClipSampler(ClipSampler):
@@ -247,6 +257,9 @@ class ConstantClipsPerVideoSampler(ClipSampler):
             self._current_clip_index = 0
             is_last_clip = True
 
+        if is_last_clip:
+            self.reset()
+
         return ClipInfo(
             clip_start_sec,
             clip_start_sec + self._clip_duration,
@@ -254,3 +267,7 @@ class ConstantClipsPerVideoSampler(ClipSampler):
             aug_index,
             is_last_clip,
         )
+
+    def reset(self):
+        self._current_clip_index = 0
+        self._current_aug_index = 0

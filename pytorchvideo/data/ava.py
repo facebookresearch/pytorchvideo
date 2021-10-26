@@ -318,6 +318,9 @@ class TimeStampClipSampler:
             True,
         )
 
+    def reset(self) -> None:
+        pass
+
 
 def Ava(
     frame_paths_file: str,

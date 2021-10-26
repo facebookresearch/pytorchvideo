@@ -249,3 +249,6 @@ class UntrimmedClipSampler:
             clip_info.aug_index,
             clip_info.is_last_clip,
         )
+
+    def reset(self) -> None:
+        pass
