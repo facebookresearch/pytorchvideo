@@ -194,6 +194,26 @@ class Normalize(torchvision.transforms.Normalize):
         return vid
 
 
+class ConvertFloatToUint8(torch.nn.Module):
+    """
+    Converts a video from dtype float32 to dtype uint8.
+    """
+
+    def __init__(self):
+        super().__init__()
+        self.convert_func = torchvision.transforms.ConvertImageDtype(torch.uint8)
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        """
+        Args:
+            x (torch.Tensor): video tensor with shape (C, T, H, W).
+        """
+        assert (
+            x.dtype == torch.float or x.dtype == torch.half
+        ), "image must have dtype torch.uint8"
+        return self.convert_func(x)
+
+
 class ConvertUint8ToFloat(torch.nn.Module):
     """
     Converts a video from dtype uint8 to dtype float32.
@@ -210,6 +230,42 @@ class ConvertUint8ToFloat(torch.nn.Module):
         """
         assert x.dtype == torch.uint8, "image must have dtype torch.uint8"
         return self.convert_func(x)
+
+
+class MoveChannelRear(torch.nn.Module):
+    """
+    A Scriptable version to perform C X Y Z -> X Y Z C.
+    """
+
+    def __init__(self):
+        super().__init__()
+
+    @torch.jit.script_method
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        """
+        Args:
+            x (torch.Tensor): video tensor whose dimensions are to be permuted.
+        """
+        x = x.permute([1, 2, 3, 0])
+        return x
+
+
+class MoveChannelFront(torch.nn.Module):
+    """
+    A Scriptable version to perform X Y Z C -> C X Y Z.
+    """
+
+    def __init__(self):
+        super().__init__()
+
+    @torch.jit.script_method
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        """
+        Args:
+            x (torch.Tensor): video tensor whose dimensions are to be permuted.
+        """
+        x = x.permute([3, 0, 1, 2])
+        return x
 
 
 class RandomResizedCrop(torch.nn.Module):
