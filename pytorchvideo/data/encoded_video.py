@@ -28,6 +28,10 @@ def select_video_class(decoder: str) -> Video:
         from .encoded_video_torchvision import EncodedVideoTorchVision
 
         video_cls = EncodedVideoTorchVision
+    elif DecoderType(decoder) == DecoderType.DECORD:
+        from .encoded_video_decord import EncodedVideoDecord
+
+        video_cls = EncodedVideoDecord
     else:
         raise NotImplementedError(f"Unknown decoder type {decoder}")
 

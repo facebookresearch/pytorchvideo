@@ -42,7 +42,7 @@ from utils import (
 )
 
 
-DECODER_LIST = [("pyav",), ("torchvision",)]
+DECODER_LIST = [("pyav",), ("torchvision",), ("decord",)]
 
 
 class TestLabeledVideoDataset(unittest.TestCase):
