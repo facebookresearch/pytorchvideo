@@ -5,7 +5,6 @@ from collections import OrderedDict
 from typing import Callable, List
 
 import attr
-
 import torch
 from pytorchvideo.data.decoder import DecoderType
 from pytorchvideo.data.encoded_video import EncodedVideo
@@ -153,5 +152,3 @@ class X3DClsHook(HookBase):
         inputs = inputs[None, ...]
         output = self.model(inputs)
         return {"action_class": output}
-
-

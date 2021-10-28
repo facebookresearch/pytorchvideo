@@ -4,10 +4,10 @@
 from collections import OrderedDict
 from typing import Callable
 
-import torch
 import cv2
-
+import torch
 from hook import HookBase
+
 
 try:
     from detectron2.engine import DefaultPredictor
@@ -53,6 +53,7 @@ det_models = {
     "faster_rcnn_R_50_C4": "COCO-Detection/faster_rcnn_R_50_C4_3x.yaml",
     "faster_rcnn_R_50_FPN": "COCO-Detection/faster_rcnn_R_50_FPN_3x.yaml",
 }
+
 
 class Detectron2PeopleDetectionHook(HookBase):
     def __init__(
