@@ -185,8 +185,6 @@ def generate_predictor(model_config, *args):
         predictor = DefaultPredictor(
             cfg,
         )
-    # elif backend == "some_other_backend":
-    #     predictor = some_other_backend.init_predictor(cfg, args)
     else:
         raise ValueError("Incorrect backend.")
 
@@ -215,11 +213,9 @@ class PeopleKeypointDetectionHook(HookBase):
         outputs = self.executor(image=inputs, predictor=self.predictor)
 
         if model_config["backend"] == "detectron2":
-            # keypoints is a tensor of shape (num_people, num_keypoint, (x, y, score))
             keypoints = outputs["instances"][
                 outputs["instances"].pred_classes == 0
             ].pred_keypoints
-        # elif model_config["backend"] == "some_other_backend":
-        #     keypoints = filter_keypoints()
 
+        # keypoints is a tensor of shape (num_people, num_keypoint, (x, y, score))
         return {"keypoint_coordinates": keypoints}
