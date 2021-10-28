@@ -213,9 +213,9 @@ class PeopleKeypointDetectionHook(HookBase):
         outputs = self.executor(image=inputs, predictor=self.predictor)
 
         if model_config["backend"] == "detectron2":
+            # keypoints is a tensor of shape (num_people, num_keypoint, (x, y, score))
             keypoints = outputs["instances"][
                 outputs["instances"].pred_classes == 0
             ].pred_keypoints
 
-        # keypoints is a tensor of shape (num_people, num_keypoint, (x, y, score))
         return {"keypoint_coordinates": keypoints}
