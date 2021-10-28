@@ -184,25 +184,28 @@ class ImageLoadHook(HookBase):
 
 
 def people_detection_executor(loaded_image, predictor):
+    # Returns a detectron2.structures.Boxes object
+    # that stores a list of boxes as a Nx4 torch.Tensor.
     outputs = predictor(loaded_image)
 
     people_bbox = outputs["instances"][
         outputs["instances"].pred_classes == 0
     ].pred_boxes
-
-    # Returns a detectron2.structures.Boxes object
-    # that stores a list of boxes as a Nx4 torch.Tensor.
+    
     return people_bbox
 
 
-model_config = {"model": "COCO-Detection/faster_rcnn_R_50_C4_3x.yaml", "threshold": 0.7}
-
+det_models = {
+"faster_rcnn_R_50_C4": "COCO-Detection/faster_rcnn_R_50_C4_3x.yaml",
+"faster_rcnn_R_50_FPN": "COCO-Detection/faster_rcnn_R_50_FPN_3x.yaml",
+}
 
 class Detectron2PeopleDetectionHook(HookBase):
     def __init__(
         self,
         executor: Callable = people_detection_executor,
-        model_config: dict = model_config,
+        model_name: str = "faster_rcnn_R_50_C4",
+        threshold = 0.7
     ):
         self.inputs = ["loaded_image"]
         self.outputs = ["bbox_coordinates"]
@@ -210,12 +213,12 @@ class Detectron2PeopleDetectionHook(HookBase):
 
         # Configure detectron2
         self.cfg = get_cfg()
-        self.model_config = model_config
-        self.cfg.merge_from_file(model_zoo.get_config_file(self.model_config["model"]))
+        self.model_config = det_models[model_name]
+        self.cfg.merge_from_file(model_zoo.get_config_file(self.model_config))
         self.cfg.MODEL.WEIGHTS = model_zoo.get_checkpoint_url(
-            self.model_config["model"]
+            self.model_config
         )
-        self.cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = self.model_config["threshold"]
+        self.cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = threshold
 
         if not torch.cuda.is_available():
             self.cfg.MODEL.DEVICE = "cpu"
