@@ -3,7 +3,7 @@
 import random
 from abc import ABC, abstractmethod
 from fractions import Fraction
-from typing import Any, Dict, NamedTuple, Optional, Tuple, Union
+from typing import Any, Dict, NamedTuple, Optional, Tuple, Union, List
 
 
 class ClipInfo(NamedTuple):
@@ -23,6 +23,25 @@ class ClipInfo(NamedTuple):
     clip_index: int
     aug_index: int
     is_last_clip: bool
+
+
+class ClipInfoList(NamedTuple):
+    """
+    Named-tuple for clip information with:
+        clip_start_sec  (float): clip start time.
+        clip_end_sec (float): clip end time.
+        clip_index (int): clip index in the video.
+        aug_index (int): augmentation index for the clip. Different augmentation methods
+            might generate multiple views for the same clip.
+        is_last_clip (bool): a bool specifying whether there are more clips to be
+            sampled from the video.
+    """
+
+    clip_start_sec: List[float]
+    clip_end_sec: List[float]
+    clip_index: List[float]
+    aug_index: List[float]
+    is_last_clip: List[float]
 
 
 class ClipSampler(ABC):
@@ -70,6 +89,8 @@ def make_clip_sampler(sampling_type: str, *args) -> ClipSampler:
         return RandomClipSampler(*args)
     elif sampling_type == "constant_clips_per_video":
         return ConstantClipsPerVideoSampler(*args)
+    elif sampling_type == "random_multi":
+        return RandomMultiClipSampler(*args)
     else:
         raise NotImplementedError(f"{sampling_type} not supported")
 
@@ -205,6 +226,50 @@ class RandomClipSampler(ClipSampler):
         clip_start_sec = Fraction(random.uniform(0, max_possible_clip_start))
         return ClipInfo(
             clip_start_sec, clip_start_sec + self._clip_duration, 0, 0, True
+        )
+
+
+class RandomMultiClipSampler(RandomClipSampler):
+    """
+    TODO
+    """
+
+    def __init__(self, clip_duration: float, num_clips: int) -> None:
+        super().__init__(clip_duration)
+        self._num_clips = num_clips
+
+    def __call__(
+        self, last_clip_time: float, video_duration: float, annotation: Dict[str, Any]
+    ) -> ClipInfoList:
+
+        (
+            clip_start_list,
+            clip_end_list,
+            clip_index_list,
+            aug_index_list,
+            is_last_clip_list,
+        ) = (
+            self._num_clips * [None],
+            self._num_clips * [None],
+            self._num_clips * [None],
+            self._num_clips * [None],
+            self._num_clips * [None],
+        )
+        for i in range(self._num_clips):
+            (
+                clip_start_list[i],
+                clip_end_list[i],
+                clip_index_list[i],
+                aug_index_list[i],
+                is_last_clip_list[i],
+            ) = super().__call__(last_clip_time, video_duration, annotation)
+
+        return ClipInfoList(
+            clip_start_list,
+            clip_end_list,
+            clip_index_list,
+            aug_index_list,
+            is_last_clip_list,
         )
 
 

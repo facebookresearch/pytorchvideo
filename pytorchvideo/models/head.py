@@ -376,9 +376,10 @@ class ResNetBasicHead(nn.Module):
         if self.dropout is not None:
             x = self.dropout(x)
         # Performs projection.
-        x = x.permute((0, 2, 3, 4, 1))
-        x = self.proj(x)
-        x = x.permute((0, 4, 1, 2, 3))
+        if self.proj is not None:
+            x = x.permute((0, 2, 3, 4, 1))
+            x = self.proj(x)
+            x = x.permute((0, 4, 1, 2, 3))
         # Performs activation.
         if self.activation is not None:
             x = self.activation(x)
@@ -466,9 +467,10 @@ class ResNetRoIHead(nn.Module):
         if self.dropout is not None:
             x = self.dropout(x)
         # Performs projection.
-        x = x.permute((0, 2, 3, 4, 1))
-        x = self.proj(x)
-        x = x.permute((0, 4, 1, 2, 3))
+        if self.proj is not None:
+            x = x.permute((0, 2, 3, 4, 1))
+            x = self.proj(x)
+            x = x.permute((0, 4, 1, 2, 3))
         # Performs activation.
         if self.activation is not None:
             x = self.activation(x)

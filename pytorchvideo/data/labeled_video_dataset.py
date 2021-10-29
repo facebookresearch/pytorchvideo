@@ -157,17 +157,39 @@ class LabeledVideoDataset(torch.utils.data.IterableDataset):
                 self._next_clip_start_time, video.duration, info_dict
             )
 
-            # Only load the clip once and reuse previously stored clip if there are multiple
-            # views for augmentations to perform on the same clip.
-            if aug_index == 0:
-                self._loaded_clip = video.get_clip(clip_start, clip_end)
+            if isinstance(clip_start, list):  # multi-clip in each sample
+
+                # Only load the clips once and reuse previously stored clips if there are multiple
+                # views for augmentations to perform on the same clips.
+                if aug_index[0] == 0:
+                    self._loaded_clip = {}
+                    loaded_clip_list = []
+                    for i in range(len(clip_start)):
+                        clip_dict = video.get_clip(clip_start[i], clip_end[i])
+                        if clip_dict is None or clip_dict["video"] is None:
+                            self._loaded_clip = None
+                            break
+                        loaded_clip_list.append(clip_dict)
+
+                    if self._loaded_clip is not None:
+                        for key in loaded_clip_list[0].keys():
+                            self._loaded_clip[key] = [x[key] for x in loaded_clip_list]
+
+            else:  # single clip case
+
+                # Only load the clip once and reuse previously stored clip if there are multiple
+                # views for augmentations to perform on the same clip.
+                if aug_index == 0:
+                    self._loaded_clip = video.get_clip(clip_start, clip_end)
 
             self._next_clip_start_time = clip_end
 
             video_is_null = (
                 self._loaded_clip is None or self._loaded_clip["video"] is None
             )
-            if is_last_clip or video_is_null:
+            if (
+                is_last_clip[-1] if isinstance(is_last_clip, list) else is_last_clip
+            ) or video_is_null:
                 # Close the loaded encoded video and reset the last sampled clip time ready
                 # to sample a new video on the next iteration.
                 self._loaded_video_label[0].close()

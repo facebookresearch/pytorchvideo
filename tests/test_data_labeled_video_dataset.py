@@ -122,6 +122,34 @@ class TestLabeledVideoDataset(unittest.TestCase):
                 self.assertEqual(sample["label"], expected_labels[i])
 
     @parameterized.expand(DECODER_LIST)
+    def test_random_multi_clip_sampling_works(self, decoder):
+        with mock_encoded_video_dataset_file() as (
+            mock_csv,
+            label_videos,
+            total_duration,
+        ):
+            half_duration = total_duration / 2
+            num_clip = 3
+            clip_sampler = make_clip_sampler("random_multi", half_duration, num_clip)
+            labeled_video_paths = LabeledVideoPaths.from_path(mock_csv)
+            dataset = LabeledVideoDataset(
+                labeled_video_paths,
+                clip_sampler=clip_sampler,
+                video_sampler=SequentialSampler,
+                decode_audio=False,
+                decoder=decoder,
+            )
+
+            expected_labels = [label for label, _ in label_videos]
+            for i, sample in enumerate(dataset):
+                expected_t_shape = 5
+                self.assertTrue(isinstance(sample["video"], list))
+                self.assertEqual(len(sample["video"]), num_clip)
+                self.assertEqual(sample["video"][0].shape[1], expected_t_shape)
+                self.assertEqual(sample["video"][-1].shape[1], expected_t_shape)
+                self.assertEqual(sample["label"], expected_labels[i])
+
+    @parameterized.expand(DECODER_LIST)
     def test_reading_from_directory_structure_hmdb51(self, decoder):
         # For an unknown reason this import has to be here for `buck test` to work.
         import torchvision.io as io
