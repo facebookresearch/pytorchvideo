@@ -38,6 +38,7 @@ class RemoveKey(torch.nn.Module):
     """
 
     def __init__(self, key: str):
+        super().__init__()
         self._key = key
 
     def __call__(self, x: Dict[str, torch.Tensor]) -> Dict[str, torch.Tensor]:
