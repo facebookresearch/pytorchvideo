@@ -176,7 +176,7 @@ def create_vit_basic_head(
 
         dropout_rate (float): dropout rate.
     """
-    assert seq_pool_type in ["cls", "meam", "none"]
+    assert seq_pool_type in ["cls", "mean", "none"]
 
     if seq_pool_type in ["cls", "mean"]:
         seq_pool_model = SequencePool(seq_pool_type)
