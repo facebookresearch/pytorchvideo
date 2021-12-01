@@ -93,18 +93,28 @@ class Conv3dPwBnAct(EfficientBlockBase):
     def convert(
         self,
         input_blob_size: Tuple,
+        convert_for_quantize: bool = False,
+        native_conv3d_op_qnnpack: bool = False,
         **kwargs,
     ):
         """
-        Converts Conv3d into equivalent Conv2d for Pytorch Mobile deployment.
-        This conversion is done by first fuse conv3d with bn,
-        convert conv3d into equivalent conv2d,
-        and optionally fuse conv2d with relu.
+        Converts the block into efficient form.
+        For fp32 operation, or quantized but with older version of QNNPACK w/o native int8
+        Conv3d support, this function converts Conv3d into equivalent Conv2d for Pytorch
+        Mobile deployment.
+        The Conv3d -> Conv2d conversion is done by first fuse conv3d with bn,
+        convert conv3d into equivalent conv2d, and optionally fuse conv2d with relu.
         After conversion, the forwarding of this module becomes:
         Input (5d tensor) --> reshape (4d tensor) --> conv2d (4d tensor)
             --> reshape (5d tensor) --> output (5d tensor)
+
+        For quantized operation on new version of QNNPACK with native int8 Conv3d, this
+        function will only apply operator fusion.
         Args:
             input_blob_size (tuple): blob size at the input of Conv3dPwBnAct instance.
+            convert_for_quantize (bool): whether this module is intended to be quantized.
+            native_conv3d_op_qnnpack (bool): whether the QNNPACK version has native int8
+                Conv3d.
             kwargs (any): any extra keyword arguments from upstream unused by convert().
         """
         assert (
@@ -114,46 +124,55 @@ class Conv3dPwBnAct(EfficientBlockBase):
         # First fuse conv and bn if bn exists.
         if hasattr(self.kernel, "bn"):
             self.kernel = fuse_modules(self.kernel, ["conv", "bn"])
-
-        batch_size = input_blob_size[0]
-        input_THW_tuple = input_blob_size[2:]
-        self._input_tensor_reshape_size = (
-            batch_size,
-            self._in_channels,  # C
-            input_THW_tuple[0] * input_THW_tuple[1],  # T*H
-            input_THW_tuple[2],  # W
-        )
-        self._output_tensor_size = (
-            batch_size,
-            self._out_channels,  # C
-            input_THW_tuple[0],  # T
-            input_THW_tuple[1],  # H
-            input_THW_tuple[2],  # W
-        )
-        conv2d_eq = nn.Conv2d(
-            self._in_channels,
-            self._out_channels,
-            kernel_size=1,
-            bias=(self.kernel.conv.bias is not None),
-        )
-        conv_state_dict = self.kernel.conv.state_dict()
-        conv_state_dict["weight"] = conv_state_dict["weight"].squeeze(2)
-        conv2d_eq.load_state_dict(conv_state_dict)
-        self.kernel.conv = conv2d_eq
-        # Convert activatiopn function
-        self.kernel.act.convert(input_blob_size, **kwargs)
-        # Fuse act with conv after conv3d -> conv2d if act is relu
-        if self.act == "relu":
-            self.kernel = fuse_modules(self.kernel, ["conv", "act.act"])
-        # Insert reshape layers before/after conv2d
-        self.kernel = nn.Sequential(
-            _Reshape(self._input_tensor_reshape_size),
-            self.kernel,
-            _Reshape(self._output_tensor_size),
-        )
+        # If user intends to quantize the module and their QNNPACK comes with native int8 Conv3d,
+        # then we just need to do fusion.
+        if convert_for_quantize and native_conv3d_op_qnnpack:
+            if self.act == "relu":
+                self.kernel = fuse_modules(self.kernel, ["conv", "act.act"])
+            # Set new kernel in eval mode again
+            self.kernel.eval()
+        # Else, for fp32 operation or for int8 but with older version of QNNPACK w/o native int8 Conv3d,
+        # we need to unfold Conv3d into Conv2ds.
+        else:
+            batch_size = input_blob_size[0]
+            input_THW_tuple = input_blob_size[2:]
+            self._input_tensor_reshape_size = (
+                batch_size,
+                self._in_channels,  # C
+                input_THW_tuple[0] * input_THW_tuple[1],  # T*H
+                input_THW_tuple[2],  # W
+            )
+            self._output_tensor_size = (
+                batch_size,
+                self._out_channels,  # C
+                input_THW_tuple[0],  # T
+                input_THW_tuple[1],  # H
+                input_THW_tuple[2],  # W
+            )
+            conv2d_eq = nn.Conv2d(
+                self._in_channels,
+                self._out_channels,
+                kernel_size=1,
+                bias=(self.kernel.conv.bias is not None),
+            )
+            conv_state_dict = self.kernel.conv.state_dict()
+            conv_state_dict["weight"] = conv_state_dict["weight"].squeeze(2)
+            conv2d_eq.load_state_dict(conv_state_dict)
+            self.kernel.conv = conv2d_eq
+            # Convert activatiopn function
+            self.kernel.act.convert(input_blob_size, **kwargs)
+            # Fuse act with conv after conv3d -> conv2d if act is relu
+            if self.act == "relu":
+                self.kernel = fuse_modules(self.kernel, ["conv", "act.act"])
+            # Insert reshape layers before/after conv2d
+            self.kernel = nn.Sequential(
+                _Reshape(self._input_tensor_reshape_size),
+                self.kernel,
+                _Reshape(self._output_tensor_size),
+            )
+            # Set new kernel in eval mode again
+            self.kernel.eval()
         self.convert_flag = True
-        # Set new kernel in eval mode again
-        self.kernel.eval()
 
     def forward(self, x):
         x = self.kernel(x)
@@ -235,13 +254,23 @@ class Conv3d3x3x3DwBnAct(EfficientBlockBase):
     def convert(
         self,
         input_blob_size: Tuple,
+        convert_for_quantize: bool = False,
+        native_conv3d_op_qnnpack: bool = False,
         **kwargs,
     ):
         """
-        Converts Conv3d into equivalent Conv2d for efficient Pytorch Mobile deployment.
+        Converts the block into efficient form.
+        For fp32 operation, or quantized but with older version of QNNPACK w/o native int8
+        Conv3d support, this function converts Conv3d into equivalent Conv2d for Pytorch
+        Mobile deployment.
+        For quantized operation on new version of QNNPACK with native int8 Conv3d, this
+        function will only apply operator fusion.
         Args:
             input_blob_size (tuple): blob size at the input of Conv3d3x3x3DwBnAct
                 instance during forward.
+            convert_for_quantize (bool): whether this module is intended to be quantized.
+            native_conv3d_op_qnnpack (bool): whether the QNNPACK version has native int8
+                Conv3d.
             kwargs (any): any keyword argument (unused).
         """
         assert (
@@ -251,9 +280,12 @@ class Conv3d3x3x3DwBnAct(EfficientBlockBase):
         # Fuse conv and bn if bn exists.
         if hasattr(self.kernel, "bn"):
             self.kernel = fuse_modules(self.kernel, ["conv", "bn"])
-        self.kernel.conv = _Conv3dTemporalKernel3Decomposed(
-            self.kernel.conv, input_blob_size[2:]
-        )
+        # Convert Conv3d into equivalent Conv2d if using fp32 operation (convert_for_quantize
+        # is False) or not using QNNPACK native conv3d (native_conv3d_op_qnnpack is False)
+        if (convert_for_quantize is False) or (native_conv3d_op_qnnpack is False):
+            self.kernel.conv = _Conv3dTemporalKernel3Decomposed(
+                self.kernel.conv, input_blob_size[2:]
+            )
         # Convert activatiopn function
         self.kernel.act.convert(input_blob_size, **kwargs)
         """

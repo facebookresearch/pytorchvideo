@@ -88,6 +88,14 @@ class TestBenchmarkEfficientBlocks(unittest.TestCase):
                 "out_channels": 108,
                 "quantize": True,
             },
+            {
+                "mode": "deployable",
+                "input_blob_size": (1, 48, 4, 40, 40),
+                "in_channels": 48,
+                "out_channels": 108,
+                "quantize": True,
+                "native_conv3d_op_qnnpack": True,
+            },
         ]
 
         def _benchmark_conv3d_pw_bn_relu_forward(**kwargs) -> Callable:
@@ -103,7 +111,12 @@ class TestBenchmarkEfficientBlocks(unittest.TestCase):
             )
 
             if kwargs["mode"] == "deployable":
-                conv_block.convert(kwargs["input_blob_size"])
+                native_conv3d_op_qnnpack = kwargs.get("native_conv3d_op_qnnpack", False)
+                conv_block.convert(
+                    kwargs["input_blob_size"],
+                    convert_for_quantize=kwargs["quantize"],
+                    native_conv3d_op_qnnpack=native_conv3d_op_qnnpack,
+                )
             conv_block.eval()
 
             def func_to_benchmark_dummy() -> None:
@@ -205,6 +218,13 @@ class TestBenchmarkEfficientBlocks(unittest.TestCase):
                 "in_channels": 48,
                 "quantize": True,
             },
+            {
+                "mode": "deployable",
+                "input_blob_size": (1, 48, 4, 40, 40),
+                "in_channels": 48,
+                "quantize": True,
+                "native_conv3d_op_qnnpack": True,
+            },
         ]
 
         def _benchmark_conv3d_3x3x3_dw_bn_relu_forward(**kwargs) -> Callable:
@@ -222,7 +242,12 @@ class TestBenchmarkEfficientBlocks(unittest.TestCase):
                 return
 
             if kwargs["mode"] == "deployable":
-                conv_block.convert(kwargs["input_blob_size"])
+                native_conv3d_op_qnnpack = kwargs.get("native_conv3d_op_qnnpack", False)
+                conv_block.convert(
+                    kwargs["input_blob_size"],
+                    convert_for_quantize=kwargs["quantize"],
+                    native_conv3d_op_qnnpack=native_conv3d_op_qnnpack,
+                )
             conv_block.eval()
             if kwargs["quantize"] is True:
                 if kwargs["mode"] == "original":  # manually fuse conv and relu
@@ -325,6 +350,15 @@ class TestBenchmarkEfficientBlocks(unittest.TestCase):
                 "out_channels": 48,
                 "quantize": True,
             },
+            {
+                "mode": "deployable",
+                "input_blob_size": (1, 48, 4, 20, 20),
+                "in_channels": 48,
+                "mid_channels": 108,
+                "out_channels": 48,
+                "quantize": True,
+                "native_conv3d_op_qnnpack": True,
+            },
         ]
 
         def _benchmark_x3d_bottleneck_forward(**kwargs) -> Callable:
@@ -341,7 +375,12 @@ class TestBenchmarkEfficientBlocks(unittest.TestCase):
             )
 
             if kwargs["mode"] == "deployable":
-                conv_block.convert(kwargs["input_blob_size"])
+                native_conv3d_op_qnnpack = kwargs.get("native_conv3d_op_qnnpack", False)
+                conv_block.convert(
+                    kwargs["input_blob_size"],
+                    convert_for_quantize=kwargs["quantize"],
+                    native_conv3d_op_qnnpack=native_conv3d_op_qnnpack,
+                )
             conv_block.eval()
 
             def func_to_benchmark_dummy() -> None:

@@ -184,7 +184,14 @@ class X3dBottleneckBlock(EfficientBlockBase):
         out = self.final_act(out)
         return out
 
-    def convert(self, input_blob_size, *args, **kwargs):
+    def convert(
+        self,
+        input_blob_size,
+        *args,
+        convert_for_quantize=False,
+        native_conv3d_op_qnnpack=False,
+        **kwargs,
+    ):
         assert (
             self.convert_flag is False
         ), "X3dBottleneckBlock: already converted, cannot be converted twice"
@@ -193,12 +200,24 @@ class X3dBottleneckBlock(EfficientBlockBase):
         batch_size = input_blob_size[0]
         THW_size = tuple(input_blob_size[2:])
         if self._res_proj is not None:
-            self._res_proj.convert(input_blob_size)
-        self.layers.conv_0.convert(input_blob_size)
+            self._res_proj.convert(
+                input_blob_size,
+                convert_for_quantize=convert_for_quantize,
+                native_conv3d_op_qnnpack=native_conv3d_op_qnnpack,
+            )
+        self.layers.conv_0.convert(
+            input_blob_size,
+            convert_for_quantize=convert_for_quantize,
+            native_conv3d_op_qnnpack=native_conv3d_op_qnnpack,
+        )
         # Update input_blob_size when necessary after each layer
         input_blob_size = (batch_size, self._mid_channels) + THW_size
 
-        self.layers.conv_1.convert(input_blob_size)
+        self.layers.conv_1.convert(
+            input_blob_size,
+            convert_for_quantize=convert_for_quantize,
+            native_conv3d_op_qnnpack=native_conv3d_op_qnnpack,
+        )
         THW_size = (
             THW_size[0],
             THW_size[1] // self._spatial_stride,
@@ -206,9 +225,15 @@ class X3dBottleneckBlock(EfficientBlockBase):
         )
         input_blob_size = (batch_size, self._mid_channels) + THW_size
         if hasattr(self.layers, "se"):
-            self.layers.se.convert(input_blob_size)
+            self.layers.se.convert(
+                input_blob_size
+            )  # No need to change as SE is using linear
         self.layers.act_func_1.convert(input_blob_size)
-        self.layers.conv_2.convert(input_blob_size)
+        self.layers.conv_2.convert(
+            input_blob_size,
+            convert_for_quantize=convert_for_quantize,
+            native_conv3d_op_qnnpack=native_conv3d_op_qnnpack,
+        )
         input_blob_size = (batch_size, self._out_channels) + THW_size
         self.final_act.convert(input_blob_size)
         self.convert_flag = True

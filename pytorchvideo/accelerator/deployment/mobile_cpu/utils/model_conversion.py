@@ -47,6 +47,8 @@ def _convert_module(
     module: nn.Module,
     input_tensor_size_lut: Dict,
     base_name: str = "",
+    convert_for_quantize: bool = False,
+    native_conv3d_op_qnnpack: bool = False,
 ) -> None:
     """
     This helper function recursively goes through sub-modules in a network. If current
@@ -61,19 +63,32 @@ def _convert_module(
         module (nn.Module): input module for convert.
         input_tensor_size_lut (dict): input tensor size look-up table.
         base_name (str): module name for input module.
+        convert_for_quantize (bool): whether this module is intended to be quantized.
+        native_conv3d_op_qnnpack (bool): whether the QNNPACK version has native int8
+            Conv3d.
     """
     if isinstance(module, EfficientBlockBase):
-        module.convert(input_tensor_size_lut[base_name])
+        module.convert(
+            input_tensor_size_lut[base_name],
+            convert_for_quantize=convert_for_quantize,
+            native_conv3d_op_qnnpack=native_conv3d_op_qnnpack,
+        )
     else:
         for name, child in module.named_children():
             _convert_module(
-                child, input_tensor_size_lut, base_name=f"{base_name}.{name}"
+                child,
+                input_tensor_size_lut,
+                base_name=f"{base_name}.{name}",
+                convert_for_quantize=convert_for_quantize,
+                native_conv3d_op_qnnpack=native_conv3d_op_qnnpack,
             )
 
 
 def convert_to_deployable_form(
     model: nn.Module,
     input_tensor: torch.Tensor,
+    convert_for_quantize: bool = False,
+    native_conv3d_op_qnnpack: bool = False,
 ) -> nn.Module:
     """
     This function takes an input model, and returns a deployable model copy.
@@ -86,6 +101,9 @@ def convert_to_deployable_form(
             deployable form in mobile cpu only works for single input tensor size (i.e.,
             the future input tensor to converted model should have the same size as
             input_tensor specified here).
+        convert_for_quantize (bool): whether this module is intended to be quantized.
+        native_conv3d_op_qnnpack (bool): whether the QNNPACK version has native int8
+            Conv3d.
     """
     input_tensor_size_lut = {}
     hook_handle_list = []
@@ -98,5 +116,10 @@ def convert_to_deployable_form(
         handle.remove()
     model_converted = deepcopy(model)
     model_converted.eval()
-    _convert_module(model_converted, input_tensor_size_lut)
+    _convert_module(
+        model_converted,
+        input_tensor_size_lut,
+        convert_for_quantize=convert_for_quantize,
+        native_conv3d_op_qnnpack=native_conv3d_op_qnnpack,
+    )
     return model_converted
