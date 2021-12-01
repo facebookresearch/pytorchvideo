@@ -40,7 +40,6 @@ class HookBase:
         default=1,
         validator=lambda self_, attr_, val_: val_ >= 1,
     )
-
     status: str = "PENDING"
 
     def run(
