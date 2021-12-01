@@ -421,7 +421,6 @@ def main():
         max_epochs=200,
         callbacks=[LearningRateMonitor()],
         replace_sampler_ddp=False,
-        reload_dataloaders_every_epoch=False,
     )
 
     # Build trainer, ResNet lightning-module and Kinetics data-module.
