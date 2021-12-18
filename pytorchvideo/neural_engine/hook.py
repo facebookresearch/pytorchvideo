@@ -76,6 +76,26 @@ def full_decode(status: OrderedDict, **args):
     return frames
 
 
+def center_keypoints_in_bbox(bboxes_per_frame, keypoints_per_frame):
+    # calculate bbox center (x1, y1, x2, y2)
+    bboxes_per_frame_center_x = (
+        bboxes_per_frame[:, 0] + bboxes_per_frame[:, 2]
+    ) / 2  # (x1+x2)/2
+    bboxes_per_frame_center_y = (
+        bboxes_per_frame[:, 1] + bboxes_per_frame[:, 3]
+    ) / 2  # (y1+y2)/2
+
+    # change origin of the keypoints to center of each bbox
+    keypoints_per_frame[:, :, 0] = keypoints_per_frame[
+        :, :, 0
+    ] - bboxes_per_frame_center_x.unsqueeze(1)
+    keypoints_per_frame[:, :, 1] = keypoints_per_frame[
+        :, :, 1
+    ] - bboxes_per_frame_center_y.unsqueeze(1)
+
+    return keypoints_per_frame
+
+
 class DecodeHook(HookBase):
     def __init__(
         self,
@@ -123,11 +143,19 @@ class DecodeHook(HookBase):
                 .to("cpu")
             )
 
+            # center keypoints wrt to the respective bounding box centers
+            keypoints_per_frame = center_keypoints_in_bbox(
+                bboxes_per_frame=bboxes_per_frame,
+                keypoints_per_frame=keypoints_per_frame,
+            )
+
+            # sanity check
             if bboxes_per_frame.shape[0] != keypoints_per_frame.shape[0]:
                 raise ValueError(
                     "bboxes_per_frame and keypoints_per_frame should have same 0th dim."
                 )
 
+            # append bbox_info to frame_tracker
             for i in range(bboxes_per_frame.shape[0]):
                 bbox_coord = bboxes_per_frame[i, :]
                 keypoint_per_bbox = keypoints_per_frame[i, :, :]
