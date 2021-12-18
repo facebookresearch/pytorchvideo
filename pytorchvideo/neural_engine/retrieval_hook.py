@@ -10,7 +10,10 @@ def create_keypoint_features_db(frame_tracker):
 
 
 def calculate_distance_scores(action_query, keypoint_feature_db):
-    scores = action_query @ keypoint_feature_db.T
+    scores = (
+        torch.nn.functional.normalize(action_query)
+        @ torch.nn.functional.normalize(keypoint_feature_db).T
+    )
     return scores
 
 
