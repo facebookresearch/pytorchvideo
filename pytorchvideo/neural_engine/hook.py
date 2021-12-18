@@ -72,6 +72,7 @@ def full_decode(status: OrderedDict, **args):
     decode_audio = args.get("decode_audio", True)
     video = EncodedVideo.from_path(status["path"], decode_audio, decoder)
     frames = video.get_clip(0, video.duration)
+
     return frames
 
 
@@ -87,12 +88,59 @@ class DecodeHook(HookBase):
         # Decoding params
         self.decode_audio = decode_audio
         self.decoder = decoder
+
         # Hook params
         self.executor = executor
         self.inputs = ["path"]
         self.outputs = ["video", "audio"] if decode_audio else ["video"]
         self.fail_strategy = fail_strategy
         self.priority = priority
+
+        # frame and bounding-box tracker
+        self.frame_tracker = []
+
+    def _populate_frame_tracker(self, model, frames):
+        """
+        Generates a data structure to track bounding boxes and
+        keypoint coordinates. Useful for extracting the frame-id given
+        the bounding number from a video for action-recognition.
+        """
+
+        for frame_id, frame in enumerate(frames):
+            model_outputs = model.predict(frame)
+
+            # get bounding-box coordinates (x1, y1, x2, y2)
+            bboxes_per_frame = (
+                model_outputs["instances"][model_outputs["instances"].pred_classes == 0]
+                .pred_boxes.tensor.to("cpu")
+                .squeeze()
+            )
+
+            # get keypoints (slice to select only the x,y coordinates)
+            keypoints_per_frame = (
+                model_outputs["instances"][model_outputs["instances"].pred_classes == 0]
+                .pred_keypoints[:, :, :2]
+                .to("cpu")
+            )
+
+            if bboxes_per_frame.shape[0] != keypoints_per_frame.shape[0]:
+                raise ValueError(
+                    "bboxes_per_frame and keypoints_per_frame should have same 0th dim."
+                )
+
+            for i in range(bboxes_per_frame.shape[0]):
+                bbox_coord = bboxes_per_frame[i, :]
+                keypoint_per_bbox = keypoints_per_frame[i, :, :]
+
+                bbox_info = {
+                    "frame_id": frame_id,
+                    "bbox_id": i,
+                    "person_id": None,
+                    "bbox_coord": bbox_coord,
+                    "keypoint_coord": keypoint_per_bbox,
+                }
+
+                self.frame_tracker.append(bbox_info)
 
     def _run(
         self,
@@ -101,6 +149,7 @@ class DecodeHook(HookBase):
         frames = self.executor(
             status, decode_audio=self.decode_audio, decoder=self.decoder
         )
+
         return frames
 
 
