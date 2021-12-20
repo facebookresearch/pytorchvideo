@@ -178,6 +178,9 @@ class DecodeHook(HookBase):
             status, decode_audio=self.decode_audio, decoder=self.decoder
         )
 
+        # populate the frame tracker while decoding videos
+        self._populate_frame_tracker(frames=frames)
+
         return frames
 
 
