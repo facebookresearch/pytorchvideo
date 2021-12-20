@@ -10,19 +10,16 @@ def create_keypoint_features_db(frame_tracker):
 
 
 def calculate_distance_scores(action_query, keypoint_feature_db):
-    scores = (
-        torch.nn.functional.normalize(action_query)
-        @ torch.nn.functional.normalize(keypoint_feature_db).T
-    )
+    scores = torch.nn.functional.cosine_similarity(action_query, keypoint_feature_db)
     return scores
 
 
 def get_closest_keypoint_feature_match(scores, method, n):
     if method == "topk":
-        return torch.topk(scores, n).indices.squeeze().tolist()
+        return torch.topk(scores, n).indices.tolist()
     elif method == "softmax":
-        score_probs = torch.nn.functional.softmax(scores, dim=1)
-        return (score_probs > n).squeeze().nonzero().tolist()[0]
+        score_probs = torch.nn.functional.softmax(scores, dim=0)
+        return (score_probs > n).nonzero().squeeze().tolist()
 
 
 def bbox_to_frame_executor(frame_tracker, best_bbox_matches):
