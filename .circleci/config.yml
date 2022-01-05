@@ -64,7 +64,7 @@ install_pytorch: &install_pytorch
       command: |
         export PATH="$HOME/miniconda3/bin:$PATH"
         conda activate pytorchvideo
-        conda install pytorch=1.8.0 torchvision -c pytorch
+        conda install pytorch torchvision -c pytorch
         python -c 'import torch; print(torch.__version__)'
         python -c 'import torch; print("CUDA:", torch.cuda.is_available())'
         python -c 'import torchvision; print(torchvision.__version__)'
