@@ -1,7 +1,7 @@
 # Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved.
 
 import torch.nn as nn
-from fvcore.nn.weight_init import c2_msra_fill
+from fvcore.nn.weight_init import c2_msra_fill, c2_xavier_fill
 from pytorchvideo.layers import SpatioTemporalClsPositionalEncoding
 
 
@@ -38,7 +38,10 @@ def _init_resnet_weights(model: nn.Module, fc_init_std: float = 0.01) -> None:
             if m.bias is not None:
                 m.bias.data.zero_()
         if isinstance(m, nn.Linear):
-            m.weight.data.normal_(mean=0.0, std=fc_init_std)
+            if hasattr(m, "xavier_init") and m.xavier_init:
+                c2_xavier_fill(m)
+            else:
+                m.weight.data.normal_(mean=0.0, std=fc_init_std)
             if m.bias is not None:
                 m.bias.data.zero_()
     return model
