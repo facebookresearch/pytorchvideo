@@ -1,0 +1,41 @@
+train:
+  dataset:
+    _target_: pytorchvideo.data.Kinetics
+    data_path: ???
+    video_path_prefix: ???
+    clip_sampler:
+      _target_: pytorchvideo.data.clip_sampling.RandomMultiClipSampler
+      clip_duration: 2.0
+      num_clips: 2
+
+  shuffle: True
+  batch_size: 8
+  num_workers: 8
+
+val:
+  dataset:
+    _target_: pytorchvideo.data.Kinetics
+    data_path: ???
+    video_path_prefix: ???
+    clip_sampler:
+      _target_: pytorchvideo.data.clip_sampling.UniformClipSampler
+      clip_duration: 2.0
+
+  shuffle: False
+  batch_size: 8
+  num_workers: 8
+
+test:
+  dataset:
+    _target_: pytorchvideo.data.Kinetics
+    data_path: ???
+    video_path_prefix: ???
+    clip_sampler:
+      _target_: pytorchvideo.data.clip_sampling.ConstantClipsPerVideoSampler
+      clip_duration: 2.0
+      clips_per_video: 10 #num_ensemble_views
+      augs_per_clip: 3 # num_spatial_crops
+
+  shuffle: False
+  batch_size: 8
+  num_workers: 8

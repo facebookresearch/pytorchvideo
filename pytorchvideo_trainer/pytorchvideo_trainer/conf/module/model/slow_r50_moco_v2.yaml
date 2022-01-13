@@ -1,0 +1,3 @@
+_target_: pytorchvideo_trainer.module.moco_v2.create_moco_resnet_50
+backbone_embed_dim: 128
+mmt: 0.994

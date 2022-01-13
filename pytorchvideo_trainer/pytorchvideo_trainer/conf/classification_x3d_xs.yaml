@@ -1,0 +1,65 @@
+_target_: pytorchvideo_trainer.train_app.VideoClassificationTrainApp
+
+defaults:
+  - schema/module: video_classification_module_conf
+  - schema/module/optim: optim_conf
+  - schema/datamodule: ptv_video_classification_data_module_conf
+  - datamodule/dataloader: kinetics_classification
+  - logger: ptl
+  - datamodule/transforms: kinetics_classification_x3d_xs
+  - module/model: x3d_xs
+  - module/loss: cross_entropy
+  - module/optim: sgd
+  - module/metrics: accuracy
+  - module/lr_scheduler: cosine_with_warmup
+  - schema/trainer: trainer
+  - trainer: multi_gpu
+  - callbacks: precise_bn
+  - _self_
+
+module:
+  ensemble_method: "sum"
+  lr_scheduler:
+    max_iters: 300
+    warmup_start_lr: 0.01
+    warmup_iters: 35
+  optim:
+    lr: 0.8
+    nesterov: true
+    weight_decay: 5e-5
+
+datamodule:
+  dataloader:
+    train:
+      batch_size: 16
+      dataset:
+        clip_sampler:
+          clip_duration: 1.6
+    val:
+      batch_size: 16
+      dataset:
+        clip_sampler:
+          clip_duration: 1.6
+    test:
+      batch_size: 16
+      dataset:
+        clip_sampler:
+          clip_duration: 1.6
+
+callbacks:
+  precise_bn:
+    num_batches: 200
+
+trainer:
+  num_nodes: 8
+  gpus: 8
+  log_gpu_memory: null
+  max_epochs: 300
+  sync_batchnorm: False
+  replace_sampler_ddp: False
+
+
+hydra:
+  searchpath:
+    - pkg://pytorchvideo_trainer.conf
+    - pkg://torchrecipes.core.conf

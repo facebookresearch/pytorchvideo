@@ -1,0 +1,7 @@
+_target_: pytorchvideo.models.resnet.create_resnet
+input_channel: 3
+model_depth: 50
+model_num_class: 400
+dropout_rate: 0.5
+stem_conv_kernel_size: [1, 7, 7]
+head_pool_kernel_size: [8, 7, 7]

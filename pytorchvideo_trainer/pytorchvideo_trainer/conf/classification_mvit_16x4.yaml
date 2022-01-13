@@ -1,0 +1,72 @@
+_target_: pytorchvideo_trainer.train_app.VideoClassificationTrainApp
+
+defaults:
+  - schema/module: video_classification_module_conf_vision_transformer
+  - schema/module/optim: optim_conf
+  - schema/datamodule: ptv_video_classification_data_module_conf
+  - datamodule/dataloader: kinetics_classification
+  - logger: ptl
+  - datamodule/transforms: kinetics_classification_mvit_16x4
+  - module/model: mvit_base_16x4
+  - module/loss: soft_cross_entropy
+  - module/optim: adamw
+  - module/metrics: accuracy
+  - module/lr_scheduler: cosine_with_warmup
+  - schema/trainer: trainer
+  - trainer: multi_gpu
+  - _self_
+
+module:
+  clip_gradient_norm: 1.0
+  ensemble_method: "sum"
+  lr_scheduler:
+    max_iters: 200
+    warmup_start_lr: 1.6e-05
+    warmup_iters: 30
+    cosine_after_warmup: true
+    cosine_end_lr: 1.6e-05
+  optim:
+    lr: 0.0016
+    weight_decay: 0.05
+    method: adamw
+    zero_weight_decay_1d_param: true
+  batch_transform:
+    _target_: pytorchvideo_trainer.datamodule.transforms.MixVideoBatchWrapper
+    mixup_alpha: 0.8
+    cutmix_prob: 0.5
+    cutmix_alpha: 1.0
+    label_smoothing: 0.1
+
+datamodule:
+  dataloader:
+    train:
+      batch_size: 2
+      dataset:
+        clip_sampler:
+          clip_duration: 2.13
+      collate_fn:
+        _target_: pytorchvideo_trainer.datamodule.collators.build_collator_from_name
+        name: multiple_samples_collate
+    val:
+      batch_size: 8
+      dataset:
+        clip_sampler:
+          clip_duration: 2.13
+    test:
+      batch_size: 8
+      dataset:
+        clip_sampler:
+          clip_duration: 2.13
+
+trainer:
+  num_nodes: 16
+  gpus: 8
+  log_gpu_memory: null
+  max_epochs: 200
+  sync_batchnorm: False
+  replace_sampler_ddp: False
+
+hydra:
+  searchpath:
+    - pkg://pytorchvideo_trainer.conf
+    - pkg://torchrecipes.core.conf

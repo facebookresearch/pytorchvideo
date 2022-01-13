@@ -1,0 +1,70 @@
+train:
+  - _target_: pytorchvideo_trainer.datamodule.transforms.RepeatandConverttoList
+    repeat_num: 2
+  - _target_: pytorchvideo_trainer.datamodule.transforms.ApplyTransformToKeyOnList
+    transform:
+      - _target_: pytorchvideo.transforms.UniformTemporalSubsample
+        num_samples: 16
+      - _target_: pytorchvideo.transforms.Div255
+      - _target_: pytorchvideo.transforms.Permute
+        dims: [1,0,2,3]
+      - _target_: pytorchvideo.transforms.rand_augment.RandAugment
+        magnitude: 7
+        num_layers: 4
+      - _target_: pytorchvideo.transforms.Permute
+        dims: [1,0,2,3]
+      - _target_: pytorchvideo.transforms.Normalize
+        mean: [0.45, 0.45, 0.45]
+        std: [0.225, 0.225, 0.225]
+      - _target_: pytorchvideo.transforms.RandomResizedCrop
+        target_height: 224
+        target_width: 224
+        scale: [0.08, 1.0]
+        aspect_ratio: [0.75, 1.3333]
+      - _target_: torchvision.transforms.RandomHorizontalFlip
+        p: 0.5
+      - _target_: pytorchvideo.transforms.Permute
+        dims: [1,0,2,3]
+      - _target_: pytorchvideo_trainer.datamodule.rand_erase_transform.RandomErasing
+        probability: 0.25
+        mode: "pixel"
+        max_count: 1
+        num_splits: 1
+        device: "cpu"
+      - _target_: pytorchvideo.transforms.Permute
+        dims: [1,0,2,3]
+    key: video
+  - _target_: pytorchvideo.transforms.RemoveKey
+    key: audio
+val:
+  - _target_: pytorchvideo.transforms.ApplyTransformToKey
+    transform:
+      - _target_: pytorchvideo.transforms.UniformTemporalSubsample
+        num_samples: 16
+      - _target_: pytorchvideo.transforms.Div255
+      - _target_: pytorchvideo.transforms.Normalize
+        mean: [0.45, 0.45, 0.45]
+        std: [0.225, 0.225, 0.225]
+      - _target_: pytorchvideo.transforms.ShortSideScale
+        size: 224
+      - _target_: torchvision.transforms.CenterCrop
+        size: 224
+    key: video
+  - _target_: pytorchvideo.transforms.RemoveKey
+    key: audio
+test:
+  - _target_: pytorchvideo.transforms.ApplyTransformToKey
+    transform:
+      - _target_: pytorchvideo.transforms.UniformTemporalSubsample
+        num_samples: 16
+      - _target_: pytorchvideo.transforms.Div255
+      - _target_: pytorchvideo.transforms.Normalize
+        mean: [0.45, 0.45, 0.45]
+        std: [0.225, 0.225, 0.225]
+      - _target_: pytorchvideo.transforms.ShortSideScale
+        size: 224
+    key: video
+  - _target_: pytorchvideo.transforms.UniformCropVideo
+    size: 224
+  - _target_: pytorchvideo.transforms.RemoveKey
+    key: audio

@@ -1,0 +1,7 @@
+_target_: pytorchvideo_trainer.module.ssl_helper.KnnMemory
+temperature: ${module.loss.temperature}
+dim: ${module.model.backbone_embed_dim}
+length: 239975
+downstream_classes: 400
+knn_k: 200
+momentum: 1.0

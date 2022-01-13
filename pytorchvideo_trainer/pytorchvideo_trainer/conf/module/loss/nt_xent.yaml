@@ -1,0 +1,3 @@
+# @package _group_
+_target_: pytorchvideo_trainer.module.losses.NtxentLoss
+temperature: 0.1

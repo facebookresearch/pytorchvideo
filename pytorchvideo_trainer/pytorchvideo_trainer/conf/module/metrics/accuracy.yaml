@@ -1,0 +1,8 @@
+- name: accuracy_top1
+  config:
+    _target_: torchmetrics.Accuracy
+    top_k: 1
+- name: accuracy_top5
+  config:
+    _target_: torchmetrics.Accuracy
+    top_k: 5
