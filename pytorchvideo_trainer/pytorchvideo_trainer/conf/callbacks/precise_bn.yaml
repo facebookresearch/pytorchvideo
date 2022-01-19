@@ -1,0 +1,3 @@
+precise_bn:
+  _target_: pytorchvideo_trainer.callbacks.precise_batchnorm.PreciseBn
+  num_batches: null

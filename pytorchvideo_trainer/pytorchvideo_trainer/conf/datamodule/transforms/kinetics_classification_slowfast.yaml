@@ -1,0 +1,60 @@
+train:
+  - _target_: pytorchvideo.transforms.ApplyTransformToKey
+    transform:
+      - _target_: pytorchvideo.transforms.UniformTemporalSubsample
+        num_samples: 32
+      - _target_: pytorchvideo.transforms.Div255
+      - _target_: pytorchvideo.transforms.Normalize
+        mean: [0.45, 0.45, 0.45]
+        std: [0.225, 0.225, 0.225]
+      - _target_: pytorchvideo.transforms.RandomShortSideScale
+        min_size: 256
+        max_size: 320
+      - _target_: torchvision.transforms.RandomCrop
+        size: 224
+      - _target_: torchvision.transforms.RandomHorizontalFlip
+        p: 0.5
+      - _target_: pytorchvideo_trainer.datamodule.transforms.SlowFastPackPathway
+        alpha: 4
+    key: video
+  - _target_: pytorchvideo.transforms.RemoveKey
+    key: audio
+val:
+  - _target_: pytorchvideo.transforms.ApplyTransformToKey
+    transform:
+      - _target_: pytorchvideo.transforms.UniformTemporalSubsample
+        num_samples: 32
+      - _target_: pytorchvideo.transforms.Div255
+      - _target_: pytorchvideo.transforms.Normalize
+        mean: [0.45, 0.45, 0.45]
+        std: [0.225, 0.225, 0.225]
+      - _target_: pytorchvideo.transforms.ShortSideScale
+        size: 256
+      - _target_: torchvision.transforms.CenterCrop
+        size: 256
+      - _target_: pytorchvideo_trainer.datamodule.transforms.SlowFastPackPathway
+        alpha: 4
+    key: video
+  - _target_: pytorchvideo.transforms.RemoveKey
+    key: audio
+test:
+  - _target_: pytorchvideo.transforms.ApplyTransformToKey
+    transform:
+      - _target_: pytorchvideo.transforms.UniformTemporalSubsample
+        num_samples: 32
+      - _target_: pytorchvideo.transforms.Div255
+      - _target_: pytorchvideo.transforms.Normalize
+        mean: [0.45, 0.45, 0.45]
+        std: [0.225, 0.225, 0.225]
+      - _target_: pytorchvideo.transforms.ShortSideScale
+        size: 256
+    key: video
+  - _target_: pytorchvideo.transforms.UniformCropVideo
+    size: 256
+  - _target_: pytorchvideo.transforms.ApplyTransformToKey
+    transform:
+      - _target_: pytorchvideo_trainer.datamodule.transforms.SlowFastPackPathway
+        alpha: 4
+    key: video
+  - _target_: pytorchvideo.transforms.RemoveKey
+    key: audio

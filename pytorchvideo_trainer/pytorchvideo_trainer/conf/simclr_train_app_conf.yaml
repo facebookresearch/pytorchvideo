@@ -1,0 +1,25 @@
+_target_: pytorchvideo_trainer.train_app.VideoClassificationTrainApp
+
+defaults:
+  - schema/module: simclr_module_conf
+  - schema/module/optim: optim_conf
+  - schema/datamodule: ptv_video_classification_data_module_conf
+  - datamodule/dataloader: kinetics_contrastive
+  - logger: ptl
+  - datamodule/transforms: kinetics_moco_v2
+  - module/knn_memory: kinetics_k400
+  - module/model: slow_r50_simclr
+  - module/loss: nt_xent
+  - module/optim: sgd_ssl
+  - module/metrics: accuracy
+  - schema/trainer: trainer
+  - trainer: cpu
+  - callbacks: null
+  - _self_
+trainer:
+  sync_batchnorm: false # set this to true for training
+
+hydra:
+  searchpath:
+    - pkg://pytorchvideo_trainer.conf
+    - pkg://torchrecipes.core.conf

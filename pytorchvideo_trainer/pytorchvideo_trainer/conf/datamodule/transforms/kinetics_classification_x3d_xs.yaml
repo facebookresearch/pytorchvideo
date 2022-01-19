@@ -1,0 +1,51 @@
+train:
+  - _target_: pytorchvideo.transforms.ApplyTransformToKey
+    transform:
+      - _target_: pytorchvideo.transforms.UniformTemporalSubsample
+        num_samples: 4
+      - _target_: pytorchvideo.transforms.Div255
+      - _target_: pytorchvideo.transforms.Normalize
+        mean: [0.45, 0.45, 0.45]
+        std: [0.225, 0.225, 0.225]
+      - _target_: pytorchvideo.transforms.RandomShortSideScale
+        min_size: 182
+        max_size: 228
+      - _target_: torchvision.transforms.RandomCrop
+        size: 160
+      - _target_: torchvision.transforms.RandomHorizontalFlip
+        p: 0.5
+    key: video
+  - _target_: pytorchvideo.transforms.RemoveKey
+    key: audio
+val:
+  - _target_: pytorchvideo.transforms.ApplyTransformToKey
+    transform:
+      - _target_: pytorchvideo.transforms.UniformTemporalSubsample
+        num_samples: 4
+      - _target_: pytorchvideo.transforms.Div255
+      - _target_: pytorchvideo.transforms.Normalize
+        mean: [0.45, 0.45, 0.45]
+        std: [0.225, 0.225, 0.225]
+      - _target_: pytorchvideo.transforms.ShortSideScale
+        size: 182
+      - _target_: torchvision.transforms.CenterCrop
+        size: 182
+    key: video
+  - _target_: pytorchvideo.transforms.RemoveKey
+    key: audio
+test:
+  - _target_: pytorchvideo.transforms.ApplyTransformToKey
+    transform:
+      - _target_: pytorchvideo.transforms.UniformTemporalSubsample
+        num_samples: 4
+      - _target_: pytorchvideo.transforms.Div255
+      - _target_: pytorchvideo.transforms.Normalize
+        mean: [0.45, 0.45, 0.45]
+        std: [0.225, 0.225, 0.225]
+      - _target_: pytorchvideo.transforms.ShortSideScale
+        size: 182
+    key: video
+  - _target_: pytorchvideo.transforms.UniformCropVideo
+    size: 182
+  - _target_: pytorchvideo.transforms.RemoveKey
+    key: audio

@@ -1,0 +1,7 @@
+lr_policy: 'cosine'
+cosine_after_warmup: False
+cosine_end_lr: 0
+warmup_iters: 34
+warmup_start_lr: 0.01
+max_iters: ${trainer.max_epochs}
+lr: ${module.optim.lr}

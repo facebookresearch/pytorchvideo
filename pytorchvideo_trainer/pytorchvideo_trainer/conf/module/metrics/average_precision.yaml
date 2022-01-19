@@ -1,0 +1,3 @@
+- name: average_precision
+  config:
+    _target_: torchmetrics.AveragePrecision

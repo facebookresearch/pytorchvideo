@@ -1,0 +1,56 @@
+train:
+  - _target_: pytorchvideo_trainer.datamodule.transforms.ApplyTransformToKeyOnList
+    transform:
+      - _target_: pytorchvideo.transforms.UniformTemporalSubsample
+        num_samples: 8
+      - _target_: pytorchvideo.transforms.Div255
+      - _target_: pytorchvideo_trainer.datamodule.transforms.ColorJitterVideoSSl
+        bri_con_sat: [0.4, 0.4, 0.4]
+        hue: 0.4
+        p_color_jitter: 0.8
+        p_convert_gray: 0.2
+      - _target_: pytorchvideo.transforms.Normalize
+        mean: [0.45, 0.45, 0.45]
+        std: [0.225, 0.225, 0.225]
+      - _target_: pytorchvideo.transforms.RandomResizedCrop
+        target_height: 224
+        target_width: 224
+        scale: [0.2, 0.766]
+        aspect_ratio: [0.75, 1.3333]
+      - _target_: torchvision.transforms.RandomHorizontalFlip
+        p: 0.5
+    key: video
+  - _target_: pytorchvideo.transforms.RemoveKey
+    key: audio
+val:
+  - _target_: pytorchvideo.transforms.ApplyTransformToKey
+    transform:
+      - _target_: pytorchvideo.transforms.UniformTemporalSubsample
+        num_samples: 8
+      - _target_: pytorchvideo.transforms.Div255
+      - _target_: pytorchvideo.transforms.Normalize
+        mean: [0.45, 0.45, 0.45]
+        std: [0.225, 0.225, 0.225]
+      - _target_: pytorchvideo.transforms.ShortSideScale
+        size: 256
+      - _target_: torchvision.transforms.CenterCrop
+        size: 256
+    key: video
+  - _target_: pytorchvideo.transforms.RemoveKey
+    key: audio
+test:
+  - _target_: pytorchvideo.transforms.ApplyTransformToKey
+    transform:
+      - _target_: pytorchvideo.transforms.UniformTemporalSubsample
+        num_samples: 8
+      - _target_: pytorchvideo.transforms.Div255
+      - _target_: pytorchvideo.transforms.Normalize
+        mean: [0.45, 0.45, 0.45]
+        std: [0.225, 0.225, 0.225]
+      - _target_: pytorchvideo.transforms.ShortSideScale
+        size: 256
+    key: video
+  - _target_: pytorchvideo.transforms.UniformCropVideo
+    size: 256
+  - _target_: pytorchvideo.transforms.RemoveKey
+    key: audio

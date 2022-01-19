@@ -1,0 +1,2 @@
+_target_: pytorchvideo_trainer.module.losses.ContrastiveLoss
+temperature: 0.1

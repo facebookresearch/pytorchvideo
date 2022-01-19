@@ -1,0 +1,11 @@
+_target_: pytorchvideo_trainer.module.ssl_helper.create_classification_model_from_ssl_checkpoint
+ssl_checkpoint_path: null
+checkpoint_type: simclr
+mlp:
+  _target_: pytorchvideo_trainer.module.byol.create_mlp_util
+  dim_in: null
+  dim_out: 400
+  mlp_dim: 256
+  num_layers: 1
+  norm: null
+detach_backbone: true

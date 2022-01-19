@@ -1,0 +1,5 @@
+_target_: pytorchvideo_trainer.module.video_classification.create_classification_model_from_modelzoo
+checkpoint_path: manifold://fair_logging/tree/kalyanv/hub_models/SLOW_8x8_R50.pyth
+model:
+  _target_: pytorchvideo.models.hub.resnet.slow_r50
+  pretrained: False

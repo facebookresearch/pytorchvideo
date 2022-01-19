@@ -1,0 +1,4 @@
+_target_: pytorchvideo_trainer.module.simclr.create_simclr_resnet_50
+backbone_embed_dim: 128
+mlp_depth: 1
+mlp_inner_dim: 2048
