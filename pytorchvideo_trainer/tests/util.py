@@ -125,7 +125,7 @@ def get_mock_init_trainer_params(
         trainer_params = original()
 
         trainer_params["logger"] = False
-        trainer_params["checkpoint_callback"] = False
+        trainer_params["enable_checkpointing"] = False
         trainer_params["fast_dev_run"] = True
 
         if overrides:
