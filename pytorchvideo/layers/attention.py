@@ -183,6 +183,7 @@ class MultiScaleAttention(nn.Module):
         has_cls_embed: bool = True,
         pool_mode: str = "conv",
         pool_first: bool = False,
+        v2_model: bool = True,
     ) -> None:
         """
         Args:
@@ -207,6 +208,8 @@ class MultiScaleAttention(nn.Module):
                 (average pooling), and "max" (max pooling).
             pool_first (bool): If set to True, pool is applied before qkv projection.
                 Otherwise, pool is applied after qkv projection. Default: False.
+            v2_model (bool): If set to True, building Improved Multiscale Vision
+                Transformers.
         """
 
         super().__init__()
@@ -218,6 +221,7 @@ class MultiScaleAttention(nn.Module):
         head_dim = dim // num_heads
         self.scale = head_dim ** -0.5
         self.has_cls_embed = has_cls_embed
+        self.v2_model = v2_model
         padding_q = [int(q // 2) for q in kernel_q]
         padding_kv = [int(kv // 2) for kv in kernel_kv]
 
@@ -225,6 +229,7 @@ class MultiScaleAttention(nn.Module):
         self.k = nn.Linear(dim, dim, bias=qkv_bias)
         self.v = nn.Linear(dim, dim, bias=qkv_bias)
         self.proj = nn.Linear(dim, dim)
+
         if dropout_rate > 0.0:
             self.proj_drop = nn.Dropout(dropout_rate)
 
@@ -418,7 +423,12 @@ class MultiScaleAttention(nn.Module):
         attn = attn.softmax(dim=-1)
 
         N = q.shape[2]
-        x = (attn @ v).transpose(1, 2).reshape(B, N, C)
+
+        if self.v2_model:
+            x = (attn @ v + q).transpose(1, 2).reshape(B, N, C)
+        else:
+            x = (attn @ v).transpose(1, 2).reshape(B, N, C)
+
         x = self.proj(x)
         if self.dropout_rate > 0.0:
             x = self.proj_drop(x)
@@ -473,6 +483,7 @@ class MultiScaleBlock(nn.Module):
         pool_mode: str = "conv",
         has_cls_embed: bool = True,
         pool_first: bool = False,
+        v2_model: bool = False,
     ) -> None:
         """
         Args:
@@ -522,6 +533,7 @@ class MultiScaleBlock(nn.Module):
             has_cls_embed=has_cls_embed,
             pool_mode=pool_mode,
             pool_first=pool_first,
+            v2_model=v2_model,
         )
         self.drop_path = (
             DropPath(droppath_rate) if droppath_rate > 0.0 else nn.Identity()
