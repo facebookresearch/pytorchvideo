@@ -104,15 +104,20 @@ class Hmdb51LabeledVideoPaths:
                 - "test"
                 - "unused"
         """
+        action_name_to_class = {}
         video_paths_and_label = []
         for file_path in file_paths:
             file_path = pathlib.Path(file_path)
             assert g_pathmgr.exists(file_path), f"{file_path} not found."
             if not (file_path.suffix == ".txt" and "_test_split" in file_path.stem):
-                return RuntimeError(f"Ivalid file: {file_path}")
+                return RuntimeError(f"Invalid file: {file_path}")
 
             action_name = "_"
             action_name = action_name.join((file_path.stem).split("_")[:-2])
+
+            if action_name not in action_name_to_class:
+                action_name_to_class[action_name] = len(action_name_to_class)
+
             with g_pathmgr.open(file_path, "r") as f:
                 for path_label in f.read().splitlines():
                     line_split = path_label.rsplit(None, 1)
@@ -123,7 +128,7 @@ class Hmdb51LabeledVideoPaths:
                     file_path = os.path.join(action_name, line_split[0])
                     meta_tags = line_split[0].split("_")[-6:-1]
                     video_paths_and_label.append(
-                        (file_path, {"label": action_name, "meta_tags": meta_tags})
+                        (file_path, {"label": action_name_to_class[action_name], "meta_tags": meta_tags})
                     )
 
         assert (
