@@ -125,6 +125,12 @@ def _attention_pool(
     T, H, W = thw_shape
     tensor = tensor.reshape(B * N, T, H, W, C).permute(0, 4, 1, 2, 3).contiguous()
 
+    if isinstance(norm, nn.BatchNorm3d):
+        # If use BN, we apply norm before pooling instead of after pooling.
+        tensor = norm(tensor)
+        # We also empirically find that adding a GELU here is beneficial.
+        tensor = nn.functional.gelu(tensor)
+
     tensor = pool(tensor)
 
     thw_shape = [tensor.shape[2], tensor.shape[3], tensor.shape[4]]
@@ -132,7 +138,7 @@ def _attention_pool(
     tensor = tensor.reshape(B, N, C, L_pooled).transpose(2, 3)
     if has_cls_embed:
         tensor = torch.cat((cls_tok, tensor), dim=2)
-    if norm is not None:
+    if norm is not None and not isinstance(norm, nn.BatchNorm3d):
         tensor = norm(tensor)
 
     if tensor_dim == 4:
@@ -476,6 +482,7 @@ class MultiScaleBlock(nn.Module):
         droppath_rate: float = 0.0,
         act_layer: nn.Module = nn.GELU,
         norm_layer: nn.Module = nn.LayerNorm,
+        attn_norm_layer: nn.Module = nn.LayerNorm,
         kernel_q: _size_3_t = (1, 1, 1),
         kernel_kv: _size_3_t = (1, 1, 1),
         stride_q: _size_3_t = (1, 1, 1),
@@ -498,6 +505,7 @@ class MultiScaleBlock(nn.Module):
             droppath_rate (float): DropPath rate. If set to 0, DropPath is disabled.
             act_layer (nn.Module): Activation layer used in the Mlp layer.
             norm_layer (nn.Module): Normalization layer.
+            attn_norm_layer (nn.Module): Normalization layer in the attention module.
             kernel_q (_size_3_t): Pooling kernel size for q. If pooling kernel size is
                 1 for all the dimensions, pooling is not used (by default).
             kernel_kv (_size_3_t): Pooling kernel size for kv. If pooling kernel size
@@ -529,7 +537,7 @@ class MultiScaleBlock(nn.Module):
             kernel_kv=kernel_kv,
             stride_q=stride_q,
             stride_kv=stride_kv,
-            norm_layer=nn.LayerNorm,
+            norm_layer=attn_norm_layer,
             has_cls_embed=has_cls_embed,
             pool_mode=pool_mode,
             pool_first=pool_first,
@@ -566,12 +574,23 @@ class MultiScaleBlock(nn.Module):
             thw_shape (List): The shape of the input tensor (before flattening).
         """
 
-        x_block, thw_shape_new = self.attn(self.norm1(x), thw_shape)
+        x_block, thw_shape_new = self.attn(
+            (
+                self.norm1(x.permute(0, 2, 1)).permute(0, 2, 1)
+                if isinstance(self.norm1, nn.BatchNorm1d)
+                else self.norm1(x)
+            ),
+            thw_shape,
+        )
         x_res, _ = _attention_pool(
             x, self.pool_skip, thw_shape, has_cls_embed=self.has_cls_embed
         )
         x = x_res + self.drop_path(x_block)
-        x_norm = self.norm2(x)
+        x_norm = (
+            self.norm2(x.permute(0, 2, 1)).permute(0, 2, 1)
+            if isinstance(self.norm2, nn.BatchNorm1d)
+            else self.norm2(x)
+        )
         x_mlp = self.mlp(x_norm)
         if self.dim != self.dim_out:
             x = self.proj(x_norm)

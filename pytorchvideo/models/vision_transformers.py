@@ -53,7 +53,6 @@ class MultiscaleVisionTransformers(nn.Module):
         patch_embed: Optional[nn.Module],
         cls_positional_encoding: nn.Module,
         pos_drop: Optional[nn.Module],
-        norm_patch_embed: Optional[nn.Module],
         blocks: nn.ModuleList,
         norm_embed: Optional[nn.Module],
         head: Optional[nn.Module],
@@ -81,9 +80,6 @@ class MultiscaleVisionTransformers(nn.Module):
 
         if self.pos_drop is not None:
             x = self.pos_drop(x)
-
-        if self.norm_patch_embed is not None:
-            x = self.norm_patch_embed(x)
 
         thw = self.cls_positional_encoding.patch_embed_shape
         for blk in self.blocks:
@@ -226,6 +222,12 @@ def create_multiscale_vision_transformers(
         ), "pool_kv_stride_size should be none if pool_kv_stride_adaptive is set."
     if norm == "layernorm":
         norm_layer = partial(nn.LayerNorm, eps=1e-6)
+        block_norm_layer = partial(nn.LayerNorm, eps=1e-6)
+        attn_norm_layer = partial(nn.LayerNorm, eps=1e-6)
+    elif norm == "batchnorm":
+        norm_layer = None
+        block_norm_layer = nn.BatchNorm1d
+        attn_norm_layer = nn.BatchNorm3d
     else:
         raise NotImplementedError("Only supports layernorm.")
     if isinstance(spatial_size, int):
@@ -280,8 +282,6 @@ def create_multiscale_vision_transformers(
     if atten_head_mul is not None:
         for i in range(len(atten_head_mul)):
             head_mul[atten_head_mul[i][0]] = atten_head_mul[i][1]
-
-    norm_patch_embed = norm_layer(patch_embed_dim) if enable_patch_embed_norm else None
 
     mvit_blocks = nn.ModuleList()
 
@@ -340,7 +340,8 @@ def create_multiscale_vision_transformers(
                 qkv_bias=qkv_bias,
                 dropout_rate=dropout_rate_block,
                 droppath_rate=dpr[i],
-                norm_layer=norm_layer,
+                norm_layer=block_norm_layer,
+                attn_norm_layer=attn_norm_layer,
                 kernel_q=pool_q[i],
                 kernel_kv=pool_kv[i],
                 stride_q=stride_q[i],
@@ -352,7 +353,7 @@ def create_multiscale_vision_transformers(
         )
 
     embed_dim = dim_out
-    norm_embed = norm_layer(embed_dim)
+    norm_embed = None if norm_layer is None else norm_layer(embed_dim)
     if head is not None:
         head_model = head(
             in_features=embed_dim,
@@ -368,7 +369,6 @@ def create_multiscale_vision_transformers(
         patch_embed=patch_embed,
         cls_positional_encoding=cls_positional_encoding,
         pos_drop=pos_drop if dropout_rate_block > 0.0 else None,
-        norm_patch_embed=norm_patch_embed,
         blocks=mvit_blocks,
         norm_embed=norm_embed,
         head=head_model,
