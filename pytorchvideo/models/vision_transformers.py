@@ -73,6 +73,61 @@ class MultiscaleVisionTransformers(nn.Module):
         ), "cls_positional_encoding should have attribute patch_embed_shape."
         init_net_weights(self, init_std=0.02, style="vit")
 
+    def _get_bn_w_b(self, bn, repeat=1):
+        w_bn = torch.diag(
+            bn.weight.div(torch.sqrt(bn.eps + bn.running_var)).repeat(repeat)
+        )
+
+        b_bn = (
+            bn.bias
+            - bn.weight.mul(bn.running_mean).div(torch.sqrt(bn.running_var + bn.eps))
+        ).repeat(repeat)
+        return w_bn, b_bn
+
+    def fuse_norm_before_linear(self, bn, linear):
+        if bn is None:
+            return linear
+        w_bn, b_bn = self._get_bn_w_b(bn)
+        fused_linear = nn.Linear(linear.in_features, linear.out_features, bias=True)
+        fused_linear.weight[:] = torch.mm(linear.weight, w_bn)
+        fused_linear.bias[:] = torch.matmul(linear.weight, b_bn) + linear.bias
+        return fused_linear
+
+    def fuse_norm_after_linear(self, linear, bn):
+        if bn is None:
+            return linear
+        assert linear.in_features % bn.bias.shape[0] == 0
+        num_heads = linear.in_features // bn.bias.shape[0]
+        w_bn, b_bn = self._get_bn_w_b(bn, repeat=num_heads)
+
+        fused_linear = nn.Linear(linear.in_features, linear.out_features, bias=True)
+        fused_linear.weight[:] = torch.mm(w_bn, linear.weight)
+        fused_linear.bias[:] = torch.matmul(w_bn, linear.bias) + b_bn
+        return fused_linear
+
+    def fuse_bn(self):
+        assert not self.training
+        for blk in self.blocks:
+            # fuse self.norm1
+            blk.attn.q = self.fuse_norm_before_linear(blk.norm1, blk.attn.q)
+            blk.attn.k = self.fuse_norm_before_linear(blk.norm1, blk.attn.k)
+            blk.attn.v = self.fuse_norm_before_linear(blk.norm1, blk.attn.v)
+            blk.norm1 = nn.Identity()
+
+            # fuse the bn in attention
+            blk.attn.q = self.fuse_norm_after_linear(blk.attn.q, blk.attn.norm_q)
+            blk.attn.k = self.fuse_norm_after_linear(blk.attn.k, blk.attn.norm_k)
+            blk.attn.v = self.fuse_norm_after_linear(blk.attn.v, blk.attn.norm_v)
+            blk.attn.norm_q = nn.Identity()
+            blk.attn.norm_k = nn.Identity()
+            blk.attn.norm_v = nn.Identity()
+
+            # fuse self.norm2
+            blk.mlp.fc1 = self.fuse_norm_before_linear(blk.norm2, blk.mlp.fc1)
+            if blk.dim != blk.dim_out:
+                blk.proj = self.fuse_norm_before_linear(blk.norm2, blk.proj)
+            blk.norm2 = nn.Identity()
+
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         if self.patch_embed is not None:
             x = self.patch_embed(x)

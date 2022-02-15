@@ -125,7 +125,7 @@ def _attention_pool(
     T, H, W = thw_shape
     tensor = tensor.reshape(B * N, T, H, W, C).permute(0, 4, 1, 2, 3).contiguous()
 
-    if isinstance(norm, nn.BatchNorm3d):
+    if isinstance(norm, (nn.BatchNorm3d, nn.Identity)):
         # If use BN, we apply norm before pooling instead of after pooling.
         tensor = norm(tensor)
         # We also empirically find that adding a GELU here is beneficial.
