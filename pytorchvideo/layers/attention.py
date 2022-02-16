@@ -35,6 +35,7 @@ class Mlp(nn.Module):
         out_features: Optional[int] = None,
         act_layer: Callable = nn.GELU,
         dropout_rate: float = 0.0,
+        bias_on: bool = True,
     ) -> None:
         """
         Args:
@@ -51,9 +52,9 @@ class Mlp(nn.Module):
         self.dropout_rate = dropout_rate
         out_features = out_features or in_features
         hidden_features = hidden_features or in_features
-        self.fc1 = nn.Linear(in_features, hidden_features)
+        self.fc1 = nn.Linear(in_features, hidden_features, bias=bias_on)
         self.act = act_layer()
-        self.fc2 = nn.Linear(hidden_features, out_features)
+        self.fc2 = nn.Linear(hidden_features, out_features, bias=bias_on)
         if self.dropout_rate > 0.0:
             self.dropout = nn.Dropout(dropout_rate)
 
@@ -101,8 +102,8 @@ def _attention_pool(
         thw_shape (List): The shape of the input tensor (before flattening).
         has_cls_embed (bool): Whether the input tensor contains cls token. Pool
             operation excludes cls token.
-        norm: (Optional[Callable]): Optional normalization operation applied to tensor
-            after pool.
+        norm: (Optional[Callable]): Optional normalization operation applied to
+         tensor after pool.
 
     Returns:
         tensor (torch.Tensor): Input tensor after pool.
@@ -190,6 +191,8 @@ class MultiScaleAttention(nn.Module):
         pool_mode: str = "conv",
         pool_first: bool = False,
         v2_model: bool = True,
+        depthwise_conv: bool = True,
+        bias_on: bool = True,
     ) -> None:
         """
         Args:
@@ -234,8 +237,7 @@ class MultiScaleAttention(nn.Module):
         self.q = nn.Linear(dim, dim, bias=qkv_bias)
         self.k = nn.Linear(dim, dim, bias=qkv_bias)
         self.v = nn.Linear(dim, dim, bias=qkv_bias)
-        self.proj = nn.Linear(dim, dim)
-
+        self.proj = nn.Linear(dim, dim, bias=True if bias_on else False)
         if dropout_rate > 0.0:
             self.proj_drop = nn.Dropout(dropout_rate)
 
@@ -278,7 +280,7 @@ class MultiScaleAttention(nn.Module):
                     kernel_q,
                     stride=stride_q,
                     padding=padding_q,
-                    groups=head_dim,
+                    groups=head_dim if depthwise_conv else 1,
                     bias=False,
                 )
                 if kernel_q is not None
@@ -292,7 +294,7 @@ class MultiScaleAttention(nn.Module):
                     kernel_kv,
                     stride=stride_kv,
                     padding=padding_kv,
-                    groups=head_dim,
+                    groups=head_dim if depthwise_conv else 1,
                     bias=False,
                 )
                 if kernel_kv is not None
@@ -306,7 +308,7 @@ class MultiScaleAttention(nn.Module):
                     kernel_kv,
                     stride=stride_kv,
                     padding=padding_kv,
-                    groups=head_dim,
+                    groups=head_dim if depthwise_conv else 1,
                     bias=False,
                 )
                 if kernel_kv is not None
@@ -491,6 +493,8 @@ class MultiScaleBlock(nn.Module):
         has_cls_embed: bool = True,
         pool_first: bool = False,
         v2_model: bool = False,
+        bias_on: bool = True,
+        depthwise_conv: bool = True,
     ) -> None:
         """
         Args:
@@ -542,6 +546,8 @@ class MultiScaleBlock(nn.Module):
             pool_mode=pool_mode,
             pool_first=pool_first,
             v2_model=v2_model,
+            bias_on=bias_on,
+            depthwise_conv=depthwise_conv,
         )
         self.drop_path = (
             DropPath(droppath_rate) if droppath_rate > 0.0 else nn.Identity()
@@ -555,9 +561,10 @@ class MultiScaleBlock(nn.Module):
             out_features=dim_out,
             act_layer=act_layer,
             dropout_rate=dropout_rate,
+            bias_on=bias_on,
         )
         if dim != dim_out:
-            self.proj = nn.Linear(dim, dim_out)
+            self.proj = nn.Linear(dim, dim_out, bias=bias_on)
 
         self.pool_skip = (
             nn.MaxPool3d(kernel_skip, stride_skip, padding_skip, ceil_mode=False)
