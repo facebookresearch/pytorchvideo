@@ -190,9 +190,10 @@ class MultiScaleAttention(nn.Module):
         has_cls_embed: bool = True,
         pool_mode: str = "conv",
         pool_first: bool = False,
-        v2_model: bool = True,
+        residual_pool: bool = True,
         depthwise_conv: bool = True,
         bias_on: bool = True,
+        separate_qkv: bool = True,
     ) -> None:
         """
         Args:
@@ -217,8 +218,11 @@ class MultiScaleAttention(nn.Module):
                 (average pooling), and "max" (max pooling).
             pool_first (bool): If set to True, pool is applied before qkv projection.
                 Otherwise, pool is applied after qkv projection. Default: False.
-            v2_model (bool): If set to True, building Improved Multiscale Vision
-                Transformers.
+            residual_pool (bool): If set to True, use Improved Multiscale Vision
+                Transformer's pooling residual connection.
+            depthwise_conv (bool): Wether use depthwise or full convolution for pooling.
+            bias_on (bool): Wether use biases for linear layers.
+            separate_qkv (bool): Wether to use separate or one layer for qkv projections.
         """
 
         super().__init__()
@@ -230,13 +234,17 @@ class MultiScaleAttention(nn.Module):
         head_dim = dim // num_heads
         self.scale = head_dim ** -0.5
         self.has_cls_embed = has_cls_embed
-        self.v2_model = v2_model
+        self.residual_pool = residual_pool
+        self.separate_qkv = separate_qkv
         padding_q = [int(q // 2) for q in kernel_q]
         padding_kv = [int(kv // 2) for kv in kernel_kv]
 
-        self.q = nn.Linear(dim, dim, bias=qkv_bias)
-        self.k = nn.Linear(dim, dim, bias=qkv_bias)
-        self.v = nn.Linear(dim, dim, bias=qkv_bias)
+        if self.pool_first or self.separate_qkv:
+            self.q = nn.Linear(dim, dim, bias=qkv_bias)
+            self.k = nn.Linear(dim, dim, bias=qkv_bias)
+            self.v = nn.Linear(dim, dim, bias=qkv_bias)
+        else:
+            self.qkv = nn.Linear(dim, dim * 3, bias=qkv_bias)
         self.proj = nn.Linear(dim, dim, bias=True if bias_on else False)
         if dropout_rate > 0.0:
             self.proj_drop = nn.Dropout(dropout_rate)
@@ -423,16 +431,24 @@ class MultiScaleAttention(nn.Module):
             q, k, v = self._reshape_qkv_to_seq(q, k, v, q_N, v_N, k_N, B, C)
             q, k, v = self._qkv_proj(q, q_N, k, k_N, v, v_N, B, C)
         else:
-            q = k = v = x
-            q, k, v = self._qkv_proj(q, N, k, N, v, N, B, C)
+            if self.separate_qkv:
+                q = k = v = x
+                q, k, v = self._qkv_proj(q, N, k, N, v, N, B, C)
+            else:
+                qkv = (
+                    self.qkv(x)
+                    .reshape(B, N, 3, self.num_heads, -1)
+                    .permute(2, 0, 3, 1, 4)
+                )
+                q, k, v = qkv[0], qkv[1], qkv[2]
             q, q_shape, k, k_shape, v, v_shape = self._qkv_pool(q, k, v, thw_shape)
 
-        attn = (q @ k.transpose(-2, -1)) * self.scale
+        attn = (q * self.scale) @ k.transpose(-2, -1)
         attn = attn.softmax(dim=-1)
 
         N = q.shape[2]
 
-        if self.v2_model:
+        if self.residual_pool:
             x = (attn @ v + q).transpose(1, 2).reshape(B, N, C)
         else:
             x = (attn @ v).transpose(1, 2).reshape(B, N, C)
@@ -492,9 +508,10 @@ class MultiScaleBlock(nn.Module):
         pool_mode: str = "conv",
         has_cls_embed: bool = True,
         pool_first: bool = False,
-        v2_model: bool = False,
-        bias_on: bool = True,
+        residual_pool: bool = False,
         depthwise_conv: bool = True,
+        bias_on: bool = True,
+        separate_qkv: bool = True,
     ) -> None:
         """
         Args:
@@ -524,6 +541,11 @@ class MultiScaleBlock(nn.Module):
                 cls token. Pooling is not applied to the cls token.
             pool_first (bool): If set to True, pool is applied before qkv projection.
                 Otherwise, pool is applied after qkv projection. Default: False.
+            residual_pool (bool): If set to True, use Improved Multiscale Vision
+                Transformer's pooling residual connection.
+            depthwise_conv (bool): Wether use depthwise or full convolution for pooling.
+            bias_on (bool): Wether use biases for linear layers.
+            separate_qkv (bool): Wether to use separate or one layer for qkv projections.
         """
         super().__init__()
         self.dim = dim
@@ -545,9 +567,10 @@ class MultiScaleBlock(nn.Module):
             has_cls_embed=has_cls_embed,
             pool_mode=pool_mode,
             pool_first=pool_first,
-            v2_model=v2_model,
+            residual_pool=residual_pool,
             bias_on=bias_on,
             depthwise_conv=depthwise_conv,
+            separate_qkv=separate_qkv,
         )
         self.drop_path = (
             DropPath(droppath_rate) if droppath_rate > 0.0 else nn.Identity()
@@ -568,7 +591,7 @@ class MultiScaleBlock(nn.Module):
 
         self.pool_skip = (
             nn.MaxPool3d(kernel_skip, stride_skip, padding_skip, ceil_mode=False)
-            if len(kernel_skip) > 0
+            if len(stride_skip) > 0 and numpy.prod(stride_skip) > 1
             else None
         )
 
