@@ -228,17 +228,17 @@ class TestLabeledVideoDataset(unittest.TestCase):
                 sample_1 = next(dataset)
                 sample_2 = next(dataset)
 
-                self.assertTrue(sample_1["label"] in [action_1, action_2])
-                if sample_1["label"] == action_2:
+                self.assertTrue(sample_1["label"] in [0, 1])
+                if sample_1["label"] == 1:
                     sample_1, sample_2 = sample_2, sample_1
 
-                self.assertEqual(sample_1["label"], action_1)
+                self.assertEqual(sample_1["label"], 0)
                 self.assertEqual(5, len(sample_1["meta_tags"]))
                 self.assertTrue(
                     sample_1["video"].equal(thwc_to_cthw(data_1).to(torch.float32))
                 )
 
-                self.assertEqual(sample_2["label"], action_2)
+                self.assertEqual(sample_2["label"], 1)
                 self.assertEqual(5, len(sample_2["meta_tags"]))
                 self.assertTrue(
                     sample_2["video"].equal(thwc_to_cthw(data_2).to(torch.float32))
