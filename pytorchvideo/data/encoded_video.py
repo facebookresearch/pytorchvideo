@@ -3,6 +3,7 @@
 import io
 import logging
 import pathlib
+from typing import Dict, Any
 
 from iopath.common.file_io import g_pathmgr
 from pytorchvideo.data.decoder import DecoderType
@@ -46,7 +47,11 @@ class EncodedVideo(Video):
 
     @classmethod
     def from_path(
-        cls, file_path: str, decode_audio: bool = True, decoder: str = "pyav"
+        cls,
+        file_path: str,
+        decode_audio: bool = True,
+        decoder: str = "pyav",
+        **other_args: Dict[str, Any],
     ):
         """
         Fetches the given video path using PathManager (allowing remote uris to be
@@ -60,4 +65,6 @@ class EncodedVideo(Video):
             video_file = io.BytesIO(fh.read())
 
         video_cls = select_video_class(decoder)
-        return video_cls(video_file, pathlib.Path(file_path).name, decode_audio)
+        return video_cls(
+            video_file, pathlib.Path(file_path).name, decode_audio, **other_args
+        )

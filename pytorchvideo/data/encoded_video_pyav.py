@@ -27,12 +27,18 @@ class EncodedVideoPyAV(EncodedVideo):
         file: BinaryIO,
         video_name: Optional[str] = None,
         decode_audio: bool = True,
+        perform_seek: bool = True,
     ) -> None:
         """
         Args:
             file (BinaryIO): a file-like object (e.g. io.BytesIO or io.StringIO) that
                 contains the encoded video.
+            perform_seek:
+                Whether or not to seek time to the underlying video container.
+
+                NOTE: seeks may be slow on larger files, e.g. on a networked filesystem
         """
+        self.perform_seek = perform_seek
         self._video_name = video_name
         self._decode_audio = decode_audio
 
@@ -239,6 +245,7 @@ class EncodedVideoPyAV(EncodedVideo):
                 ),
                 self._container.streams.video[0],
                 {"video": 0},
+                perform_seek=self.perform_seek,
             )
             if len(pyav_video_frames) > 0:
                 video_and_pts = [
@@ -263,6 +270,7 @@ class EncodedVideoPyAV(EncodedVideo):
                     ),
                     self._container.streams.audio[0],
                     {"audio": 0},
+                    perform_seek=self.perform_seek,
                 )
 
                 if len(pyav_audio_frames) > 0:
@@ -287,6 +295,7 @@ def _pyav_decode_stream(
     stream: av.video.stream.VideoStream,
     stream_name: dict,
     buffer_size: int = 0,
+    perform_seek: bool = True,
 ) -> Tuple[List, float]:
     """
     Decode the video with PyAV decoder.
@@ -306,8 +315,14 @@ def _pyav_decode_stream(
     # Seeking in the stream is imprecise. Thus, seek to an earlier pts by a
     # margin pts.
     margin = 1024
-    seek_offset = max(start_pts - margin, 0)
-    container.seek(int(seek_offset), any_frame=False, backward=True, stream=stream)
+
+    # NOTE:
+    # Don't want to seek if iterating through a video due to slow-downs. I
+    # believe this is some PyAV bug where seeking after a certain point causes
+    # major slow-downs
+    if perform_seek:
+        seek_offset = max(start_pts - margin, 0)
+        container.seek(int(seek_offset), any_frame=False, backward=True, stream=stream)
     frames = {}
     max_pts = 0
     for frame in container.decode(**stream_name):
