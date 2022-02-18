@@ -1,7 +1,7 @@
 # Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved.
 
 import math
-from typing import Optional, List, Any, Dict, Callable
+from typing import Any, Callable, Dict, List, Optional
 
 import numpy as np
 import pytorchvideo_trainer.module.distributed_utils as du
@@ -11,10 +11,10 @@ import torch.nn.functional as F
 from hydra.utils import instantiate
 from pytorch_lightning.trainer import Trainer
 from pytorchvideo_trainer.module.video_classification import (
-    VideoClassificationModule,
-    EnsembleMethod,
-    BatchKey,
     Batch,
+    BatchKey,
+    EnsembleMethod,
+    VideoClassificationModule,
 )
 
 

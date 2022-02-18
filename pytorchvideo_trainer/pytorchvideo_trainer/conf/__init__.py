@@ -5,4 +5,5 @@ import torchrecipes.core.conf  # noqa
 # Components to register with this config
 from pytorchvideo_trainer import register_components
 
+
 register_components()

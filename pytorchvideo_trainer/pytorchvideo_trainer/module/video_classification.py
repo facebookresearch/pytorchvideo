@@ -6,14 +6,14 @@ from dataclasses import dataclass
 from typing import (
     Any,
     Dict,
-    Mapping,
-    List,
-    Optional,
     Iterable,
-    Tuple,
-    Union,
-    TypedDict,
+    List,
     Literal,
+    Mapping,
+    Optional,
+    Tuple,
+    TypedDict,
+    Union,
 )
 
 import pytorch_lightning as pl
@@ -26,10 +26,8 @@ from iopath.common.file_io import g_pathmgr
 from omegaconf import MISSING, OmegaConf
 from pytorch_lightning.utilities import rank_zero_info
 from pytorchvideo_trainer.datamodule.transforms import MixVideoBatchWrapper
-from pytorchvideo_trainer.module.lr_policy import set_lr, get_epoch_lr, LRSchedulerConf
-from pytorchvideo_trainer.module.optimizer import (
-    construct_optimizer,
-)
+from pytorchvideo_trainer.module.lr_policy import LRSchedulerConf, get_epoch_lr, set_lr
+from pytorchvideo_trainer.module.optimizer import construct_optimizer
 from torch import nn
 from torch.optim.lr_scheduler import _LRScheduler
 from torchrecipes.core.conf import ModuleConf

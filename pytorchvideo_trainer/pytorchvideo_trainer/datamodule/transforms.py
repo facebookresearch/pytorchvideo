@@ -1,7 +1,7 @@
 # Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved.
 
 import random
-from typing import Iterable, Sequence, Any, Callable, Dict, Mapping, List
+from typing import Any, Callable, Dict, Iterable, List, Mapping, Sequence
 
 import hydra
 import torch

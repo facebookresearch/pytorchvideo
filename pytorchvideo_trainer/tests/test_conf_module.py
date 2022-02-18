@@ -5,15 +5,9 @@ import unittest
 import hydra
 from hydra.experimental import compose, initialize_config_module
 from pytorchvideo_trainer.module.byol import BYOLModule
-from pytorchvideo_trainer.module.moco_v2 import (
-    MOCOV2Module,
-)
-from pytorchvideo_trainer.module.simclr import (
-    SimCLRModule,
-)
-from pytorchvideo_trainer.module.video_classification import (
-    VideoClassificationModule,
-)
+from pytorchvideo_trainer.module.moco_v2 import MOCOV2Module
+from pytorchvideo_trainer.module.simclr import SimCLRModule
+from pytorchvideo_trainer.module.video_classification import VideoClassificationModule
 
 
 class TestVideoClassificationModuleConf(unittest.TestCase):

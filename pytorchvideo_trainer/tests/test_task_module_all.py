@@ -8,12 +8,8 @@ from hydra import compose, initialize_config_module
 from hydra.utils import instantiate  # @manual
 from omegaconf import OmegaConf
 from pytorch_lightning import Trainer
-from pytorchvideo_trainer.datamodule.datamodule import (
-    VideoClassificationDataModuleConf,
-)
-from pytorchvideo_trainer.train_app import (
-    VideoClassificationTrainAppConf,
-)
+from pytorchvideo_trainer.datamodule.datamodule import VideoClassificationDataModuleConf
+from pytorchvideo_trainer.train_app import VideoClassificationTrainAppConf
 from util import create_small_kinetics_dataset, run_locally, tempdir
 
 

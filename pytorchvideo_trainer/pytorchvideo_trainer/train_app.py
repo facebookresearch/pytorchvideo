@@ -2,30 +2,25 @@
 
 import os
 from dataclasses import dataclass, field
-from typing import Any, List, Dict, Optional, Union
+from typing import Any, Dict, List, Optional, Union
 
 import hydra
 import numpy as np
 import submitit
 import torch
 from hydra.core.config_store import ConfigStore
-from omegaconf import MISSING
-from omegaconf import OmegaConf
+from omegaconf import MISSING, OmegaConf
 from omegaconf.dictconfig import DictConfig
-from pytorch_lightning import LightningModule, LightningDataModule
-from pytorch_lightning.callbacks import Callback
-from pytorch_lightning.callbacks import LearningRateMonitor
+from pytorch_lightning import LightningDataModule, LightningModule
+from pytorch_lightning.callbacks import Callback, LearningRateMonitor
 from pytorch_lightning.loggers import TensorBoardLogger
 from pytorch_lightning.utilities import rank_zero_info, rank_zero_only
-from pytorchvideo_trainer.datamodule.datamodule import (
-    VideoClassificationDataModuleConf,
-)
+from pytorchvideo_trainer.datamodule.datamodule import VideoClassificationDataModuleConf
 from pytorchvideo_trainer.module.video_classification import (
     VideoClassificationModuleConf,
 )
-from torchrecipes.core.base_train_app import BaseTrainApp
-from torchrecipes.core.base_train_app import TrainOutput
-from torchrecipes.core.conf import TrainerConf, TrainAppConf
+from torchrecipes.core.base_train_app import BaseTrainApp, TrainOutput
+from torchrecipes.core.conf import TrainAppConf, TrainerConf
 from torchrecipes.utils.config_utils import get_class_name_str
 
 

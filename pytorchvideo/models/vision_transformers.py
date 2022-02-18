@@ -171,6 +171,10 @@ def create_multiscale_vision_transformers(
     droppath_rate_block: float = 0.0,
     pooling_mode: str = "conv",
     pool_first: bool = False,
+    residual_pool: bool = False,
+    depthwise_conv: bool = True,
+    bias_on: bool = True,
+    separate_qkv: bool = True,
     embed_dim_mul: Optional[List[List[int]]] = None,
     atten_head_mul: Optional[List[List[int]]] = None,
     pool_q_stride_size: Optional[List[List[int]]] = None,
@@ -223,6 +227,11 @@ def create_multiscale_vision_transformers(
             (average pooling), and "max" (max pooling).
         pool_first (bool): If set to True, pool is applied before qkv projection.
             Otherwise, pool is applied after qkv projection. Default: False.
+        residual_pool (bool): If set to True, use Improved Multiscale Vision
+                Transformer's pooling residual connection.
+        depthwise_conv (bool): Wether use depthwise or full convolution for pooling.
+        bias_on (bool): Wether use biases for linear layers.
+        separate_qkv (bool): Wether to use separate or one layer for qkv projections.
         embed_dim_mul (Optional[List[List[int]]]): Dimension multiplication at layer i.
             If X is used, then the next block will increase the embed dimension by X
             times. Format: [depth_i, mul_dim_ratio].
@@ -404,6 +413,10 @@ def create_multiscale_vision_transformers(
                 pool_mode=pooling_mode,
                 has_cls_embed=cls_embed_on,
                 pool_first=pool_first,
+                residual_pool=residual_pool,
+                bias_on=bias_on,
+                depthwise_conv=depthwise_conv,
+                separate_qkv=separate_qkv,
             )
         )
 

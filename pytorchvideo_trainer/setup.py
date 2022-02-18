@@ -3,6 +3,7 @@
 
 from setuptools import find_packages, setup
 
+
 setup(
     name="pytorchvideo_trainer",
     version="0.0.1",

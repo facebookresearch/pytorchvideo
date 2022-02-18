@@ -1,6 +1,6 @@
 # Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved.
 
-from typing import Dict, Any, List, Callable
+from typing import Any, Callable, Dict, List
 
 from torch.utils.data._utils.collate import default_collate
 

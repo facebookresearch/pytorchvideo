@@ -1,7 +1,7 @@
 # Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved.
 
 from dataclasses import dataclass
-from typing import Optional, List, Callable, Union, Any, Tuple
+from typing import Any, Callable, List, Optional, Tuple, Union
 
 import torch
 import torch.nn as nn
@@ -12,9 +12,9 @@ from pytorchvideo.models.resnet import create_resnet
 from pytorchvideo.models.weight_init import init_net_weights
 from pytorchvideo_trainer.module.ssl_helper import SSLBaseModule, create_mlp_util
 from pytorchvideo_trainer.module.video_classification import (
-    EnsembleMethod,
-    BatchKey,
     Batch,
+    BatchKey,
+    EnsembleMethod,
 )
 from torchrecipes.core.conf import ModuleConf
 from torchrecipes.utils.config_utils import get_class_name_str

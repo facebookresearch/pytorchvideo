@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
-from typing import Optional, Any, Callable, Dict, List
+from typing import Any, Callable, Dict, List, Optional
 
 import hydra
 import pytorch_lightning as pl

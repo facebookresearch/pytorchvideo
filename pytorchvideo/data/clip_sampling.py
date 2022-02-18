@@ -3,7 +3,7 @@
 import random
 from abc import ABC, abstractmethod
 from fractions import Fraction
-from typing import Any, Dict, NamedTuple, Optional, Tuple, Union, List
+from typing import Any, Dict, List, NamedTuple, Optional, Tuple, Union
 
 
 class ClipInfo(NamedTuple):
