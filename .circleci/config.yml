@@ -5,7 +5,7 @@
 # Specifies automated environment setup and tests.
 #
 # See https://circleci.com/docs/2.0/language-python/ for more details
-# Available Machine Images: 
+# Available Machine Images:
 # https://circleci.com/docs/2.0/configuration-reference/#available-machine-images
 # -------------------------------------------------------------------------------------
 
@@ -21,7 +21,7 @@ cpu: &cpu
 gpu: &gpu
   environment:
     CUDA_VERSION: "10.2"
-  resource_class: gpu.medium # tesla m60
+  resource_class: gpu.nvidia.small.multi
   machine:
       image: ubuntu-2004:202101-01
 
@@ -46,7 +46,7 @@ install_conda: &install_conda
     command: |
       curl --retry 3 -o conda.sh https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
       sh conda.sh -b -p $HOME/miniconda3
-      
+
 setup_ptv_conda: &setup_ptv_conda
   run:
     name: Setup Conda Environment
@@ -68,7 +68,7 @@ install_pytorch: &install_pytorch
         python -c 'import torch; print(torch.__version__)'
         python -c 'import torch; print("CUDA:", torch.cuda.is_available())'
         python -c 'import torchvision; print(torchvision.__version__)'
-        
+
 install_pytorchvideo: &install_pytorchvideo
   - run:
       name: Install PyTorchVideo
@@ -85,7 +85,7 @@ build_wheels: &build_wheels
         export PATH="$HOME/miniconda3/bin:$PATH"
         conda activate pytorchvideo
         python setup.py sdist
-        
+
         export BUILD_NIGHTLY="1"
         python setup.py sdist
 
@@ -139,7 +139,7 @@ jobs:
       - <<: *install_pytorch
       - <<: *install_pytorchvideo
       - <<: *run_unittests
-  
+
   upload_wheel:
     docker:
       - image: circleci/python:3.7
