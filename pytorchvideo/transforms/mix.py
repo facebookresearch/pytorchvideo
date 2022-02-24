@@ -1,6 +1,6 @@
 # Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved.
 
-from typing import Tuple
+from typing import Tuple, Dict, Any
 
 import torch
 from pytorchvideo.transforms.functional import convert_to_one_hot
@@ -11,6 +11,7 @@ def _mix_labels(
     num_classes: int,
     lam: float = 1.0,
     label_smoothing: float = 0.0,
+    one_hot: bool = False,
 ):
     """
     This function converts class indices to one-hot vectors and mix labels, given the
@@ -22,8 +23,12 @@ def _mix_labels(
         lam (float): lamba value for mixing labels.
         label_smoothing (float): Label smoothing value.
     """
-    labels1 = convert_to_one_hot(labels, num_classes, label_smoothing)
-    labels2 = convert_to_one_hot(labels.flip(0), num_classes, label_smoothing)
+    if one_hot:
+        labels1 = labels
+        labels2 = labels.flip(0)
+    else:
+        labels1 = convert_to_one_hot(labels, num_classes, label_smoothing)
+        labels2 = convert_to_one_hot(labels.flip(0), num_classes, label_smoothing)
     return labels1 * lam + labels2 * (1.0 - lam)
 
 
@@ -37,6 +42,7 @@ class MixUp(torch.nn.Module):
         alpha: float = 1.0,
         label_smoothing: float = 0.0,
         num_classes: int = 400,
+        one_hot: bool = False,
     ) -> None:
         """
         This implements MixUp for videos.
@@ -50,9 +56,13 @@ class MixUp(torch.nn.Module):
         self.mixup_beta_sampler = torch.distributions.beta.Beta(alpha, alpha)
         self.label_smoothing = label_smoothing
         self.num_classes = num_classes
+        self.one_hot = one_hot
 
     def forward(
-        self, x: torch.Tensor, labels: torch.Tensor
+        self,
+        x_video: torch.Tensor,
+        labels: torch.Tensor,
+        **args: Any,
     ) -> Tuple[torch.Tensor, torch.Tensor]:
         """
         The input is a batch of samples and their corresponding labels.
@@ -61,19 +71,29 @@ class MixUp(torch.nn.Module):
             x (torch.Tensor): Input tensor. The input should be a batch of videos with
                 shape (B, C, T, H, W).
             labels (torch.Tensor): Labels for input with shape (B).
+            Optional: x_audio: Audio input tensor.
         """
-        assert x.size(0) > 1, "MixUp cannot be applied to a single instance."
-
+        assert x_video.size(0) > 1, "MixUp cannot be applied to a single instance."
         mixup_lambda = self.mixup_beta_sampler.sample()
-        x_flipped = x.flip(0).mul_(1.0 - mixup_lambda)
-        x.mul_(mixup_lambda).add_(x_flipped)
+        x_video_flipped = x_video.flip(0).mul_(1.0 - mixup_lambda)
+        x_video.mul_(mixup_lambda).add_(x_video_flipped)
+
         new_labels = _mix_labels(
             labels,
             self.num_classes,
             mixup_lambda,
             self.label_smoothing,
+            one_hot=self.one_hot,
         )
-        return x, new_labels
+
+        if args.get("x_audio", None) is not None:
+            x_audio = args["x_audio"]
+            assert x_audio.size(0) > 1, "MixUp cannot be applied to a single instance."
+            x_audio_flipped = x_audio.flip(0).mul_(1.0 - mixup_lambda)
+            x_audio.mul_(mixup_lambda).add_(x_audio_flipped)
+            return x_video, x_audio, new_labels
+        else:
+            return x_video, new_labels
 
 
 class CutMix(torch.nn.Module):
@@ -87,6 +107,7 @@ class CutMix(torch.nn.Module):
         alpha: float = 1.0,
         label_smoothing: float = 0.0,
         num_classes: int = 400,
+        one_hot: bool = False,
     ) -> None:
         """
         This implements CutMix for videos.
@@ -97,6 +118,7 @@ class CutMix(torch.nn.Module):
             num_classes (int): Number of total classes.
         """
         super().__init__()
+        self.one_hot = one_hot
         self.cutmix_beta_sampler = torch.distributions.beta.Beta(alpha, alpha)
         self.label_smoothing = label_smoothing
         self.num_classes = num_classes
@@ -138,7 +160,10 @@ class CutMix(torch.nn.Module):
         return x, cutmix_lamda_corrected
 
     def forward(
-        self, x: torch.Tensor, labels: torch.Tensor
+        self,
+        x_video: torch.Tensor,
+        labels: torch.Tensor,
+        **args: Any,
     ) -> Tuple[torch.Tensor, torch.Tensor]:
         """
         The input is a batch of samples and their corresponding labels.
@@ -148,18 +173,27 @@ class CutMix(torch.nn.Module):
                 shape (B, C, T, H, W).
             labels (torch.Tensor): Labels for input with shape (B).
         """
-        assert x.size(0) > 1, "Cutmix cannot be applied to a single instance."
-        assert x.dim() == 4 or x.dim() == 5, "Please correct input shape."
-
+        assert x_video.size(0) > 1, "Cutmix cannot be applied to a single instance."
+        assert x_video.dim() == 4 or x_video.dim() == 5, "Please correct input shape."
         cutmix_lamda = self.cutmix_beta_sampler.sample()
-        x, cutmix_lamda_corrected = self._cutmix(x, cutmix_lamda)
+        x_video, cutmix_lamda_corrected = self._cutmix(x_video, cutmix_lamda)
         new_labels = _mix_labels(
             labels,
             self.num_classes,
             cutmix_lamda_corrected,
             self.label_smoothing,
+            one_hot=self.one_hot,
         )
-        return x, new_labels
+        if args.get("x_audio", None) is not None:
+            x_audio = args["x_audio"]
+            assert x_audio.size(0) > 1, "Cutmix cannot be applied to a single instance."
+            assert (
+                x_audio.dim() == 4 or x_audio.dim() == 5
+            ), "Please correct input shape."
+            x_audio, _ = self._cutmix(x_audio, cutmix_lamda)
+            return x_video, x_audio, new_labels
+        else:
+            return x_video, new_labels
 
 
 class MixVideo(torch.nn.Module):
@@ -174,6 +208,7 @@ class MixVideo(torch.nn.Module):
         cutmix_alpha: float = 1.0,
         label_smoothing: float = 0.0,
         num_classes: int = 400,
+        one_hot: bool = False,
     ):
         """
         Args:
@@ -191,13 +226,22 @@ class MixVideo(torch.nn.Module):
         super().__init__()
         self.cutmix_prob = cutmix_prob
         self.mixup = MixUp(
-            alpha=mixup_alpha, label_smoothing=label_smoothing, num_classes=num_classes
+            alpha=mixup_alpha,
+            label_smoothing=label_smoothing,
+            num_classes=num_classes,
+            one_hot=one_hot,
         )
         self.cutmix = CutMix(
             alpha=cutmix_alpha, label_smoothing=label_smoothing, num_classes=num_classes
         )
 
-    def forward(self, x: torch.Tensor, labels: torch.Tensor):
+    # def forward(self, x: torch.Tensor, labels: torch.Tensor):
+    def forward(
+        self,
+        x_video: torch.Tensor,
+        labels: torch.Tensor,
+        **args: Any,
+    ) -> Dict[str, Any]:
         """
         The input is a batch of samples and their corresponding labels.
 
@@ -206,8 +250,16 @@ class MixVideo(torch.nn.Module):
                 shape (B, C, T, H, W).
             labels (torch.Tensor): Labels for input with shape (B).
         """
-
-        if torch.rand(1).item() < self.cutmix_prob:
-            return self.cutmix(x, labels)
+        if args.get("x_audio", None) is None:
+            if torch.rand(1).item() < self.cutmix_prob:
+                x_video, new_labels = self.cutmix(x_video, labels)
+            else:
+                x_video, new_labels = self.mixup(x_video, labels)
+            return x_video, new_labels
         else:
-            return self.mixup(x, labels)
+            x_audio = args["x_audio"]
+            if torch.rand(1).item() < self.cutmix_prob:
+                x_video, new_labels, x_audio = self.cutmix(x_video, labels, x_audio)
+            else:
+                x_video, new_labels, x_audio = self.mixup(x_video, labels, x_audio)
+            return x_video, x_audio, new_labels
