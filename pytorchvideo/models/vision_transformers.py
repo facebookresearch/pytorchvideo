@@ -220,7 +220,7 @@ def create_multiscale_vision_transformers(
         mlp_ratio (float): Mlp ratio which controls the feature dimension in the
             hidden layer of the Mlp block.
         qkv_bias (bool): If set to False, the qkv layer will not learn an additive
-            bias. Default: False.
+            bias. Default: True.
         dropout_rate_block (float): Dropout rate for the attention block.
         droppath_rate_block (float): Droppath rate for the attention block.
         pooling_mode (str): Pooling mode. Option includes "conv" (learned pooling), "avg"
