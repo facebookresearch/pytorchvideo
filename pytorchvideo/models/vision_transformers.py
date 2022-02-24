@@ -5,7 +5,12 @@ from typing import Callable, List, Optional, Tuple
 
 import torch
 import torch.nn as nn
-from pytorchvideo.layers import MultiScaleBlock, SpatioTemporalClsPositionalEncoding
+from pytorchvideo.layers import (
+    MultiScaleBlock,
+    ScriptableMultiScaleBlock,
+    SpatioTemporalClsPositionalEncoding,
+    ScriptableSpatioTemporalClsPositionalEncoding,
+)
 from pytorchvideo.layers.utils import round_width, set_attributes
 from pytorchvideo.models.head import create_vit_basic_head
 from pytorchvideo.models.weight_init import init_net_weights
@@ -89,8 +94,8 @@ class MultiscaleVisionTransformers(nn.Module):
             return linear
         w_bn, b_bn = self._get_bn_w_b(bn)
         fused_linear = nn.Linear(linear.in_features, linear.out_features, bias=True)
-        fused_linear.weight[:] = torch.mm(linear.weight, w_bn)
-        fused_linear.bias[:] = torch.matmul(linear.weight, b_bn) + linear.bias
+        fused_linear.weight.data[:] = torch.mm(linear.weight, w_bn)
+        fused_linear.bias.data[:] = torch.matmul(linear.weight, b_bn) + linear.bias
         return fused_linear
 
     def fuse_norm_after_linear(self, linear, bn):
@@ -101,23 +106,49 @@ class MultiscaleVisionTransformers(nn.Module):
         w_bn, b_bn = self._get_bn_w_b(bn, repeat=num_heads)
 
         fused_linear = nn.Linear(linear.in_features, linear.out_features, bias=True)
-        fused_linear.weight[:] = torch.mm(w_bn, linear.weight)
-        fused_linear.bias[:] = torch.matmul(w_bn, linear.bias) + b_bn
+        fused_linear.weight.data[:] = torch.mm(w_bn, linear.weight)
+        fused_linear.bias.data[:] = torch.matmul(w_bn, linear.bias) + b_bn
         return fused_linear
 
     def fuse_bn(self):
         assert not self.training
         for blk in self.blocks:
             # fuse self.norm1
-            blk.attn.q = self.fuse_norm_before_linear(blk.norm1, blk.attn.q)
-            blk.attn.k = self.fuse_norm_before_linear(blk.norm1, blk.attn.k)
-            blk.attn.v = self.fuse_norm_before_linear(blk.norm1, blk.attn.v)
+            if blk.attn.separate_qkv:
+                blk.attn.q = self.fuse_norm_before_linear(blk.norm1, blk.attn.q)
+                blk.attn.k = self.fuse_norm_before_linear(blk.norm1, blk.attn.k)
+                blk.attn.v = self.fuse_norm_before_linear(blk.norm1, blk.attn.v)
+            else:
+                blk.attn.qkv = self.fuse_norm_before_linear(blk.norm1, blk.attn.qkv)
             blk.norm1 = nn.Identity()
 
             # fuse the bn in attention
-            blk.attn.q = self.fuse_norm_after_linear(blk.attn.q, blk.attn.norm_q)
-            blk.attn.k = self.fuse_norm_after_linear(blk.attn.k, blk.attn.norm_k)
-            blk.attn.v = self.fuse_norm_after_linear(blk.attn.v, blk.attn.norm_v)
+            if blk.attn.separate_qkv:
+                blk.attn.q = self.fuse_norm_after_linear(blk.attn.q, blk.attn.norm_q)
+                blk.attn.k = self.fuse_norm_after_linear(blk.attn.k, blk.attn.norm_k)
+                blk.attn.v = self.fuse_norm_after_linear(blk.attn.v, blk.attn.norm_v)
+            else:
+                w_q, w_k, w_v = blk.attn.qkv.weight.chunk(3)
+                b_q, b_k, b_v = blk.attn.qkv.bias.chunk(3)
+                tmp_q = nn.Linear(w_q.shape[1], w_q.shape[0], bias=True)
+                tmp_k = nn.Linear(w_k.shape[1], w_k.shape[0], bias=True)
+                tmp_v = nn.Linear(w_v.shape[1], w_v.shape[0], bias=True)
+                tmp_q.weight.data[:] = w_q
+                tmp_k.weight.data[:] = w_k
+                tmp_v.weight.data[:] = w_v
+                tmp_q.bias.data[:] = b_q
+                tmp_k.bias.data[:] = b_k
+                tmp_v.bias.data[:] = b_v
+                tmp_q = self.fuse_norm_after_linear(tmp_q, blk.attn.norm_q)
+                tmp_k = self.fuse_norm_after_linear(tmp_k, blk.attn.norm_k)
+                tmp_v = self.fuse_norm_after_linear(tmp_v, blk.attn.norm_v)
+                blk.attn.qkv.weight.data[:] = torch.cat(
+                    [tmp_q.weight.data, tmp_k.weight.data, tmp_v.weight.data], dim=0
+                )
+                blk.attn.qkv.bias.data[:] = torch.cat(
+                    [tmp_q.bias.data, tmp_k.bias.data, tmp_v.bias.data], dim=0
+                )
+
             blk.attn.norm_q = nn.Identity()
             blk.attn.norm_k = nn.Identity()
             blk.attn.norm_v = nn.Identity()
@@ -186,6 +217,9 @@ def create_multiscale_vision_transformers(
     head_dropout_rate: float = 0.5,
     head_activation: Callable = None,
     head_num_classes: int = 400,
+    # The default model definition is not TorchScript-friendly.
+    # Set create_scriptable_model=True to create a TorchScriptable model.
+    create_scriptable_model: bool = False,
 ) -> nn.Module:
     """
     Build Multiscale Vision Transformers (MViT) for recognition. A Vision Transformer
@@ -294,6 +328,11 @@ def create_multiscale_vision_transformers(
         attn_norm_layer = nn.BatchNorm3d
     else:
         raise NotImplementedError("Only supports layernorm.")
+    if create_scriptable_model:
+        assert (
+            norm == "batchnorm"
+        ), "The scriptable model supports only the batchnorm-based model."
+
     if isinstance(spatial_size, int):
         spatial_size = (spatial_size, spatial_size)
 
@@ -325,7 +364,12 @@ def create_multiscale_vision_transformers(
         else input_dims
     )
 
-    cls_positional_encoding = SpatioTemporalClsPositionalEncoding(
+    pos_func = (
+        ScriptableSpatioTemporalClsPositionalEncoding
+        if create_scriptable_model
+        else SpatioTemporalClsPositionalEncoding
+    )
+    cls_positional_encoding = pos_func(
         embed_dim=patch_embed_dim,
         patch_embed_shape=patch_embed_shape,
         sep_pos_embed=sep_pos_embed,
@@ -395,8 +439,12 @@ def create_multiscale_vision_transformers(
             divisor=round_width(num_heads, head_mul[i + 1]),
         )
 
+        block_func = (
+            ScriptableMultiScaleBlock if create_scriptable_model else MultiScaleBlock
+        )
+
         mvit_blocks.append(
-            MultiScaleBlock(
+            block_func(
                 dim=patch_embed_dim,
                 dim_out=dim_out,
                 num_heads=num_heads,
