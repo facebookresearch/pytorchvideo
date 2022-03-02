@@ -110,7 +110,12 @@ class VideoClassificationTrainApp(BaseTrainApp):
             return callbacks
 
         for cb_conf in self.callbacks_conf.values():
-            callbacks.append(hydra.utils.instantiate(cb_conf))
+            callbacks.append(
+                hydra.utils.instantiate(
+                    cb_conf,
+                    _recursive_=False,
+                ),
+            )
 
         return callbacks
 
@@ -142,6 +147,7 @@ class VideoClassificationTrainApp(BaseTrainApp):
 
                 conf_to_log = self._make_reproducible_conf()
                 conf_save_path = os.path.join(logger.log_dir, "train_app_conf.yaml")
+                g_pathmgr.mkdirs(logger.log_dir)
                 if not g_pathmgr.exists(conf_save_path):
                     with g_pathmgr.open(conf_save_path, mode="w") as f:
                         f.write(OmegaConf.to_yaml(conf_to_log))
