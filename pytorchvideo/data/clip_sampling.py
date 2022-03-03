@@ -202,6 +202,35 @@ class UniformClipSampler(ClipSampler):
         self._current_clip_index = 0
 
 
+class UniformClipSamplerTruncateFromStart(UniformClipSampler):
+    """
+    Evenly splits the video into clips of size clip_duration.
+    If truncation_duration is set, clips sampled from [0, truncation_duration].
+    If truncation_duration is not set, defaults to UniformClipSampler.
+    """
+
+    def __init__(
+        self,
+        clip_duration: Union[float, Fraction],
+        stride: Optional[Union[float, Fraction]] = None,
+        backpad_last: bool = False,
+        eps: float = 1e-6,
+        truncation_duration: float = None,
+    ) -> None:
+        super().__init__(clip_duration, stride, backpad_last, eps)
+        self.truncation_duration = truncation_duration
+
+    def __call__(
+        self, last_clip_time: float, video_duration: float, annotation: Dict[str, Any]
+    ) -> ClipInfo:
+
+        truncated_video_duration = video_duration
+        if self.truncation_duration is not None:
+            truncated_video_duration = min(self.truncation_duration, video_duration)
+
+        return super().__call__(last_clip_time, truncated_video_duration, annotation)
+
+
 class RandomClipSampler(ClipSampler):
     """
     Randomly samples clip of size clip_duration from the videos.
@@ -231,7 +260,7 @@ class RandomClipSampler(ClipSampler):
 
 class RandomMultiClipSampler(RandomClipSampler):
     """
-    TODO
+    Randomly samples multiple clips of size clip_duration from the videos.
     """
 
     def __init__(self, clip_duration: float, num_clips: int) -> None:
@@ -271,6 +300,30 @@ class RandomMultiClipSampler(RandomClipSampler):
             aug_index_list,
             is_last_clip_list,
         )
+
+
+class RandomMultiClipSamplerTruncateFromStart(RandomMultiClipSampler):
+    """
+    Randomly samples multiple clips of size clip_duration from the videos.
+    If truncation_duration is set, clips sampled from [0, truncation_duration].
+    If truncation_duration is not set, defaults to RandomMultiClipSampler.
+    """
+
+    def __init__(
+        self, clip_duration: float, num_clips: int, truncation_duration: float = None
+    ) -> None:
+        super().__init__(clip_duration, num_clips)
+        self.truncation_duration = truncation_duration
+
+    def __call__(
+        self, last_clip_time: float, video_duration: float, annotation: Dict[str, Any]
+    ) -> ClipInfoList:
+
+        truncated_video_duration = video_duration
+        if self.truncation_duration is not None:
+            truncated_video_duration = min(self.truncation_duration, video_duration)
+
+        return super().__call__(last_clip_time, truncated_video_duration, annotation)
 
 
 class ConstantClipsPerVideoSampler(ClipSampler):
