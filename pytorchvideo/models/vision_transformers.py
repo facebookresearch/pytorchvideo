@@ -95,7 +95,11 @@ class MultiscaleVisionTransformers(nn.Module):
         w_bn, b_bn = self._get_bn_w_b(bn)
         fused_linear = nn.Linear(linear.in_features, linear.out_features, bias=True)
         fused_linear.weight.data[:] = torch.mm(linear.weight, w_bn)
-        fused_linear.bias.data[:] = torch.matmul(linear.weight, b_bn) + linear.bias
+        fused_linear.bias.data[:] = (
+            torch.matmul(linear.weight, b_bn) + linear.bias
+            if linear.bias is not None
+            else torch.matmul(linear.weight, b_bn)
+        )
         return fused_linear
 
     def fuse_norm_after_linear(self, linear, bn):
@@ -107,7 +111,9 @@ class MultiscaleVisionTransformers(nn.Module):
 
         fused_linear = nn.Linear(linear.in_features, linear.out_features, bias=True)
         fused_linear.weight.data[:] = torch.mm(w_bn, linear.weight)
-        fused_linear.bias.data[:] = torch.matmul(w_bn, linear.bias) + b_bn
+        fused_linear.bias.data[:] = (
+            torch.matmul(w_bn, linear.bias) + b_bn if linear.bias is not None else b_bn
+        )
         return fused_linear
 
     def fuse_bn(self):
