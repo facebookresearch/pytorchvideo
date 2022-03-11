@@ -61,7 +61,6 @@ datamodule:
 trainer:
   num_nodes: 16
   gpus: 8
-  log_gpu_memory: null
   max_epochs: 200
   sync_batchnorm: False
   replace_sampler_ddp: False
