@@ -226,6 +226,7 @@ def create_multiscale_vision_transformers(
     # The default model definition is not TorchScript-friendly.
     # Set create_scriptable_model=True to create a TorchScriptable model.
     create_scriptable_model: bool = False,
+    multiscale_vit_class: Callable = MultiscaleVisionTransformers,
 ) -> nn.Module:
     """
     Build Multiscale Vision Transformers (MViT) for recognition. A Vision Transformer
@@ -487,7 +488,7 @@ def create_multiscale_vision_transformers(
     else:
         head_model = None
 
-    return MultiscaleVisionTransformers(
+    return multiscale_vit_class(
         patch_embed=patch_embed,
         cls_positional_encoding=cls_positional_encoding,
         pos_drop=pos_drop if dropout_rate_block > 0.0 else None,
