@@ -269,9 +269,9 @@ def create_multiscale_vision_transformers(
             Otherwise, pool is applied after qkv projection. Default: False.
         residual_pool (bool): If set to True, use Improved Multiscale Vision
                 Transformer's pooling residual connection.
-        depthwise_conv (bool): Wether use depthwise or full convolution for pooling.
-        bias_on (bool): Wether use biases for linear layers.
-        separate_qkv (bool): Wether to use separate or one layer for qkv projections.
+        depthwise_conv (bool): Whether use depthwise or full convolution for pooling.
+        bias_on (bool): Whether use biases for linear layers.
+        separate_qkv (bool): Whether to use separate or one layer for qkv projections.
         embed_dim_mul (Optional[List[List[int]]]): Dimension multiplication at layer i.
             If X is used, then the next block will increase the embed dimension by X
             times. Format: [depth_i, mul_dim_ratio].
