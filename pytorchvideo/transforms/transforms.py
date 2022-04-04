@@ -1,8 +1,10 @@
 # Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved.
 
-from typing import Callable, Dict, List, Optional, Tuple
+from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
 import pytorchvideo.transforms.functional
+import pytorchvideo.data.video
+import pytorchvideo.data.stream
 import torch
 import torchvision.transforms
 
@@ -429,3 +431,40 @@ class Div255(torch.nn.Module):
         return torchvision.transforms.Lambda(
             pytorchvideo.transforms.functional.div_255
         )(x)
+
+class Streamed(torch.nn.Module):
+    """Apply a video transform in a streamed fashion (useful for large videos)."""
+
+    def __init__(
+        self,
+        clip_duration: float,
+        clip_transform: Optional[Callable] = None,
+        return_iterable: bool = False,
+        **get_clip_kwargs,
+    ) -> None:
+        """
+        Parameters
+        ----------
+        clip_duration : float
+            Maximum duration (in seconds) of the transformed clip at every iteration.
+        clip_transform : Callable, optional
+            Optional transform to apply to each clip, by default None.
+        return_iterable : bool, optional
+            Decides if transform should return an iterable (more control over looping) or the iterated result, by default False.
+        """
+        super().__init__()
+        self._clip_transform = clip_transform
+        self._clip_duration = clip_duration
+        self._return_iterable = return_iterable
+        self._get_clip_kwargs = get_clip_kwargs
+
+    def __call__(self, video: pytorchvideo.data.video.Video) -> Union[pytorchvideo.data.stream.Stream, List[Any]]:
+        stream = pytorchvideo.data.stream.Stream(
+            video,
+            self._clip_duration,
+            self._clip_transform,
+            **self._get_clip_kwargs,
+        )
+        if self._return_iterable:
+            return stream
+        return tuple(stream)
