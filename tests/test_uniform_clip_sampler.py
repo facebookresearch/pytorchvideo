@@ -1,8 +1,10 @@
 # Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved.
 
+import copy
 import unittest
 from typing import Optional
 
+import numpy as np
 from parameterized import parameterized
 from pytorchvideo.data.clip_sampling import UniformClipSampler
 
@@ -21,13 +23,9 @@ def _num_clips(
     N = num_frames - window_size_frames
     if N < 0:
         return 1
-
-    result = N // stride_frames + 1
-
-    # handle padded frame
-    if backpad_last and N % stride_frames != 0:
-        result += 1
-    return result
+    result = int(N / stride_frames + 1)
+    pad = backpad_last and N % stride_frames != 0
+    return result + pad
 
 
 class TestUniformClipSampler(unittest.TestCase):
@@ -69,6 +67,22 @@ class TestUniformClipSampler(unittest.TestCase):
             # > half stride
             (False, 30, 32, 24, 107 / 30, 4),
             (True, 30, 32, 24, 107 / 30, 5),
+            (False, 30, 5, 1, 11 / 30, 7),
+            (True, 30, 5, 1, 11 / 30, 7),
+            # stride > window size
+            (False, 30, 1, 5, 11 / 30, 3),
+            (True, 30, 1, 5, 11 / 30, 3),
+            (True, 30, 1, 5, 1759 / 30, 353),
+            (False, 30, 3, 10, 132 / 30, 13),
+            (True, 30, 3, 10, 132 / 30, 14),
+            (False, 30, 6, 10, 111 / 30, 11),
+            (True, 30, 6, 10, 111 / 30, 12),
+            # stride <= window size
+            (False, 30, 10, 3, 132 / 30, 41),
+            (True, 30, 10, 3, 132 / 30, 42),
+            (False, 30, 10, 6, 111 / 30, 17),
+            (True, 30, 10, 6, 111 / 30, 18),
+            (True, 30, 1, 1, 132 / 30, 132),
         ]
     )
     def test_uniform_clip_sampler(
@@ -88,21 +102,6 @@ class TestUniformClipSampler(unittest.TestCase):
             stride_frames / fps if stride_frames is not None else None,
             backpad_last=backpad_last,
         )
-
-        last_clip_time = 0
-        annotation = {}
-        n_clips = 0
-        while True:
-            clip = sampler(last_clip_time, video_length, annotation)
-            last_clip_time = clip.clip_end_sec
-            n_clips += 1
-            if clip.is_last_clip:
-                break
-
-            # just in case we get an infinite loop
-            if n_clips > 2 * expected_number_of_clips:
-                break
-
         predicted_n_clips = _num_clips(
             video_length,
             fps,
@@ -111,7 +110,60 @@ class TestUniformClipSampler(unittest.TestCase):
             backpad_last=backpad_last,
         )
         self.assertEqual(predicted_n_clips, expected_number_of_clips)
-        self.assertEqual(n_clips, expected_number_of_clips)
+
+        s_prime = stride_frames if stride_frames is not None else window_size
+        expected_start_end_times = [
+            ((i * s_prime) / fps, ((i * s_prime + window_size) / fps))
+            for i in range(expected_number_of_clips)
+        ]
+        if expected_start_end_times[-1][1] - video_length > 1e-6:
+            expected_start_end_times[-1] = (
+                video_length - window_size / fps,
+                video_length,
+            )
+
+        self.assertTrue(
+            (
+                expected_start_end_times[-1][0] + (s_prime / fps) > video_length
+                or expected_start_end_times[-1][-1] + (s_prime / fps) > video_length
+            )
+        )
+        if len(expected_start_end_times) >= 2:
+            self.assertNotAlmostEqual(
+                expected_start_end_times[-2][0], expected_start_end_times[-1][0]
+            )
+            self.assertNotAlmostEqual(
+                expected_start_end_times[-2][1], expected_start_end_times[-1][1]
+            )
+
+        start_end_times = []
+
+        last_clip_time = None
+        annotation = {}
+        while True:
+            clip = sampler(last_clip_time, video_length, annotation)
+            last_clip_time = copy.deepcopy(clip.clip_end_sec)
+            n_frames = (clip.clip_end_sec - clip.clip_start_sec) * fps
+            int_n_frames = int(np.round(float(n_frames)))
+            self.assertAlmostEqual(float(int_n_frames), float(n_frames))
+            self.assertEqual(int_n_frames, window_size)
+
+            start_end_times.append(
+                (float(clip.clip_start_sec), float(clip.clip_end_sec))
+            )
+            if clip.is_last_clip:
+                break
+
+            # just in case we get an infinite loop
+            if len(start_end_times) > 2 * expected_number_of_clips:
+                break
+
+        self.assertEqual(len(start_end_times), expected_number_of_clips)
+        for (start, end), (expected_start, expected_end) in zip(
+            start_end_times, expected_start_end_times
+        ):
+            self.assertAlmostEqual(float(start), expected_start)
+            self.assertAlmostEqual(float(end), expected_end)
 
     @parameterized.expand(
         [
@@ -142,6 +194,11 @@ class TestUniformClipSampler(unittest.TestCase):
             (19 / 30, 30, 1, 32, True, 1),
             (33 / 30, 30, 1, 32, False, 2),
             (33 / 30, 30, 1, 32, True, 2),
+            (11 / 30, 30, 1, 5, False, 7),
+            (11 / 30, 30, 1, 5, True, 7),
+            (11 / 30, 30, 5, 1, False, 3),
+            (11 / 30, 30, 5, 1, True, 3),
+            (1759 / 30, 30, 5, 1, True, 353),
         ]
     )
     def test_num_clips(

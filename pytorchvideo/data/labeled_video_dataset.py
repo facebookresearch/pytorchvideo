@@ -81,7 +81,7 @@ class LabeledVideoDataset(torch.utils.data.IterableDataset):
         # clip time in these variables.
         self._loaded_video_label = None
         self._loaded_clip = None
-        self._next_clip_start_time = 0.0
+        self._last_clip_end_time = None
         self.video_path_handler = VideoPathHandler()
 
     @property
@@ -153,9 +153,7 @@ class LabeledVideoDataset(torch.utils.data.IterableDataset):
                 clip_index,
                 aug_index,
                 is_last_clip,
-            ) = self._clip_sampler(
-                self._next_clip_start_time, video.duration, info_dict
-            )
+            ) = self._clip_sampler(self._last_clip_end_time, video.duration, info_dict)
 
             if isinstance(clip_start, list):  # multi-clip in each sample
 
@@ -182,7 +180,7 @@ class LabeledVideoDataset(torch.utils.data.IterableDataset):
                 if aug_index == 0:
                     self._loaded_clip = video.get_clip(clip_start, clip_end)
 
-            self._next_clip_start_time = clip_end
+            self._last_clip_end_time = clip_end
 
             video_is_null = (
                 self._loaded_clip is None or self._loaded_clip["video"] is None
@@ -194,7 +192,7 @@ class LabeledVideoDataset(torch.utils.data.IterableDataset):
                 # to sample a new video on the next iteration.
                 self._loaded_video_label[0].close()
                 self._loaded_video_label = None
-                self._next_clip_start_time = 0.0
+                self._last_clip_end_time = None
                 self._clip_sampler.reset()
                 if video_is_null:
                     logger.debug(

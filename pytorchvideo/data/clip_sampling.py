@@ -58,7 +58,7 @@ class ClipSampler(ABC):
     @abstractmethod
     def __call__(
         self,
-        last_clip_time: Union[float, Fraction],
+        last_clip_end_time: Union[float, Fraction],
         video_duration: Union[float, Fraction],
         annotation: Dict[str, Any],
     ) -> ClipInfo:
@@ -111,7 +111,7 @@ class UniformClipSampler(ClipSampler):
         Args:
             clip_duration (Union[float, Fraction]):
                 The length of the clip to sample (in seconds).
-            stride (floUnion[float, Fraction]at, optional):
+            stride (Union[float, Fraction], optional):
                 The amount of seconds to offset the next clip by
                 default value of None is equivalent to no stride => stride == clip_duration.
             eps (float):
@@ -124,35 +124,33 @@ class UniformClipSampler(ClipSampler):
                 (1.0667s). The clips will be (in frame numbers):
 
                 with backpad_last = False
-                - [0, 32]
+                - [0, 31]
 
                 with backpad_last = True
-                - [0, 32]
-                - [8, 40], this is "back-padded" from [16, 48] to fit the last window
+                - [0, 31]
+                - [8, 39], this is "back-padded" from [16, 48] to fit the last window
         Note that you can use Fraction for clip_duration and stride if you want to
         avoid float precision issue and need accurate frames in each clip.
         """
         super().__init__(clip_duration)
-        self._stride = stride if stride is not None else clip_duration
+        self._stride = stride if stride is not None else self._clip_duration
         self._eps = eps
         self._backpad_last = backpad_last
 
-        assert (
-            self._stride > 0 and self._stride <= clip_duration
-        ), f"stride must be >0 and <= clip_duration ({clip_duration})"
+        assert self._stride > 0, "stride must be positive"
 
     def _clip_start_end(
         self,
-        last_clip_time: Union[float, Fraction],
+        last_clip_end_time: Union[float, Fraction],
         video_duration: Union[float, Fraction],
         backpad_last: bool,
     ) -> Tuple[Fraction, Fraction]:
         """
         Helper to calculate the start/end clip with backpad logic
         """
-        clip_start = Fraction(
-            max(last_clip_time - max(0, self._clip_duration - self._stride), 0)
-        )
+        delta = self._stride - self._clip_duration
+        last_end_time = -delta if last_clip_end_time is None else last_clip_end_time
+        clip_start = Fraction(last_end_time + delta)
         clip_end = Fraction(clip_start + self._clip_duration)
         if backpad_last:
             buffer_amount = max(0, clip_end - video_duration)
@@ -163,11 +161,14 @@ class UniformClipSampler(ClipSampler):
         return clip_start, clip_end
 
     def __call__(
-        self, last_clip_time: float, video_duration: float, annotation: Dict[str, Any]
+        self,
+        last_clip_end_time: Optional[float],
+        video_duration: float,
+        annotation: Dict[str, Any],
     ) -> ClipInfo:
         """
         Args:
-            last_clip_time (float): the last clip end time sampled from this video. This
+            last_clip_end_time (float): the last clip end time sampled from this video. This
                 should be 0.0 if the video hasn't had clips sampled yet.
             video_duration: (float): the duration of the video that's being sampled in seconds
             annotation (Dict): Not used by this sampler.
@@ -178,7 +179,7 @@ class UniformClipSampler(ClipSampler):
             to be sampled.
         """
         clip_start, clip_end = self._clip_start_end(
-            last_clip_time, video_duration, backpad_last=self._backpad_last
+            last_clip_end_time, video_duration, backpad_last=self._backpad_last
         )
 
         # if they both end at the same time - it's the last clip
@@ -188,7 +189,7 @@ class UniformClipSampler(ClipSampler):
         if self._backpad_last:
             is_last_clip = abs(next_clip_end - clip_end) < self._eps
         else:
-            is_last_clip = next_clip_end > video_duration
+            is_last_clip = (next_clip_end - video_duration) > self._eps
 
         clip_index = self._current_clip_index
         self._current_clip_index += 1
@@ -221,14 +222,19 @@ class UniformClipSamplerTruncateFromStart(UniformClipSampler):
         self.truncation_duration = truncation_duration
 
     def __call__(
-        self, last_clip_time: float, video_duration: float, annotation: Dict[str, Any]
+        self,
+        last_clip_end_time: float,
+        video_duration: float,
+        annotation: Dict[str, Any],
     ) -> ClipInfo:
 
         truncated_video_duration = video_duration
         if self.truncation_duration is not None:
             truncated_video_duration = min(self.truncation_duration, video_duration)
 
-        return super().__call__(last_clip_time, truncated_video_duration, annotation)
+        return super().__call__(
+            last_clip_end_time, truncated_video_duration, annotation
+        )
 
 
 class RandomClipSampler(ClipSampler):
@@ -237,11 +243,14 @@ class RandomClipSampler(ClipSampler):
     """
 
     def __call__(
-        self, last_clip_time: float, video_duration: float, annotation: Dict[str, Any]
+        self,
+        last_clip_end_time: float,
+        video_duration: float,
+        annotation: Dict[str, Any],
     ) -> ClipInfo:
         """
         Args:
-            last_clip_time (float): Not used for RandomClipSampler.
+            last_clip_end_time (float): Not used for RandomClipSampler.
             video_duration: (float): the duration (in seconds) for the video that's
                 being sampled
             annotation (Dict): Not used by this sampler.
@@ -268,7 +277,10 @@ class RandomMultiClipSampler(RandomClipSampler):
         self._num_clips = num_clips
 
     def __call__(
-        self, last_clip_time: float, video_duration: float, annotation: Dict[str, Any]
+        self,
+        last_clip_end_time: Optional[float],
+        video_duration: float,
+        annotation: Dict[str, Any],
     ) -> ClipInfoList:
 
         (
@@ -291,7 +303,7 @@ class RandomMultiClipSampler(RandomClipSampler):
                 clip_index_list[i],
                 aug_index_list[i],
                 is_last_clip_list[i],
-            ) = super().__call__(last_clip_time, video_duration, annotation)
+            ) = super().__call__(last_clip_end_time, video_duration, annotation)
 
         return ClipInfoList(
             clip_start_list,
@@ -316,14 +328,19 @@ class RandomMultiClipSamplerTruncateFromStart(RandomMultiClipSampler):
         self.truncation_duration = truncation_duration
 
     def __call__(
-        self, last_clip_time: float, video_duration: float, annotation: Dict[str, Any]
+        self,
+        last_clip_end_time: Optional[float],
+        video_duration: float,
+        annotation: Dict[str, Any],
     ) -> ClipInfoList:
 
         truncated_video_duration = video_duration
         if self.truncation_duration is not None:
             truncated_video_duration = min(self.truncation_duration, video_duration)
 
-        return super().__call__(last_clip_time, truncated_video_duration, annotation)
+        return super().__call__(
+            last_clip_end_time, truncated_video_duration, annotation
+        )
 
 
 class ConstantClipsPerVideoSampler(ClipSampler):
@@ -340,11 +357,14 @@ class ConstantClipsPerVideoSampler(ClipSampler):
         self._augs_per_clip = augs_per_clip
 
     def __call__(
-        self, last_clip_time: float, video_duration: float, annotation: Dict[str, Any]
+        self,
+        last_clip_end_time: Optional[float],
+        video_duration: float,
+        annotation: Dict[str, Any],
     ) -> ClipInfo:
         """
         Args:
-            last_clip_time (float): Not used for ConstantClipsPerVideoSampler.
+            last_clip_end_time (float): Not used for ConstantClipsPerVideoSampler.
             video_duration: (float): the duration (in seconds) for the video that's
                 being sampled.
             annotation (Dict): Not used by this sampler.
