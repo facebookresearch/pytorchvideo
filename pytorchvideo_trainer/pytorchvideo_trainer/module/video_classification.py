@@ -31,7 +31,6 @@ from pytorchvideo_trainer.module.optimizer import construct_optimizer
 from torch import nn
 from torch.optim.lr_scheduler import _LRScheduler
 from torchrecipes.core.conf import ModuleConf
-from torchrecipes.core.task_base import TaskBase
 from torchrecipes.utils.config_utils import get_class_name_str
 
 
@@ -49,10 +48,9 @@ class Batch(TypedDict):
 
 BatchKey = Literal["video", "audio", "label", "video_index"]
 EnsembleMethod = Literal["sum", "max"]
-Output = Optional[Dict[str, torch.Tensor]]
 
 
-class VideoClassificationModule(TaskBase[Batch, Output, Output], pl.LightningModule):
+class VideoClassificationModule(pl.LightningModule):
     """
     The Lightning module supporting the video classification task.
 
