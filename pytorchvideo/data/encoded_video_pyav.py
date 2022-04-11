@@ -26,6 +26,7 @@ class EncodedVideoPyAV(EncodedVideo):
         self,
         file: BinaryIO,
         video_name: Optional[str] = None,
+        decode_video: bool = True,
         decode_audio: bool = True,
         perform_seek: bool = True,
     ) -> None:
@@ -40,6 +41,7 @@ class EncodedVideoPyAV(EncodedVideo):
         """
         self.perform_seek = perform_seek
         self._video_name = video_name
+        self._decode_video = decode_video
         self._decode_audio = decode_audio
 
         try:
@@ -229,29 +231,30 @@ class EncodedVideoPyAV(EncodedVideo):
         video_and_pts = None
         audio_and_pts = None
         try:
-            pyav_video_frames, _ = _pyav_decode_stream(
-                self._container,
-                secs_to_pts(
-                    start_secs,
-                    self._video_time_base,
-                    self._video_start_pts,
-                    round_mode="ceil",
-                ),
-                secs_to_pts(
-                    end_secs,
-                    self._video_time_base,
-                    self._video_start_pts,
-                    round_mode="ceil",
-                ),
-                self._container.streams.video[0],
-                {"video": 0},
-                perform_seek=self.perform_seek,
-            )
-            if len(pyav_video_frames) > 0:
-                video_and_pts = [
-                    (torch.from_numpy(frame.to_rgb().to_ndarray()), frame.pts)
-                    for frame in pyav_video_frames
-                ]
+            if self._decode_video:
+                pyav_video_frames, _ = _pyav_decode_stream(
+                    self._container,
+                    secs_to_pts(
+                        start_secs,
+                        self._video_time_base,
+                        self._video_start_pts,
+                        round_mode="ceil",
+                    ),
+                    secs_to_pts(
+                        end_secs,
+                        self._video_time_base,
+                        self._video_start_pts,
+                        round_mode="ceil",
+                    ),
+                    self._container.streams.video[0],
+                    {"video": 0},
+                    perform_seek=self.perform_seek,
+                )
+                if len(pyav_video_frames) > 0:
+                    video_and_pts = [
+                        (torch.from_numpy(frame.to_rgb().to_ndarray()), frame.pts)
+                        for frame in pyav_video_frames
+                    ]
 
             if self._has_audio:
                 pyav_audio_frames, _ = _pyav_decode_stream(

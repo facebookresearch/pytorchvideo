@@ -49,6 +49,7 @@ class EncodedVideo(Video):
     def from_path(
         cls,
         file_path: str,
+        decode_video: bool = True,
         decode_audio: bool = True,
         decoder: str = "pyav",
         **other_args: Dict[str, Any],
@@ -66,5 +67,9 @@ class EncodedVideo(Video):
 
         video_cls = select_video_class(decoder)
         return video_cls(
-            video_file, pathlib.Path(file_path).name, decode_audio, **other_args
+            file=video_file,
+            video_name=pathlib.Path(file_path).name,
+            decode_video=decode_video,
+            decode_audio=decode_audio,
+            **other_args,
         )

@@ -37,6 +37,7 @@ class EncodedVideoDecord(Video):
         self,
         file: BinaryIO,
         video_name: Optional[str] = None,
+        decode_video: bool = True,
         decode_audio: bool = True,
         sample_rate: int = 44100,
         mono: bool = True,
@@ -50,6 +51,7 @@ class EncodedVideoDecord(Video):
             file (BinaryIO): a file-like object (e.g. io.BytesIO or io.StringIO) that
                 contains the encoded video.
             video_name (str): An optional name assigned to the video.
+            decode_video (bool): If disabled, video is not decoded.
             decode_audio (bool): If disabled, audio is not decoded.
             sample_rate: int, default is -1
                 Desired output sample rate of the audio, unchanged if `-1` is specified.
@@ -72,6 +74,9 @@ class EncodedVideoDecord(Video):
                 raise `DECORDLimitReachedError`.
                 If 1 < `fault_tol`, if N > `fault_tol`, raise `DECORDLimitReachedError`.
         """
+        if not decode_video:
+            raise NotImplementedError()
+
         self._decode_audio = decode_audio
         self._video_name = video_name
         if not _HAS_DECORD:

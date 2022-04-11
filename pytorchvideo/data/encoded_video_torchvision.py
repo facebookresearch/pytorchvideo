@@ -31,8 +31,12 @@ class EncodedVideoTorchVision(Video):
         self,
         file: BinaryIO,
         video_name: Optional[str] = None,
+        decode_video: bool = True,
         decode_audio: bool = True,
     ) -> None:
+        if not decode_video:
+            raise NotImplementedError()
+
         self._video_tensor = torch.tensor(
             np.frombuffer(file.getvalue(), dtype=np.uint8)
         )

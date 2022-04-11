@@ -32,6 +32,7 @@ class LabeledVideoDataset(torch.utils.data.IterableDataset):
         video_sampler: Type[torch.utils.data.Sampler] = torch.utils.data.RandomSampler,
         transform: Optional[Callable[[dict], Any]] = None,
         decode_audio: bool = True,
+        decode_video: bool = True,
         decoder: str = "pyav",
     ) -> None:
         """
@@ -52,12 +53,15 @@ class LabeledVideoDataset(torch.utils.data.IterableDataset):
                 the clip is returned. It can be used for user defined preprocessing and
                 augmentations on the clips. The clip output format is described in __next__().
 
-            decode_audio (bool): If True, also decode audio from video.
+            decode_audio (bool): If True, decode audio from video.
+
+            decode_video (bool): If True, decode video frames from a video container.
 
             decoder (str): Defines what type of decoder used to decode a video. Not used for
                 frame videos.
         """
         self._decode_audio = decode_audio
+        self._decode_video = decode_video
         self._transform = transform
         self._clip_sampler = clip_sampler
         self._labeled_videos = labeled_video_paths
@@ -135,6 +139,7 @@ class LabeledVideoDataset(torch.utils.data.IterableDataset):
                     video = self.video_path_handler.video_from_path(
                         video_path,
                         decode_audio=self._decode_audio,
+                        decode_video=self._decode_video,
                         decoder=self._decoder,
                     )
                     self._loaded_video_label = (video, info_dict, video_index)

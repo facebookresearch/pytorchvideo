@@ -18,7 +18,9 @@ class VideoPathHandler(object):
         # sorting is expensive, so we cache paths in case of frame video and reuse.
         self.path_order_cache = {}
 
-    def video_from_path(self, filepath, decode_audio=False, decoder="pyav", fps=30):
+    def video_from_path(
+        self, filepath, decode_video=True, decode_audio=False, decoder="pyav", fps=30
+    ):
         try:
             is_file = g_pathmgr.isfile(filepath)
             is_dir = g_pathmgr.isdir(filepath)
@@ -32,7 +34,12 @@ class VideoPathHandler(object):
         if is_file:
             from pytorchvideo.data.encoded_video import EncodedVideo
 
-            return EncodedVideo.from_path(filepath, decode_audio, decoder)
+            return EncodedVideo.from_path(
+                filepath,
+                decode_video=decode_video,
+                decode_audio=decode_audio,
+                decoder=decoder,
+            )
         elif is_dir:
             from pytorchvideo.data.frame_video import FrameVideo
 
