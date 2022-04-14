@@ -20,22 +20,22 @@ from torch.utils.mobile_optimizer import optimize_for_mobile
 TORCH_VERSION: Tuple[int, ...] = tuple(int(x) for x in torch.__version__.split(".")[:2])
 if TORCH_VERSION >= (1, 11):
     from torch.ao.quantization import (
+        convert,
+        DeQuantStub,
+        fuse_modules,
         get_default_qconfig,
         prepare,
-        convert,
-        fuse_modules,
         QuantStub,
-        DeQuantStub,
         # quantize_fx
     )
 else:
     from torch.quantization import (
+        convert,
+        DeQuantStub,
+        fuse_modules,
         get_default_qconfig,
         prepare,
-        convert,
-        fuse_modules,
         QuantStub,
-        DeQuantStub,
         # quantize_fx
     )
 

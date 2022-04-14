@@ -1,6 +1,6 @@
 # Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved.
 
-from typing import Tuple, Dict, Any
+from typing import Any, Dict, Tuple
 
 import torch
 from pytorchvideo.transforms.functional import convert_to_one_hot

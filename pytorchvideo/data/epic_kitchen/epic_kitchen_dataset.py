@@ -7,12 +7,12 @@ from typing import Any, Callable, Dict, List, Optional
 import torch
 from pytorchvideo.data.dataset_manifest_utils import (
     EncodedVideoInfo,
+    get_seconds_from_hms_time,
     VideoClipInfo,
     VideoDataset,
     VideoDatasetType,
     VideoFrameInfo,
     VideoInfo,
-    get_seconds_from_hms_time,
 )
 from pytorchvideo.data.frame_video import FrameVideo
 from pytorchvideo.data.utils import DataclassFieldCaster, load_dataclass_dict_from_csv

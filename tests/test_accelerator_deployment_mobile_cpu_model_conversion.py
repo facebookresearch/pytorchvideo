@@ -20,9 +20,9 @@ from pytorchvideo.models.accelerator.mobile_cpu.residual_blocks import (
 
 TORCH_VERSION: Tuple[int, ...] = tuple(int(x) for x in torch.__version__.split(".")[:2])
 if TORCH_VERSION >= (1, 11):
-    from torch.ao.quantization import QuantStub, DeQuantStub
+    from torch.ao.quantization import DeQuantStub, QuantStub
 else:
-    from torch.quantization import QuantStub, DeQuantStub
+    from torch.quantization import DeQuantStub, QuantStub
 
 
 class TestDeploymentModelConversion(unittest.TestCase):

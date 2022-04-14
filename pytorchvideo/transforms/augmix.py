@@ -5,11 +5,11 @@ from typing import Any, Dict, Optional
 import torch
 from pytorchvideo.transforms.augmentations import (
     _AUGMENTATION_MAX_LEVEL,
-    AugmentTransform,
     _decreasing_int_to_arg,
     _decreasing_to_arg,
     _increasing_magnitude_to_arg,
     _increasing_randomly_negate_to_arg,
+    AugmentTransform,
 )
 from pytorchvideo.transforms.transforms import OpSampler
 

@@ -7,7 +7,7 @@ from pytorchvideo.models.vision_transformers import (
     create_multiscale_vision_transformers,
 )
 
-from .utils import MODEL_ZOO_ROOT_DIR, hub_model_builder
+from .utils import hub_model_builder, MODEL_ZOO_ROOT_DIR
 
 
 checkpoint_paths = {

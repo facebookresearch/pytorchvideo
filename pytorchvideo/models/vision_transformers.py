@@ -8,8 +8,8 @@ import torch.nn as nn
 from pytorchvideo.layers import (
     MultiScaleBlock,
     ScriptableMultiScaleBlock,
-    SpatioTemporalClsPositionalEncoding,
     ScriptableSpatioTemporalClsPositionalEncoding,
+    SpatioTemporalClsPositionalEncoding,
 )
 from pytorchvideo.layers.utils import round_width, set_attributes
 from pytorchvideo.models.head import create_vit_basic_head

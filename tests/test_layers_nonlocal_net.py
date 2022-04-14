@@ -6,7 +6,7 @@ from typing import Iterable
 
 import numpy as np
 import torch
-from pytorchvideo.layers.nonlocal_net import NonLocal, create_nonlocal
+from pytorchvideo.layers.nonlocal_net import create_nonlocal, NonLocal
 from torch import nn
 
 
