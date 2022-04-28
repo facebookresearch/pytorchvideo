@@ -376,7 +376,9 @@ class ConstantClipsPerVideoSampler(ClipSampler):
 
         """
         max_possible_clip_start = Fraction(max(video_duration - self._clip_duration, 0))
-        uniform_clip = Fraction(max_possible_clip_start, self._clips_per_video)
+        uniform_clip = Fraction(
+            max_possible_clip_start, max(self._clips_per_video - 1, 1)
+        )
         clip_start_sec = uniform_clip * self._current_clip_index
         clip_index = self._current_clip_index
         aug_index = self._current_aug_index

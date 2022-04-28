@@ -280,8 +280,8 @@ class TestLabeledVideoDataset(unittest.TestCase):
                 # clip_frames sampled. The first clip of each video will always be
                 # sampled at second 0. The second clip of the video is the next frame
                 # from time: (total_duration - clip_duration) / 2
-                half_frames_1 = math.ceil((data_1.shape[1] - clip_frames) / 2)
-                half_frames_2 = math.ceil((data_2.shape[1] - clip_frames) / 2)
+                half_frames_1 = math.ceil((data_1.shape[1]) / 2)
+                half_frames_2 = math.ceil((data_2.shape[1]) / 2)
                 expected = [
                     (0, data_1[:, :clip_frames]),
                     (0, data_1[:, half_frames_1 : half_frames_1 + clip_frames]),
