@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import gc
 import logging
 from typing import Any, Callable, Dict, List, Optional, Tuple, Type
 
@@ -199,6 +200,11 @@ class LabeledVideoDataset(torch.utils.data.IterableDataset):
                 self._loaded_video_label = None
                 self._last_clip_end_time = None
                 self._clip_sampler.reset()
+
+                # Force garbage collection to release video container immediately
+                # otherwise memory can spike.
+                gc.collect()
+
                 if video_is_null:
                     logger.debug(
                         "Failed to load clip {}; trial {}".format(video.name, i_try)
