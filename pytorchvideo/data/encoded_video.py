@@ -3,7 +3,7 @@
 import io
 import logging
 import pathlib
-from typing import Dict, Any
+from typing import Any, Dict
 
 from iopath.common.file_io import g_pathmgr
 from pytorchvideo.data.decoder import DecoderType

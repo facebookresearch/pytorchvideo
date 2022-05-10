@@ -9,7 +9,7 @@ from pytorchvideo.data.dataset_manifest_utils import (
     VideoFrameInfo,
     VideoInfo,
 )
-from utils import get_flat_video_frames, MOCK_VIDEO_IDS, MOCK_VIDEO_INFOS
+from utils import MOCK_VIDEO_IDS, MOCK_VIDEO_INFOS, get_flat_video_frames
 
 
 class TestDatasetManifestUtils(unittest.TestCase):

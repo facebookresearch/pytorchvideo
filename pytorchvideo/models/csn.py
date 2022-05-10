@@ -5,7 +5,7 @@ from typing import Callable, Tuple
 import torch
 import torch.nn as nn
 from pytorchvideo.models.head import create_res_basic_head
-from pytorchvideo.models.resnet import create_bottleneck_block, create_res_stage, Net
+from pytorchvideo.models.resnet import Net, create_bottleneck_block, create_res_stage
 from pytorchvideo.models.stem import create_res_basic_stem
 
 

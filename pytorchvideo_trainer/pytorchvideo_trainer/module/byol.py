@@ -10,7 +10,7 @@ from hydra.core.config_store import ConfigStore
 from omegaconf import MISSING
 from pytorchvideo.models.resnet import create_resnet
 from pytorchvideo.models.weight_init import init_net_weights
-from pytorchvideo_trainer.module.ssl_helper import create_mlp_util, SSLBaseModule
+from pytorchvideo_trainer.module.ssl_helper import SSLBaseModule, create_mlp_util
 from pytorchvideo_trainer.module.video_classification import (
     Batch,
     BatchKey,

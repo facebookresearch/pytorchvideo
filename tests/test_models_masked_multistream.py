@@ -5,10 +5,10 @@ import unittest
 
 import torch
 import torch.nn
-from pytorchvideo.layers import make_multilayer_perceptron, PositionalEncoding
+from pytorchvideo.layers import PositionalEncoding, make_multilayer_perceptron
 from pytorchvideo.models.masked_multistream import (
-    LearnMaskedDefault,
     LSTM,
+    LearnMaskedDefault,
     MaskedSequential,
     MaskedTemporalPooling,
     TransposeMultiheadAttention,

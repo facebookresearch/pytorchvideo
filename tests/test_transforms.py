@@ -10,7 +10,6 @@ from pytorchvideo.data.utils import thwc_to_cthw
 from pytorchvideo.transforms import (
     ApplyTransformToKey,
     AugMix,
-    create_video_transform,
     CutMix,
     MixUp,
     MixVideo,
@@ -23,6 +22,7 @@ from pytorchvideo.transforms import (
     ShortSideScale,
     UniformCropVideo,
     UniformTemporalSubsample,
+    create_video_transform,
 )
 from pytorchvideo.transforms.functional import (
     clip_boxes_to_image,

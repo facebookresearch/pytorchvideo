@@ -12,10 +12,10 @@ from pytorchvideo.data.dataset_manifest_utils import VideoClipInfo, VideoDataset
 from pytorchvideo.data.epic_kitchen import ActionData, EpicKitchenDataset
 from pytorchvideo.data.utils import save_dataclass_objs_to_headered_csv
 from utils import (
-    get_encoded_video_infos,
-    get_flat_video_frames,
     MOCK_VIDEO_IDS,
     MOCK_VIDEO_INFOS,
+    get_encoded_video_infos,
+    get_flat_video_frames,
 )
 
 

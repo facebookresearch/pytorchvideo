@@ -6,9 +6,9 @@ from .r2plus1d import r2plus1d_r50
 from .resnet import c2d_r50, i3d_r50, slow_r50, slow_r50_detection
 from .slowfast import (
     slowfast_16x8_r101_50_50,
-    slowfast_r101,
     slowfast_r50,
     slowfast_r50_detection,
+    slowfast_r101,
 )
 from .vision_transformers import mvit_base_16, mvit_base_16x4, mvit_base_32x3
 from .x3d import x3d_l, x3d_m, x3d_s, x3d_xs

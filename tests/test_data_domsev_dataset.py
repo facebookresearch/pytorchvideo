@@ -10,17 +10,17 @@ import torch
 from parameterized import parameterized
 from pytorchvideo.data.dataset_manifest_utils import VideoClipInfo, VideoDatasetType
 from pytorchvideo.data.domsev import (
-    _get_overlap_for_time_range_pair,
-    _seconds_to_frame_index,
     DomsevVideoDataset,
     LabelData,
+    _get_overlap_for_time_range_pair,
+    _seconds_to_frame_index,
 )
 from pytorchvideo.data.utils import save_dataclass_objs_to_headered_csv
 from utils import (
-    get_encoded_video_infos,
-    get_flat_video_frames,
     MOCK_VIDEO_IDS,
     MOCK_VIDEO_INFOS,
+    get_encoded_video_infos,
+    get_flat_video_frames,
 )
 
 

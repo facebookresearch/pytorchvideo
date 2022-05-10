@@ -6,12 +6,12 @@ import unittest
 import numpy as np
 import torch
 from pytorchvideo.models.head import (
-    create_res_basic_head,
-    create_res_roi_pooling_head,
-    create_vit_basic_head,
     ResNetBasicHead,
     ResNetRoIHead,
     SequencePool,
+    create_res_basic_head,
+    create_res_roi_pooling_head,
+    create_vit_basic_head,
 )
 from torch import nn
 from torchvision.ops import RoIAlign
