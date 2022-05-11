@@ -3,6 +3,7 @@
 import math
 from typing import Tuple
 
+import numpy as np
 import torch
 from torch import nn
 
@@ -124,3 +125,111 @@ class SpatioTemporalClsPositionalEncoding(nn.Module):
             x = x + self.pos_embed
 
         return x
+
+
+def get_3d_sincos_pos_embed(
+    embed_dim: int, grid_size: int, t_size: int, cls_token: bool = False
+) -> torch.Tensor:
+    """
+    Get 3D sine-cosine positional embedding.
+    Args:
+        grid_size: int of the grid height and width
+        t_size: int of the temporal size
+        cls_token: bool, whether to contain CLS token
+    Returns:
+        (torch.Tensor): [t_size*grid_size*grid_size, embed_dim] or [1+t_size*grid_size*grid_size, embed_dim] (w/ or w/o cls_token)
+    """
+    assert embed_dim % 4 == 0
+    embed_dim_spatial = embed_dim // 4 * 3
+    embed_dim_temporal = embed_dim // 4
+
+    # spatial
+    grid_h = np.arange(grid_size, dtype=np.float32)
+    grid_w = np.arange(grid_size, dtype=np.float32)
+    grid = np.meshgrid(grid_w, grid_h)
+    grid = np.stack(grid, axis=0)
+
+    grid = grid.reshape([2, 1, grid_size, grid_size])
+    pos_embed_spatial = get_2d_sincos_pos_embed_from_grid(embed_dim_spatial, grid)
+
+    # temporal
+    grid_t = np.arange(t_size, dtype=np.float32)
+    pos_embed_temporal = get_1d_sincos_pos_embed_from_grid(embed_dim_temporal, grid_t)
+
+    pos_embed_temporal = pos_embed_temporal[:, np.newaxis, :]
+    pos_embed_temporal = np.repeat(pos_embed_temporal, grid_size ** 2, axis=1)
+    pos_embed_spatial = pos_embed_spatial[np.newaxis, :, :]
+    pos_embed_spatial = np.repeat(pos_embed_spatial, t_size, axis=0)
+
+    pos_embed = np.concatenate([pos_embed_temporal, pos_embed_spatial], axis=-1)
+    pos_embed = pos_embed.reshape([-1, embed_dim])
+
+    if cls_token:
+        pos_embed = np.concatenate([np.zeros([1, embed_dim]), pos_embed], axis=0)
+    return pos_embed
+
+
+def get_2d_sincos_pos_embed(
+    embed_dim: int, grid_size: int, cls_token: bool = False
+) -> torch.Tensor:
+    """
+    Get 2D sine-cosine positional embedding.
+    Args:
+        grid_size: int of the grid height and width
+        cls_token: bool, whether to contain CLS token
+    Returns:
+        (torch.Tensor): [grid_size*grid_size, embed_dim] or [1+grid_size*grid_size, embed_dim] (w/ or w/o cls_token)
+    """
+    grid_h = np.arange(grid_size, dtype=np.float32)
+    grid_w = np.arange(grid_size, dtype=np.float32)
+    grid = np.meshgrid(grid_w, grid_h)
+    grid = np.stack(grid, axis=0)
+
+    grid = grid.reshape([2, 1, grid_size, grid_size])
+    pos_embed = get_2d_sincos_pos_embed_from_grid(embed_dim, grid)
+    if cls_token:
+        pos_embed = np.concatenate([np.zeros([1, embed_dim]), pos_embed], axis=0)
+    return pos_embed
+
+
+def get_2d_sincos_pos_embed_from_grid(embed_dim: int, grid: np.ndarray) -> torch.Tensor:
+    """
+    Get 2D sine-cosine positional embedding from grid.
+    Args:
+        embed_dim: embedding dimension.
+        grid: positions
+    Returns:
+        (torch.Tensor): [grid_size*grid_size, embed_dim] or [1+grid_size*grid_size, embed_dim] (w/ or w/o cls_token)
+
+    """
+    assert embed_dim % 2 == 0
+
+    emb_h = get_1d_sincos_pos_embed_from_grid(embed_dim // 2, grid[0])
+    emb_w = get_1d_sincos_pos_embed_from_grid(embed_dim // 2, grid[1])
+
+    emb = np.concatenate([emb_h, emb_w], axis=1)
+    return emb
+
+
+def get_1d_sincos_pos_embed_from_grid(embed_dim: int, pos: np.ndarray) -> torch.Tensor:
+    """
+    Get 1D sine-cosine positional embedding.
+    Args:
+        embed_dim: output dimension for each position
+        pos: a list of positions to be encoded: size (M,)
+    Returns:
+        (torch.Tensor): tensor of shape (M, D)
+    """
+    assert embed_dim % 2 == 0
+    omega = np.arange(embed_dim // 2, dtype=np.float)
+    omega /= embed_dim / 2.0
+    omega = 1.0 / 10000 ** omega
+
+    pos = pos.reshape(-1)
+    out = np.einsum("m,d->md", pos, omega)
+
+    emb_sin = np.sin(out)
+    emb_cos = np.cos(out)
+
+    emb = np.concatenate([emb_sin, emb_cos], axis=1)
+    return emb
