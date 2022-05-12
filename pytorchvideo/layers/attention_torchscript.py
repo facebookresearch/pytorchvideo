@@ -217,7 +217,7 @@ class MultiScaleAttention(nn.Module):
         self.dropout_rate = dropout_rate
         self.num_heads = num_heads
         head_dim = dim // num_heads
-        self.scale = head_dim ** -0.5
+        self.scale = head_dim**-0.5
         self.has_cls_embed = has_cls_embed
         self.residual_pool = residual_pool
         self.separate_qkv = separate_qkv

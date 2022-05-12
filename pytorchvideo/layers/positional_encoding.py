@@ -157,7 +157,7 @@ def get_3d_sincos_pos_embed(
     pos_embed_temporal = get_1d_sincos_pos_embed_from_grid(embed_dim_temporal, grid_t)
 
     pos_embed_temporal = pos_embed_temporal[:, np.newaxis, :]
-    pos_embed_temporal = np.repeat(pos_embed_temporal, grid_size ** 2, axis=1)
+    pos_embed_temporal = np.repeat(pos_embed_temporal, grid_size**2, axis=1)
     pos_embed_spatial = pos_embed_spatial[np.newaxis, :, :]
     pos_embed_spatial = np.repeat(pos_embed_spatial, t_size, axis=0)
 
@@ -223,7 +223,7 @@ def get_1d_sincos_pos_embed_from_grid(embed_dim: int, pos: np.ndarray) -> torch.
     assert embed_dim % 2 == 0
     omega = np.arange(embed_dim // 2, dtype=np.float)
     omega /= embed_dim / 2.0
-    omega = 1.0 / 10000 ** omega
+    omega = 1.0 / 10000**omega
 
     pos = pos.reshape(-1)
     out = np.einsum("m,d->md", pos, omega)
