@@ -1,11 +1,13 @@
 # Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved.
 
+from typing import Tuple
 import unittest
 from collections import Counter
 from itertools import permutations
 
 import numpy as np
 import torch
+from pytorchvideo.data.encoded_video import EncodedVideo
 from pytorchvideo.data.utils import thwc_to_cthw
 from pytorchvideo.transforms import (
     ApplyTransformToKey,
@@ -22,6 +24,7 @@ from pytorchvideo.transforms import (
     ShortSideScale,
     UniformCropVideo,
     UniformTemporalSubsample,
+    Streamed,
     create_video_transform,
 )
 from pytorchvideo.transforms.functional import (
@@ -45,7 +48,7 @@ from torchvision.transforms._transforms_video import (
     RandomCropVideo,
     RandomHorizontalFlipVideo,
 )
-from utils import create_dummy_video_frames, create_random_bbox
+from utils import create_dummy_video_frames, create_random_bbox, temp_encoded_video
 
 
 class TestTransforms(unittest.TestCase):
@@ -934,6 +937,56 @@ class TestTransforms(unittest.TestCase):
 
         for p in list(permutations(range(0, 4))):
             self.assertTrue(video.permute(*p).equal(Permute(p)(video)))
+
+    def test_streamed(self):
+        fps =  4
+        seconds = 5
+        width = 12
+        height = 8
+        
+        def _check_result_shapes(result: Tuple):
+            self.assertEqual(len(result), seconds+1)
+            for i in range(seconds):
+                clip = result[i]["video"]
+                self.assertEqual(clip.shape[1], fps)
+                self.assertEqual(clip.shape[2], height)
+                self.assertEqual(clip.shape[3], width)
+            clip = result[-1]["video"]
+            self.assertEqual(clip.shape[1], fps//2)
+            self.assertEqual(clip.shape[2], height)
+            self.assertEqual(clip.shape[3], width)
+
+        def _check_counter_result(test_case: unittest.TestCase, result: Tuple):
+            test_case.assertTrue(all((r["video"] == i).all().item() for i, r in enumerate(result)))
+
+        class _CounterTransform:
+            def __init__(self) -> None:
+                self._counter = 0
+            def __call__(self, video):
+                video = torch.full_like(video, fill_value=self._counter)
+                self._counter += 1
+                return video
+
+        with temp_encoded_video(fps*seconds+fps//2, fps=4, height=8, width=width) as (file_name, data):
+            video = EncodedVideo.from_path(file_name)
+
+            # no transform
+            result = Streamed(clip_duration=1., clip_transform=None, return_iterable=False)(video)
+            _check_result_shapes(result)
+
+            # simple transform (iterated through)
+            transform = ApplyTransformToKey("video", _CounterTransform())
+            result = Streamed(clip_duration=1., clip_transform=transform, return_iterable=False)(video)
+            _check_result_shapes(result)
+            _check_counter_result(self, result)
+
+            # simple transform (not iterated through)
+            transform = ApplyTransformToKey("video", _CounterTransform())
+            result = Streamed(clip_duration=1., clip_transform=transform, return_iterable=True)(video)
+            self.assertRaises(TypeError, lambda: len(result))
+            result = tuple(result)
+            _check_result_shapes(result)
+            _check_counter_result(self, result)
 
     def test_video_transform_factory(self):
         # Test asserts/raises.
