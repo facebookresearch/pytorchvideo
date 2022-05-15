@@ -7,9 +7,9 @@ import numpy as np
 import torch
 from pytorchvideo.layers.convolutions import ConvReduce3D
 from pytorchvideo.models.stem import (
-    ResNetBasicStem,
     create_acoustic_res_basic_stem,
     create_res_basic_stem,
+    ResNetBasicStem,
 )
 from torch import nn
 

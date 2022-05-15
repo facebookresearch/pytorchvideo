@@ -22,8 +22,8 @@ from parameterized import parameterized
 from pytorchvideo.data import Hmdb51
 from pytorchvideo.data.clip_sampling import make_clip_sampler
 from pytorchvideo.data.labeled_video_dataset import (
-    LabeledVideoDataset,
     labeled_video_dataset,
+    LabeledVideoDataset,
 )
 from pytorchvideo.data.labeled_video_paths import LabeledVideoPaths
 from pytorchvideo.data.utils import MultiProcessSampler, thwc_to_cthw

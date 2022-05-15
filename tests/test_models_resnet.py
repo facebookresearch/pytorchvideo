@@ -10,9 +10,6 @@ from pytorchvideo.models.head import ResNetBasicHead
 from pytorchvideo.models.net import Net
 from pytorchvideo.models.resnet import (
     BottleneckBlock,
-    ResBlock,
-    ResStage,
-    SeparableBottleneckBlock,
     create_acoustic_bottleneck_block,
     create_acoustic_resnet,
     create_bottleneck_block,
@@ -20,6 +17,9 @@ from pytorchvideo.models.resnet import (
     create_res_stage,
     create_resnet,
     create_resnet_with_roi_head,
+    ResBlock,
+    ResStage,
+    SeparableBottleneckBlock,
 )
 from pytorchvideo.models.stem import ResNetBasicStem
 from torch import nn

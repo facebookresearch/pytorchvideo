@@ -5,7 +5,7 @@ from typing import Any, Callable, Dict, Optional, Type
 import torch
 from pytorchvideo.data.clip_sampling import ClipSampler
 
-from .labeled_video_dataset import LabeledVideoDataset, labeled_video_dataset
+from .labeled_video_dataset import labeled_video_dataset, LabeledVideoDataset
 
 
 """
