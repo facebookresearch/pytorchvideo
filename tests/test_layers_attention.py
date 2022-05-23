@@ -93,3 +93,65 @@ class TestMLP(unittest.TestCase):
             fake_input = torch.rand((batch_size, in_feat))
             output = mlp_block(fake_input)
             self.assertTrue(output.shape, torch.Size([batch_size, out_feat]))
+
+    def test_MultiScaleBlock_is_scriptable(self):
+        iter_qkv_bias = [True, False]
+        iter_separate_qkv = [True, False]
+        iter_dropout_rate = [0.0, 0.1]
+        iter_droppath_rate = [0.0, 0.1]
+        iter_norm_layer = [nn.LayerNorm]
+        iter_attn_norm_layer = [nn.LayerNorm]
+        iter_pool_mode = ["conv", "avg", "max"]
+        iter_has_cls_embed = [True, False]
+        iter_pool_first = [True, False]
+        iter_residual_pool = [True, False]
+        iter_depthwise_conv = [True, False]
+        iter_bias_on = [True, False]
+        iter_separate_qkv = [True, False]
+
+        for (
+            qkv_bias,
+            dropout_rate,
+            droppath_rate,
+            norm_layer,
+            attn_norm_layer,
+            pool_mode,
+            has_cls_embed,
+            pool_first,
+            residual_pool,
+            depthwise_conv,
+            bias_on,
+            separate_qkv,
+        ) in itertools.product(
+            iter_qkv_bias,
+            iter_dropout_rate,
+            iter_droppath_rate,
+            iter_norm_layer,
+            iter_attn_norm_layer,
+            iter_pool_mode,
+            iter_has_cls_embed,
+            iter_pool_first,
+            iter_residual_pool,
+            iter_depthwise_conv,
+            iter_bias_on,
+            iter_separate_qkv,
+        ):
+            msb = MultiScaleBlock(
+                dim=10,
+                dim_out=20,
+                num_heads=2,
+                stride_q=(2, 2, 1),
+                qkv_bias=qkv_bias,
+                dropout_rate=dropout_rate,
+                droppath_rate=droppath_rate,
+                norm_layer=norm_layer,
+                attn_norm_layer=attn_norm_layer,
+                pool_mode=pool_mode,
+                has_cls_embed=has_cls_embed,
+                pool_first=pool_first,
+                residual_pool=residual_pool,
+                depthwise_conv=depthwise_conv,
+                bias_on=bias_on,
+                separate_qkv=separate_qkv,
+            )
+            torch.jit.script(msb)
