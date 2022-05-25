@@ -5,6 +5,7 @@
 import torch
 import torch.distributed as dist
 from torch._C._distributed_c10d import ProcessGroup
+from torch.autograd.function import Function
 
 _LOCAL_PROCESS_GROUP = None
 
@@ -85,3 +86,61 @@ def get_local_rank() -> int:
 def get_local_process_group() -> ProcessGroup:
     assert _LOCAL_PROCESS_GROUP is not None
     return _LOCAL_PROCESS_GROUP
+
+
+class GroupGather(Function):
+    """
+    GroupGather performs all gather on each of the local process/ GPU groups.
+    """
+
+    @staticmethod
+    def forward(ctx, input, num_sync_devices, num_groups):
+        """
+        Perform forwarding, gathering the stats across different process/ GPU
+        group.
+        """
+        ctx.num_sync_devices = num_sync_devices
+        ctx.num_groups = num_groups
+
+        input_list = [torch.zeros_like(input) for k in range(get_local_size())]
+        dist.all_gather(
+            input_list, input, async_op=False, group=get_local_process_group()
+        )
+
+        inputs = torch.stack(input_list, dim=0)
+        if num_groups > 1:
+            rank = get_local_rank()
+            group_idx = rank // num_sync_devices
+            inputs = inputs[
+                group_idx * num_sync_devices : (group_idx + 1) * num_sync_devices
+            ]
+        inputs = torch.sum(inputs, dim=0)
+        return inputs
+
+    @staticmethod
+    def backward(ctx, grad_output):
+        """
+        Perform backwarding, gathering the gradients across different process/ GPU
+        group.
+        """
+        grad_output_list = [
+            torch.zeros_like(grad_output) for k in range(get_local_size())
+        ]
+        dist.all_gather(
+            grad_output_list,
+            grad_output,
+            async_op=False,
+            group=get_local_process_group(),
+        )
+
+        grads = torch.stack(grad_output_list, dim=0)
+        if ctx.num_groups > 1:
+            rank = get_local_rank()
+            group_idx = rank // ctx.num_sync_devices
+            grads = grads[
+                group_idx
+                * ctx.num_sync_devices : (group_idx + 1)
+                * ctx.num_sync_devices
+            ]
+        grads = torch.sum(grads, dim=0)
+        return grads, None, None
