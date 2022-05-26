@@ -62,6 +62,7 @@ install_pytorch: &install_pytorch
   - run:
       name: Install Pytorch
       command: |
+        echo Installing Pytorch
         export PATH="$HOME/miniconda3/bin:$PATH"
         conda activate pytorchvideo
         conda install pytorch torchvision -c pytorch
