@@ -74,7 +74,7 @@ class SpatioTemporalClsPositionalEncoding(nn.Module):
         ), "Patch_embed_shape should be in the form of (T, H, W)."
         self.cls_embed_on = has_cls
         self.sep_pos_embed = sep_pos_embed
-        self._patch_embed_shape = patch_embed_shape
+        self._patch_embed_shape = tuple(patch_embed_shape)
         self.num_spatial_patch = patch_embed_shape[1] * patch_embed_shape[2]
         self.num_temporal_patch = patch_embed_shape[0]
 
@@ -82,6 +82,7 @@ class SpatioTemporalClsPositionalEncoding(nn.Module):
             self.cls_token = nn.Parameter(torch.zeros(1, 1, embed_dim))
             num_patches = self.num_spatial_patch * self.num_temporal_patch + 1
         else:
+            self.cls_token = torch.tensor(0)
             num_patches = self.num_spatial_patch * self.num_temporal_patch
 
         if self.sep_pos_embed:
@@ -93,11 +94,19 @@ class SpatioTemporalClsPositionalEncoding(nn.Module):
             )
             if self.cls_embed_on:
                 self.pos_embed_class = nn.Parameter(torch.zeros(1, 1, embed_dim))
+            else:
+                self.pos_embed_class = torch.tensor([])  # for torchscriptability
+            self.pos_embed = torch.tensor([])
+
         else:
             self.pos_embed = nn.Parameter(torch.zeros(1, num_patches, embed_dim))
+            # Placeholders for torchscriptability, won't be used
+            self.pos_embed_spatial = torch.tensor([])
+            self.pos_embed_temporal = torch.tensor([])
+            self.pos_embed_class = torch.tensor([])
 
-    @property
-    def patch_embed_shape(self):
+    @torch.jit.export
+    def patch_embed_shape(self) -> Tuple[int, int, int]:
         return self._patch_embed_shape
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:

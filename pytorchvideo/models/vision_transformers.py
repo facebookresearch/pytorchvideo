@@ -1,16 +1,12 @@
 # Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved.
 
+import warnings
 from functools import partial
 from typing import Callable, List, Optional, Tuple
 
 import torch
 import torch.nn as nn
-from pytorchvideo.layers import (
-    MultiScaleBlock,
-    ScriptableMultiScaleBlock,
-    ScriptableSpatioTemporalClsPositionalEncoding,
-    SpatioTemporalClsPositionalEncoding,
-)
+from pytorchvideo.layers import MultiScaleBlock, SpatioTemporalClsPositionalEncoding
 from pytorchvideo.layers.utils import round_width, set_attributes
 from pytorchvideo.models.head import create_vit_basic_head
 from pytorchvideo.models.weight_init import init_net_weights
@@ -72,10 +68,18 @@ class MultiscaleVisionTransformers(nn.Module):
             head (Optional[nn.Module]): Head module.
         """
         super().__init__()
-        set_attributes(self, locals())
+
         assert hasattr(
             cls_positional_encoding, "patch_embed_shape"
-        ), "cls_positional_encoding should have attribute patch_embed_shape."
+        ), "cls_positional_encoding should have method patch_embed_shape."
+
+        self.patch_embed = patch_embed or torch.nn.Identity()
+        self.cls_positional_encoding = cls_positional_encoding
+        self.pos_drop = pos_drop or torch.nn.Identity()
+        self.blocks = blocks
+        self.norm_embed = norm_embed or torch.nn.Identity()
+        self.head = head or torch.nn.Identity()
+
         init_net_weights(self, init_std=0.02, style="vit")
 
     def _get_bn_w_b(self, bn, repeat=1):
@@ -166,20 +170,15 @@ class MultiscaleVisionTransformers(nn.Module):
             blk.norm2 = nn.Identity()
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        if self.patch_embed is not None:
-            x = self.patch_embed(x)
+        x = self.patch_embed(x)
         x = self.cls_positional_encoding(x)
+        x = self.pos_drop(x)
 
-        if self.pos_drop is not None:
-            x = self.pos_drop(x)
-
-        thw = self.cls_positional_encoding.patch_embed_shape
+        thw = self.cls_positional_encoding.patch_embed_shape()
         for blk in self.blocks:
             x, thw = blk(x, thw)
-        if self.norm_embed is not None:
-            x = self.norm_embed(x)
-        if self.head is not None:
-            x = self.head(x)
+        x = self.norm_embed(x)
+        x = self.head(x)
         return x
 
 
@@ -341,6 +340,11 @@ def create_multiscale_vision_transformers(
         assert (
             norm == "batchnorm"
         ), "The scriptable model supports only the batchnorm-based model."
+        warnings.warn(
+            "`create_scriptable_model` is deprecated. MultiscaleVisionTransformers"
+            " now supports scripting without this flag.",
+            DeprecationWarning,
+        )
 
     if isinstance(spatial_size, int):
         spatial_size = (spatial_size, spatial_size)
@@ -373,12 +377,7 @@ def create_multiscale_vision_transformers(
         else input_dims
     )
 
-    pos_func = (
-        ScriptableSpatioTemporalClsPositionalEncoding
-        if create_scriptable_model
-        else SpatioTemporalClsPositionalEncoding
-    )
-    cls_positional_encoding = pos_func(
+    cls_positional_encoding = SpatioTemporalClsPositionalEncoding(
         embed_dim=patch_embed_dim,
         patch_embed_shape=patch_embed_shape,
         sep_pos_embed=sep_pos_embed,
@@ -448,12 +447,8 @@ def create_multiscale_vision_transformers(
             divisor=round_width(num_heads, head_mul[i + 1]),
         )
 
-        block_func = (
-            ScriptableMultiScaleBlock if create_scriptable_model else MultiScaleBlock
-        )
-
         mvit_blocks.append(
-            block_func(
+            MultiScaleBlock(
                 dim=patch_embed_dim,
                 dim_out=dim_out,
                 num_heads=num_heads,

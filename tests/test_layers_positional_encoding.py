@@ -1,5 +1,6 @@
 # Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved.
 
+import itertools
 import math
 import unittest
 
@@ -109,3 +110,34 @@ class TestPositionalEncoding(unittest.TestCase):
                 embed_dim=16,
                 patch_embed_shape=(1, 2),
             )
+
+    def test_SpatioTemporalClsPositionalEncoding_scriptable(self):
+        iter_embed_dim = [1, 2, 4, 32]
+        iter_patch_embed_shape = [(1, 1, 1), (1, 2, 4), (32, 16, 1)]
+        iter_sep_pos_embed = [True, False]
+        iter_has_cls = [True, False]
+
+        for (
+            embed_dim,
+            patch_embed_shape,
+            sep_pos_embed,
+            has_cls,
+        ) in itertools.product(
+            iter_embed_dim,
+            iter_patch_embed_shape,
+            iter_sep_pos_embed,
+            iter_has_cls,
+        ):
+            stcpe = SpatioTemporalClsPositionalEncoding(
+                embed_dim=embed_dim,
+                patch_embed_shape=patch_embed_shape,
+                sep_pos_embed=sep_pos_embed,
+                has_cls=has_cls,
+            )
+            stcpe_scripted = torch.jit.script(stcpe)
+            batch_dim = 4
+            video_dim = math.prod(patch_embed_shape)
+            fake_input = torch.rand(batch_dim, video_dim, embed_dim)
+            expected = stcpe(fake_input)
+            actual = stcpe_scripted(fake_input)
+            torch.testing.assert_allclose(expected, actual)

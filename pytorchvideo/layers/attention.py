@@ -626,6 +626,8 @@ class MultiScaleBlock(nn.Module):
         )
         if dim != dim_out:
             self.proj = nn.Linear(dim, dim_out, bias=bias_on)
+        else:
+            self.proj = nn.Identity()
 
         self.pool_skip = (
             nn.MaxPool3d(kernel_skip, stride_skip, padding_skip, ceil_mode=False)

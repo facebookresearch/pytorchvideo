@@ -1,6 +1,8 @@
 # Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved.
 
+import itertools
 import unittest
+import warnings
 
 import torch
 from pytorchvideo.models.vision_transformers import (
@@ -114,3 +116,68 @@ class TestVisionTransformers(unittest.TestCase):
             temporal_size=1,
             norm="fakenorm",
         )
+
+    def test_mvit_is_torchscriptable(self):
+        batch_size = 2
+        num_head = 4
+        spatial_size = (28, 28)
+        temporal_size = 4
+        depth = 2
+        patch_embed_dim = 96
+
+        # The following binary settings are covered by `test_layers_attention.py`:
+        # `qkv_bias`, `depthwise_conv`, `separate_qkv`, `bias_on` `pool_first`
+        # `residual_pool`
+        true_false_opts = [
+            "cls_embed_on",
+            "sep_pos_embed",
+            "enable_patch_embed",
+            "enable_patch_embed_norm",
+        ]
+
+        # Loop over `2 ^ len(true_false_opts)` configurations
+        for true_false_settings in itertools.product(
+            *([[True, False]] * len(true_false_opts))
+        ):
+            named_tf_settings = dict(zip(true_false_opts, true_false_settings))
+
+            model = create_multiscale_vision_transformers(
+                spatial_size=spatial_size,
+                temporal_size=temporal_size,
+                depth=depth,
+                head_num_classes=num_head,
+                patch_embed_dim=patch_embed_dim,
+                pool_kv_stride_adaptive=[1, 2, 2],
+                **named_tf_settings,
+                create_scriptable_model=False,
+            ).eval()
+            ts_model = torch.jit.script(model)
+
+            input_shape = (
+                (3, temporal_size, spatial_size[0], spatial_size[1])
+                if named_tf_settings["enable_patch_embed"]
+                else (
+                    temporal_size * spatial_size[0] * spatial_size[1],
+                    patch_embed_dim,
+                )
+            )
+            fake_input = torch.rand(batch_size, *input_shape)
+
+            expected = model(fake_input)
+            actual = ts_model(fake_input)
+            torch.testing.assert_allclose(expected, actual)
+
+    def test_mvit_create_scriptable_model_is_deprecated(self):
+        with warnings.catch_warnings(record=True) as w:
+            warnings.simplefilter("always")
+            create_multiscale_vision_transformers(
+                spatial_size=28,
+                temporal_size=4,
+                norm="batchnorm",
+                depth=2,
+                head_num_classes=100,
+                create_scriptable_model=True,
+            )
+
+        assert len(w) == 1
+        assert issubclass(w[-1].category, DeprecationWarning)
