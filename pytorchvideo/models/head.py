@@ -527,7 +527,8 @@ class VisionTransformerBasicHead(nn.Module):
         if self.dropout is not None:
             x = self.dropout(x)
         # Performs projection.
-        x = self.proj(x)
+        if self.proj is not None:
+            x = self.proj(x)
         # Performs activation.
         if self.activation is not None:
             x = self.activation(x)
