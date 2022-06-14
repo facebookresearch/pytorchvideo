@@ -4,8 +4,8 @@ from __future__ import annotations
 
 import gc
 import logging
-from typing import Any, Callable, Dict, List, Optional, Tuple, Type
-
+from typing import Any, Callable, Dict, List, Optional, Tuple, Type,Union
+import pandas as pd
 import torch.utils.data
 from pytorchvideo.data.clip_sampling import ClipSampler
 from pytorchvideo.data.video import VideoPathHandler
@@ -145,6 +145,7 @@ class LabeledVideoDataset(torch.utils.data.IterableDataset):
                     )
                     self._loaded_video_label = (video, info_dict, video_index)
                 except Exception as e:
+                    print('error is',e)#necessary to print error
                     logger.debug(
                         "Failed to load video with error: {}; trial {}".format(
                             e,
@@ -251,7 +252,7 @@ class LabeledVideoDataset(torch.utils.data.IterableDataset):
 
 
 def labeled_video_dataset(
-    data_path: str,
+    data:Union[str, pd.DataFrame],
     clip_sampler: ClipSampler,
     video_sampler: Type[torch.utils.data.Sampler] = torch.utils.data.RandomSampler,
     transform: Optional[Callable[[Dict[str, Any]], Dict[str, Any]]] = None,
@@ -292,8 +293,12 @@ def labeled_video_dataset(
         decoder (str): Defines what type of decoder used to decode a video.
 
     """
-    labeled_video_paths = LabeledVideoPaths.from_path(data_path)
-    labeled_video_paths.path_prefix = video_path_prefix
+    if isinstance(data,pd.DataFrame):
+        labeled_video_paths= LabeledVideoPaths.from_df(data)
+    elif isinstance(data,str):
+        labeled_video_paths = LabeledVideoPaths.from_path(data)
+        labeled_video_paths.path_prefix = video_path_prefix
+    
     dataset = LabeledVideoDataset(
         labeled_video_paths,
         clip_sampler,

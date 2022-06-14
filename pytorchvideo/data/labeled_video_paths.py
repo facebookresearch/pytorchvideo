@@ -8,7 +8,7 @@ from typing import List, Optional, Tuple
 
 from iopath.common.file_io import g_pathmgr
 from torchvision.datasets.folder import make_dataset
-
+import pandas as pd
 
 class LabeledVideoPaths:
     """
@@ -25,11 +25,14 @@ class LabeledVideoPaths:
         Args:
             file_path (str): The path to the file to be read.
         """
+        
 
         if g_pathmgr.isfile(data_path):
             return LabeledVideoPaths.from_csv(data_path)
         elif g_pathmgr.isdir(data_path):
             return LabeledVideoPaths.from_directory(data_path)
+        
+
         else:
             raise FileNotFoundError(f"{data_path} not found.")
 
@@ -66,6 +69,35 @@ class LabeledVideoPaths:
             len(video_paths_and_label) > 0
         ), f"Failed to load dataset from {file_path}."
         return cls(video_paths_and_label)
+
+
+    @classmethod
+    def from_df(cls, df:pd.DataFrame) -> LabeledVideoPaths:
+        """
+        Factory function that creates a LabeledVideoPaths object by reading a dataframe.
+        Sample dataframe
+        df=pd.DataFrame(
+            {
+                "path":["path_to_video_1","path_to_video_2","path_to_video_3"],
+                "label":["label_1","label_2","label_3"]
+            })
+
+        Args:
+            df (dataframe): The dataframe variable.
+        """
+        video_paths_and_label = []
+        for row in df.iterrows():
+            path,label=row[1].values
+            video_paths_and_label.append((path, int(label)))
+
+        assert (
+            len(video_paths_and_label) > 0
+        ), f"Failed to load dataset from df."
+        return cls(video_paths_and_label)
+
+
+
+
 
     @classmethod
     def from_directory(cls, dir_path: str) -> LabeledVideoPaths:
