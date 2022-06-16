@@ -6,6 +6,7 @@ import csv
 import itertools
 import logging
 import math
+import sys
 import threading
 from collections import defaultdict
 from dataclasses import Field, field as dataclass_field, fields as dataclass_fields
@@ -285,3 +286,18 @@ def save_dataclass_objs_to_headered_csv(
         writer.writerow(field_names)
         for obj in dataclass_objs:
             writer.writerow([getattr(obj, f) for f in field_names])
+
+
+def get_logger(name: str) -> logging.Logger:
+    logger: logging.Logger = logging.getLogger(name)
+    logger.setLevel(logging.INFO)
+    if not logger.hasHandlers():
+        sh = logging.StreamHandler(sys.stdout)
+        sh.setFormatter(
+            logging.Formatter(
+                "[%(asctime)s] %(levelname)s %(message)s \t[%(filename)s.%(funcName)s:%(lineno)d]",  # noqa
+                datefmt="%y%m%d %H:%M:%S",
+            )
+        )
+        logger.addHandler(sh)
+    return logger
