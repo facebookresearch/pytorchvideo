@@ -6,7 +6,7 @@ import logging
 import os
 from bisect import bisect_left
 from collections import defaultdict
-from typing import Any, Callable, Dict, List, Optional, Tuple, Type
+from typing import Any, Callable, Dict, List, Optional, Set, Tuple, Type
 
 import numpy as np
 
@@ -184,6 +184,7 @@ class Ego4dMomentsDataset(LabeledVideoDataset):
         label_id_map_path: Optional[str] = None,
         video_path_override: Optional[Callable[[str], str]] = None,
         video_path_handler: Optional[VideoPathHandler] = None,
+        eligible_video_uids: Optional[Set[str]] = None,
     ) -> None:
         """
         Args:
@@ -333,6 +334,8 @@ class Ego4dMomentsDataset(LabeledVideoDataset):
             # If IMU, filter videos without IMU
             if self.imu_data and not self.imu_data.has_imu(video_uid):
                 continue
+            if eligible_video_uids and video_uid not in eligible_video_uids:
+                continue
             for clip in vid["clips"]:
                 clip_uid = clip["clip_uid"]
                 clip_uids.add(clip_uid)
@@ -364,6 +367,10 @@ class Ego4dMomentsDataset(LabeledVideoDataset):
                             continue
                         metadata = self.video_metadata_map[video_uid]
 
+                        if metadata["is_stereo"]:
+                            cnt_samples_bypassed += 1
+                            continue
+
                         if video_path_override:
                             video_path = video_path_override(video_uid)
                         else:
@@ -379,7 +386,7 @@ class Ego4dMomentsDataset(LabeledVideoDataset):
                             "duration": metadata["duration_sec"],
                             "clip_video_start_sec": clip_start_sec,
                             "clip_video_end_sec": clip_end_sec,
-                            "labels": label,
+                            "labels": [label],
                             "label_video_start_sec": start_video,
                             "label_video_end_sec": end_video,
                             "video_path": video_path,
@@ -482,7 +489,9 @@ class Ego4dMomentsDataset(LabeledVideoDataset):
                     sample_dict["audio"], audio_fps
                 )
 
-            sample_dict["labels_onehot"] = self.convert_one_hot(sample_dict["labels"])
+            labels = sample_dict["labels"]
+            one_hot = self.convert_one_hot(labels)
+            sample_dict["labels_onehot"] = one_hot
 
             if self._transform_source:
                 sample_dict = self._transform_source(sample_dict)
@@ -601,8 +610,11 @@ class Ego4dMomentsDataset(LabeledVideoDataset):
         }
 
     def convert_one_hot(self, label_list: List[str]) -> List[int]:
-        label_list = [x for x in label_list if x in self.label_name_id_map.keys()]
+        labels = [x for x in label_list if x in self.label_name_id_map.keys()]
+        assert len(labels) == len(
+            label_list
+        ), f"invalid filter {len(label_list)} -> {len(labels)}: {label_list}"
         one_hot = [0 for _ in range(self.num_classes)]
-        for lab in label_list:
+        for lab in labels:
             one_hot[self.label_name_id_map[lab]] = 1
         return one_hot
