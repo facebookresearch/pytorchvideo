@@ -269,6 +269,7 @@ class Ego4dMomentsDataset(LabeledVideoDataset):
         self.training: bool = split == "train"
         self.window_sec = window_sec
         self._transform_source = transform
+        self.decode_audio = decode_audio
         self.audio_transform_type = audio_transform_type
         assert (label_id_map is not None) ^ (
             label_id_map_path is not None
@@ -483,11 +484,12 @@ class Ego4dMomentsDataset(LabeledVideoDataset):
 
             sample_dict = self._video_transform()(sample_dict)
 
-            if self._decode_audio:
+            if self.decode_audio:
                 audio_fps = self.AUDIO_FPS
                 sample_dict["audio"] = self._preproc_audio(
                     sample_dict["audio"], audio_fps
                 )
+                sample_dict["spectrogram"] = sample_dict["audio"]["spectrogram"]
 
             labels = sample_dict["labels"]
             one_hot = self.convert_one_hot(labels)
