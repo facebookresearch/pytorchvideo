@@ -1,5 +1,6 @@
 # Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved.
 
+import os
 import tempfile
 import unittest
 import unittest.mock
@@ -8,9 +9,12 @@ from pathlib import Path
 
 from pytorchvideo.data.utils import (
     DataclassFieldCaster,
+    export_video_array,
     load_dataclass_dict_from_csv,
     save_dataclass_objs_to_headered_csv,
 )
+from pytorchvideo.data.video import VideoPathHandler
+from utils import temp_encoded_video
 
 
 @dataclass
@@ -50,6 +54,51 @@ class TestDataUtils(unittest.TestCase):
 
         self.assertEqual(test_obj.e, {"k": "k"})
         self.assertEqual(type(test_obj.e), dict)
+
+    def _export_video_array(
+        self,
+        video_codec="libx264rgb",
+        height=10,
+        width=10,
+        num_frames=10,
+        fps=5,
+        options=None,
+        epsilon=3,
+    ):
+        with temp_encoded_video(
+            num_frames=num_frames, fps=fps, height=height, width=width
+        ) as (video_file_name, data,), tempfile.TemporaryDirectory(
+            prefix="video_stop_gap_test"
+        ) as tempdir:
+            exported_video_path = os.path.join(tempdir, "video.mp4")
+            export_video_array(
+                data,
+                output_path=exported_video_path,
+                rate=fps,
+                video_codec=video_codec,
+                options=options,
+            )
+            vp_handler = VideoPathHandler()
+            video = vp_handler.video_from_path(exported_video_path, decode_audio=False)
+            reloaded_data = video.get_clip(0, video.duration)["video"]
+            self.assertLessEqual((data - reloaded_data).abs().mean(), epsilon)
+
+    def test_export_video_array_mult(self):
+        self._export_video_array(
+            video_codec="libx264rgb",
+            height=10,
+            width=10,
+            num_frames=10,
+            fps=5,
+            options={"crf": "0"},
+            epsilon=1e-6,
+        )
+        self._export_video_array(
+            video_codec="mpeg4", height=10, width=10, num_frames=10, fps=5
+        )
+        self._export_video_array(
+            video_codec="mpeg4", height=480, width=640, num_frames=30, fps=30
+        )
 
     def test_load_dataclass_dict_from_csv_value_dict(self):
         dataclass_objs = [

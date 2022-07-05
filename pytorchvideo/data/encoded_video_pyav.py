@@ -2,7 +2,8 @@
 
 import logging
 import math
-from typing import BinaryIO, Dict, List, Optional, Tuple
+from fractions import Fraction
+from typing import BinaryIO, Dict, List, Optional, Tuple, Union
 
 import av
 import numpy as np
@@ -106,6 +107,30 @@ class EncodedVideoPyAV(EncodedVideo):
             self._duration = pts_to_secs(
                 audio_duration, self._audio_time_base, self._audio_start_pts
             )
+
+    @property
+    def rate(self) -> Union[str, Fraction]:
+        """
+        Returns:
+            rate: the frame rate of the video
+        """
+        return self._container.streams.video[0].rate
+
+    @property
+    def bit_rate(self) -> int:
+        """
+        Returns:
+            bit_rate: the bit rate of the underlying video
+        """
+        return self._container.streams.video[0].bit_rate
+
+    @property
+    def pix_fmt(self) -> int:
+        """
+        Returns:
+            pix_fmt: the pixel format of the underlying video
+        """
+        return self._container.streams.video[0].pix_fmt
 
     @property
     def name(self) -> Optional[str]:
