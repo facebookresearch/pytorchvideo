@@ -87,8 +87,10 @@ class LabeledVideoPaths:
         """
         video_paths_and_label = []
         for row in df.iterrows():
-            path,label=row[1].values
-            video_paths_and_label.append((path, int(label)))
+            row=row[1].values
+            path=row[0]
+            label=row[1::].astype(float)
+            video_paths_and_label.append((path, label))
 
         assert (
             len(video_paths_and_label) > 0
