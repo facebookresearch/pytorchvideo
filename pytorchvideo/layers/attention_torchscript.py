@@ -4,6 +4,7 @@ from typing import List, Optional, Tuple
 
 import numpy
 import torch
+import torch.fx
 import torch.nn as nn
 from torch.nn.common_types import _size_3_t
 
@@ -68,6 +69,39 @@ class Mlp(nn.Module):
         return x
 
 
+@torch.fx.wrap
+def _unsqueeze_dims_fx(tensor: torch.Tensor) -> Tuple[torch.Tensor, int]:
+    tensor_dim = tensor.ndim
+    if tensor_dim == 4:
+        pass
+    elif tensor_dim == 3:
+        tensor = tensor.unsqueeze(1)
+    else:
+        raise NotImplementedError(f"Unsupported input dimension {tensor.shape}")
+    return tensor, tensor_dim
+
+
+@torch.jit.script
+def _unsqueeze_dims_jit(tensor: torch.Tensor) -> Tuple[torch.Tensor, int]:
+    return _unsqueeze_dims_fx(tensor)
+
+
+@torch.fx.wrap
+def _squeeze_dims_fx(tensor: torch.Tensor, tensor_dim: int) -> torch.Tensor:
+    if tensor_dim == 4:
+        pass
+    elif tensor_dim == 3:
+        tensor = tensor.squeeze(1)
+    else:
+        raise NotImplementedError(f"Unsupported input dimension {tensor.shape}")
+    return tensor
+
+
+@torch.jit.script
+def _squeeze_dims_jit(tensor: torch.Tensor, tensor_dim: int) -> torch.Tensor:
+    return _squeeze_dims_fx(tensor, tensor_dim)
+
+
 def _pre_attention_pool(
     tensor: torch.Tensor,
     thw_shape: List[int],
@@ -101,14 +135,10 @@ def _pre_attention_pool(
         tensor (torch.Tensor): Input tensor after pool.
         thw_shape (List[int]): Output tensor shape (before flattening).
     """
-    tensor_dim = tensor.ndim
-    if tensor_dim == 4:
-        pass
-    elif tensor_dim == 3:
-        tensor = tensor.unsqueeze(1)
+    if torch.jit.is_scripting():
+        tensor, tensor_dim = _unsqueeze_dims_jit(tensor)
     else:
-        raise NotImplementedError(f"Unsupported input dimension {tensor.shape}")
-
+        tensor, tensor_dim = _unsqueeze_dims_fx(tensor)
     B, N, L, C = tensor.shape
     T, H, W = thw_shape
     tensor = tensor.reshape(B * N, T, H, W, C).permute(0, 4, 1, 2, 3).contiguous()
@@ -125,11 +155,11 @@ def _post_attention_pool(
     thw_shape = [tensor.shape[2], tensor.shape[3], tensor.shape[4]]
     L_pooled = tensor.shape[2] * tensor.shape[3] * tensor.shape[4]
     tensor = tensor.reshape(B, N, C, L_pooled).transpose(2, 3)
+    if torch.jit.is_scripting():
+        tensor = _squeeze_dims_jit(tensor, tensor_dim)
+    else:
+        tensor = _squeeze_dims_fx(tensor, tensor_dim)
 
-    if tensor_dim == 4:
-        pass
-    else:  # For the case tensor_dim == 3.
-        tensor = tensor.squeeze(1)
     return tensor, thw_shape
 
 
@@ -342,8 +372,7 @@ class MultiScaleAttention(nn.Module):
             q_shape = thw_shape
         else:
             q, q_shape = _pre_attention_pool(
-                q,
-                [int(thw_shape[0]), int(thw_shape[1]), int(thw_shape[2])],
+                q, [thw_shape[0], thw_shape[1], thw_shape[2]]
             )
             q = nn.functional.gelu(q)
             q = self.pool_q(q)
@@ -357,7 +386,7 @@ class MultiScaleAttention(nn.Module):
         else:
             k, k_shape = _pre_attention_pool(
                 k,
-                [int(thw_shape[0]), int(thw_shape[1]), int(thw_shape[2])],
+                [thw_shape[0], thw_shape[1], thw_shape[2]],
             )
             k = nn.functional.gelu(k)
             k = self.pool_k(k)
@@ -370,7 +399,7 @@ class MultiScaleAttention(nn.Module):
         else:
             v, v_shape = _pre_attention_pool(
                 v,
-                [int(thw_shape[0]), int(thw_shape[1]), int(thw_shape[2])],
+                [thw_shape[0], thw_shape[1], thw_shape[2]],
             )
             v = nn.functional.gelu(v)
             v = self.pool_v(v)
@@ -591,7 +620,7 @@ class ScriptableMultiScaleBlock(nn.Module):
             x_res = x
         else:
             x_res, res_shape = _pre_attention_pool(
-                x, [int(thw_shape[0]), int(thw_shape[1]), int(thw_shape[2])]
+                x, [thw_shape[0], thw_shape[1], thw_shape[2]]
             )
             x_res = self.pool_skip(x_res)
             x_res, _ = _post_attention_pool(x_res, res_shape)
