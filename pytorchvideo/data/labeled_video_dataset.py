@@ -151,6 +151,7 @@ class LabeledVideoDataset(torch.utils.data.IterableDataset):
                             i_try,
                         )
                     )
+                    logger.exception("Video load exception")
                     continue
 
             (

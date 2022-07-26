@@ -6,11 +6,14 @@ import csv
 import itertools
 import logging
 import math
+import sys
 import threading
 from collections import defaultdict
 from dataclasses import Field, field as dataclass_field, fields as dataclass_fields
-from typing import Any, Callable, Dict, Iterable, List, Tuple, Union
+from fractions import Fraction
+from typing import Any, Callable, Dict, Iterable, List, Optional, Tuple, Union
 
+import av
 import numpy as np
 import torch
 from iopath.common.file_io import g_pathmgr
@@ -62,6 +65,98 @@ def pts_to_secs(pts: int, time_base: float, start_pts: int) -> float:
         return math.inf
 
     return int(pts - start_pts) * time_base
+
+
+def export_video_array(
+    video: Union[np.ndarray, torch.tensor],
+    output_path: str,
+    rate: Union[str, Fraction],
+    bit_rate: Optional[int] = None,
+    pix_fmt: Optional[str] = None,
+    height: Optional[int] = None,
+    width: Optional[int] = None,
+    in_format: Optional[str] = "rgb24",
+    out_format: Optional[str] = "bgr24",
+    video_codec: Optional[str] = "mpeg4",
+    options: Optional[Dict[str, Any]] = None,
+) -> av.VideoStream:
+    """
+    Encodes and exports an ndarray or torch tensor representing frames of a video to output_path
+
+    Args:
+        video (Union[np.ndarray, torch.tensor]):
+            A 4d array/tensor returned by EncodedVideoPyAV.get_clip. Axis 0 is channel,
+            Axis 1 is frame index/time, the remaining axes are the frame pixels
+
+        output_path (str):
+            the path to write the video to
+
+        rate (Union[str, Fraction]):
+            the frame rate of the output video
+
+        bit_rate (int):
+            the bit rate of the output video. If not set, defaults to 1024000
+
+        pix_fmt (str):
+            the pixel format of the output video. If not set, defaults to yuv420p
+
+        height (int):
+            the height of the output video. if not set, defaults to the dimensions of input video
+
+        width (int):
+            the width of the output video. if not set, defaults to the dimensions of input video
+
+        in_format (str):
+            The encoding format of the input video. Defaults to rgb24
+
+        out_format (str):
+            The encoding format of the output video. Defaults to bgr24
+
+        video_codec (str):
+            The video codec to use for the output video. Defaults to mpeg4
+
+        options (Dict[str, Any]):
+            Dictionary of options for PyAV video encoder
+    Returns:
+        Stream object which contains metadata about encoded and exported video.
+    """
+    stream = None
+    with g_pathmgr.open(output_path, "wb") as oh:
+        output = av.open(oh, mode="wb", format="mp4")
+        stream = output.add_stream(codec_name=video_codec, rate=rate)
+        if height:
+            stream.height = height
+        else:
+            stream.height = video.shape[-2]
+        if width:
+            stream.width = width
+        else:
+            stream.width = video.shape[-1]
+        if bit_rate:
+            stream.bit_rate = bit_rate
+        if pix_fmt:
+            stream.pix_fmt = pix_fmt
+        else:
+            stream.pix_fmt = "yuv420p" if video_codec != "libx264rgb" else "rgb24"
+        if video_codec == "libx264rgb":
+            out_format = "rgb24"
+        if options:
+            stream.options = options
+        if isinstance(video, torch.Tensor):
+            video = video.numpy()
+        for np_frame in np.moveaxis(video, 0, -1):
+            frame = av.VideoFrame.from_ndarray(
+                np_frame.astype("uint8"), format=in_format
+            )
+            if in_format != out_format:
+                frame = frame.reformat(format=out_format)
+            frame.pict_type = "NONE"
+            for packet in stream.encode(frame):
+                output.mux(packet)
+        for packet in stream.encode():
+            output.mux(packet)
+        output.close()
+    return stream
 
 
 class MultiProcessSampler(torch.utils.data.Sampler):
@@ -285,3 +380,18 @@ def save_dataclass_objs_to_headered_csv(
         writer.writerow(field_names)
         for obj in dataclass_objs:
             writer.writerow([getattr(obj, f) for f in field_names])
+
+
+def get_logger(name: str) -> logging.Logger:
+    logger: logging.Logger = logging.getLogger(name)
+    logger.setLevel(logging.INFO)
+    if not logger.hasHandlers():
+        sh = logging.StreamHandler(sys.stdout)
+        sh.setFormatter(
+            logging.Formatter(
+                "[%(asctime)s] %(levelname)s %(message)s \t[%(filename)s.%(funcName)s:%(lineno)d]",  # noqa
+                datefmt="%y%m%d %H:%M:%S",
+            )
+        )
+        logger.addHandler(sh)
+    return logger
