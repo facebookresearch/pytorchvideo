@@ -112,15 +112,9 @@ class Mlp(nn.Module):
 class _AttentionPool(torch.nn.Module):
     def __init__(
         self,
-        is_skip: bool,
+        pool: Optional[torch.nn.Module],
         has_cls_embed: bool,
-        kernel: Optional[_size_3_t],
-        stride: Optional[_size_3_t],
-        padding: _size_3_t,
-        pool_mode: Optional[str] = None,
-        head_dim: Optional[int] = None,
-        depthwise_conv: Optional[bool] = None,
-        norm_layer: Optional[Callable] = None,
+        norm: Optional[torch.nn.Module],
     ) -> None:
         """Apply pool to a flattened input (given pool operation and the unflattened shape).
 
@@ -137,65 +131,18 @@ class _AttentionPool(torch.nn.Module):
 
 
         Params:
-            is_skip (bool): Whether the pooling is skip
+            pool (Optional[Callable]): Pool operation that is applied to the input tensor.
+                If pool is none, return the input tensor.
             has_cls_embed (bool): Whether the input tensor contains cls token. Pool
                 operation excludes cls token.
-            kernel (Optional[_size_3_t]): Optional pooling kernel size.
-                Needs to be specified if is_skip == True.
-            stride (Optional[_size_3_t]): Optional pooling kernel stride.
-                Needs to be specified if is_skip == True.
-            padding (_size_3_t): Padding to apply with pooling
-            pool_mode (Optional[str]): Optional pooling mode.
-                Needs to be specified if is_skip == False.
-                Option includes "conv" (learned pooling),
-                "avg" (average pooling), and "max" (max pooling).
-            head_dim (Optional[int]): Optional dimension of attention layer head.
-                Needs to be specified if is_skip == False.
-            depthwise_conv (Optional[bool]): Optional flag on whether to use depthwise
-                or full convolution for pooling.
-                Needs to be specified if is_skip == False.
-            norm_layer (Optional[Callable]): Normalization layer used after pooling.
-                Needs to be specified if is_skip == False.
+            norm: (Optional[Callable]): Optional normalization operation applied to
+            tensor after pool.
         """
         super().__init__()
-        norm = None
-        self.has_cls_embed = has_cls_embed
-
-        if is_skip:
-            pool = (
-                nn.MaxPool3d(kernel, stride, padding, ceil_mode=False)
-                if len(stride) > 0 and numpy.prod(stride) > 1
-                else None
-            )
-        else:
-            if pool_mode in ("avg", "max"):
-                pool_op = nn.MaxPool3d if pool_mode == "max" else nn.AvgPool3d
-                pool = (
-                    pool_op(kernel, stride, padding, ceil_mode=False)
-                    if kernel is not None
-                    else None
-                )
-            elif pool_mode == "conv":
-                pool = (
-                    nn.Conv3d(
-                        head_dim,
-                        head_dim,
-                        kernel,
-                        stride=stride,
-                        padding=padding,
-                        groups=head_dim if depthwise_conv else 1,
-                        bias=False,
-                    )
-                    if kernel is not None
-                    else None
-                )
-                norm = norm_layer(head_dim) if kernel is not None else None
-            else:
-                raise NotImplementedError(f"Unsupported model {pool_mode}")
-
         self.has_pool = pool is not None
-        self.pool = pool or torch.nn.Identity()
+        self.pool = pool if pool is not None else torch.nn.Identity()
 
+        self.has_cls_embed = has_cls_embed
         if norm is not None:
             self.norm_before_pool = isinstance(
                 norm, (torch.nn.BatchNorm3d, torch.nn.Identity)
@@ -347,8 +294,8 @@ class MultiScaleAttention(nn.Module):
         self.has_cls_embed = has_cls_embed
         self.residual_pool = residual_pool
         self.separate_qkv = separate_qkv
-        padding_q = tuple(int(q // 2) for q in kernel_q)
-        padding_kv = tuple(int(kv // 2) for kv in kernel_kv)
+        padding_q = [int(q // 2) for q in kernel_q]
+        padding_kv = [int(kv // 2) for kv in kernel_kv]
 
         # Set placeholders for torchscriptability, may not be actually used
         self.q = self.k = self.v = self.qkv = nn.Identity()
@@ -379,39 +326,84 @@ class MultiScaleAttention(nn.Module):
         ):
             kernel_kv = None
 
+        if pool_mode in ("avg", "max"):
+            pool_op = nn.MaxPool3d if pool_mode == "max" else nn.AvgPool3d
+            self.pool_q = (
+                pool_op(kernel_q, stride_q, padding_q, ceil_mode=False)
+                if kernel_q is not None
+                else None
+            )
+            self.pool_k = (
+                pool_op(kernel_kv, stride_kv, padding_kv, ceil_mode=False)
+                if kernel_kv is not None
+                else None
+            )
+            self.pool_v = (
+                pool_op(kernel_kv, stride_kv, padding_kv, ceil_mode=False)
+                if kernel_kv is not None
+                else None
+            )
+        elif pool_mode == "conv":
+            self.pool_q = (
+                nn.Conv3d(
+                    head_dim,
+                    head_dim,
+                    kernel_q,
+                    stride=stride_q,
+                    padding=padding_q,
+                    groups=head_dim if depthwise_conv else 1,
+                    bias=False,
+                )
+                if kernel_q is not None
+                else None
+            )
+            self.norm_q = norm_layer(head_dim) if kernel_q is not None else None
+            self.pool_k = (
+                nn.Conv3d(
+                    head_dim,
+                    head_dim,
+                    kernel_kv,
+                    stride=stride_kv,
+                    padding=padding_kv,
+                    groups=head_dim if depthwise_conv else 1,
+                    bias=False,
+                )
+                if kernel_kv is not None
+                else None
+            )
+            self.norm_k = norm_layer(head_dim) if kernel_kv is not None else None
+            self.pool_v = (
+                nn.Conv3d(
+                    head_dim,
+                    head_dim,
+                    kernel_kv,
+                    stride=stride_kv,
+                    padding=padding_kv,
+                    groups=head_dim if depthwise_conv else 1,
+                    bias=False,
+                )
+                if kernel_kv is not None
+                else None
+            )
+            self.norm_v = norm_layer(head_dim) if kernel_kv is not None else None
+        else:
+            raise NotImplementedError(f"Unsupported model {pool_mode}")
+
         # Will not be used if `separate_qkv == True`
         self._attention_pool_q = _AttentionPool(
-            is_skip=False,
-            pool_mode=pool_mode,
-            head_dim=head_dim,
-            depthwise_conv=depthwise_conv,
-            kernel=kernel_q,
-            stride=stride_q,
-            padding=padding_q,
-            norm_layer=norm_layer,
+            self.pool_q,
             has_cls_embed=self.has_cls_embed,
+            norm=self.norm_q if hasattr(self, "norm_q") else None,
         )
         self._attention_pool_k = _AttentionPool(
-            is_skip=False,
-            pool_mode=pool_mode,
-            head_dim=head_dim,
-            depthwise_conv=depthwise_conv,
-            kernel=kernel_kv,
-            stride=stride_kv,
-            padding=padding_kv,
-            norm_layer=norm_layer,
+            self.pool_k,
             has_cls_embed=self.has_cls_embed,
+            norm=self.norm_k if hasattr(self, "norm_k") else None,
         )
         self._attention_pool_v = _AttentionPool(
-            is_skip=False,
-            pool_mode=pool_mode,
-            head_dim=head_dim,
-            depthwise_conv=depthwise_conv,
-            kernel=kernel_kv,
-            stride=stride_kv,
-            padding=padding_kv,
-            norm_layer=norm_layer,
+            self.pool_v,
             has_cls_embed=self.has_cls_embed,
+            norm=self.norm_v if hasattr(self, "norm_v") else None,
         )
 
     def _qkv_proj(
@@ -631,7 +623,7 @@ class MultiScaleBlock(nn.Module):
         self.norm1_is_batchnorm_1d = isinstance(self.norm1, nn.BatchNorm1d)
         kernel_skip = [s + 1 if s > 1 else s for s in stride_q]
         stride_skip = stride_q
-        padding_skip = tuple(int(skip // 2) for skip in kernel_skip)
+        padding_skip = [int(skip // 2) for skip in kernel_skip]
         self.attn = MultiScaleAttention(
             dim,
             num_heads=num_heads,
@@ -676,13 +668,8 @@ class MultiScaleBlock(nn.Module):
             else None
         )
         self._attention_pool = _AttentionPool(
-            is_skip=True,
-            has_cls_embed=self.has_cls_embed,
-            kernel=kernel_skip,
-            stride=stride_skip,
-            padding=padding_skip,
+            self.pool_skip, has_cls_embed=self.has_cls_embed, norm=None
         )
-        self.pool_skip = self._attention_pool.pool
 
     def forward(
         self, x: torch.Tensor, thw_shape: List[int]
