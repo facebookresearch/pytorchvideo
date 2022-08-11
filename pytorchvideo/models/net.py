@@ -39,8 +39,8 @@ class Net(nn.Module):
         init_net_weights(self)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        for idx in range(len(self.blocks)):
-            x = self.blocks[idx](x)
+        for _, block in enumerate(self.blocks):
+            x = block(x)
         return x
 
 

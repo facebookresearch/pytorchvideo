@@ -417,7 +417,7 @@ def create_res_block(
     Returns:
         (nn.Module): resnet basic block layer.
     """
-    branch1_conv_stride = tuple(map(np.prod, zip(conv_a_stride, conv_b_stride)))
+    branch1_conv_stride = tuple([x * y for x, y in zip(conv_a_stride, conv_b_stride)])
     norm_model = None
     if use_shortcut or (
         norm is not None and (dim_in != dim_out or np.prod(branch1_conv_stride) != 1)
