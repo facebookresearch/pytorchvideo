@@ -572,7 +572,7 @@ def create_x3d(
     head_dim_out: int = 2048,
     head_pool_act: Callable = nn.ReLU,
     head_bn_lin5_on: bool = False,
-    head_activation: Callable = nn.Softmax,
+    head_activation: Callable = None,
     head_output_with_global_average: bool = True,
 ) -> nn.Module:
     """
