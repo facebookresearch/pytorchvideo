@@ -52,7 +52,7 @@ setup(
     python_requires=">=3.7",
     install_requires=[
         "fvcore",
-        "av",
+        "av==8.0.3",
         "parameterized",
         "iopath",
         "networkx",
