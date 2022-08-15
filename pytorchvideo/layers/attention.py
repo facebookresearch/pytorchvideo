@@ -234,6 +234,8 @@ class MultiScaleAttention(nn.Module):
                                       DropOut
     """
 
+    _version = 2
+
     def __init__(
         self,
         dim: int,
@@ -526,6 +528,37 @@ class MultiScaleAttention(nn.Module):
         if self.dropout_rate > 0.0:
             x = self.proj_drop(x)
         return x, q_shape
+
+    def _load_from_state_dict(
+        self,
+        state_dict,
+        prefix,
+        local_metadata,
+        strict,
+        missing_keys,
+        unexpected_keys,
+        error_msgs,
+    ):
+        version = local_metadata.get("version", None)
+
+        if version is None or version < 2:
+            for layer in ["pool", "norm"]:
+                for pattern in ["q", "k", "v"]:
+                    for type in ["weight", "bias"]:
+                        old_key = f"{prefix}{layer}_{pattern}.{type}"
+                        new_key = f"{prefix}_attention_pool_{pattern}.{layer}.{type}"
+                        if old_key in state_dict:
+                            state_dict[new_key] = state_dict[old_key]
+
+        super()._load_from_state_dict(
+            state_dict,
+            prefix,
+            local_metadata,
+            strict,
+            missing_keys,
+            unexpected_keys,
+            error_msgs,
+        )
 
 
 class MultiScaleBlock(nn.Module):
