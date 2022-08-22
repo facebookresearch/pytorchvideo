@@ -4,6 +4,7 @@ from typing import Callable, List, Optional, Tuple
 
 import numpy
 import torch
+import torch.fx
 import torch.nn as nn
 from torch.nn.common_types import _size_3_t
 
