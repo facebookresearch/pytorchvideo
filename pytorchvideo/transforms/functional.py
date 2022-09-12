@@ -63,7 +63,7 @@ def _interpolate_opencv(
     _opencv_pytorch_interpolation_map = {
         "nearest": cv2.INTER_NEAREST,
         "linear": cv2.INTER_LINEAR,
-        "bilinear": cv2.INTER_AREA,
+        "bilinear": cv2.INTER_LINEAR,
         "bicubic": cv2.INTER_CUBIC,
     }
     assert interpolation in _opencv_pytorch_interpolation_map
