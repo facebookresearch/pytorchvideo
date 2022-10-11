@@ -1084,8 +1084,8 @@ class TestTransforms(unittest.TestCase):
         self.assertTrue(
             video_dict_transformed["video"].equal(video_comp_transformed["video"])
         )
-        self.assertTrue(
-            video_frame_transformed.equal(video_tensor_transformed[:, 0:1, :, :])
+        torch.testing.assert_close(
+            video_frame_transformed, video_tensor_transformed[:, 0:1, :, :]
         )
         c, t, h, w = video_dict_transformed["video"].shape
         self.assertEqual(c, 3)
