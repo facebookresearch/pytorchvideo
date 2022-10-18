@@ -12,7 +12,7 @@ import pytorchvideo.data
 import torch
 from hydra.core.config_store import ConfigStore
 
-# @manual "//github/third-party/omry/omegaconf:omegaconf"
+# @manual "fbsource//third-party/pypi/omegaconf:omegaconf"
 from omegaconf import MISSING
 from pytorchvideo_trainer.datamodule.transforms import build_transforms
 from torch.utils.data import DataLoader, RandomSampler

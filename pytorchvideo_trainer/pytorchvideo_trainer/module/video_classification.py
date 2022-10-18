@@ -22,7 +22,7 @@ from hydra.core.config_store import ConfigStore
 from hydra.utils import instantiate
 from iopath.common.file_io import g_pathmgr
 
-# @manual "//github/third-party/omry/omegaconf:omegaconf"
+# @manual "fbsource//third-party/pypi/omegaconf:omegaconf"
 from omegaconf import MISSING, OmegaConf
 from pytorch_lightning.utilities import rank_zero_info
 from pytorchvideo_trainer.datamodule.transforms import MixVideoBatchWrapper
