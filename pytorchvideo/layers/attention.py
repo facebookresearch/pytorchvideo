@@ -4,6 +4,11 @@ from typing import Callable, List, Optional, Tuple
 
 import numpy
 import torch
+
+try:
+    import torch.fx
+except Exception as _:
+    pass
 import torch.nn as nn
 from torch.nn.common_types import _size_3_t
 
