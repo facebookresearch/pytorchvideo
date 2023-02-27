@@ -16,20 +16,46 @@ class TestMLP(unittest.TestCase):
     def test_MultiScaleAttention(self):
         seq_len = 21
         c_dim = 10
+        c_dim_out = 20
+
+        # Test MultiScaleAttention without dim expansion; i.e., no dim_out
         multiscale_attention = MultiScaleAttention(c_dim, num_heads=2)
         fake_input = torch.rand(8, seq_len, c_dim)
         input_shape = (2, 2, 5)
         output, output_shape = multiscale_attention(fake_input, input_shape)
         self.assertTrue(output.shape, fake_input.shape)
 
-        # Test pooling kernel.
+        # Test MultiScaleAttention with dim expansion
+        multiscale_attention = MultiScaleAttention(
+            c_dim, dim_out=c_dim_out, num_heads=2
+        )
+        fake_input = torch.rand(8, seq_len, c_dim)
+        input_shape = (2, 2, 5)
+        output, output_shape = multiscale_attention(fake_input, input_shape)
+        gt_shape_tensor = torch.rand(8, seq_len, c_dim_out)
+        self.assertTrue(output.shape, gt_shape_tensor.shape)
+
+        # Test pooling kernel without dim expansion.
         multiscale_attention = MultiScaleAttention(
             c_dim,
             num_heads=2,
             stride_q=(2, 2, 1),
         )
         output, output_shape = multiscale_attention(fake_input, input_shape)
-        gt_shape_tensor = torch.rand(8, 11, c_dim)
+        gt_shape_tensor = torch.rand(8, 6, c_dim)
+        gt_output_shape = (1, 1, 5)
+        self.assertTrue(output.shape, gt_shape_tensor.shape)
+        self.assertTrue(output_shape, gt_output_shape)
+
+        # Test pooling kernel with dim expansion.
+        multiscale_attention = MultiScaleAttention(
+            c_dim,
+            dim_out=c_dim_out,
+            num_heads=2,
+            stride_q=(2, 2, 1),
+        )
+        output, output_shape = multiscale_attention(fake_input, input_shape)
+        gt_shape_tensor = torch.rand(8, 6, c_dim_out)
         gt_output_shape = (1, 1, 5)
         self.assertTrue(output.shape, gt_shape_tensor.shape)
         self.assertTrue(output_shape, gt_output_shape)
@@ -48,13 +74,21 @@ class TestMLP(unittest.TestCase):
         self.assertEqual(output_shape, gt_output_shape)
 
     def test_MultiScaleBlock(self):
-        # Change of output dimension.
-        block = MultiScaleBlock(10, 20, 2)
         seq_len = 21
         c_dim = 10
         batch_dim = 8
         fake_input = torch.rand(batch_dim, seq_len, c_dim)
         input_shape = (2, 2, 5)
+
+        # Change of output dimension.
+        block = MultiScaleBlock(10, 20, 2)
+        output, output_shape = block(fake_input, input_shape)
+        gt_shape_tensor = torch.rand(8, seq_len, 20)
+        self.assertEqual(output.shape, gt_shape_tensor.shape)
+        self.assertEqual(output_shape, input_shape)
+
+        # Test dimension multiplication in attention
+        block = MultiScaleBlock(10, 20, 2, dim_mul_in_att=True)
         output, output_shape = block(fake_input, input_shape)
         gt_shape_tensor = torch.rand(8, seq_len, 20)
         self.assertEqual(output.shape, gt_shape_tensor.shape)
@@ -62,10 +96,6 @@ class TestMLP(unittest.TestCase):
 
         # Test pooling.
         block = MultiScaleBlock(10, 20, 2, stride_q=(2, 2, 1))
-        c_dim = 10
-        batch_dim = 8
-        fake_input = torch.rand(batch_dim, seq_len, c_dim)
-        input_shape = [2, 2, 5]
         output, output_shape = block(fake_input, input_shape)
         gt_shape_tensor = torch.rand(8, int((seq_len - 1) / 2 / 2) + 1, 20)
         gt_out_shape = [1, 1, 5]
@@ -101,6 +131,7 @@ class TestMLP(unittest.TestCase):
         iter_droppath_rate = [0.0, 0.1]
         iter_norm_layer = [nn.LayerNorm]
         iter_attn_norm_layer = [nn.LayerNorm]
+        iter_dim_mul_in_att = [True, False]
         iter_pool_mode = ["conv", "avg", "max"]
         iter_has_cls_embed = [True, False]
         iter_pool_first = [True, False]
@@ -115,6 +146,7 @@ class TestMLP(unittest.TestCase):
             droppath_rate,
             norm_layer,
             attn_norm_layer,
+            dim_mul_in_att,
             pool_mode,
             has_cls_embed,
             pool_first,
@@ -128,6 +160,7 @@ class TestMLP(unittest.TestCase):
             iter_droppath_rate,
             iter_norm_layer,
             iter_attn_norm_layer,
+            iter_dim_mul_in_att,
             iter_pool_mode,
             iter_has_cls_embed,
             iter_pool_first,
@@ -146,6 +179,7 @@ class TestMLP(unittest.TestCase):
                 droppath_rate=droppath_rate,
                 norm_layer=norm_layer,
                 attn_norm_layer=attn_norm_layer,
+                dim_mul_in_att=dim_mul_in_att,
                 pool_mode=pool_mode,
                 has_cls_embed=has_cls_embed,
                 pool_first=pool_first,

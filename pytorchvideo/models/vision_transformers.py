@@ -213,6 +213,7 @@ def create_multiscale_vision_transformers(
     separate_qkv: bool = True,
     embed_dim_mul: Optional[List[List[int]]] = None,
     atten_head_mul: Optional[List[List[int]]] = None,
+    dim_mul_in_att: bool = False,
     pool_q_stride_size: Optional[List[List[int]]] = None,
     pool_kv_stride_size: Optional[List[List[int]]] = None,
     pool_kv_stride_adaptive: Optional[_size_3_t] = None,
@@ -278,6 +279,8 @@ def create_multiscale_vision_transformers(
         atten_head_mul (Optional[List[List[int]]]): Head dimension multiplication at
             layer i. If X is used, then the next block will increase the head by
             X times. Format: [depth_i, mul_dim_ratio].
+        dim_mul_in_att (bool): If set to True, dimension expansion happens inside
+                the attention module, otherwise it happens in the Mlp block. Default: False.
         pool_q_stride_size (Optional[List[List[int]]]): List of stride sizes for the
             pool q at each layer. Format:
             [[i, stride_t_i, stride_h_i, stride_w_i], ...,].
@@ -438,18 +441,25 @@ def create_multiscale_vision_transformers(
                     s + 1 if s > 1 else s for s in pool_kv_stride_size[i][1:]
                 ]
 
+    dim_in = patch_embed_dim
     for i in range(depth):
         num_heads = round_width(num_heads, head_mul[i], min_width=1, divisor=1)
-        patch_embed_dim = round_width(patch_embed_dim, dim_mul[i], divisor=num_heads)
-        dim_out = round_width(
-            patch_embed_dim,
-            dim_mul[i + 1],
-            divisor=round_width(num_heads, head_mul[i + 1]),
-        )
+        if dim_mul_in_att:
+            dim_out = round_width(
+                dim_in,
+                dim_mul[i],
+                divisor=round_width(num_heads, head_mul[i]),
+            )
+        else:
+            dim_out = round_width(
+                dim_in,
+                dim_mul[i + 1],
+                divisor=round_width(num_heads, head_mul[i + 1]),
+            )
 
         mvit_blocks.append(
             MultiScaleBlock(
-                dim=patch_embed_dim,
+                dim=dim_in,
                 dim_out=dim_out,
                 num_heads=num_heads,
                 mlp_ratio=mlp_ratio,
@@ -458,6 +468,7 @@ def create_multiscale_vision_transformers(
                 droppath_rate=dpr[i],
                 norm_layer=block_norm_layer,
                 attn_norm_layer=attn_norm_layer,
+                dim_mul_in_att=dim_mul_in_att,
                 kernel_q=pool_q[i],
                 kernel_kv=pool_kv[i],
                 stride_q=stride_q[i],
@@ -471,12 +482,12 @@ def create_multiscale_vision_transformers(
                 separate_qkv=separate_qkv,
             )
         )
+        dim_in = dim_out
 
-    embed_dim = dim_out
-    norm_embed = None if norm_layer is None else norm_layer(embed_dim)
+    norm_embed = None if norm_layer is None else norm_layer(dim_in)
     if head is not None:
         head_model = head(
-            in_features=embed_dim,
+            in_features=dim_in,
             out_features=head_num_classes,
             seq_pool_type="cls" if cls_embed_on else "mean",
             dropout_rate=head_dropout_rate,

@@ -225,6 +225,7 @@ class MultiScaleAttention(nn.Module):
                     |----------------|-----------------|
                     ↓                ↓                 ↓
                   Linear           Linear            Linear
+               [dim expand]     [dim expand]      [dim expand]
                     &                &                 &
                  Pool (Q)         Pool (K)          Pool (V)
                     → -------------- ←                 |
@@ -239,11 +240,12 @@ class MultiScaleAttention(nn.Module):
                                       DropOut
     """
 
-    _version = 2
+    _version = 3
 
     def __init__(
         self,
         dim: int,
+        dim_out: int = None,
         num_heads: int = 8,
         qkv_bias: bool = False,
         dropout_rate: float = 0.0,
@@ -263,6 +265,7 @@ class MultiScaleAttention(nn.Module):
         """
         Args:
             dim (int): Input feature dimension.
+            dim_out (int): Output feature dimension
             num_heads (int): Number of heads in the attention layer.
             qkv_bias (bool): If set to False, the qkv layer will not learn an additive
                 bias. Default: False.
@@ -296,7 +299,9 @@ class MultiScaleAttention(nn.Module):
         self.pool_first = pool_first
         self.dropout_rate = dropout_rate
         self.num_heads = num_heads
-        head_dim = dim // num_heads
+        dim_out = dim if not dim_out else dim_out
+        self.dim_out = dim_out
+        head_dim = dim_out // num_heads
         self.scale = head_dim**-0.5
         self.has_cls_embed = has_cls_embed
         self.residual_pool = residual_pool
@@ -307,12 +312,12 @@ class MultiScaleAttention(nn.Module):
         # Set placeholders for torchscriptability, may not be actually used
         self.q = self.k = self.v = self.qkv = nn.Identity()
         if self.pool_first or self.separate_qkv:
-            self.q = nn.Linear(dim, dim, bias=qkv_bias)
-            self.k = nn.Linear(dim, dim, bias=qkv_bias)
-            self.v = nn.Linear(dim, dim, bias=qkv_bias)
+            self.q = nn.Linear(dim, dim_out, bias=qkv_bias)
+            self.k = nn.Linear(dim, dim_out, bias=qkv_bias)
+            self.v = nn.Linear(dim, dim_out, bias=qkv_bias)
         else:
-            self.qkv = nn.Linear(dim, dim * 3, bias=qkv_bias)
-        self.proj = nn.Linear(dim, dim, bias=True if bias_on else False)
+            self.qkv = nn.Linear(dim, dim_out * 3, bias=qkv_bias)
+        self.proj = nn.Linear(dim_out, dim_out, bias=True if bias_on else False)
 
         if dropout_rate > 0.0:
             self.proj_drop = nn.Dropout(dropout_rate)
@@ -351,48 +356,52 @@ class MultiScaleAttention(nn.Module):
                 else None
             )
         elif pool_mode == "conv":
+            if self.pool_first:
+                dim_conv = dim // num_heads
+            else:
+                dim_conv = dim_out // num_heads
             self.pool_q = (
                 nn.Conv3d(
-                    head_dim,
-                    head_dim,
+                    dim_conv,
+                    dim_conv,
                     kernel_q,
                     stride=stride_q,
                     padding=padding_q,
-                    groups=head_dim if depthwise_conv else 1,
+                    groups=dim_conv if depthwise_conv else 1,
                     bias=False,
                 )
                 if kernel_q is not None
                 else None
             )
-            self.norm_q = norm_layer(head_dim) if kernel_q is not None else None
+            self.norm_q = norm_layer(dim_conv) if kernel_q is not None else None
             self.pool_k = (
                 nn.Conv3d(
-                    head_dim,
-                    head_dim,
+                    dim_conv,
+                    dim_conv,
                     kernel_kv,
                     stride=stride_kv,
                     padding=padding_kv,
-                    groups=head_dim if depthwise_conv else 1,
+                    groups=dim_conv if depthwise_conv else 1,
                     bias=False,
                 )
                 if kernel_kv is not None
                 else None
             )
-            self.norm_k = norm_layer(head_dim) if kernel_kv is not None else None
+            self.norm_k = norm_layer(dim_conv) if kernel_kv is not None else None
             self.pool_v = (
                 nn.Conv3d(
-                    head_dim,
-                    head_dim,
+                    dim_conv,
+                    dim_conv,
                     kernel_kv,
                     stride=stride_kv,
                     padding=padding_kv,
-                    groups=head_dim if depthwise_conv else 1,
+                    groups=dim_conv if depthwise_conv else 1,
                     bias=False,
                 )
                 if kernel_kv is not None
                 else None
             )
-            self.norm_v = norm_layer(head_dim) if kernel_kv is not None else None
+            self.norm_v = norm_layer(dim_conv) if kernel_kv is not None else None
         else:
             raise NotImplementedError(f"Unsupported model {pool_mode}")
 
@@ -505,11 +514,11 @@ class MultiScaleAttention(nn.Module):
             q, q_shape, k, k_shape, v, v_shape = self._qkv_pool(q, k, v, thw_shape)
             q_N, k_N, v_N = self._get_qkv_length(q_shape, k_shape, v_shape)
             q, k, v = self._reshape_qkv_to_seq(q, k, v, q_N, v_N, k_N, B, C)
-            q, k, v = self._qkv_proj(q, q_N, k, k_N, v, v_N, B, C)
+            q, k, v = self._qkv_proj(q, q_N, k, k_N, v, v_N, B, self.dim_out)
         else:
             if self.separate_qkv:
                 q = k = v = x
-                q, k, v = self._qkv_proj(q, N, k, N, v, N, B, C)
+                q, k, v = self._qkv_proj(q, N, k, N, v, N, B, self.dim_out)
             else:
                 qkv = (
                     self.qkv(x)
@@ -525,9 +534,9 @@ class MultiScaleAttention(nn.Module):
         N = q.shape[2]
 
         if self.residual_pool:
-            x = (attn @ v + q).transpose(1, 2).reshape(B, N, C)
+            x = (attn @ v + q).transpose(1, 2).reshape(B, -1, self.dim_out)
         else:
-            x = (attn @ v).transpose(1, 2).reshape(B, N, C)
+            x = (attn @ v).transpose(1, 2).reshape(B, -1, self.dim_out)
 
         x = self.proj(x)
         if self.dropout_rate > 0.0:
@@ -579,7 +588,8 @@ class MultiScaleBlock(nn.Module):
                                         ↓                   |
                                        Norm                 |
                                         ↓                   |
-                                MultiScaleAttention        Pool
+                                MultiScaleAttention  [Proj: dim expand]
+                                  [dim expand]             Pool
                                         ↓                   |
                                      DropPath               |
                                         ↓                   |
@@ -589,7 +599,8 @@ class MultiScaleBlock(nn.Module):
                                         ↓                   |
                                        Norm                 |
                                         ↓                   |
-                                       Mlp                 Proj
+                                       Mlp          [Proj: dim expand]
+                                   [dim expand]             |
                                         ↓                   |
                                      DropPath               |
                                         ↓                   |
@@ -608,6 +619,7 @@ class MultiScaleBlock(nn.Module):
         act_layer: nn.Module = nn.GELU,
         norm_layer: nn.Module = nn.LayerNorm,
         attn_norm_layer: nn.Module = nn.LayerNorm,
+        dim_mul_in_att: bool = False,
         kernel_q: _size_3_t = (1, 1, 1),
         kernel_kv: _size_3_t = (1, 1, 1),
         stride_q: _size_3_t = (1, 1, 1),
@@ -634,6 +646,8 @@ class MultiScaleBlock(nn.Module):
             act_layer (nn.Module): Activation layer used in the Mlp layer.
             norm_layer (nn.Module): Normalization layer.
             attn_norm_layer (nn.Module): Normalization layer in the attention module.
+            dim_mul_in_att (bool): If set to True, dimension expansion happens inside
+                the attention module, otherwise it happens in the Mlp block. Default: False.
             kernel_q (_size_3_t): Pooling kernel size for q. If pooling kernel size is
                 1 for all the dimensions, pooling is not used (by default).
             kernel_kv (_size_3_t): Pooling kernel size for kv. If pooling kernel size
@@ -658,12 +672,15 @@ class MultiScaleBlock(nn.Module):
         self.dim = dim
         self.dim_out = dim_out
         self.norm1 = norm_layer(dim)
+        self.dim_mul_in_att = dim_mul_in_att
         self.norm1_is_batchnorm_1d = isinstance(self.norm1, nn.BatchNorm1d)
         kernel_skip = [s + 1 if s > 1 else s for s in stride_q]
         stride_skip = stride_q
         padding_skip = [int(skip // 2) for skip in kernel_skip]
+        att_dim = dim_out if dim_mul_in_att else dim
         self.attn = MultiScaleAttention(
-            dim,
+            dim=dim,
+            dim_out=att_dim,
             num_heads=num_heads,
             qkv_bias=qkv_bias,
             dropout_rate=dropout_rate,
@@ -683,12 +700,12 @@ class MultiScaleBlock(nn.Module):
         self.drop_path = (
             DropPath(droppath_rate) if droppath_rate > 0.0 else nn.Identity()
         )
-        self.norm2 = norm_layer(dim)
+        self.norm2 = norm_layer(att_dim)
         self.norm2_is_batchnorm_1d = isinstance(self.norm2, nn.BatchNorm1d)
-        mlp_hidden_dim = int(dim * mlp_ratio)
+        mlp_hidden_dim = int(att_dim * mlp_ratio)
         self.has_cls_embed = has_cls_embed
         self.mlp = Mlp(
-            in_features=dim,
+            in_features=att_dim,
             hidden_features=mlp_hidden_dim,
             out_features=dim_out,
             act_layer=act_layer,
@@ -718,14 +735,14 @@ class MultiScaleBlock(nn.Module):
             thw_shape (List): The shape of the input tensor (before flattening).
         """
 
-        x_block, thw_shape_new = self.attn(
-            (
-                self.norm1(x.permute(0, 2, 1)).permute(0, 2, 1)
-                if self.norm1_is_batchnorm_1d
-                else self.norm1(x)
-            ),
-            thw_shape,
+        x_norm = (
+            self.norm1(x.permute(0, 2, 1)).permute(0, 2, 1)
+            if self.norm1_is_batchnorm_1d
+            else self.norm1(x)
         )
+        x_block, thw_shape_new = self.attn(x_norm, thw_shape)
+        if self.dim_mul_in_att and self.dim != self.dim_out:
+            x = self.proj(x_norm)
         x_res, _ = self._attention_pool(x, thw_shape)
         x = x_res + self.drop_path(x_block)
         x_norm = (
@@ -734,7 +751,7 @@ class MultiScaleBlock(nn.Module):
             else self.norm2(x)
         )
         x_mlp = self.mlp(x_norm)
-        if self.dim != self.dim_out:
+        if not self.dim_mul_in_att and self.dim != self.dim_out:
             x = self.proj(x_norm)
         x = x + self.drop_path(x_mlp)
         return x, thw_shape_new
