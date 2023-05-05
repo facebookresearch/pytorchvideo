@@ -4,7 +4,7 @@
 import os
 import sys
 
-import mock
+import unittest.mock as mock
 
 # -- Project information -----------------------------------------------------
 import pytorch_sphinx_theme
