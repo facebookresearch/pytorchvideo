@@ -230,7 +230,7 @@ def get_1d_sincos_pos_embed_from_grid(embed_dim: int, pos: np.ndarray) -> torch.
         (torch.Tensor): tensor of shape (M, D)
     """
     assert embed_dim % 2 == 0
-    omega = np.arange(embed_dim // 2, dtype=np.float)
+    omega = np.arange(embed_dim // 2, dtype=float)
     omega /= embed_dim / 2.0
     omega = 1.0 / 10000**omega
 
