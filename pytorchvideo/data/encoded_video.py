@@ -53,7 +53,7 @@ class EncodedVideo(Video):
         decode_audio: bool = True,
         decoder: str = "pyav",
         **other_args: Dict[str, Any],
-    ):
+    ) -> Video:
         """
         Fetches the given video path using PathManager (allowing remote uris to be
         fetched) and constructs the EncodedVideo object.
