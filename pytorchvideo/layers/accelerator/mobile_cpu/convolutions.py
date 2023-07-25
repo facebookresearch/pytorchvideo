@@ -483,7 +483,7 @@ class Conv3d3x1x1BnAct(EfficientBlockBase):
         )
 
         if groups == out_channels:
-            logging.warn(
+            logging.warning(
                 (
                     "Conv3d3x1x1BnAct has low efficiency for depthwise conv. "
                     "Consider using Conv3d3x3x3DwBnRelu instead."
