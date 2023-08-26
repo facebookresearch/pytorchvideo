@@ -262,7 +262,7 @@ class ColorJitterVideoSSl:
         return frames
 
 
-class GaussianBlur(object):
+class GaussianBlur:
     """
     A PIL image version of Gaussian blur augmentation as
     in SimCLR https://arxiv.org/abs/2002.05709

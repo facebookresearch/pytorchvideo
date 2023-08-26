@@ -7,7 +7,7 @@ import torch
 from iopath.common.file_io import g_pathmgr
 
 
-class VideoPathHandler(object):
+class VideoPathHandler:
     """
     Utility class that handles all deciphering and caching of video paths for
     encoded and frame videos.
