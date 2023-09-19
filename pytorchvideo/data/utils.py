@@ -24,8 +24,13 @@ logger = logging.getLogger(__name__)
 
 def thwc_to_cthw(data: torch.Tensor) -> torch.Tensor:
     """
-    Permute tensor from (time, height, weight, channel) to
-    (channel, height, width, time).
+    Permute tensor from (time, height, weight, channel) to (channel, height, width, time).
+
+    Args:
+        data (torch.Tensor): Input tensor of shape (time, height, weight, channel).
+
+    Returns:
+        torch.Tensor: Permuted tensor of shape (channel, height, width, time).
     """
     return data.permute(3, 0, 1, 2)
 
@@ -37,11 +42,17 @@ def secs_to_pts(
     round_mode: str = "floor",
 ) -> int:
     """
-    Converts a time (in seconds) to the given time base and start_pts offset
-    presentation time. Round_mode specifies the mode of rounding when converting time.
+    Converts a time (in seconds) to the given time base and start_pts offset presentation time.
+    Round_mode specifies the mode of rounding when converting time.
+
+    Args:
+        time_in_seconds (float): Time in seconds.
+        time_base (float): Time base.
+        start_pts (int): Start presentation time.
+        round_mode (str): Rounding mode ("floor" or "ceil").
 
     Returns:
-        pts (int): The time in the given time base.
+        int: Presentation time in the given time base.
     """
     if time_in_seconds == math.inf:
         return math.inf
@@ -56,10 +67,15 @@ def secs_to_pts(
 
 def pts_to_secs(pts: int, time_base: float, start_pts: int) -> float:
     """
-    Converts a present time with the given time base and start_pts offset to seconds.
+    Converts a presentation time with the given time base and start_pts offset to seconds.
+
+    Args:
+        pts (int): Presentation time.
+        time_base (float): Time base.
+        start_pts (int): Start presentation time.
 
     Returns:
-        time_in_seconds (float): The corresponding time in seconds.
+        float: Corresponding time in seconds.
     """
     if pts == math.inf:
         return math.inf
@@ -166,6 +182,10 @@ class MultiProcessSampler(torch.utils.data.Sampler):
     """
 
     def __init__(self, sampler: torch.utils.data.Sampler) -> None:
+        """
+        Args:
+            sampler (torch.utils.data.Sampler): The underlying PyTorch sampler to be split.
+        """
         self._sampler = sampler
 
     def __iter__(self):
@@ -184,7 +204,7 @@ class MultiProcessSampler(torch.utils.data.Sampler):
             if len(worker_split) == 0:
                 logger.warning(
                     f"More data workers({worker_info.num_workers}) than videos"
-                    f"({len(self._sampler)}). For optimal use of processes "
+                    f"({len(self._sampler)}). For optimal use of processes, "
                     "reduce num_workers."
                 )
                 return iter(())
@@ -194,26 +214,28 @@ class MultiProcessSampler(torch.utils.data.Sampler):
             worker_sampler = itertools.islice(iter(self._sampler), iter_start, iter_end)
         else:
 
-            # If no worker processes found, we return the full sampler.
+            # If no worker processes are found, we return the full sampler.
             worker_sampler = iter(self._sampler)
 
         return worker_sampler
 
 
 def optional_threaded_foreach(
-    target: Callable, args_iterable: Iterable[Tuple], multithreaded: bool
+    target: Callable,
+    args_iterable: Iterable[Tuple],
+    multithreaded: bool
 ):
     """
     Applies 'target' function to each Tuple args in 'args_iterable'.
-    If 'multithreaded' a thread is spawned for each function application.
+    If 'multithreaded' is True, a thread is spawned for each function application.
 
     Args:
         target (Callable):
             A function that takes as input the parameters in each args_iterable Tuple.
 
         args_iterable (Iterable[Tuple]):
-            An iterable of the tuples each containing a set of parameters to pass to
-            target.
+            An iterable of tuples, each containing a set of parameters to pass to
+            the target function.
 
         multithreaded (bool):
             Whether or not the target applications are parallelized by thread.

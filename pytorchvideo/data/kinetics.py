@@ -43,7 +43,7 @@ def Kinetics(
                 if necessary, the distributed split.
 
         transform (Callable): This callable is evaluated on the clip output before
-                the clip is returned. It can be used for user defined preprocessing and
+                the clip is returned. It can be used for user-defined preprocessing and
                 augmentations to the clips. See the ``LabeledVideoDataset`` class for clip
                 output format.
 
@@ -53,7 +53,10 @@ def Kinetics(
 
         decode_audio (bool): If True, also decode audio from video.
 
-        decoder (str): Defines what type of decoder used to decode a video.
+        decoder (str): Defines what type of decoder is used to decode a video.
+
+    Returns:
+        LabeledVideoDataset: The Kinetics dataset.
 
     """
 

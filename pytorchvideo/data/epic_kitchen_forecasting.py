@@ -147,19 +147,34 @@ class EpicKitchenForecasting(EpicKitchenDataset):
         num_input_clips: int,
     ) -> Callable[[Dict[str, Any]], Dict[str, Any]]:
         """
+        Generate a custom transform function for video clips.
+
         Args:
-            transform (Callable[[Dict[str, Any]], Dict[str, Any]]): A function that performs
-            any operation on a clip before it is returned in the default transform function.
-            num_forecast_actions: (int) The number of actions to be included in the
-                action vector.
-            frames_per_clip (int): The number of frames per clip to sample.
-            num_input_clips (int): The number of subclips to be included in the video data.
+            transform (Callable[[Dict[str, Any]], Dict[str, Any]]):
+                A function that performs any operation on a clip before it is returned
+                in the default transform function.
+            num_forecast_actions (int):
+                The number of actions to be included in the action vector.
+            frames_per_clip (int):
+                The number of frames per clip to sample.
+            num_input_clips (int):
+                The number of subclips to be included in the video data.
 
         Returns:
-            A function that performs any operation on a clip and returns the transformed clip.
+            Callable[[Dict[str, Any]], Dict[str, Any]]:
+                A function that performs any operation on a clip and returns the transformed clip.
         """
 
         def transform_clip(clip: Dict[str, Any]) -> Dict[str, Any]:
+            """
+            Transform a video clip according to the specified parameters.
+
+            Args:
+                clip (Dict[str, Any]): The clip to be transformed.
+
+            Returns:
+                Dict[str, Any]: The transformed clip.
+            """
             assert all(
                 clip["actions"][i].start_time <= clip["actions"][i + 1].start_time
                 for i in range(len(clip["actions"]) - 1)
@@ -199,20 +214,35 @@ class EpicKitchenForecasting(EpicKitchenDataset):
         num_input_clips: int,
     ) -> Callable[[List[int]], List[int]]:
         """
+        Generate a frame filter function for subclip sampling.
+
         Args:
-            frames_per_clip (int): The number of frames per clip to sample.
-            seconds_per_clip (float): The length of each sampled subclip in seconds.
-            clip_time_stride (float): The time difference in seconds between the start of
-                each input subclip.
-            num_input_clips (int): The number of subclips to be included in the video data.
+            frames_per_clip (int):
+                The number of frames per clip to sample.
+            seconds_per_clip (float):
+                The length of each sampled subclip in seconds.
+            clip_time_stride (float):
+                The time difference in seconds between the start of each input subclip.
+            num_input_clips (int):
+                The number of subclips to be included in the video data.
 
         Returns:
-            A function that takes in a list of frame indicies and outputs a subsampled list.
+            Callable[[List[int]], List[int]]:
+                A function that takes in a list of frame indices and outputs a subsampled list.
         """
         time_window_length = seconds_per_clip + (num_input_clips - 1) * clip_time_stride
         desired_frames_per_second = frames_per_clip / seconds_per_clip
 
         def frame_filter(frame_indices: List[int]) -> List[int]:
+            """
+            Filter a list of frame indices to subsample subclips.
+
+            Args:
+                frame_indices (List[int]): The list of frame indices to filter.
+
+            Returns:
+                List[int]: The subsampled list of frame indices.
+            """
             num_available_frames_for_all_clips = len(frame_indices)
             available_frames_per_second = (
                 num_available_frames_for_all_clips / time_window_length
@@ -242,19 +272,24 @@ class EpicKitchenForecasting(EpicKitchenDataset):
         num_forecast_actions: int,
     ) -> Callable[[Dict[str, Video], Dict[str, List[ActionData]]], List[VideoClipInfo]]:
         """
+        Generate a clip structure defining function based on sampling strategy.
+
         Args:
-            clip_sampling (ClipSampling):
-                The type of sampling to perform to perform on the videos of the dataset.
-            seconds_per_clip (float): The length of each sampled clip in seconds.
-            clip_time_stride: The time difference in seconds between the start of
-                each input subclip.
-            num_input_clips (int):  The number of subclips to be included in the video data.
-            num_forecast_actions (int): The number of actions to be included in the
-                action vector.
+            clip_sampling (str):
+                The type of sampling to perform on the videos of the dataset.
+            seconds_per_clip (float):
+                The length of each sampled clip in seconds.
+            clip_time_stride (float):
+                The time difference in seconds between the start of each input subclip.
+            num_input_clips (int):
+                The number of subclips to be included in the video data.
+            num_forecast_actions (int):
+                The number of actions to be included in the action vector.
 
         Returns:
-            A function that takes a dictionary of videos and outputs a list of sampled
-            clips.
+            Callable[[Dict[str, Video], Dict[str, List[ActionData]]], List[VideoClipInfo]]:
+                A function that takes a dictionary of videos and their associated actions,
+                and outputs a list of sampled video clip information.
         """
         # TODO(T77683480)
         if not clip_sampling == ClipSampling.Random:
@@ -268,6 +303,19 @@ class EpicKitchenForecasting(EpicKitchenDataset):
         def define_clip_structure(
             videos: Dict[str, Video], video_actions: Dict[str, List[ActionData]]
         ) -> List[VideoClipInfo]:
+            """
+            Define the structure of video clips based on specified parameters.
+
+            Args:
+                videos (Dict[str, Video]):
+                    A dictionary of videos indexed by video ID.
+                video_actions (Dict[str, List[ActionData]]):
+                    A dictionary of video actions indexed by video ID.
+
+            Returns:
+                List[VideoClipInfo]:
+                    A list of VideoClipInfo objects representing the sampled video clips.
+            """
             candidate_sample_clips = []
             for video_id, actions in video_actions.items():
                 for i, action in enumerate(actions[: (-1 * num_forecast_actions)]):

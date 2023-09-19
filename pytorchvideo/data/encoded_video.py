@@ -16,10 +16,13 @@ logger = logging.getLogger(__name__)
 
 def select_video_class(decoder: str) -> Video:
     """
-    Select the class for accessing clips based on provided decoder string
+    Select the class for accessing clips based on the provided decoder string.
 
     Args:
-        decoder (str): Defines what type of decoder used to decode a video.
+        decoder (str): Defines what type of decoder is used to decode a video.
+
+    Returns:
+        Video: An instance of the selected video decoding class.
     """
     if DecoderType(decoder) == DecoderType.PYAV:
         from .encoded_video_pyav import EncodedVideoPyAV
@@ -55,11 +58,14 @@ class EncodedVideo(Video):
         **other_args: Dict[str, Any],
     ):
         """
-        Fetches the given video path using PathManager (allowing remote uris to be
+        Fetches the given video path using PathManager (allowing remote URIs to be
         fetched) and constructs the EncodedVideo object.
 
         Args:
-            file_path (str): a PathManager file-path.
+            file_path (str): A PathManager file path.
+
+        Returns:
+            EncodedVideo: An instance of the EncodedVideo class.
         """
         # We read the file with PathManager so that we can read from remote uris.
         with g_pathmgr.open(file_path, "rb") as fh:

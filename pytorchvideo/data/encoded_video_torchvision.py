@@ -34,6 +34,15 @@ class EncodedVideoTorchVision(Video):
         decode_video: bool = True,
         decode_audio: bool = True,
     ) -> None:
+        """
+        Initialize an EncodedVideoTorchVision object.
+
+        Args:
+            file (BinaryIO): A file-like object containing the encoded video.
+            video_name (str, optional): An optional name assigned to the video.
+            decode_video (bool): Whether to decode the video.
+            decode_audio (bool): Whether to decode the audio.
+        """
         if not decode_video:
             raise NotImplementedError()
 
@@ -77,20 +86,27 @@ class EncodedVideoTorchVision(Video):
     @property
     def name(self) -> Optional[str]:
         """
+        Get the name of the stored video.
+
         Returns:
-            name: the name of the stored video if set.
+            str or None: The video's name if set, otherwise None.
         """
         return self._video_name
 
     @property
     def duration(self) -> float:
         """
+        Get the video's duration in seconds.
+
         Returns:
-            duration: the video's duration/end-time in seconds.
+            float: The video's duration in seconds.
         """
         return self._duration
 
     def close(self):
+        """
+        Close the video (not implemented).
+        """
         pass
 
     def get_clip(
@@ -184,7 +200,14 @@ class EncodedVideoTorchVision(Video):
         self, start_pts: int = 0, end_pts: int = -1
     ) -> float:
         """
-        Decode the video in the PTS range [start_pts, end_pts]
+        Decode the video in the specified PTS range.
+
+        Args:
+            start_pts (int): The starting Presentation TimeStamp (PTS) to decode.
+            end_pts (int): The ending Presentation TimeStamp (PTS) to decode.
+
+        Returns:
+            tuple: A tuple containing video and audio data as well as other information.
         """
         video_and_pts = None
         audio_and_pts = None
