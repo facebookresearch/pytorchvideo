@@ -22,33 +22,54 @@ from pytorchvideo.data.video import Video
 @dataclass
 class ActionData(DataclassFieldCaster):
     """
-    Class representing an action from the Epic Kitchen dataset.
+    Represents an action from the Epic Kitchen dataset.
+
+    This class encapsulates information about actions performed in the dataset,
+    including participant ID, video ID, narration, timestamps, verb, noun, and more.
+
+    Attributes:
+        participant_id (str): The unique identifier of the participant.
+        video_id (str): The identifier of the video containing the action.
+        narration (str): The textual narration of the action.
+        start_timestamp (str): The start timestamp of the action in HH:MM:SS format.
+        stop_timestamp (str): The stop timestamp of the action in HH:MM:SS format.
+        start_frame (int): The starting frame of the action.
+        stop_frame (int): The ending frame of the action.
+        verb (str): The verb describing the action.
+        verb_class (int): The class label for the verb.
+        noun (str): The noun associated with the action.
+        noun_class (int): The class label for the noun.
+        all_nouns (list): A list of all nouns related to the action.
+        all_noun_classes (list): A list of class labels for all related nouns.
+
+    Properties:
+        start_time (float): The start time of the action in seconds.
+        stop_time (float): The stop time of the action in seconds.
+
+    Methods:
+        None
+
+    Note:
+        This class is designed to represent actions from the Epic Kitchen dataset.
     """
-
-    participant_id: str
-    video_id: str
-    narration: str
-    start_timestamp: str
-    stop_timestamp: str
-    start_frame: int
-    stop_frame: int
-    verb: str
-    verb_class: int
-    noun: str
-    noun_class: int
-    all_nouns: list = DataclassFieldCaster.complex_initialized_dataclass_field(
-        ast.literal_eval
-    )
-    all_noun_classes: list = DataclassFieldCaster.complex_initialized_dataclass_field(
-        ast.literal_eval
-    )
-
     @property
     def start_time(self) -> float:
+        """
+        Get the start time of the action in seconds.
+
+        Returns:
+            float: The start time in seconds.
+        """
         return get_seconds_from_hms_time(self.start_timestamp)
 
     @property
     def stop_time(self) -> float:
+        """
+        Get the stop time of the action in seconds.
+
+        Returns:
+            float: The stop time in seconds.
+        """
         return get_seconds_from_hms_time(self.stop_timestamp)
 
 

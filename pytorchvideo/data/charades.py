@@ -18,12 +18,14 @@ from .utils import MultiProcessSampler
 
 class Charades(torch.utils.data.IterableDataset):
     """
-    Action recognition video dataset for
+    Action recognition video dataset for Charades stored as image frames.
     `Charades <https://prior.allenai.org/projects/charades>`_ stored as image frames.
 
-    This dataset handles the parsing of frames, loading and clip sampling for the
-    videos. All io is done through :code:`iopath.common.file_io.PathManager`, enabling
-    non-local storage uri's to be used.
+    This dataset handles the parsing of frames, loading, and clip sampling for the videos.
+    All I/O is done through `iopath.common.file_io.PathManager`, enabling non-local storage URIs to be used.
+
+    Attributes:
+        NUM_CLASSES (int): Number of classes represented by this dataset's annotated labels.
     """
 
     # Number of classes represented by this dataset's annotated labels.
@@ -39,23 +41,22 @@ class Charades(torch.utils.data.IterableDataset):
         frames_per_clip: Optional[int] = None,
     ) -> None:
         """
+        Initializes a Charades dataset.
+
         Args:
-            data_path (str): Path to the data file. This file must be a space
-                separated csv with the format: (original_vido_id video_id frame_id
-                path_labels)
+            data_path (str): Path to the data file. This file must be a space-separated CSV with the format:
+                (original_video_id video_id frame_id path_labels)
 
-            clip_sampler (ClipSampler): Defines how clips should be sampled from each
-                video. See the clip sampling documentation for more information.
+            clip_sampler (ClipSampler): Defines how clips should be sampled from each video.
 
-            video_sampler (Type[torch.utils.data.Sampler]): Sampler for the internal
-                video container. This defines the order videos are decoded and,
-                if necessary, the distributed split.
+            video_sampler (Type[torch.utils.data.Sampler]): Sampler for the internal video container.
+                This defines the order videos are decoded and, if necessary, the distributed split.
 
             transform (Optional[Callable]): This callable is evaluated on the clip output before
-                the clip is returned. It can be used for user defined preprocessing and
-                augmentations on the clips. The clip output format is described in __next__().
+                the clip is returned. It can be used for user-defined preprocessing and augmentations
+                on the clips.
 
-            video_path_prefix (str): prefix path to add to all paths from data_path.
+            video_path_prefix (str): Prefix path to add to all paths from data_path.
 
             frames_per_clip (Optional[int]): The number of frames per clip to sample.
         """
@@ -92,12 +93,14 @@ class Charades(torch.utils.data.IterableDataset):
         frame_indices: List[int], frames_per_clip: int
     ) -> List[int]:
         """
+        Subsamples a list of frame indices to obtain a clip with a specified number of frames.
+
         Args:
-            frame_indices (list): list of frame indices.
-            frames_per+clip (int): The number of frames per clip to sample.
+            frame_indices (list): List of frame indices.
+            frames_per_clip (int): The number of frames per clip to sample.
 
         Returns:
-            (list): Outputs a subsampled list with num_samples frames.
+            list: Subsampled list of frame indices for the clip.
         """
         num_frames = len(frame_indices)
         indices = torch.linspace(0, num_frames - 1, frames_per_clip)
@@ -107,6 +110,9 @@ class Charades(torch.utils.data.IterableDataset):
 
     @property
     def video_sampler(self) -> torch.utils.data.Sampler:
+        """
+        Returns the video sampler used by this dataset.
+        """
         return self._video_sampler
 
     def __next__(self) -> dict:
@@ -184,14 +190,32 @@ def _read_video_paths_and_labels(
     video_path_label_file: List[str], prefix: str = ""
 ) -> Tuple[List[str], List[int]]:
     """
+    Reads video frame paths and associated labels from a CSV file.
+
     Args:
-        video_path_label_file (List[str]): a file that contains frame paths for each
-            video and the corresponding frame label. The file must be a space separated
-            csv of the format:
-                `original_vido_id video_id frame_id path labels`
+        video_path_label_file (List[str]): A file containing frame paths for each video
+            and their corresponding frame labels. The file must be a space-separated CSV
+            with the following format:
+                original_vido_id video_id frame_id path labels
 
-        prefix (str): prefix path to add to all paths from video_path_label_file.
+        prefix (str): A prefix path to add to all frame paths from the CSV file.
 
+    Returns:
+        Tuple[List[str], List[int]]: A tuple containing lists of video frame paths and
+        their associated labels.
+
+    Example:
+        Given a CSV file with the following format:
+        ```
+        original_vido_id video_id frame_id path labels
+        video1 1 frame1.jpg /path/to/frames/1.jpg "1,2,3"
+        video1 1 frame2.jpg /path/to/frames/2.jpg "2,3"
+        video2 2 frame1.jpg /path/to/frames/1.jpg "4,5"
+        ```
+
+        The function would return the following tuple:
+        (['/path/to/frames/1.jpg', '/path/to/frames/2.jpg', '/path/to/frames/1.jpg'],
+         [[1, 2, 3], [2, 3], [4, 5]])
     """
     image_paths = defaultdict(list)
     labels = defaultdict(list)

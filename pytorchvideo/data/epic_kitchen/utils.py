@@ -11,22 +11,32 @@ def build_frame_manifest_from_flat_directory(
     data_directory_path: str, multithreaded: bool
 ) -> Dict[str, VideoFrameInfo]:
     """
+    Builds a manifest of video frame information from a flat directory structure.
+
     Args:
-        data_directory_path (str): Path or URI to EpicKitchenDataset data.
-                Data at this path must be a folder of structure:
-                    {
-                        "{video_id}": [
-                            "frame_{frame_number}.{file_extension}",
-                            "frame_{frame_number}.{file_extension}",
-                            "frame_{frame_number}.{file_extension}",
-                        ...]
-                    ...}
+        data_directory_path (str):
+            The path or URI to the EpicKitchenDataset data. Data at this path must be organized as follows:
+            {
+                "{video_id}": [
+                    "frame_{frame_number}.{file_extension}",
+                    "frame_{frame_number}.{file_extension}",
+                    "frame_{frame_number}.{file_extension}",
+                    ...
+                ]
+            }
+
         multithreaded (bool):
-            controls whether io operations are performed across multiple threads.
+            Controls whether I/O operations are performed across multiple threads.
 
     Returns:
-        Dictionary mapping video_id of available videos to the locations of their
+        Dict[str, VideoFrameInfo]: A dictionary mapping the video_id of available videos to the locations of their
         underlying frame files.
+
+    This function iterates through the provided data directory, identifies video frames, and builds a manifest
+    containing information about each video's frame files. It returns a dictionary where each video_id is associated
+    with a VideoFrameInfo object that includes details about the frames for that video.
+
+    Note: This function assumes a specific directory structure and naming conventions for frame files.
     """
 
     video_frames = {}
@@ -87,23 +97,33 @@ def build_frame_manifest_from_nested_directory(
     data_directory_path: str, multithreaded: bool
 ) -> Dict[str, VideoFrameInfo]:
     """
-    Args:
-        data_directory_path (str): Path or URI to EpicKitchenDataset data.
-            If this dataset is to load from the frame-based dataset:
-                Data at this path must be a folder of structure:
-    {
-        "{participant_id}" : [
-            "{participant_id}_{participant_video_id}_{frame_number}.{file_extension}",
+    Builds a manifest of video frame information from a nested directory structure.
 
-        ...],
-    ...}
+    Args:
+        data_directory_path (str):
+            The path or URI to the EpicKitchenDataset data. If this dataset is intended to load from a
+            frame-based dataset, the data at this path must be organized in a specific nested structure:
+
+            {
+                "{participant_id}": [
+                    "{participant_id}_{participant_video_id}_{frame_number}.{file_extension}",
+                    ...
+                ],
+                ...
+            }
 
         multithreaded (bool):
-                controls whether io operations are performed across multiple threads.
+            Controls whether I/O operations are performed across multiple threads.
 
-        Returns:
-            Dictionary mapping video_id of available videos to the locations of their
-            underlying frame files.
+    Returns:
+        Dict[str, VideoFrameInfo]:
+            A dictionary mapping the video_id of available videos to the locations of their underlying frame files.
+
+    This function iterates through the provided data directory, identifies video frames, and builds a manifest
+    containing information about each video's frame files. It returns a dictionary where each video_id is associated
+    with a VideoFrameInfo object that includes details about the frames for that video.
+
+    Note: This function assumes a specific directory structure and naming conventions for frame files.
     """
 
     participant_ids = g_pathmgr.ls(str(data_directory_path))
@@ -174,16 +194,20 @@ def build_encoded_manifest_from_nested_directory(
     data_directory_path: str,
 ) -> Dict[str, EncodedVideoInfo]:
     """
-    Creates a dictionary from video_id to EncodedVideoInfo for
-    encoded videos in the given directory.
+    Creates a dictionary mapping video_id to EncodedVideoInfo for encoded videos in the given directory.
 
     Args:
-        data_directory_path (str): The folder to ls to find encoded
-        video files.
+        data_directory_path (str):
+            The folder to list to find encoded video files.
 
     Returns:
-        Dict[str, EncodedVideoInfo] mapping video_id to EncodedVideoInfo
-        for each file in 'data_directory_path'
+        Dict[str, EncodedVideoInfo]:
+            A dictionary mapping video_id to EncodedVideoInfo for each file in 'data_directory_path'.
+
+    This function scans the provided data directory to identify encoded video files and creates a dictionary
+    where each video_id is associated with an EncodedVideoInfo object containing information about the video.
+
+    Note: This function assumes a specific naming convention for video files and the structure of the data directory.
     """
     encoded_video_infos = {}
     for participant_id in g_pathmgr.ls(data_directory_path):

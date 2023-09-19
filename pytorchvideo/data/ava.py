@@ -14,10 +14,33 @@ from pytorchvideo.data.labeled_video_dataset import LabeledVideoDataset
 
 class AvaLabeledVideoFramePaths:
     """
-    Pre-processor for Ava Actions Dataset stored as image frames -
-        `<https://research.google.com/ava/download.html>_`
-    This class handles the parsing of all the necessary
-    csv files containing frame paths and frame labels.
+    Pre-processor for the Ava Actions Dataset stored as image frames. 
+    `<https://research.google.com/ava/download.html>_`
+    This class handles the parsing of all the necessary CSV files containing
+    frame paths and frame labels.
+
+    Attributes:
+        AVA_VALID_FRAMES (list): Range of valid annotated frames in Ava dataset.
+        FPS (int): Frames per second in the dataset.
+        AVA_VIDEO_START_SEC (int): Start time of the video in seconds.
+
+    Class Methods:
+        _aggregate_bboxes_labels(cls, inp: Dict):
+            Aggregates bounding boxes and labels.
+
+        from_csv(cls, frame_paths_file: str, frame_labels_file: str, video_path_prefix: str,
+                 label_map_file: Optional[str] = None) -> AvaLabeledVideoFramePaths:
+            Creates an instance of AvaLabeledVideoFramePaths from CSV files.
+
+        load_and_parse_labels_csv(frame_labels_file: str, video_name_to_idx: dict,
+                                  allowed_class_ids: Optional[Set] = None):
+            Parses AVA per-frame labels from a CSV file.
+
+        load_image_lists(frame_paths_file: str, video_path_prefix: str) -> Tuple:
+            Loads image paths from a file and constructs dictionaries for video indexing.
+
+        read_label_map(label_map_file: str) -> Tuple:
+            Reads the label map and class IDs from a .pbtxt file.
     """
 
     # Range of valid annotated frames in Ava dataset
@@ -70,25 +93,50 @@ class AvaLabeledVideoFramePaths:
         label_map_file: Optional[str] = None,
     ) -> AvaLabeledVideoFramePaths:
         """
+        Creates an AvaLabeledVideoFramePaths object from CSV files containing frame paths and labels.
+
         Args:
-            frame_labels_file (str): Path to the file containing containing labels
-                per key frame. Acceptible file formats are,
-                Type 1:
-                    <original_vido_id, frame_time_stamp, bbox_x_1, bbox_y_1, ...
-                    bbox_x_2, bbox_y_2, action_lable, detection_iou>
-                Type 2:
-                    <original_vido_id, frame_time_stamp, bbox_x_1, bbox_y_1, ...
-                    bbox_x_2, bbox_y_2, action_lable, person_label>
-            frame_paths_file (str): Path to a file containing relative paths
-                to all the frames in the video. Each line in the file is of the
-                form <original_vido_id video_id frame_id rel_path labels>
-            video_path_prefix (str): Path to be augumented to the each relative frame
-                path to get the global frame path.
-            label_map_file (str): Path to a .pbtxt containing class id's and class names.
-                If not set, label_map is not loaded and bbox labels are not pruned
-                based on allowable class_id's in label_map.
-        Returs:
-            A list of tuples of the the form (video_frames directory, label dictionary).
+            frame_paths_file (str):
+                Path to a file containing relative paths to all the frames in the video. Each line in the file
+                is of the form <original_video_id video_id frame_id rel_path labels>.
+
+            frame_labels_file (str):
+                Path to the file containing labels per key frame. Acceptable file formats are as follows:
+                Type 1 (CSV Columns):
+                    - original_video_id
+                    - frame_time_stamp
+                    - bbox_x1
+                    - bbox_y1
+                    - bbox_x2
+                    - bbox_y2
+                    - action_label
+                    - detection_iou
+
+                Type 2 (CSV Columns):
+                    - original_video_id
+                    - frame_time_stamp
+                    - bbox_x1
+                    - bbox_y1
+                    - bbox_x2
+                    - bbox_y2
+                    - action_label
+                    - person_label
+
+            video_path_prefix (str):
+                Path to be augmented to each relative frame path to get the global frame path.
+
+            label_map_file (str):
+                Path to a .pbtxt file containing class IDs and class names. If not set, the label map is not
+                loaded, and bbox labels are not pruned based on allowable class_ids in the label map.
+
+        Returns:
+            AvaLabeledVideoFramePaths: An AvaLabeledVideoFramePaths object.
+
+        This class method initializes an AvaLabeledVideoFramePaths object from CSV files containing frame paths
+        and labels. It processes these files to create a list of labeled video paths, where each entry is a tuple
+        containing the path to the video frames directory and a label dictionary.
+
+        Note: This function assumes specific CSV file formats and column names.
         """
         if label_map_file is not None:
             _, allowed_class_ids = AvaLabeledVideoFramePaths.read_label_map(
@@ -132,31 +180,57 @@ class AvaLabeledVideoFramePaths:
         allowed_class_ids: Optional[Set] = None,
     ):
         """
-        Parses AVA per frame labels .csv file.
+        Parses AVA per-frame labels from a CSV file.
+
         Args:
-            frame_labels_file (str): Path to the file containing labels
-                per key frame. Acceptible file formats are,
-                Type 1:
-                    <original_vido_id, frame_time_stamp, bbox_x_1, bbox_y_1, ...
-                    bbox_x_2, bbox_y_2, action_lable, detection_iou>
-                Type 2:
-                    <original_vido_id, frame_time_stamp, bbox_x_1, bbox_y_1, ...
-                    bbox_x_2, bbox_y_2, action_lable, person_label>
-            video_name_to_idx (dict): Dictionary mapping video names to indices.
-            allowed_class_ids (set): A set of integer unique class (bbox label)
-                id's that are allowed in the dataset. If not set, all class id's
-                are allowed in the bbox labels.
+            frame_labels_file (str):
+                Path to the file containing labels per key frame. Acceptable file formats are as follows:
+                Type 1 (CSV Columns):
+                    - original_video_id
+                    - frame_time_stamp
+                    - bbox_x1
+                    - bbox_y1
+                    - bbox_x2
+                    - bbox_y2
+                    - action_label
+                    - detection_iou
+
+                Type 2 (CSV Columns):
+                    - original_video_id
+                    - frame_time_stamp
+                    - bbox_x1
+                    - bbox_y1
+                    - bbox_x2
+                    - bbox_y2
+                    - action_label
+                    - person_label
+
+            video_name_to_idx (dict):
+                A dictionary mapping video names to indices.
+
+            allowed_class_ids (set):
+                A set of unique integer class (bbox label) IDs that are allowed in the dataset.
+                If not set, all class IDs are allowed in the bbox labels.
+
         Returns:
-            (dict): A dictionary of dictionary containing labels per each keyframe
-                in each video. Here, the label for each keyframe is again a dict
-                of the form,
-                {
-                    'labels': a list of bounding boxes
-                    'boxes':a list of action lables for the bounding box
-                    'extra_info': ist of extra information cotaining either
-                        detections iou's or person id's depending on the
-                        csv format.
-                }
+            dict: A dictionary containing labels for each keyframe in each video. The structure is as follows:
+            {
+                video_idx (int): {
+                    frame_sec (float): {
+                        'labels': List of bounding box labels,
+                        'boxes': List of bounding boxes,
+                        'extra_info': List of extra information containing either detections' IoU or person IDs
+                    },
+                    ...
+                },
+                ...
+            }
+
+        This function parses a CSV file containing per-frame labels, extracts the necessary information,
+        and organizes it into a nested dictionary structure. The structure allows easy access to labels,
+        bounding boxes, and extra information for each keyframe in each video.
+
+        Note: This function assumes specific CSV file formats and column names.
         """
         labels_dict = {}
         with g_pathmgr.open(frame_labels_file, "r") as f:
@@ -202,20 +276,31 @@ class AvaLabeledVideoFramePaths:
     @staticmethod
     def load_image_lists(frame_paths_file: str, video_path_prefix: str) -> Tuple:
         """
-        Loading image paths from the corresponding file.
+        Loads image paths from the corresponding file.
+
         Args:
-            frame_paths_file (str): Path to a file containing relative paths
-                to all the frames in the video. Each line in the file is of the
-                form <original_vido_id video_id frame_id rel_path labels>
-            video_path_prefix (str): Path to be augumented to the each relative
-                frame path to get the global frame path.
+            frame_paths_file (str):
+                Path to a file containing relative paths to all the frames in the video.
+                Each line in the file is of the form <original_video_id video_id frame_id rel_path labels>.
+
+            video_path_prefix (str):
+                Path to be augmented to each relative frame path to get the global frame path.
+
         Returns:
-            (tuple): A tuple of the following,
-                image_paths_list: List of list containing absolute frame paths.
-                    Wherein the outer list is per video and inner list is per
-                    timestamp.
-                video_idx_to_name: A dictionary mapping video index to name
-                video_name_to_idx: A dictionary maoping video name to index
+            Tuple:
+                A tuple containing the following elements:
+                - image_paths_list (List[List[str]]): A list of lists containing absolute frame paths.
+                The outer list is per video, and the inner list is per timestamp.
+                - video_idx_to_name (Dict[int, str]): A dictionary mapping video index to video name.
+                - video_name_to_idx (Dict[str, int]): A dictionary mapping video name to video index.
+
+        This function parses a file containing frame paths and their associated video information.
+        It organizes the frame paths into a list of lists, where each outer list represents a video,
+        and each inner list represents timestamps within that video. The video information is also
+        indexed and mapped for reference.
+
+        The file format should follow:
+        original_video_id video_id frame_id path labels
         """
 
         image_paths = []
@@ -255,15 +340,18 @@ class AvaLabeledVideoFramePaths:
     @staticmethod
     def read_label_map(label_map_file: str) -> Tuple:
         """
-        Read label map and class ids.
+        Read a label map and extract class IDs and their associated class names.
+
         Args:
-            label_map_file (str): Path to a .pbtxt containing class id's
-                and class names
+            label_map_file (str): The path to a .pbtxt file containing class IDs and class names.
+
         Returns:
-            (tuple): A tuple of the following,
-                label_map (dict): A dictionary mapping class id to
-                    the associated class names.
-                class_ids (set): A set of integer unique class id's
+            tuple: A tuple containing the following elements:
+                - label_map (Dict[int, str]): A dictionary mapping class IDs (integers) to their associated class names (strings).
+                - class_ids (Set[int]): A set containing unique class IDs (integers).
+
+        This static method reads the contents of a .pbtxt file and extracts the class IDs and their associated class names.
+        It returns a tuple containing a dictionary that maps class IDs to class names and a set of unique class IDs.
         """
         label_map = {}
         class_ids = set()
@@ -282,16 +370,16 @@ class AvaLabeledVideoFramePaths:
 
 class TimeStampClipSampler:
     """
-    A sepcialized clip sampler for sampling video clips around specific
-    timestamps. This is particularly used in datasets like Ava wherein only
-    a specific subset of clips in the video have annotations
+    A specialized clip sampler for sampling video clips around specific timestamps. This is particularly used
+    in datasets like Ava where only a specific subset of clips in the video have annotations.
     """
 
     def __init__(self, clip_sampler: ClipSampler) -> None:
         """
+        Initializes a TimeStampClipSampler.
+
         Args:
-            clip_sampler (`pytorchvideo.data.ClipSampler`): Strategy used for sampling
-                between the untrimmed clip boundary.
+            clip_sampler (ClipSampler): The strategy used for sampling between the untrimmed clip boundary.
         """
         self.clip_sampler = clip_sampler
 
@@ -299,14 +387,22 @@ class TimeStampClipSampler:
         self, last_clip_time: float, video_duration: float, annotation: Dict[str, Any]
     ) -> ClipInfo:
         """
+        Samples a video clip around a specific timestamp.
+
         Args:
             last_clip_time (float): Not used for TimeStampClipSampler.
-            video_duration: (float): Not used for TimeStampClipSampler.
-            annotation (Dict): Dict containing time step to sample aroud.
+            video_duration (float): Not used for TimeStampClipSampler.
+            annotation (Dict): A dictionary containing the time step to sample around.
+
         Returns:
-            clip_info (ClipInfo): includes the clip information of (clip_start_time,
-            clip_end_time, clip_index, aug_index, is_last_clip). The times are in seconds.
-            clip_index, aux_index and is_last_clip are always 0, 0 and True, respectively.
+            ClipInfo: An object including clip information with the following fields:
+                - clip_start_time (float): The start time of the sampled clip in seconds.
+                - clip_end_time (float): The end time of the sampled clip in seconds.
+                - clip_index (int): Always 0.
+                - aug_index (int): Always 0.
+                - is_last_clip (bool): Always True.
+
+        The `center_frame_sec` in the annotation dictionary represents the timestamp around which the clip is sampled.
         """
         center_frame_sec = annotation["clip_index"]  # a.k.a timestamp
         clip_start_sec = center_frame_sec - self.clip_sampler._clip_duration / 2.0
@@ -319,7 +415,11 @@ class TimeStampClipSampler:
         )
 
     def reset(self) -> None:
+        """
+        Resets the TimeStampClipSampler.
+        """
         pass
+
 
 
 def Ava(
@@ -332,33 +432,39 @@ def Ava(
     transform: Optional[Callable[[dict], Any]] = None,
 ) -> None:
     """
+    Creates a dataset for the AVA dataset with labeled video frames.
+
     Args:
         frame_paths_file (str): Path to a file containing relative paths
             to all the frames in the video. Each line in the file is of the
-            form <original_vido_id video_id frame_id rel_path labels>
-        frame_labels_file (str): Path to the file containing containing labels
-            per key frame. Acceptible file formats are,
+            form <original_video_id video_id frame_id rel_path labels>.
+        frame_labels_file (str): Path to the file containing labels
+            per key frame. Acceptable file formats are:
             Type 1:
-                <original_vido_id, frame_time_stamp, bbox_x_1, bbox_y_1, ...
-                bbox_x_2, bbox_y_2, action_lable, detection_iou>
+                <original_video_id, frame_time_stamp, bbox_x_1, bbox_y_1, ...
+                bbox_x_2, bbox_y_2, action_label, detection_iou>
             Type 2:
-                <original_vido_id, frame_time_stamp, bbox_x_1, bbox_y_1, ...
-                bbox_x_2, bbox_y_2, action_lable, person_label>
-        video_path_prefix (str): Path to be augumented to the each relative frame
-            path to get the global frame path.
-        label_map_file (str): Path to a .pbtxt containing class id's
-            and class names. If not set, label_map is not loaded and bbox labels are
-            not pruned based on allowable class_id's in label_map.
-        clip_sampler (ClipSampler): Defines how clips should be sampled from each
-                video.
+                <original_video_id, frame_time_stamp, bbox_x_1, bbox_y_1, ...
+                bbox_x_2, bbox_y_2, action_label, person_label>.
+        video_path_prefix (str): Path to be augmented to each relative frame
+            path to obtain the global frame path.
+        label_map_file (str): Path to a .pbtxt containing class IDs
+            and class names. If not set, the label_map is not loaded, and bbox labels are
+            not pruned based on allowable class_ids in label_map.
+        clip_sampler (ClipSampler): Defines how clips should be sampled from each video.
         video_sampler (Type[torch.utils.data.Sampler]): Sampler for the internal
-                video container. This defines the order videos are decoded and,
-                if necessary, the distributed split.
+            video container. This defines the order in which videos are decoded and,
+            if necessary, the distributed split.
         transform (Optional[Callable]): This callable is evaluated on the clip output
             and the corresponding bounding boxes before the clip and the bounding boxes
-            are returned. It can be used for user defined preprocessing and
+            are returned. It can be used for user-defined preprocessing and
             augmentations to the clips. If transform is None, the clip and bounding
-            boxes are returned as it is.
+            boxes are returned as they are.
+
+    Returns:
+        LabeledVideoDataset: A dataset containing labeled video frames for the AVA dataset.
+
+    This function reads frame paths and labels from specified files, constructs a dataset, and returns it.
     """
     labeled_video_paths = AvaLabeledVideoFramePaths.from_csv(
         frame_paths_file,

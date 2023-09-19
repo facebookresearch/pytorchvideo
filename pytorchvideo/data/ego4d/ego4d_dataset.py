@@ -39,7 +39,15 @@ log: logging.Logger = get_logger("Ego4dMomentsDataset")
 
 class Ego4dImuData(Ego4dImuDataBase):
     """
-    Wrapper for Ego4D IMU data loads, assuming one csv per video_uid at the provided path.
+    A wrapper for loading Ego4D IMU data, assuming one CSV file per video_uid at the provided path.
+
+    Args:
+        imu_path (str): The base path to construct IMU CSV file paths.
+            Example format: <base_path>/<video_uid>.csv
+
+    This class is designed to facilitate the loading of IMU data for Ego4D videos. It assumes that
+    there is one CSV file per video_uid at the specified `imu_path`. The data is loaded and stored
+    for easy access.
     """
 
     def __init__(self, imu_path: str) -> None:
@@ -64,9 +72,27 @@ class Ego4dImuData(Ego4dImuDataBase):
         self.imu_video_data: Optional[Tuple[np.ndarray, np.ndarray, int]] = None
 
     def has_imu(self, video_uid: str) -> bool:
+        """
+        Check if IMU data is available for a given video UID.
+
+        Args:
+            video_uid (str): The video UID to check.
+
+        Returns:
+            bool: True if IMU data is available, otherwise False.
+        """
         return video_uid in self.IMU_by_video_uid
 
     def _load_csv(self, csv_path: str) -> List[Dict[str, Any]]:
+        """
+        Load data from a CSV file.
+
+        Args:
+            csv_path (str): The path to the CSV file.
+
+        Returns:
+            List[Dict[str, Any]]: A list of dictionaries representing the CSV data.
+        """
         with g_pathmgr.open(csv_path, "r") as f:
             reader = csv.DictReader(f)
             data = []
@@ -75,6 +101,16 @@ class Ego4dImuData(Ego4dImuDataBase):
         return data
 
     def _load_imu(self, video_uid: str) -> Tuple[np.ndarray, np.ndarray, int]:
+        """
+        Load IMU data for a given video UID.
+
+        Args:
+            video_uid (str): The video UID for which to load IMU data.
+
+        Returns:
+            Tuple[np.ndarray, np.ndarray, int]: A tuple containing the IMU signal, timestamps,
+            and sampling rate.
+        """
         file_path = os.path.join(self.path_imu, video_uid) + ".csv"
         data_csv = self._load_csv(file_path)
         data_IMU = defaultdict(list)
@@ -113,6 +149,20 @@ class Ego4dImuData(Ego4dImuDataBase):
         timestamps: np.ndarray,
         sampling_rate: float,
     ) -> Dict[str, Any]:
+        """
+        Retrieve IMU data for a specified time window.
+
+        Args:
+            window_start (float): The start time of the window in seconds.
+            window_end (float): The end time of the window in seconds.
+            signal (np.ndarray): The IMU signal.
+            timestamps (np.ndarray): The timestamps corresponding to the IMU data.
+            sampling_rate (float): The sampling rate of the IMU data.
+
+        Returns:
+            Dict[str, Any]: A dictionary containing the timestamp, signal, and sampling rate
+            for the specified time window.
+        """
         start_id = bisect_left(timestamps, window_start * 1000)
         end_id = bisect_left(timestamps, window_end * 1000)
         if end_id == len(timestamps):
@@ -126,12 +176,34 @@ class Ego4dImuData(Ego4dImuDataBase):
         return sample_dict
 
     def get_imu(self, video_uid: str) -> Tuple[np.ndarray, np.ndarray, int]:
+        """
+        Get the IMU data for a specified video UID.
+
+        Args:
+            video_uid (str): The video UID for which to retrieve IMU data.
+
+        Returns:
+            Tuple[np.ndarray, np.ndarray, int]: A tuple containing the IMU signal, timestamps,
+            and sampling rate for the specified video UID.
+        """
         # Caching/etc?
         return self._load_imu(video_uid)
 
     def get_imu_sample(
         self, video_uid: str, video_start: float, video_end: float
     ) -> Dict[str, Any]:
+        """
+        Get an IMU sample for a specified time window within a video.
+
+        Args:
+            video_uid (str): The video UID for which to retrieve the IMU sample.
+            video_start (float): The start time of the video segment in seconds.
+            video_end (float): The end time of the video segment in seconds.
+
+        Returns:
+            Dict[str, Any]: A dictionary containing the timestamp, signal, and sampling rate
+            for the specified time window.
+        """
         # Assumes video clips are loaded sequentially, will lazy load imu
         if not self.imu_video_uid or video_uid != self.imu_video_uid:
             self.imu_video_uid = video_uid
@@ -432,6 +504,19 @@ class Ego4dMomentsDataset(LabeledVideoDataset):
             self.video_path_handler = video_path_handler
 
     def check_IMU(self, input_dict: Dict[str, Any]) -> bool:
+        """
+        Checks if the IMU data in the input dictionary is valid.
+
+        Args:
+            input_dict (Dict[str, Any]): A dictionary containing IMU data and other information.
+
+        Returns:
+            bool: True if the IMU data is problematic, False otherwise.
+
+        This function checks several conditions to determine if the IMU data is problematic.
+        If any of the conditions are met, it logs a warning and returns True. Otherwise, it
+        returns False.
+        """
         if (
             len(input_dict["imu"]["signal"].shape) != 2
             or input_dict["imu"]["signal"].shape[0] == 0
@@ -444,6 +529,20 @@ class Ego4dMomentsDataset(LabeledVideoDataset):
             return False
 
     def _transform_mm(self, sample_dict: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+        """
+        Transforms a sample dictionary for model processing.
+
+        Args:
+            sample_dict (Dict[str, Any]): A dictionary containing sample data.
+
+        Returns:
+            Optional[Dict[str, Any]]: A transformed dictionary or None if transformation fails.
+
+        This function transforms a sample dictionary for model processing. It checks and
+        manipulates various aspects of the dictionary, including video, audio, labels,
+        and IMU data, if available. The transformed dictionary is returned, or None if
+        transformation fails.
+        """
         log.info("_transform_mm")
         with profiler.record_function("_transform_mm"):
             video_uid = sample_dict["video_uid"]
@@ -509,9 +608,11 @@ class Ego4dMomentsDataset(LabeledVideoDataset):
     # pyre-ignore
     def _video_transform(self):
         """
-        This function contains example transforms using both PyTorchVideo and
-        TorchVision in the same callable. For 'train' model, we use augmentations (prepended
-        with 'Random'), for 'val' we use the respective deterministic function
+        Defines video transformations for data augmentation.
+
+        This function contains example transforms using both PyTorchVideo and TorchVision
+        in the same callable. For 'train' mode, it applies augmentations  (prepended
+        with 'Random'), and for 'val', it uses deterministic functions.
         """
 
         assert (
@@ -544,6 +645,19 @@ class Ego4dMomentsDataset(LabeledVideoDataset):
         return Compose([video_transforms])
 
     def signal_transform(self, type: str = "spectrogram", sample_rate: int = 48000):
+        """
+        Defines signal transformations for audio data.
+
+        Args:
+            type (str): The type of signal transformation to apply.
+            sample_rate (int): The sample rate of the audio data.
+
+        Returns:
+            transform: A torchaudio transform for the specified type.
+
+        This function defines signal transformations for audio data, including spectrogram,
+        mel spectrogram, and MFCC transformations, based on the specified type.
+        """
         if type == "spectrogram":
             n_fft = 1024
             win_length = None
@@ -599,6 +713,20 @@ class Ego4dMomentsDataset(LabeledVideoDataset):
         return transform
 
     def _preproc_audio(self, audio, audio_fps) -> Dict[str, Any]:
+        """
+        Preprocesses audio data.
+
+        Args:
+            audio: The audio data.
+            audio_fps: The audio sample rate.
+
+        Returns:
+            Dict[str, Any]: A dictionary containing preprocessed audio data.
+
+        This function preprocesses audio data, converting stereo to mono and applying
+        signal transformations such as spectrogram, mel spectrogram, or MFCC based on the
+        specified audio transformation type.
+        """
         # convert stero to mono
         # https://github.com/pytorch/audio/issues/363
         waveform_mono = torch.mean(audio, dim=0, keepdim=True)
@@ -612,6 +740,18 @@ class Ego4dMomentsDataset(LabeledVideoDataset):
         }
 
     def convert_one_hot(self, label_list: List[str]) -> List[int]:
+        """
+        Converts a list of labels to one-hot encoding.
+
+        Args:
+            label_list (List[str]): A list of labels.
+
+        Returns:
+            List[int]: A list representing one-hot encoding for the labels.
+
+        This function converts a list of labels to one-hot encoding based on a predefined
+        label-to-ID mapping.
+        """
         labels = [x for x in label_list if x in self.label_name_id_map.keys()]
         assert len(labels) == len(
             label_list

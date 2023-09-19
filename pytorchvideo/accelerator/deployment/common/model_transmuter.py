@@ -22,15 +22,27 @@ def _find_equivalent_efficient_module(
     module_name: str = "",
 ):
     """
+    Searches for an equivalent efficientBlock that can replace the given `module_input`
+    within the efficient_block_transmuter_list.
+
     Given module_input, search through efficient_block_registry to see whether the
     module_input can be replaced with equivalent efficientBlock. Returns None if no
     equivalent efficientBlock is found, else returns an instance of equivalent
     efficientBlock.
+
     Args:
-        module_input (nn.Module): module to be replaced by equivalent efficientBlock
-        efficient_block_transmuter_list (list): a transmuter list that contains transmuter
-            functions for available efficientBlocks
-        module_name (str): name of module_input in original model
+        module_input (nn.Module): The module to be replaced by an equivalent efficientBlock.
+        efficient_block_transmuter_list (list): A list containing transmuter functions for
+            available efficientBlocks.
+        module_name (str): The name of `module_input` in the original model.
+
+    Returns:
+        nn.Module or None: An instance of the equivalent efficientBlock if found; otherwise, None.
+
+    This function iterates through the `efficient_block_transmuter_list` and applies each transmuter
+    function to `module_input`. If an equivalent efficientBlock is found, it is added to the
+    `eq_module_hit_list`. If multiple matches are found, a warning is logged, and the one with
+    the highest priority is chosen. If no matches are found, None is returned.
     """
     eq_module_hit_list = []
     for iter_func in efficient_block_transmuter_list:
@@ -56,13 +68,20 @@ def transmute_model(
     prefix: str = "",
 ):
     """
-    Recursively goes through user input model and replace module in place with available
-    equivalent efficientBlock for target device.
+    Recursively goes through the user input model and replaces modules in place with
+    equivalent efficientBlocks suitable for the target device.
+
     Args:
-        model (nn.Module): user input model to be transmuted
-        target_device (str): name of target device, used to access transmuter list in
-            EFFICIENT_BLOCK_TRANSMUTER_REGISTRY
-        prefix (str): name of current hierarchy in user model
+        model (nn.Module): The user input model to be transmuted.
+        target_device (str): The name of the target device, used to access the transmuter
+            list in EFFICIENT_BLOCK_TRANSMUTER_REGISTRY.
+        prefix (str): The name of the current hierarchy in the user model.
+
+    This function recursively traverses the input `model`, examining each child module.
+    It attempts to find an equivalent efficientBlock for each module and replaces it
+    in the model if an equivalent is found. The replacement is logged for reference.
+
+    Note: Make sure the target device is registered in the EFFICIENT_BLOCK_TRANSMUTER_REGISTRY.
     """
     assert (
         target_device in EFFICIENT_BLOCK_TRANSMUTER_REGISTRY

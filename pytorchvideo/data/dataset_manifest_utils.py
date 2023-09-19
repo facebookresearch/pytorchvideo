@@ -84,6 +84,30 @@ class ImageDataset:
         video_info_file_path: str,
         multithreaded_io: bool,
     ) -> Dict[str, ImageFrameInfo]:
+        """
+        Load image frame information from data files and create a dictionary of ImageFrameInfo objects.
+
+        This static method reads information about image frames from data files specified by
+        'frame_manifest_file_path' and 'video_info_file_path' and organizes it into a dictionary
+        of ImageFrameInfo objects. It ensures consistency and completeness of data between video
+        information and frame information.
+
+        Args:
+            frame_manifest_file_path (str or None): The file path to the manifest containing frame information.
+                If None, frame information will not be loaded.
+            video_info_file_path (str): The file path to the CSV file containing video information.
+            multithreaded_io (bool): A flag indicating whether to use multithreaded I/O operations.
+
+        Returns:
+            Dict[str, ImageFrameInfo]: A dictionary where the keys are frame IDs, and the values
+            are ImageFrameInfo objects containing information about each image frame.
+
+        Note:
+            - If 'frame_manifest_file_path' is None, frame information will not be loaded.
+            - The 'frame_manifest_file_path' and 'video_info_file_path' CSV files must have a common
+              key for matching video and frame data.
+
+        """
         video_infos: Dict[str, VideoInfo] = load_dataclass_dict_from_csv(
             video_info_file_path, VideoInfo, "video_id"
         )
@@ -122,6 +146,29 @@ class VideoDataset:
         multithreaded_io: bool,
         dataset_type: VideoDatasetType,
     ) -> Dict[str, Video]:
+        """
+        Load videos or frame data and create a dictionary of Video objects.
+
+        This static method loads video data or frame information from specified data files and organizes
+        it into a dictionary of Video objects. The type of dataset loaded depends on the 'dataset_type'
+        parameter.
+
+        Args:
+            video_data_manifest_file_path (str or None): The file path to the manifest containing video or
+                frame data. If None, video data or frame data will not be loaded.
+            video_info_file_path (str): The file path to the CSV file containing video information.
+            multithreaded_io (bool): A flag indicating whether to use multithreaded I/O operations.
+            dataset_type (VideoDatasetType): The type of dataset to load, either Frame or EncodedVideo.
+
+        Returns:
+            Dict[str, Video]: A dictionary where the keys are video IDs, and the values are Video objects.
+
+        Note:
+            - If 'video_data_manifest_file_path' is None, video data or frame data will not be loaded.
+            - The 'video_data_manifest_file_path' and 'video_info_file_path' CSV files must have a common
+              key for matching video and frame data.
+        """
+
         video_infos: Dict[str, VideoInfo] = load_dataclass_dict_from_csv(
             video_info_file_path, VideoInfo, "video_id"
         )
@@ -140,6 +187,22 @@ class VideoDataset:
         video_infos: Dict[str, VideoInfo],
         multithreaded_io: bool,
     ):
+        """
+        Load frame videos and create a dictionary of FrameVideo objects.
+
+        This static method loads frame video data from the specified frame manifest file and organizes it
+        into a dictionary of FrameVideo objects. It ensures consistency and completeness of data between
+        video information and frame information.
+
+        Args:
+            frame_manifest_file_path (str): The file path to the manifest containing frame information.
+            video_infos (Dict[str, VideoInfo]): A dictionary of video information keyed by video ID.
+            multithreaded_io (bool): A flag indicating whether to use multithreaded I/O operations.
+
+        Returns:
+            Dict[str, FrameVideo]: A dictionary where the keys are video IDs, and the values are FrameVideo
+            objects containing frame video data.
+        """
         video_frames: Dict[str, VideoFrameInfo] = load_dataclass_dict_from_csv(
             frame_manifest_file_path, VideoFrameInfo, "video_id"
         )
@@ -163,6 +226,22 @@ class VideoDataset:
         encoded_video_manifest_file_path: str,
         video_infos: Dict[str, VideoInfo],
     ):
+        """
+        Load encoded videos and create a dictionary of EncodedVideo objects.
+
+        This static method loads encoded video data from the specified encoded video manifest file and
+        organizes it into a dictionary of EncodedVideo objects. It ensures consistency and completeness of
+        data between video information and encoded video information.
+
+        Args:
+            encoded_video_manifest_file_path (str): The file path to the manifest containing encoded video
+                information.
+            video_infos (Dict[str, VideoInfo]): A dictionary of video information keyed by video ID.
+
+        Returns:
+            Dict[str, EncodedVideo]: A dictionary where the keys are video IDs, and the values are EncodedVideo
+            objects containing encoded video data.
+        """
         encoded_video_infos: Dict[str, EncodedVideoInfo] = load_dataclass_dict_from_csv(
             encoded_video_manifest_file_path, EncodedVideoInfo, "video_id"
         )
@@ -181,6 +260,20 @@ class VideoDataset:
         video_frames: Dict[str, VideoFrameInfo],
         video_infos: Dict[str, VideoInfo],
     ) -> Optional[str]:
+        """
+        Convert frame numbers to file paths.
+
+        This static method generates file paths for frame numbers based on video frame information and video
+        information.
+
+        Args:
+            video_id (str): The ID of the video.
+            video_frames (Dict[str, VideoFrameInfo]): A dictionary of video frame information keyed by video ID.
+            video_infos (Dict[str, VideoInfo]): A dictionary of video information keyed by video ID.
+
+        Returns:
+            Optional[str]: A list of file paths for frames or None if frame numbers are invalid.
+        """
         video_info = video_infos[video_id]
         video_frame_info = video_frames[video_info.video_id]
 
@@ -216,6 +309,17 @@ class VideoDataset:
         video_data_infos: Dict[str, Union[VideoFrameInfo, EncodedVideoInfo]],
         video_infos: Dict[str, VideoInfo],
     ) -> None:
+        """
+        Remove video information for missing or incomplete videos.
+
+        This static method removes video information for videos that are missing corresponding video data
+        or do not have the correct number of frames.
+
+        Args:
+            video_data_infos (Dict[str, Union[VideoFrameInfo, EncodedVideoInfo]]): A dictionary of video
+                data information keyed by video ID.
+            video_infos (Dict[str, VideoInfo]): A dictionary of video information keyed by video ID.
+        """
         # Avoid deletion keys from dict during iteration over keys
         video_ids = list(video_infos)
         for video_id in video_ids:
@@ -248,14 +352,29 @@ class VideoDataset:
 
 def get_seconds_from_hms_time(time_str: str) -> float:
     """
-    Get Seconds from timestamp of form 'HH:MM:SS'.
+    Convert a timestamp of the form 'HH:MM:SS' or 'HH:MM:SS.sss' to seconds.
 
     Args:
-        time_str (str)
+        time_str (str): A string representing a timestamp in the format 'HH:MM:SS' or 'HH:MM:SS.sss'.
 
     Returns:
-        float of seconds
+        float: The equivalent time in seconds.
 
+    Raises:
+        ValueError: If the provided string is not in a valid time format.
+
+    This function parses the input 'time_str' as a timestamp in either 'HH:MM:SS' or 'HH:MM:SS.sss' format.
+    It then calculates and returns the equivalent time in seconds as a floating-point number.
+
+    Example:
+        - Input: '01:23:45'
+          Output: 5025.0 seconds
+        - Input: '00:00:01.234'
+          Output: 1.234 seconds
+
+    Note:
+        - The function supports both fractional seconds and integer seconds.
+        - If the input string is not in a valid time format, a ValueError is raised.
     """
     for fmt in ("%H:%M:%S.%f", "%H:%M:%S"):
         try:
@@ -271,18 +390,24 @@ def save_encoded_video_manifest(
     encoded_video_infos: Dict[str, EncodedVideoInfo], file_name: str = None
 ) -> str:
     """
-    Saves the encoded video dictionary as a csv file that can be read for future usage.
+    Save a dictionary of encoded video information as a CSV file.
+
+    This function takes a dictionary of encoded video information, where keys are video IDs and values
+    are EncodedVideoInfo objects, and saves it as a CSV file. The CSV file can be used for future
+    reference and data retrieval.
 
     Args:
-        video_frames (Dict[str, EncodedVideoInfo]):
-            Dictionary mapping video_ids to metadata about the location of
-            their video data.
-
-        file_name (str):
-            location to save file (will be automatically generated if None).
+        encoded_video_infos (Dict[str, EncodedVideoInfo]):
+            A dictionary mapping video IDs to metadata about the location of their encoded video data.
+        file_name (str, optional):
+            The file name or path where the CSV file will be saved. If not provided, a file name
+            will be automatically generated in the current working directory.
 
     Returns:
-        string of the filename where the video info is stored.
+        str: The filename where the encoded video information is stored.
+
+    Note:
+        - The CSV file will have a header row with column names based on the EncodedVideoInfo data class.
     """
     file_name = (
         f"{os.getcwd()}/encoded_video_manifest.csv" if file_name is None else file_name
@@ -295,18 +420,24 @@ def save_video_frame_info(
     video_frames: Dict[str, VideoFrameInfo], file_name: str = None
 ) -> str:
     """
-    Saves the video frame dictionary as a csv file that can be read for future usage.
+    Save a dictionary of video frame information as a CSV file.
+
+    This function takes a dictionary of video frame information, where keys are video IDs and values
+    are VideoFrameInfo objects, and saves it as a CSV file. The CSV file can be used for future
+    reference and data retrieval.
 
     Args:
         video_frames (Dict[str, VideoFrameInfo]):
-            Dictionary mapping video_ids to metadata about the location of
-            their video frame files.
-
-        file_name (str):
-            location to save file (will be automatically generated if None).
+            A dictionary mapping video IDs to metadata about the location of their video frame files.
+        file_name (str, optional):
+            The file name or path where the CSV file will be saved. If not provided, a file name
+            will be automatically generated in the current working directory.
 
     Returns:
-        string of the filename where the video info is stored.
+        str: The filename where the video frame information is stored.
+
+    Note:
+        - The CSV file will have a header row with column names based on the VideoFrameInfo data class.
     """
     file_name = (
         f"{os.getcwd()}/video_frame_metadata.csv" if file_name is None else file_name
