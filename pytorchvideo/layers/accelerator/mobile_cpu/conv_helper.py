@@ -16,8 +16,9 @@ import torch.nn as nn
 class _Reshape(nn.Module):
     """
     Helper class to implement data reshape as a module.
+
     Args:
-        reshape_size (tuple): size of data after reshape.
+        reshape_size (tuple): Size of data after reshape.
     """
 
     def __init__(
@@ -28,15 +29,25 @@ class _Reshape(nn.Module):
         self.reshape_size = reshape_size
 
     def forward(self, x):
+        """
+        Forward pass through the reshape operation.
+
+        Args:
+            x (torch.Tensor): Input tensor.
+
+        Returns:
+            torch.Tensor: Reshaped tensor.
+        """
         return torch.reshape(x, self.reshape_size)
 
 
 class _SkipConnectMul(nn.Module):
     """
     Helper class to implement skip multiplication.
+
     Args:
-        layer (nn.Module): layer for skip multiplication. With input x, _SkipConnectMul
-            implements layer(x)*x.
+        layer (nn.Module): Layer for skip multiplication. With input x, _SkipConnectMul
+            implements layer(x) * x.
     """
 
     def __init__(
@@ -48,8 +59,22 @@ class _SkipConnectMul(nn.Module):
         self.mul_func = nn.quantized.FloatFunctional()
 
     def forward(self, x):
+        """
+        Forward pass through the skip multiplication operation.
+
+        Args:
+            x (torch.Tensor): Input tensor.
+
+        Returns:
+            torch.Tensor: Result of the skip multiplication.
+        """
         return self.mul_func.mul(x, self.layer(x))
 
+
+
+import torch.nn as nn
+from typing import Tuple
+from copy import deepcopy
 
 class _Conv3dTemporalKernel3Decomposed(nn.Module):
     """
@@ -78,11 +103,11 @@ class _Conv3dTemporalKernel3Decomposed(nn.Module):
         """
         super().__init__()
         assert conv3d_in.padding[0] == 1, (
-            "_Conv3dTemporalKernel3Eq only support temporal padding of 1, "
+            "_Conv3dTemporalKernel3Eq only supports temporal padding of 1, "
             f"but got {conv3d_in.padding[0]}"
         )
         assert conv3d_in.padding_mode == "zeros", (
-            "_Conv3dTemporalKernel3Eq only support zero padding, "
+            "_Conv3dTemporalKernel3Eq only supports zero padding, "
             f"but got {conv3d_in.padding_mode}"
         )
         self._input_THW_tuple = input_THW_tuple
@@ -92,10 +117,11 @@ class _Conv3dTemporalKernel3Decomposed(nn.Module):
         kernel_size = conv3d_in.kernel_size[1:]
         groups = conv3d_in.groups
         stride_2d = conv3d_in.stride[1:]
-        # Create 3 conv2d to emulate conv3d.
+        
+        # Create 3 conv2d layers to emulate conv3d.
         if (
             self._input_THW_tuple[0] > 1
-        ):  # Those two conv2d are needed only when temporal input > 1.
+        ):  # These two conv2d layers are needed only when temporal input > 1.
             self._conv2d_3_3_0 = nn.Conv2d(
                 in_channels,
                 out_channels,
@@ -155,13 +181,13 @@ class _Conv3dTemporalKernel3Decomposed(nn.Module):
 
     def forward(self, x):
         """
-        Use three conv2d to emulate conv3d.
-        This forward assumes zero padding of size 1 in temporal dimension.
+        Use three conv2d layers to emulate conv3d.
+        This forward assumes zero padding of size 1 in the temporal dimension.
         """
         if self._input_THW_tuple[0] > 1:
             out_tensor_list = []
             """
-            First output plane in temporal dimension,
+            First output plane in the temporal dimension,
             conv2d_3_3_0 is skipped due to zero padding.
             """
             cur_tensor = (
@@ -184,7 +210,7 @@ class _Conv3dTemporalKernel3Decomposed(nn.Module):
                 )
                 out_tensor_list.append(cur_tensor)
             """
-            Last output plane in temporal domain, conv2d_3_3_2 is skipped due to zero padding.
+            Last output plane in the temporal domain, conv2d_3_3_2 is skipped due to zero padding.
             """
             cur_tensor = (
                 self._add_funcs[-1]
@@ -193,7 +219,7 @@ class _Conv3dTemporalKernel3Decomposed(nn.Module):
             )
             out_tensor_list.append(cur_tensor)
             return self._cat_func.cat(out_tensor_list, 2)
-        else:  # Degenerated to simple conv2d
+        else:  # Degenerated to a simple conv2d
             return self._conv2d_3_3_1(x[:, :, 0]).unsqueeze(2)
 
 

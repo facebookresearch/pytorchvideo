@@ -13,8 +13,8 @@ from .drop_path import DropPath
 
 class Mlp(nn.Module):
     """
-    A MLP block that contains two linear layers with a normalization layer. The MLP
-    block is used in a transformer model after the attention block.
+    A Multilayer Perceptron (MLP) block that contains two linear layers with a normalization layer.
+    The MLP block is commonly used in transformer models after the attention block.
 
     ::
 
@@ -27,6 +27,16 @@ class Mlp(nn.Module):
                          Linear (hidden_features, out_features)
                                            ↓
                                 Dropout (p=dropout_rate)
+
+    Args:
+        in_features (int): Input feature dimension.
+        hidden_features (Optional[int]): Hidden feature dimension. Defaults to None, which sets it
+            equal to the input feature dimension.
+        out_features (Optional[int]): Output feature dimension. Defaults to None, which sets it
+            equal to the input feature dimension.
+        act_layer (Callable): Activation layer used after the first linear layer. Defaults to nn.GELU.
+        dropout_rate (float): Dropout rate after each linear layer. Defaults to 0.0 (no dropout).
+        bias_on (bool): Whether to include bias terms in linear layers. Defaults to True.
     """
 
     def __init__(
@@ -39,15 +49,7 @@ class Mlp(nn.Module):
         bias_on: bool = True,
     ) -> None:
         """
-        Args:
-            in_features (int): Input feature dimension.
-            hidden_features (Optional[int]): Hidden feature dimension. By default,
-                hidden feature is set to input feature dimension.
-            out_features (Optional[int]): Output feature dimension. By default, output
-                features dimension is set to input feature dimension.
-            act_layer (Callable): Activation layer used after the first linear layer.
-            dropout_rate (float): Dropout rate after each linear layer. Dropout is not used
-                by default.
+        Initializes an instance of the Mlp class.
         """
         super().__init__()
         self.dropout_rate = dropout_rate
@@ -60,8 +62,13 @@ class Mlp(nn.Module):
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         """
+        Performs a forward pass through the MLP block.
+
         Args:
             x (tensor): Input tensor.
+
+        Returns:
+            tensor: Output tensor.
         """
         x = self.fc1(x)
         x = self.act(x)
@@ -71,6 +78,18 @@ class Mlp(nn.Module):
 
 @torch.fx.wrap
 def _unsqueeze_dims_fx(tensor: torch.Tensor) -> Tuple[torch.Tensor, int]:
+    """
+    Unsqueezes dimensions of a tensor if needed to ensure it has a dimension of 4.
+
+    Args:
+        tensor (torch.Tensor): Input tensor.
+
+    Returns:
+        Tuple[torch.Tensor, int]: A tuple containing the modified tensor and its original dimension.
+
+    Raises:
+        NotImplementedError: If the input tensor dimension is not supported.
+    """
     tensor_dim = tensor.ndim
     if tensor_dim == 4:
         pass
@@ -83,11 +102,37 @@ def _unsqueeze_dims_fx(tensor: torch.Tensor) -> Tuple[torch.Tensor, int]:
 
 @torch.jit.script
 def _unsqueeze_dims_jit(tensor: torch.Tensor) -> Tuple[torch.Tensor, int]:
+    """
+    Unsqueezes dimensions of a tensor if needed to ensure it has a dimension of 4.
+    (JIT script version of _unsqueeze_dims_fx)
+
+    Args:
+        tensor (torch.Tensor): Input tensor.
+
+    Returns:
+        Tuple[torch.Tensor, int]: A tuple containing the modified tensor and its original dimension.
+
+    Raises:
+        NotImplementedError: If the input tensor dimension is not supported.
+    """
     return _unsqueeze_dims_fx(tensor)
 
 
 @torch.fx.wrap
 def _squeeze_dims_fx(tensor: torch.Tensor, tensor_dim: int) -> torch.Tensor:
+    """
+    Squeezes dimensions of a tensor if needed to ensure it has a dimension of 4.
+
+    Args:
+        tensor (torch.Tensor): Input tensor.
+        tensor_dim (int): Original dimension of the tensor.
+
+    Returns:
+        torch.Tensor: The modified tensor.
+
+    Raises:
+        NotImplementedError: If the input tensor dimension is not supported.
+    """
     if tensor_dim == 4:
         pass
     elif tensor_dim == 3:
@@ -99,6 +144,20 @@ def _squeeze_dims_fx(tensor: torch.Tensor, tensor_dim: int) -> torch.Tensor:
 
 @torch.jit.script
 def _squeeze_dims_jit(tensor: torch.Tensor, tensor_dim: int) -> torch.Tensor:
+    """
+    Squeezes dimensions of a tensor if needed to ensure it has a dimension of 4.
+    (JIT script version of _squeeze_dims_fx)
+
+    Args:
+        tensor (torch.Tensor): Input tensor.
+        tensor_dim (int): Original dimension of the tensor.
+
+    Returns:
+        torch.Tensor: The modified tensor.
+
+    Raises:
+        NotImplementedError: If the input tensor dimension is not supported.
+    """
     return _squeeze_dims_fx(tensor, tensor_dim)
 
 
@@ -108,6 +167,8 @@ def _pre_attention_pool(
 ) -> Tuple[torch.Tensor, Tuple[int, int, int, int, int, int, int, int]]:
     """
     Apply pool to a flattened input (given pool operation and the unflattened shape).
+    Pre-processes the input tensor for attention pooling by reshaping and optionally
+    applying normalization.
 
 
                                          Input
@@ -150,6 +211,17 @@ def _post_attention_pool(
     tensor: torch.Tensor,
     thw_shape: List[int],
 ) -> Tuple[torch.Tensor, List[int]]:
+    """
+    Post-processes the input tensor after attention pooling.
+
+    Args:
+        tensor (torch.Tensor): Input tensor.
+        thw_shape (List[int]): The original shape of the input tensor (before flattening).
+
+    Returns:
+        torch.Tensor: Post-processed input tensor.
+        List[int]: Output tensor shape (after flattening).
+    """
 
     B, N, L, C, T, H, W, tensor_dim = thw_shape
     thw_shape = [tensor.shape[2], tensor.shape[3], tensor.shape[4]]
@@ -342,6 +414,22 @@ class MultiScaleAttention(nn.Module):
         batch_size: List[int],
         chan_size: List[int],
     ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+        """
+        Applies projection to q, k, and v for multi-head attention.
+
+        Args:
+            q (torch.Tensor): Query tensor.
+            q_size (List[int]): Size of the query tensor.
+            k (torch.Tensor): Key tensor.
+            k_size (List[int]): Size of the key tensor.
+            v (torch.Tensor): Value tensor.
+            v_size (List[int]): Size of the value tensor.
+            batch_size (List[int]): List containing batch size information.
+            chan_size (List[int]): List containing channel size information.
+
+        Returns:
+            Tuple[torch.Tensor, torch.Tensor, torch.Tensor]: Projected q, k, and v tensors.
+        """
         q = (
             self.q(q)
             .reshape(batch_size, q_size, self.num_heads, chan_size // self.num_heads)
@@ -368,6 +456,19 @@ class MultiScaleAttention(nn.Module):
     ) -> Tuple[
         torch.Tensor, List[int], torch.Tensor, List[int], torch.Tensor, List[int]
     ]:
+        """
+        Applies pooling to q, k, and v tensors and optionally applies gelu activation.
+
+        Args:
+            q (torch.Tensor): Query tensor.
+            k (torch.Tensor): Key tensor.
+            v (torch.Tensor): Value tensor.
+            thw_shape (List[int]): The shape of the input tensor (before flattening).
+
+        Returns:
+            Tuple[torch.Tensor, List[int], torch.Tensor, List[int], torch.Tensor, List[int]]:
+            Pooled and reshaped q, k, and v tensors along with their respective shapes.
+        """
         if self.pool_q is None:
             q_shape = thw_shape
         else:
@@ -415,6 +516,17 @@ class MultiScaleAttention(nn.Module):
         k_shape: List[int],
         v_shape: List[int],
     ) -> Tuple[int]:
+        """
+        Calculates the lengths of q, k, and v tensors.
+
+        Args:
+            q_shape (List[int]): Shape of the q tensor.
+            k_shape (List[int]): Shape of the k tensor.
+            v_shape (List[int]): Shape of the v tensor.
+
+        Returns:
+            Tuple[int]: Lengths of q, k, and v tensors.
+        """
         q_N = numpy.prod(q_shape) + 1 if self.has_cls_embed else numpy.prod(q_shape)
         k_N = numpy.prod(k_shape) + 1 if self.has_cls_embed else numpy.prod(k_shape)
         v_N = numpy.prod(v_shape) + 1 if self.has_cls_embed else numpy.prod(v_shape)
@@ -431,6 +543,22 @@ class MultiScaleAttention(nn.Module):
         B: int,
         C: int,
     ) -> Tuple[int]:
+        """
+        Reshapes q, k, and v tensors for sequence processing.
+
+        Args:
+            q (torch.Tensor): Query tensor.
+            k (torch.Tensor): Key tensor.
+            v (torch.Tensor): Value tensor.
+            q_N (int): Length of the q tensor.
+            v_N (int): Length of the v tensor.
+            k_N (int): Length of the k tensor.
+            B (int): Batch size.
+            C (int): Channel size.
+
+        Returns:
+            Tuple[int]: Reshaped q, k, and v tensors.
+        """
         q = q.permute(0, 2, 1, 3).reshape(B, q_N, C)
         v = v.permute(0, 2, 1, 3).reshape(B, v_N, C)
         k = k.permute(0, 2, 1, 3).reshape(B, k_N, C)
@@ -440,9 +568,14 @@ class MultiScaleAttention(nn.Module):
         self, x: torch.Tensor, thw_shape: List[int]
     ) -> Tuple[torch.Tensor, List[int]]:
         """
+        Forward pass through the YourAttentionLayer.
+
         Args:
             x (torch.Tensor): Input tensor.
             thw_shape (List): The shape of the input tensor (before flattening).
+
+        Returns:
+            Tuple[torch.Tensor, List[int]]: Output tensor and the shape information.
         """
 
         B, N, C = x.shape
@@ -493,6 +626,46 @@ class ScriptableMultiScaleBlock(nn.Module):
                                      DropPath               |
                                         ↓                   |
                                     Summation  ←------------+
+
+    Args:
+        dim (int): Input feature dimension.
+        dim_out (int): Output feature dimension.
+        num_heads (int): Number of heads in the attention layer.
+        mlp_ratio (float): Mlp ratio controlling the feature dimension in the hidden layer
+            of the Mlp block.
+        qkv_bias (bool): If False, the qkv layer will not learn an additive bias. Default: False.
+        dropout_rate (float): DropOut rate. If 0, DropOut is disabled.
+        droppath_rate (float): DropPath rate. If 0, DropPath is disabled.
+        act_layer (nn.Module): Activation layer used in the Mlp layer.
+        norm_layer (nn.Module): Normalization layer.
+        attn_norm_layer (nn.Module): Normalization layer in the attention module.
+        kernel_q (_size_3_t): Pooling kernel size for q. If all dimensions have size 1,
+            pooling is not applied (by default).
+        kernel_kv (_size_3_t): Pooling kernel size for kv. If all dimensions have size 1,
+            pooling is disabled (by default).
+        stride_q (_size_3_t): Pooling kernel stride for q.
+        stride_kv (_size_3_t): Pooling kernel stride for kv.
+        pool_mode (str): Pooling mode, including "conv" (learned pooling), "avg"
+            (average pooling), and "max" (max pooling).
+        has_cls_embed (bool): If True, the first token of the input tensor is a cls token.
+            Otherwise, the input tensor doesn't contain a cls token, and pooling isn't applied
+            to the cls token.
+        pool_first (bool): If True, pooling is applied before qkv projection. Default: False.
+        residual_pool (bool): If True, use Improved Multiscale Vision Transformer's pooling
+            residual connection.
+        depthwise_conv (bool): Whether to use depthwise or full convolution for pooling.
+        bias_on (bool): Whether to use biases for linear layers.
+        separate_qkv (bool): Whether to use separate or one layer for qkv projections.
+
+    This class represents a multiscale vision transformer block, which combines multiscale
+    attention and MLP layers. It takes an input tensor `x` and its shape `thw_shape`, applies
+    the multiscale attention, and returns the processed tensor along with the updated shape.
+
+    Example usage:
+    ```
+    block = ScriptableMultiScaleBlock(dim=256, dim_out=512, num_heads=8)
+    output, updated_shape = block(input_tensor, [16, 32, 32])
+    ```
     """
 
     def __init__(

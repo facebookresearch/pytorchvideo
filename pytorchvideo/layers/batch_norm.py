@@ -9,13 +9,30 @@ from torch import nn
 
 class NaiveSyncBatchNorm1d(nn.BatchNorm1d):
     """
-    An implementation of 1D naive sync batch normalization. See details in
-    NaiveSyncBatchNorm2d below.
+    1D Naive Sync Batch Normalization for PyTorch.
+
+    This is an implementation of 1D batch normalization that supports synchronization
+    across multiple devices (local or global). It extends the functionality of
+    PyTorch's `nn.BatchNorm1d`.
 
     Args:
-        num_sync_devices (int): number of (local) devices to sync.
-        global_sync (bool): sync across all devices (on all machines).
-        args (list): other arguments.
+        num_sync_devices (int): Number of local devices to sync with. If global_sync is True,
+            this parameter is ignored.
+        global_sync (bool): If True, syncs across all devices on all machines.
+        **args: Additional arguments to be passed to the base `nn.BatchNorm1d` constructor.
+
+    Raises:
+        ValueError: If conflicting parameters are provided (e.g., both global_sync and num_sync_devices).
+
+    Note:
+        To use this synchronization, make sure to initialize the distributed environment
+        (e.g., using PyTorch's `torch.distributed.init_process_group`).
+
+    Example:
+    ```
+    sync_bn = NaiveSyncBatchNorm1d(num_sync_devices=4, global_sync=False, num_features=64)
+    output = sync_bn(input_tensor)
+    ```
     """
 
     def __init__(self, num_sync_devices=None, global_sync=True, **args):
@@ -80,7 +97,11 @@ class NaiveSyncBatchNorm1d(nn.BatchNorm1d):
 
 class NaiveSyncBatchNorm2d(nn.BatchNorm2d):
     """
-    An implementation of 2D naive sync batch normalization.
+    2D Naive Sync Batch Normalization for PyTorch.
+
+    This is an implementation of 2D batch normalization that supports synchronization
+    across multiple devices (local or global). It serves as a correct alternative to
+    `nn.SyncBatchNorm` when there are varying batch sizes on different workers.
     In PyTorch<=1.5, ``nn.SyncBatchNorm`` has incorrect gradient
     when the batch size on each worker is different.
     (e.g., when scale augmentation is used, or when it is applied to mask head).
@@ -88,15 +109,22 @@ class NaiveSyncBatchNorm2d(nn.BatchNorm2d):
     This is a slower but correct alternative to `nn.SyncBatchNorm`.
 
     Args:
-        num_sync_devices (int): number of (local) devices to sync.
-        global_sync (bool): sync across all devices (on all machines).
-        args (list): other arguments.
+        num_sync_devices (int): Number of local devices to sync with. If global_sync is True,
+            this parameter is ignored.
+        global_sync (bool): If True, syncs across all devices on all machines.
+        **args: Additional arguments to be passed to the base `nn.BatchNorm2d` constructor.
 
     Note:
-        This module computes overall statistics by using
-        statistics of each worker with equal weight.  The result is true statistics
-        of all samples (as if they are all on one worker) only when all workers
-        have the same (N, H, W). This mode does not support inputs with zero batch size.
+        This module computes overall statistics by using statistics of each worker with equal weight.
+        The result represents true statistics of all samples as if they are all on one worker,
+        provided that all workers have the same input dimensions (N, H, W). This mode does not support
+        inputs with zero batch size.
+
+    Example:
+    ```
+    sync_bn = NaiveSyncBatchNorm2d(num_sync_devices=4, global_sync=False, num_features=64)
+    output = sync_bn(input_tensor)
+    ```
     """
 
     def __init__(self, num_sync_devices=None, global_sync=True, **args):
@@ -125,6 +153,15 @@ class NaiveSyncBatchNorm2d(nn.BatchNorm2d):
         super(NaiveSyncBatchNorm2d, self).__init__(**args)
 
     def forward(self, input):
+        """
+        Forward pass through the NaiveSyncBatchNorm2d layer.
+
+        Args:
+            input (torch.Tensor): Input tensor.
+
+        Returns:
+            torch.Tensor: Normalized and scaled output tensor.
+        """
         if du.get_world_size() == 1 or not self.training:
             return super().forward(input)
 
@@ -161,12 +198,29 @@ class NaiveSyncBatchNorm2d(nn.BatchNorm2d):
 
 class NaiveSyncBatchNorm3d(nn.BatchNorm3d):
     """
-    Naive version of Synchronized 3D BatchNorm. See details in
-    NaiveSyncBatchNorm2d above.
+    3D Naive Sync Batch Normalization for PyTorch.
+
+    This is an implementation of 3D batch normalization that supports synchronization
+    across multiple devices (local or global). It serves as a correct alternative to
+    `nn.SyncBatchNorm` when there are varying batch sizes on different workers.
+
     Args:
-        num_sync_devices (int): number of (local) devices to sync.
-        global_sync (bool): sync across all devices (on all machines).
-        args (list): other arguments.
+        num_sync_devices (int): Number of local devices to sync with. If global_sync is True,
+            this parameter is ignored.
+        global_sync (bool): If True, syncs across all devices on all machines.
+        **args: Additional arguments to be passed to the base `nn.BatchNorm3d` constructor.
+
+    Note:
+        This module computes overall statistics by using statistics of each worker with equal weight.
+        The result represents true statistics of all samples as if they are all on one worker,
+        provided that all workers have the same input dimensions (N, D, H, W). This mode does not
+        support inputs with zero batch size.
+
+    Example:
+    ```
+    sync_bn = NaiveSyncBatchNorm3d(num_sync_devices=4, global_sync=False, num_features=64)
+    output = sync_bn(input_tensor)
+    ```
     """
 
     def __init__(self, num_sync_devices=None, global_sync=True, **args):
@@ -195,6 +249,15 @@ class NaiveSyncBatchNorm3d(nn.BatchNorm3d):
         super(NaiveSyncBatchNorm3d, self).__init__(**args)
 
     def forward(self, input):
+        """
+        Forward pass through the NaiveSyncBatchNorm3d layer.
+
+        Args:
+            input (torch.Tensor): Input tensor.
+
+        Returns:
+            torch.Tensor: Normalized and scaled output tensor.
+        """
         if du.get_world_size() == 1 or not self.training:
             return super().forward(input)
 

@@ -16,6 +16,12 @@ construct them.
 
 def make_fusion_layer(method: str, feature_dims: List[int]):
     """
+    Drop paths (Stochastic Depth) per sample.
+
+    Drop path is a regularization technique used in deep neural networks to
+    randomly drop (set to zero) a fraction of input tensor elements during training
+    to prevent overfitting.
+
     Args:
         method (str): the fusion method to be constructed. Options:
             - 'concat'
@@ -28,6 +34,11 @@ def make_fusion_layer(method: str, feature_dims: List[int]):
             of required feature_dims for each tensor input (where the tensor inputs are of
             shape (batch_size, seq_len, feature_dim)). The list order must corresponds to
             the tensor order passed to forward(...).
+
+    Example:
+        >>> drop_path_layer = DropPath(drop_prob=0.2)
+        >>> input_tensor = torch.rand(1, 64, 128, 128)  # Example input tensor
+        >>> output_tensor = drop_path_layer(input_tensor)
     """
     if method == "concat":
         return ConcatFusion(feature_dims)
@@ -45,11 +56,29 @@ def make_fusion_layer(method: str, feature_dims: List[int]):
 
 class ConcatFusion(nn.Module):
     """
-    Concatenates all inputs by their last dimension. The resulting tensor last dim will be
-    the sum of the last dimension of all input tensors.
+    Concatenates multiple input tensors along their last dimension to create a fused tensor.
+    The size of the last dimension in the resulting tensor is the sum of the last dimensions
+    of all input tensors.
+
+    Args:
+        feature_dims (List[int]): A list of feature dimensions for each input tensor.
+
+    Attributes:
+        output_dim (int): The size of the last dimension in the fused tensor.
+
+    Example:
+        If feature_dims is [64, 128, 256], and three tensors of shape (batch_size, seq_len, 64),
+        (batch_size, seq_len, 128), and (batch_size, seq_len, 256) are concatenated, the output
+        tensor will have a shape of (batch_size, seq_len, 448) because 64 + 128 + 256 = 448.
     """
 
     def __init__(self, feature_dims: List[int]):
+        """
+        Initialize the ConcatFusion module.
+
+        Args:
+            feature_dims (List[int]): A list of feature dimensions for each input tensor.
+        """
         super().__init__()
         _verify_feature_dim(feature_dims)
         self._output_dim = sum(feature_dims)
@@ -57,29 +86,51 @@ class ConcatFusion(nn.Module):
     @property
     def output_dim(self):
         """
-        Last dimension size of forward(..) tensor output.
+        Get the size of the last dimension in the fused tensor.
+
+        Returns:
+            int: The size of the last dimension in the fused tensor.
         """
         return self._output_dim
 
     def forward(self, input_list: List[torch.Tensor]) -> torch.Tensor:
         """
+        Concatenate a list of input tensors along their last dimension.
+
         Args:
-            input_list (List[torch.Tensor]): a list of tensors of shape
-                (batch_size, seq_len, feature_dim).
+            input_list (List[torch.Tensor]): A list of tensors to be concatenated.
 
         Returns:
-            Tensor of shape (batch_size, seq_len, sum(feature_dims)) where sum(feature_dims)
-                is the sum of all input feature_dims.
+            torch.Tensor: A tensor resulting from the concatenation of input tensors.
+                The size of the last dimension is the sum of the feature dimensions
+                of all input tensors.
         """
         return torch.cat(input_list, dim=-1)
 
 
 class TemporalConcatFusion(nn.Module):
     """
-    Concatenates all inputs by their temporal dimension which is assumed to be dim=1.
+    Concatenates input tensors along their temporal dimension (assumed to be dim=1).
+
+    This module takes a list of input tensors, each with shape (batch_size, seq_len, feature_dim),
+    and concatenates them along the temporal dimension (dim=1).
+
+    Args:
+        feature_dims (List[int]): List of feature dimensions of the input tensors.
+
+    Note:
+        - All input tensors must have the same feature dimension.
+        - The output tensor will have shape (batch_size, sum(seq_len), feature_dim),
+          where sum(seq_len) is the sum of seq_len for all input tensors.
     """
 
     def __init__(self, feature_dims: List[int]):
+        """
+        Initialize the TemporalConcatFusion module.
+
+        Args:
+            feature_dims (List[int]): List of feature dimensions of the input tensors.
+        """
         super().__init__()
         _verify_feature_dim(feature_dims)
 
@@ -90,28 +141,45 @@ class TemporalConcatFusion(nn.Module):
     @property
     def output_dim(self):
         """
-        Last dimension size of forward(..) tensor output.
+        Get the last dimension size of the output tensor produced by the forward(..) method.
+
+        Returns:
+            int: Last dimension size of the forward(..) tensor output.
         """
         return self._output_dim
 
     def forward(self, input_list: List[torch.Tensor]) -> torch.Tensor:
         """
+        Perform forward pass through the TemporalConcatFusion module.
+
         Args:
-            input_list (List[torch.Tensor]): a list of tensors of shape
-                (batch_size, seq_len, feature_dim)
+            input_list (List[torch.Tensor]): A list of tensors of shape
+                (batch_size, seq_len, feature_dim).
 
         Returns:
-            Tensor of shape (batch_size, sum(seq_len), feature_dim) where sum(seq_len) is
-                the sum of all input tensors.
+            torch.Tensor: Output tensor of shape (batch_size, sum(seq_len), feature_dim),
+                where sum(seq_len) is the sum of all input tensors' seq_len.
         """
         return torch.cat(input_list, dim=1)
 
 
 class ReduceFusion(nn.Module):
     """
-    Generic fusion method which takes a callable which takes the list of input tensors
-    and expects a single tensor to be used. This class can be used to implement fusion
-    methods like "sum", "max" and "prod".
+    A generic fusion method that applies a specified reduction function to a list of input tensors
+    to produce a single output tensor. This class can be used to implement fusion methods like "sum",
+    "max", and "prod".
+
+    Args:
+        feature_dims (List[int]): List of feature dimensions for the input tensors.
+        reduce_fn (Callable[[torch.Tensor], torch.Tensor]): A callable reduction function that takes
+            the list of input tensors and returns a single tensor.
+
+    Attributes:
+        output_dim (int): The dimension of the output tensor after fusion, which is the maximum
+            of the input feature dimensions.
+
+    Note:
+        - The input tensors must have consistent feature dimensions for fusion to work correctly.
     """
 
     def __init__(
@@ -122,28 +190,31 @@ class ReduceFusion(nn.Module):
         self.reduce_fn = reduce_fn
 
         # All input dimensions must be the same
-        self._output_dim = max(feature_dims)
-        assert self._output_dim == min(feature_dims)
-
-    @property
-    def output_dim(self):
-        """
-        Last dimension size of forward(..) tensor output.
-        """
-        return self._output_dim
+        self.output_dim = max(feature_dims)
+        assert self.output_dim == min(feature_dims)
 
     def forward(self, input_list: List[torch.Tensor]) -> torch.Tensor:
         """
+        Forward pass of the ReduceFusion module.
+
         Args:
-            input_list (List[torch.Tensor]): a list of tensors of shape
-                (batch_size, seq_len, feature_dim).
+            input_list (List[torch.Tensor]): A list of tensors to be fused.
 
         Returns:
-            Tensor of shape (batch_size, seq_len, feature_dim).
+            torch.Tensor: The fused tensor after applying the reduction function.
         """
         return self.reduce_fn(torch.stack(input_list))
 
 
 def _verify_feature_dim(feature_dims: List[int]):
+    """
+    Verify that the feature dimensions in the list are valid.
+
+    Args:
+        feature_dims (List[int]): List of feature dimensions.
+
+    Raises:
+        AssertionError: If any feature dimension is non-positive or if the list is empty.
+    """
     assert isinstance(feature_dims, list)
     assert all(x > 0 for x in feature_dims)

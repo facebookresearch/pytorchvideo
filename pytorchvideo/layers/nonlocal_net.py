@@ -9,15 +9,47 @@ from pytorchvideo.layers.utils import set_attributes
 
 class NonLocal(nn.Module):
     """
-    Builds Non-local Neural Networks as a generic family of building
-    blocks for capturing long-range dependencies. Non-local Network
-    computes the response at a position as a weighted sum of the
-    features at all positions. This building block can be plugged into
-    many computer vision architectures.
-    More details in the paper:
+    Implementation of Non-local Neural Networks, which capture long-range dependencies
+    in feature maps. Non-local Network computes the response at a position as a weighted
+    sum of the features at all positions This building block can be integrated into 
+    various computer vision architectures.
+
+    Reference:
     Wang, Xiaolong, Ross Girshick, Abhinav Gupta, and Kaiming He.
     "Non-local neural networks."
     In Proceedings of the IEEE conference on CVPR, 2018.
+
+    Args:
+        conv_theta (nn.Module): Convolutional layer for computing the 'theta' transformation.
+        conv_phi (nn.Module): Convolutional layer for computing the 'phi' transformation.
+        conv_g (nn.Module): Convolutional layer for computing the 'g' transformation.
+        conv_out (nn.Module): Convolutional layer for the output transformation.
+        pool (Optional[nn.Module]): Optional temporal-spatial pooling layer to reduce computation.
+        norm (Optional[nn.Module]): Optional normalization layer to be applied to the output.
+        instantiation (str): The type of normalization used. Options are 'dot_product' and 'softmax'.
+
+    Note:
+        - The 'conv_theta', 'conv_phi', 'conv_g', and 'conv_out' modules should have
+          matching output and input dimensions.
+        - 'pool' can be used for temporal-spatial pooling to reduce computation.
+        - 'instantiation' determines the type of normalization applied to the affinity tensor.
+
+    Example:
+        To create a Non-local block:
+        ```
+        non_local_block = NonLocal(
+            conv_theta=nn.Conv3d(in_channels, inner_channels, kernel_size=1),
+            conv_phi=nn.Conv3d(in_channels, inner_channels, kernel_size=1),
+            conv_g=nn.Conv3d(in_channels, inner_channels, kernel_size=1),
+            conv_out=nn.Conv3d(inner_channels, in_channels, kernel_size=1),
+            pool=nn.MaxPool3d(kernel_size=(1, 2, 2)),
+            norm=nn.BatchNorm3d(inner_channels),
+            instantiation='dot_product'
+        )
+        ```
+
+    Returns:
+        torch.Tensor: The output tensor with long-range dependencies captured.
     """
 
     def __init__(
@@ -105,27 +137,54 @@ def create_nonlocal(
     norm_momentum: float = 0.1,
 ):
     """
-    Builds Non-local Neural Networks as a generic family of building
-    blocks for capturing long-range dependencies. Non-local Network
-    computes the response at a position as a weighted sum of the
-    features at all positions. This building block can be plugged into
+    Create a Non-local Neural Network block for capturing long-range dependencies in computer
+    vision architectures.Non-local Network computes the response at a position as a weighted
+    sum of the features at all positions. This building block can be plugged into
     many computer vision architectures.
     More details in the paper: https://arxiv.org/pdf/1711.07971
+
     Args:
-        dim_in (int): number of dimension for the input.
-        dim_inner (int): number of dimension inside of the Non-local block.
-        pool_size (tuple[int]): the kernel size of spatial temporal pooling,
-            temporal pool kernel size, spatial pool kernel size, spatial pool kernel
-            size in order. By default pool_size is None, then there would be no pooling
-            used.
-        instantiation (string): supports two different instantiation method:
-            "dot_product": normalizing correlation matrix with L2.
-            "softmax": normalizing correlation matrix with Softmax.
-        norm (nn.Module): nn.Module for the normalization layer. The default is
+        dim_in (int): The number of dimensions for the input.
+        dim_inner (int): The number of dimensions inside the Non-local block.
+        pool_size (tuple[int]): The kernel size of spatial-temporal pooling. It consists of
+            three integers representing the temporal pool kernel size, spatial pool kernel
+            width, and spatial pool kernel height, respectively. If set to (1, 1, 1), no
+            pooling is used. Default is (1, 1, 1).
+        instantiation (string): The instantiation method for normalizing the correlation
+            matrix. Supports two options: "dot_product" (normalizing correlation matrix
+            with L2) and "softmax" (normalizing correlation matrix with Softmax).
+        norm (nn.Module): An instance of nn.Module for the normalization layer. Default is
             nn.BatchNorm3d.
-        norm_eps (float): normalization epsilon.
-        norm_momentum (float): normalization momentum.
+        norm_eps (float): The normalization epsilon.
+        norm_momentum (float): The normalization momentum.
+
+    Returns:
+        NonLocal: A Non-local Neural Network block that can be integrated into computer
+        vision architectures.
+
+    Example:
+        To create a Non-local block with a temporal pool size of 2x2x2 and "dot_product"
+        instantiation:
+        ```
+        non_local_block = create_nonlocal(
+            dim_in=256,
+            dim_inner=128,
+            pool_size=(2, 2, 2),
+            instantiation="dot_product",
+            norm=nn.BatchNorm3d,
+            norm_eps=1e-5,
+            norm_momentum=0.1
+        )
+        ```
+
+    Note:
+        - The Non-local block is a useful building block for capturing long-range
+          dependencies in computer vision tasks.
+        - You can customize the architecture of the Non-local block by specifying the
+          input dimension (`dim_in`), inner dimension (`dim_inner`), pooling size
+          (`pool_size`), and normalization settings (`norm`, `norm_eps`, and `norm_momentum`).
     """
+          
     if pool_size is None:
         pool_size = (1, 1, 1)
     assert isinstance(pool_size, Iterable)

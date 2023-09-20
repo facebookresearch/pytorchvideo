@@ -8,7 +8,21 @@ from pytorchvideo.models.resnet import ResBlock
 
 
 class SqueezeAndExcitationLayer2D(nn.Module):
-    """2D Squeeze and excitation layer, as per https://arxiv.org/pdf/1709.01507.pdf"""
+    """
+    2D Squeeze and Excitation (SE) layer as described in the paper:
+    "Squeeze-and-Excitation Networks" (https://arxiv.org/pdf/1709.01507.pdf).
+
+    This layer enhances the representational power of a convolutional neural network
+    by adaptively recalibrating the feature maps.
+
+    Args:
+        in_planes (int): Input channel dimension.
+        reduction_ratio (int): The reduction ratio used to reduce the input channels
+            before scaling. It controls the number of parameters in the SE layer.
+        reduced_planes (Optional[int]): Output channel dimension. If specified, it
+            overrides the reduction_ratio. Only one of reduction_ratio or reduced_planes
+            should be defined.
+    """
 
     def __init__(
         self,
@@ -16,26 +30,19 @@ class SqueezeAndExcitationLayer2D(nn.Module):
         reduction_ratio: Optional[int] = 16,
         reduced_planes: Optional[int] = None,
     ):
-
-        """
-        Args:
-            in_planes (int): input channel dimension.
-            reduction_ratio (int): factor by which in_planes should be reduced to
-                get the output channel dimension.
-            reduced_planes (int): Output channel dimension. Only one of reduction_ratio
-                or reduced_planes should be defined.
-        """
+        
         super().__init__()
         self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
 
         # Either reduction_ratio is defined, or out_planes is defined
         assert bool(reduction_ratio) != bool(
             reduced_planes
-        ), "Only of reduction_ratio or reduced_planes should be defined for SE layer"
+        ), "Only one of reduction_ratio or reduced_planes should be defined for SE layer"
 
         reduced_planes = (
             in_planes // reduction_ratio if reduced_planes is None else reduced_planes
         )
+
         self.excitation = nn.Sequential(
             nn.Conv2d(in_planes, reduced_planes, kernel_size=1, stride=1, bias=True),
             nn.ReLU(),
@@ -45,8 +52,14 @@ class SqueezeAndExcitationLayer2D(nn.Module):
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         """
+        Forward pass of the Squeeze and Excitation layer.
+
         Args:
-            x (tensor): 2D image of format C * H * W
+            x (torch.Tensor): Input feature map of shape (batch_size, in_planes, H, W).
+
+        Returns:
+            torch.Tensor: Output feature map after applying the SE operation.
+                Same shape as the input.
         """
         x_squeezed = self.avgpool(x)
         x_excited = self.excitation(x_squeezed)
@@ -132,7 +145,22 @@ def create_audio_2d_squeeze_excitation_block(
             and None (not performing activation).
 
     Returns:
-        (nn.Module): resnet basic block layer.
+        nn.Module: A 2D Residual block with Squeeze-and-Excitation for audio processing.
+
+    Example:
+        To create a SE2D block with default settings:
+        ```
+        block = create_audio_2d_squeeze_excitation_block(
+            dim_in=64,
+            dim_out=128,
+            use_se=True,
+        )
+        ```
+
+    Note:
+        - This block performs spatial and feature transformations using two convolutional
+          branches.
+        - The SE layer, if enabled, recalibrates channel-wise feature importance.
     """
 
     branch2 = [

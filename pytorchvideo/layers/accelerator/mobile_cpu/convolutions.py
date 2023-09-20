@@ -110,12 +110,13 @@ class Conv3dPwBnAct(EfficientBlockBase):
 
         For quantized operation on new version of QNNPACK with native int8 Conv3d, this
         function will only apply operator fusion.
+        
         Args:
-            input_blob_size (tuple): blob size at the input of Conv3dPwBnAct instance.
-            convert_for_quantize (bool): whether this module is intended to be quantized.
-            native_conv3d_op_qnnpack (bool): whether the QNNPACK version has native int8
+            input_blob_size (tuple): Blob size at the input of Conv3dPwBnAct instance.
+            convert_for_quantize (bool): Whether this module is intended to be quantized.
+            native_conv3d_op_qnnpack (bool): Whether the QNNPACK version has native int8
                 Conv3d.
-            kwargs (any): any extra keyword arguments from upstream unused by convert().
+            kwargs (any): Any extra keyword arguments from upstream unused by convert().
         """
         assert (
             self.convert_flag is False
@@ -175,6 +176,15 @@ class Conv3dPwBnAct(EfficientBlockBase):
         self.convert_flag = True
 
     def forward(self, x):
+        """
+        Forward pass of the Conv3dPwBnAct module.
+
+        Args:
+            x (torch.Tensor): Input tensor.
+
+        Returns:
+            torch.Tensor: Output tensor.
+        """
         x = self.kernel(x)
         return x
 
@@ -390,6 +400,7 @@ class Conv3dTemporalKernel1BnAct(EfficientBlockBase):
         This conversion is done by first fuse conv3d with bn,
         convert conv3d into equivalent conv2d,
         and optionally fuse conv2d with relu.
+
         Args:
             input_blob_size (tuple): blob size at the input of
                 Conv3dTemporalKernel1BnAct instance during forward.

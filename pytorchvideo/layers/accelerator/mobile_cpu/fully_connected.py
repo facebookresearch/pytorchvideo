@@ -10,6 +10,7 @@ class FullyConnected(NoOpConvertBlock):
     """
     Implements fully connected layer. This operator is natively supported by QNNPACK for
     mobile CPU with good efficiency, and no change is made upon convert().
+
     Args:
         in_features (int): input channels for FC layer.
         out_features (int): output channels for FC layer.
