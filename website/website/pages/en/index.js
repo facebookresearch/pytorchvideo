@@ -134,7 +134,7 @@ transform =  ApplyTransformToKey(
 clip_start_sec = 0.0 # secs
 clip_duration = 2.0 # secs
 video_data = video.get_clip(start_sec=clip_start_sec, end_sec=clip_start_sec + clip_duration)
-video_data = transform(video_data)
+preds = transform(video_data)
 
 # Generate top 5 predictions
 preds = torch.nn.functional.softmax(preds)
