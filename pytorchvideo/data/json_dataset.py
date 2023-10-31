@@ -221,7 +221,7 @@ class UntrimmedClipSampler:
     """
     A wrapper for adapting untrimmed annotated clips from the json_dataset to the
     standard `pytorchvideo.data.ClipSampler` expected format. Specifically, for each
-    clip it uses the provided `clip_sampler` to sample between "clip_start_sec" and
+    clip, it uses the provided `clip_sampler` to sample between "clip_start_sec" and
     "clip_end_sec" from the json_dataset clip annotation.
     """
 
@@ -236,6 +236,17 @@ class UntrimmedClipSampler:
     def __call__(
         self, last_clip_time: float, video_duration: float, clip_info: Dict[str, Any]
     ) -> ClipInfo:
+        """
+        Sample a trimmed clip based on the provided untrimmed clip info.
+
+        Args:
+            last_clip_time (float): The end time of the last sampled clip.
+            video_duration (float): The duration of the entire video.
+            clip_info (Dict[str, Any]): Information about the untrimmed clip.
+
+        Returns:
+            ClipInfo: Information about the sampled trimmed clip.
+        """
         clip_start_boundary = clip_info["clip_start_sec"]
         clip_end_boundary = clip_info["clip_end_sec"]
         duration = clip_start_boundary - clip_end_boundary
@@ -251,4 +262,8 @@ class UntrimmedClipSampler:
         )
 
     def reset(self) -> None:
+        """
+        Reset the state of the clip sampler.
+        """
         pass
+    

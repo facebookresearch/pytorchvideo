@@ -12,8 +12,10 @@ _LOCAL_PROCESS_GROUP = None
 
 def get_world_size() -> int:
     """
-    Simple wrapper for correctly getting worldsize in both distributed
-    / non-distributed settings
+    Get the total world size, accounting for distributed or non-distributed settings.
+
+    Returns:
+        int: Total world size (number of processes).
     """
     return (
         torch.distributed.get_world_size()
@@ -23,35 +25,55 @@ def get_world_size() -> int:
 
 
 def cat_all_gather(tensors, local=False):
-    """Performs the concatenated all_reduce operation on the provided tensors."""
+    """
+    Perform the concatenated all-gather operation on the provided tensors.
+
+    Args:
+        tensors (torch.Tensor): The tensor(s) to gather and concatenate.
+        local (bool): If True, gather within the local process group.
+
+    Returns:
+        torch.Tensor: The concatenated result tensor.
+    """
     if local:
         gather_sz = get_local_size()
     else:
         gather_sz = torch.distributed.get_world_size()
+
     tensors_gather = [torch.ones_like(tensors) for _ in range(gather_sz)]
+
     torch.distributed.all_gather(
         tensors_gather,
         tensors,
         async_op=False,
         group=_LOCAL_PROCESS_GROUP if local else None,
     )
+
     output = torch.cat(tensors_gather, dim=0)
     return output
 
 
 def init_distributed_training(num_gpus, shard_id):
     """
-    Initialize variables needed for distributed training.
+    Initialize variables required for distributed training.
+
+    Args:
+        num_gpus (int): The number of GPUs per machine.
+        shard_id (int): The shard ID of the current machine.
     """
     if num_gpus <= 1:
         return
+
     num_gpus_per_machine = num_gpus
     num_machines = dist.get_world_size() // num_gpus_per_machine
+
     for i in range(num_machines):
         ranks_on_i = list(
             range(i * num_gpus_per_machine, (i + 1) * num_gpus_per_machine)
         )
+
         pg = dist.new_group(ranks_on_i)
+
         if i == shard_id:
             global _LOCAL_PROCESS_GROUP
             _LOCAL_PROCESS_GROUP = pg
@@ -59,9 +81,10 @@ def init_distributed_training(num_gpus, shard_id):
 
 def get_local_size() -> int:
     """
+    Get the size of the per-machine process group, i.e., the number of processes per machine.
+
     Returns:
-        The size of the per-machine process group,
-        i.e. the number of processes per machine.
+        int: The size of the per-machine process group.
     """
     if not dist.is_available():
         return 1
@@ -72,8 +95,10 @@ def get_local_size() -> int:
 
 def get_local_rank() -> int:
     """
+    Get the rank of the current process within the local (per-machine) process group.
+
     Returns:
-        The rank of the current process within the local (per-machine) process group.
+        int: The rank of the current process within the local process group.
     """
     if not dist.is_available():
         return 0
@@ -84,6 +109,12 @@ def get_local_rank() -> int:
 
 
 def get_local_process_group() -> ProcessGroup:
+    """
+    Get the local (per-machine) process group.
+
+    Returns:
+        ProcessGroup: The local process group.
+    """
     assert _LOCAL_PROCESS_GROUP is not None
     return _LOCAL_PROCESS_GROUP
 

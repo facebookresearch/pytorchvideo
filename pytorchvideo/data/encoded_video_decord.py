@@ -119,20 +119,28 @@ class EncodedVideoDecord(Video):
     @property
     def name(self) -> Optional[str]:
         """
+        Get the name of the stored video if set.
+
         Returns:
-            name: the name of the stored video if set.
+            name (Optional[str]): The name of the video.
         """
         return self._video_name
 
     @property
     def duration(self) -> float:
         """
+        Get the video's duration/end-time in seconds.
+
         Returns:
-            duration: the video's duration/end-time in seconds.
+            duration (float): The video's duration.
         """
         return self._duration
 
     def close(self):
+        """
+        Close the video reader.
+        """
+
         if self._av_reader is not None:
             del self._av_reader
             self._av_reader = None

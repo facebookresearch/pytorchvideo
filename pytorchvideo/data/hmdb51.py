@@ -178,16 +178,16 @@ def Hmdb51(
     decoder: str = "pyav",
 ) -> LabeledVideoDataset:
     """
-    A helper function to create ``LabeledVideoDataset`` object for HMDB51 dataset
+    A helper function to create a `LabeledVideoDataset` object for HMDB51 dataset.
 
     Args:
         data_path (pathlib.Path): Path to the data. The path type defines how the data
             should be read:
 
-            * For a file path, the file is read and each line is parsed into a
+            - For a file path, the file is read and each line is parsed into a
               video path and label.
-            * For a directory, the directory structure defines the classes
-              (i.e. each subdirectory is a class).
+            - For a directory, the directory structure defines the classes
+              (i.e., each subdirectory is a class).
 
         clip_sampler (ClipSampler): Defines how clips should be sampled from each
             video. See the clip sampling documentation for more information.
@@ -197,20 +197,25 @@ def Hmdb51(
             if necessary, the distributed split.
 
         transform (Callable): This callable is evaluated on the clip output before
-            the clip is returned. It can be used for user defined preprocessing and
-            augmentations to the clips. See the ``LabeledVideoDataset`` class for
+            the clip is returned. It can be used for user-defined preprocessing and
+            augmentations to the clips. See the `LabeledVideoDataset` class for
             clip output format.
 
-        video_path_prefix (str): Path to root directory with the videos that are
-            loaded in LabeledVideoDataset. All the video paths before loading
+        video_path_prefix (str): Path to the root directory with the videos that are
+            loaded in the `LabeledVideoDataset`. All the video paths before loading
             are prefixed with this path.
 
-        split_id (int): Fold id to be loaded. Options are 1, 2 or 3
+        split_id (int): Fold id to be loaded. Options are 1, 2, or 3.
 
-        split_type (str): Split/Fold type to be loaded. Options are ("train", "test" or
-            "unused")
+        split_type (str): Split/Fold type to be loaded. Options are "train", "test", or
+            "unused".
+
+        decode_audio (bool): Whether to decode audio or not.
 
         decoder (str): Defines which backend should be used to decode videos.
+
+    Returns:
+        LabeledVideoDataset: A dataset object for the HMDB51 dataset.
     """
 
     torch._C._log_api_usage_once("PYTORCHVIDEO.dataset.Hmdb51")

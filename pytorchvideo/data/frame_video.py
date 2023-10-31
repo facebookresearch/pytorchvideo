@@ -32,9 +32,9 @@ logger = logging.getLogger(__name__)
 
 class FrameVideo(Video):
     """
-    FrameVideo is an abstractions for accessing clips based on their start and end
+    FrameVideo is an abstraction for accessing clips based on their start and end
     time for a video where each frame is stored as an image. PathManager is used for
-    frame image reading, allowing non-local uri's to be used.
+    frame image reading, allowing non-local URIs to be used.
     """
 
     def __init__(
@@ -46,15 +46,22 @@ class FrameVideo(Video):
         multithreaded_io: bool = False,
     ) -> None:
         """
+        Initialize a FrameVideo object.
+
         Args:
-            duration (float): the duration of the video in seconds.
-            fps (float): the target fps for the video. This is needed to link the frames
-                to a second timestamp in the video.
-            video_frame_to_path_fn (Callable[[int], str]): a function that maps from a frame
-                index integer to the file path where the frame is located.
-            video_frame_paths (List[str]): Dictionary of frame paths for each index of a video.
-            multithreaded_io (bool):  controls whether parllelizable io operations are
-                performed across multiple threads.
+            duration (float):
+                The duration of the video in seconds.
+            fps (float):
+                The target FPS for the video. This is needed to link the frames to a second
+                timestamp in the video.
+            video_frame_to_path_fn (Callable[[int], str], optional):
+                A function that maps from a frame index integer to the file path where the
+                frame is located.
+            video_frame_paths (List[str], optional):
+                List of frame paths for each index of a video.
+            multithreaded_io (bool, optional):
+                Controls whether parallelizable IO operations are performed across multiple
+                threads.
         """
         if not _HAS_CV2:
             raise ImportError(
@@ -86,15 +93,24 @@ class FrameVideo(Video):
         path_order_cache: Optional[Dict[str, List[str]]] = None,
     ):
         """
+        Create a FrameVideo object from a directory containing frame images.
+
         Args:
-            path (str): path to frame video directory.
-            fps (float): the target fps for the video. This is needed to link the frames
-                to a second timestamp in the video.
-            multithreaded_io (bool):  controls whether parllelizable io operations are
-                performed across multiple threads.
-            path_order_cache (dict): An optional mapping from directory-path to list
-                of frames in the directory in numerical order. Used for speedup by
-                caching the frame paths.
+            path (str):
+                Path to the frame video directory.
+            fps (float, optional):
+                The target FPS for the video. This is needed to link the frames to a second
+                timestamp in the video.
+            multithreaded_io (bool, optional):
+                Controls whether parallelizable IO operations are performed across multiple
+                threads.
+            path_order_cache (dict, optional):
+                An optional mapping from directory path to list of frames in the directory
+                in numerical order. Used for speedup by caching the frame paths.
+
+        Returns:
+            FrameVideo:
+                A FrameVideo object created from the provided frame directory.
         """
         if path_order_cache is not None and path in path_order_cache:
             return cls.from_frame_paths(path_order_cache[path], fps, multithreaded_io)
@@ -119,12 +135,21 @@ class FrameVideo(Video):
         multithreaded_io: bool = False,
     ):
         """
+        Create a FrameVideo object from a list of frame image paths.
+
         Args:
-            video_frame_paths (List[str]): a list of paths to each frames in the video.
-            fps (float): the target fps for the video. This is needed to link the frames
-                to a second timestamp in the video.
-            multithreaded_io (bool):  controls whether parllelizable io operations are
-                performed across multiple threads.
+            video_frame_paths (List[str]):
+                A list of paths to each frame in the video.
+            fps (float, optional):
+                The target FPS for the video. This is needed to link the frames to a second
+                timestamp in the video.
+            multithreaded_io (bool, optional):
+                Controls whether parallelizable IO operations are performed across multiple
+                threads.
+
+        Returns:
+            FrameVideo:
+                A FrameVideo object created from the provided frame image paths.
         """
         assert len(video_frame_paths) != 0, "video_frame_paths is empty"
         return cls(
@@ -136,13 +161,21 @@ class FrameVideo(Video):
 
     @property
     def name(self) -> float:
+        """
+        Returns the name of the FrameVideo.
+
+        Returns:
+            str: The name of the FrameVideo.
+        """
         return self._name
 
     @property
     def duration(self) -> float:
         """
+        Returns the duration of the FrameVideo.
+
         Returns:
-            duration: the video's duration/end-time in seconds.
+            float: The duration of the FrameVideo in seconds.
         """
         return self._duration
 
@@ -158,31 +191,31 @@ class FrameVideo(Video):
         """
         Retrieves frames from the stored video at the specified start and end times
         in seconds (the video always starts at 0 seconds). Returned frames will be
-        in [start_sec, end_sec). Given that PathManager may
-        be fetching the frames from network storage, to handle transient errors, frame
-        reading is retried N times.  Note that as end_sec is exclusive, so you may need
-        to use `get_clip(start_sec, duration + EPS)` to get the last frame.
+        in [start_sec, end_sec). Given that PathManager may be fetching the frames
+        from network storage, to handle transient errors, frame reading is retried N times.
+        Note that as end_sec is exclusive, so you may need to use `get_clip(start_sec, duration + EPS)`
+        to get the last frame.
 
         Args:
-            start_sec (float): the clip start time in seconds
-            end_sec (float): the clip end time in seconds
-            frame_filter (Optional[Callable[List[int], List[int]]]):
-                function to subsample frames in a clip before loading.
-                If None, no subsampling is peformed.
+            start_sec (float):
+                The clip start time in seconds.
+            end_sec (float):
+                The clip end time in seconds.
+            frame_filter (Optional[Callable[List[int], List[int]]], optional):
+                Function to subsample frames in a clip before loading.
+                If None, no subsampling is performed.
+
         Returns:
-            clip_frames: A tensor of the clip's RGB frames with shape:
-                (channel, time, height, width). The frames are of type torch.float32 and
-                in the range [0 - 255]. Raises an exception if unable to load images.
+            Dict[str, Optional[torch.Tensor]]:
+                A dictionary containing the following keys:
+                - "video": A tensor of the clip's RGB frames with shape:
+                  (channel, time, height, width). The frames are of type torch.float32 and
+                  in the range [0 - 255].
+                - "frame_indices": A list of indices for each frame relative to all frames in the
+                  video.
+                - "audio": None (audio is not supported in FrameVideo).
 
-            clip_data:
-                "video": A tensor of the clip's RGB frames with shape:
-                (channel, time, height, width). The frames are of type torch.float32 and
-                in the range [0 - 255]. Raises an exception if unable to load images.
-
-                "frame_indices": A list of indices for each frame relative to all frames in the
-                video.
-
-            Returns None if no frames are found.
+                Returns None if no frames are found.
         """
         if start_sec < 0 or start_sec > self._duration:
             logger.warning(
@@ -224,16 +257,24 @@ def _load_images_with_retries(
     image_paths: List[str], num_retries: int = 10, multithreaded: bool = True
 ) -> torch.Tensor:
     """
-    Loads the given image paths using PathManager, decodes them as RGB images and
-    returns them as a stacked tensors.
+    Loads the given image paths using PathManager, decodes them as RGB images, and
+    returns them as a stacked tensor.
+
     Args:
-        image_paths (List[str]): a list of paths to images.
-        num_retries (int): number of times to retry image reading to handle transient error.
-        multithreaded (bool): if images are fetched via multiple threads in parallel.
+        image_paths (List[str]):
+            A list of paths to images.
+        num_retries (int, optional):
+            Number of times to retry image reading to handle transient errors.
+        multithreaded (bool, optional):
+            If images are fetched via multiple threads in parallel.
+
     Returns:
-        A tensor of the clip's RGB frames with shape:
-        (time, height, width, channel). The frames are of type torch.uint8 and
-        in the range [0 - 255]. Raises an exception if unable to load images.
+        torch.Tensor:
+            A tensor of the clip's RGB frames with shape: (time, height, width, channel).
+            The frames are of type torch.uint8 and in the range [0 - 255].
+
+    Raises:
+        Exception: If unable to load images.
     """
     imgs = [None for i in image_paths]
 

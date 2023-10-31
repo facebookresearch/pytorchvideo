@@ -179,14 +179,18 @@ class EpicKitchenRecognition(EpicKitchenDataset):
         seconds_per_clip: float, clip_sampling: ClipSampling
     ) -> Callable[[Dict[str, Video], Dict[str, List[ActionData]]], List[VideoClipInfo]]:
         """
+        Generate a clip structure defining function based on specified parameters.
+
         Args:
-            seconds_per_clip (float): The length of each sampled clip in seconds.
+            seconds_per_clip (float):
+                The length of each sampled clip in seconds.
             clip_sampling (ClipSampling):
-                The type of sampling to perform to perform on the videos of the dataset.
+                The type of sampling to perform on the videos of the dataset.
 
         Returns:
-            A function that takes a dictionary of videos and a dictionary of the actions
-            for each video and outputs a list of sampled clips.
+            Callable[[Dict[str, Video], Dict[str, List[ActionData]]], List[VideoClipInfo]]:
+                A function that takes a dictionary of videos and their associated actions,
+                and outputs a list of sampled video clip information.
         """
         if not clip_sampling == ClipSampling.RandomOffsetUniform:
             raise NotImplementedError(
@@ -197,6 +201,19 @@ class EpicKitchenRecognition(EpicKitchenDataset):
         def define_clip_structure(
             videos: Dict[str, Video], actions: Dict[str, List[ActionData]]
         ) -> List[VideoClipInfo]:
+            """
+            Define the structure of video clips based on specified parameters.
+
+            Args:
+                videos (Dict[str, Video]):
+                    A dictionary of videos indexed by video ID.
+                actions (Dict[str, List[ActionData]]):
+                    A dictionary of video actions indexed by video ID.
+
+            Returns:
+                List[VideoClipInfo]:
+                    A list of VideoClipInfo objects representing the sampled video clips.
+            """
             clips = []
             for video_id, video in videos.items():
                 offset = random.random() * seconds_per_clip

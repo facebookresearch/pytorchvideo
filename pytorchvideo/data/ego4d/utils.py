@@ -18,7 +18,25 @@ def check_window_len(
     s_time: float, e_time: float, w_len: float, video_dur: float
 ) -> Tuple[float, float]:
     """
-    Constrain/slide the give time window to `w_len` size and the video/clip length.
+    Constrain or slide the given time window to match a specified length  `w_len` while
+    considering the video or clip duration.
+
+    Args:
+        s_time (float): The start time of the original time window.
+        e_time (float): The end time of the original time window.
+        w_len (float): The desired length of the time window.
+        video_dur (float): The duration of the video or clip.
+
+    Returns:
+        Tuple[float, float]: A tuple containing the adjusted start and end times.
+
+    This function adjusts the time window defined by `s_time` and `e_time` to match
+    a specified length `w_len`. If the time window is larger or smaller than `w_len`,
+    it is adjusted by equally extending or trimming the interior. If the adjusted
+    time window exceeds the duration of the video or clip, it is further adjusted to
+    stay within the video duration.
+
+    Note: The function ensures that the adjusted time window has a length close to `w_len`.
     """
     # adjust to match w_len
     interval = e_time - s_time
@@ -50,11 +68,18 @@ def check_window_len(
 # TODO: Move to FixedClipSampler?
 class MomentsClipSampler(ClipSampler):
     """
-    ClipSampler for Ego4d moments. Will return a fixed `window_sec` window
-    around the given annotation, shifting where relevant to account for the end
-    of the clip/video.
+    ClipSampler for Ego4d moments. This sampler returns a fixed-duration `window_sec`
+    window around a given annotation, adjusting for the end of the clip/video if necessary.
 
-    clip_start/clip_end is added to the annotation dict to facilitate future lookups.
+    The `clip_start` and `clip_end` fields are added to the annotation dictionary to
+    facilitate future lookups.
+
+    Args:
+        window_sec (float): The duration (in seconds) of the fixed window to sample.
+
+    This ClipSampler is designed for Ego4d moments and ensures that clips are sampled
+    with a fixed duration specified by `window_sec`. It adjusts the window's position
+    if needed to account for the end of the clip or video.
     """
 
     def __init__(self, window_sec: float = 0) -> None:
@@ -93,6 +118,17 @@ class MomentsClipSampler(ClipSampler):
 
 
 def get_label_id_map(label_id_map_path: str) -> Dict[str, int]:
+    """
+    Reads a label-to-ID mapping from a JSON file.
+
+    Args:
+        label_id_map_path (str): The path to the label ID mapping JSON file.
+
+    Returns:
+        Dict[str, int]: A dictionary mapping label names to their corresponding IDs.
+
+    This function reads a JSON file containing label-to-ID mapping and returns it as a dictionary.
+    """
     label_name_id_map: Dict[str, int]
 
     try:
@@ -108,17 +144,52 @@ def get_label_id_map(label_id_map_path: str) -> Dict[str, int]:
 class Ego4dImuDataBase(ABC):
     """
     Base class placeholder for Ego4d IMU data.
+
+    This is a base class for handling Ego4d IMU data. It defines the required interface for
+    checking if IMU data is available for a video and retrieving IMU samples.
     """
 
     def __init__(self, basepath: str):
+        """
+        Initializes an instance of Ego4dImuDataBase.
+
+        Args:
+            basepath (str): The base path for Ego4d IMU data.
+        """
         self.basepath = basepath
 
     @abstractmethod
     def has_imu(self, video_uid: str) -> bool:
+        """
+        Checks if IMU data is available for a video.
+
+        Args:
+            video_uid (str): The unique identifier of the video.
+
+        Returns:
+            bool: True if IMU data is available, False otherwise.
+
+        This method should be implemented to check if IMU data exists for a specific video
+        identified by its unique ID.
+        """
         pass
 
     @abstractmethod
     def get_imu_sample(
         self, video_uid: str, video_start: float, video_end: float
     ) -> Dict[str, Any]:
+        """
+        Retrieves an IMU sample for a video segment.
+
+        Args:
+            video_uid (str): The unique identifier of the video.
+            video_start (float): The start time of the video segment.
+            video_end (float): The end time of the video segment.
+
+        Returns:
+            Dict[str, Any]: A dictionary containing IMU data.
+
+        This method should be implemented to retrieve IMU data for a specific video segment
+        identified by its unique ID and time range.
+        """
         pass

@@ -18,18 +18,22 @@ class AdaptiveAvgPool3dOutSize1(EfficientBlockBase):
     """
 
     def __init__(self):
+        """
+        Initializes an AdaptiveAvgPool3dOutSize1 layer.
+        """
         super().__init__()
         self.pool = nn.AdaptiveAvgPool3d(1)
         self.convert_flag = False
 
     def convert(self, input_blob_size: Tuple, **kwargs):
         """
-        Converts AdaptiveAvgPool into AvgPool with constant kernel size for better
+        Converts AdaptiveAvgPool into AvgPool with a constant kernel size for better
         efficiency.
+
         Args:
-            input_blob_size (tuple): blob size at the input of
-                AdaptiveAvgPool3dOutSize1 instance during forward.
-            kwargs (any): any keyword argument (unused).
+            input_blob_size (tuple): Blob size at the input of the AdaptiveAvgPool3dOutSize1
+                instance during forward.
+            kwargs (any): Any keyword arguments (unused).
         """
         assert (
             self.convert_flag is False
@@ -39,6 +43,15 @@ class AdaptiveAvgPool3dOutSize1(EfficientBlockBase):
         self.convert_flag = True
 
     def forward(self, x):
+        """
+        Forward pass through the layer.
+
+        Args:
+            x (torch.Tensor): Input tensor.
+
+        Returns:
+            torch.Tensor: Output tensor after applying the AdaptiveAvgPool3dOutSize1 operation.
+        """
         return self.pool(x)
 
 
@@ -46,11 +59,18 @@ class AdaptiveAvgPool2dOutSize1(EfficientBlockBase):
     """
     Implements AdaptiveAvgPool2d with output (H, W) = (1, 1). This operator has
     better efficiency than AdaptiveAvgPool for mobile CPU.
+
+    Attributes:
+        pool (nn.AdaptiveAvgPool2d): The AdaptiveAvgPool2d layer with output size (1, 1).
+        convert_flag (bool): Flag indicating whether the conversion has been applied.
     """
 
     def __init__(
         self,
     ):
+        """
+        Initializes an AdaptiveAvgPool2dOutSize1 instance.
+        """
         super().__init__()
         self.pool = nn.AdaptiveAvgPool2d(1)
         self.convert_flag = False
@@ -59,10 +79,14 @@ class AdaptiveAvgPool2dOutSize1(EfficientBlockBase):
         """
         Converts AdaptiveAvgPool into AvgPool with constant kernel size for better
         efficiency.
+
         Args:
-            input_blob_size (tuple): blob size at the input of
-                AdaptiveAvgPool2dOutSize1 instance during forward.
-            kwargs (any): any keyword argument (unused).
+            input_blob_size (tuple): Blob size at the input of AdaptiveAvgPool2dOutSize1
+                instance during forward.
+            kwargs (any): Any keyword argument (unused).
+        
+        Raises:
+            AssertionError: If conversion is attempted after it has already been applied.
         """
         assert (
             self.convert_flag is False
@@ -72,17 +96,27 @@ class AdaptiveAvgPool2dOutSize1(EfficientBlockBase):
         self.convert_flag = True
 
     def forward(self, x):
+        """
+        Forward pass through the layer.
+
+        Args:
+            x (torch.Tensor): Input tensor.
+
+        Returns:
+            torch.Tensor: Output tensor after pooling.
+        """
         return self.pool(x)
 
 
 class AdaptiveAvgPool3d(NoOpConvertBlock):
     """
     Implements AdaptiveAvgPool3d with any output (T, H, W) size. This operator is
-    supported by QNNPACK for mobile CPU with resonable efficiency, and no change is
+    supported by QNNPACK for mobile CPU with reasonable efficiency, and no change is
     made upon convert(). If the output (T, H, W) = (1, 1, 1), use AdaptiveAvgPool3dOutSize1
     for better efficiency.
+
     Args:
-        output_size (int or tuple): when it is a tuple, the output (T, H, W) of pool
+        output_size (int or tuple): When it is a tuple, the output (T, H, W) of the pool
             will be equal to output_size. When it is an int, the output (T, H, W)
             will be equal to (output_size, output_size, output_size).
     """
@@ -91,17 +125,24 @@ class AdaptiveAvgPool3d(NoOpConvertBlock):
         self,
         output_size: Union[int, Tuple],
     ):
+        """
+        Initializes an AdaptiveAvgPool3d instance.
+
+        Args:
+            output_size (int or tuple): Desired output size for the pooling operation.
+        """
         super().__init__(model=nn.AdaptiveAvgPool3d(output_size))
 
 
 class AdaptiveAvgPool2d(NoOpConvertBlock):
     """
     Implements AdaptiveAvgPool2d with any output (H, W) size. This operator is
-    supported by QNNPACK for mobile CPU with resonable efficiency, and no change is
+    supported by QNNPACK for mobile CPU with reasonable efficiency, and no change is
     made upon convert(). If the output (H, W) = (1, 1), use AdaptiveAvgPool2dOutSize1
     for better efficiency.
+
     Args:
-        output_size (int or tuple): when it is a tuple, the output (H, W) of pool
+        output_size (int or tuple): When it is a tuple, the output (H, W) of the pool
             will be equal to output_size. When it is an int, the output (H, W)
             will be equal to (output_size, output_size).
     """
@@ -110,4 +151,10 @@ class AdaptiveAvgPool2d(NoOpConvertBlock):
         self,
         output_size: Union[int, Tuple],
     ):
+        """
+        Initializes an AdaptiveAvgPool2d instance.
+
+        Args:
+            output_size (int or tuple): Desired output size for the pooling operation.
+        """
         super().__init__(model=nn.AdaptiveAvgPool2d(output_size))

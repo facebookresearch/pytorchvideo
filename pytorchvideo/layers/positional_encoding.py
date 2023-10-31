@@ -10,18 +10,34 @@ from torch import nn
 
 class PositionalEncoding(nn.Module):
     """
-    Applies a positional encoding to a tensor with shape (batch_size x seq_len x embed_dim).
+    Applies positional encoding to a tensor with shape (batch_size x seq_len x embed_dim).
+
+    Positional encoding is a crucial component in transformers. It helps the model
+    capture the sequential order of the input data.
 
     The positional encoding is computed as follows:
-        PE(pos,2i) = sin(pos/10000^(2i/dmodel))
-        PE(pos,2i+1) = cos(pos/10000^(2i/dmodel))
+        PE(pos, 2i) = sin(pos / 10000^(2i / dmodel))
+        PE(pos, 2i+1) = cos(pos / 10000^(2i / dmodel))
 
-        where pos = position, pos in [0, seq_len)
-        dmodel = data embedding dimension = embed_dim
-        i = dimension index, i in [0, embed_dim)
+    where:
+    - pos: position in the sequence, pos in [0, seq_len)
+    - dmodel: data embedding dimension = embed_dim
+    - i: dimension index, i in [0, embed_dim)
 
     Reference: "Attention Is All You Need" https://arxiv.org/abs/1706.03762
     Implementation Reference: https://pytorch.org/tutorials/beginner/transformer_tutorial.html
+
+    Args:
+        embed_dim (int): The embedding dimension of the input data.
+        seq_len (int): The maximum sequence length for which the positional encoding is calculated.
+
+    Attributes:
+        pe (torch.Tensor): The precomputed positional encodings.
+
+    Example:
+        >>> positional_encoder = PositionalEncoding(512, 1000)
+        >>> input_data = torch.randn(32, 100, 512)
+        >>> output_data = positional_encoder(input_data)
     """
 
     def __init__(self, embed_dim: int, seq_len: int = 1024) -> None:
@@ -140,19 +156,25 @@ def get_3d_sincos_pos_embed(
     embed_dim: int, grid_size: int, t_size: int, cls_token: bool = False
 ) -> torch.Tensor:
     """
-    Get 3D sine-cosine positional embedding.
+    Get 3D sine-cosine positional embedding for a 3D grid.
+
     Args:
-        grid_size: int of the grid height and width
-        t_size: int of the temporal size
-        cls_token: bool, whether to contain CLS token
+        embed_dim (int): The total embedding dimension. It should be divisible by 4.
+            The embedding is split into three parts: spatial (3/4 of embed_dim) and
+            temporal (1/4 of embed_dim).
+        grid_size (int): The size of the grid in both height and width dimensions.
+        t_size (int): The temporal size of the grid.
+        cls_token (bool): Whether to include a CLS token in the output.
+
     Returns:
-        (torch.Tensor): [t_size*grid_size*grid_size, embed_dim] or [1+t_size*grid_size*grid_size, embed_dim] (w/ or w/o cls_token)
+        torch.Tensor: A positional embedding tensor of shape [t_size*grid_size*grid_size, embed_dim]
+            if cls_token is False, or [1 + t_size*grid_size*grid_size, embed_dim] if cls_token is True.
     """
     assert embed_dim % 4 == 0
     embed_dim_spatial = embed_dim // 4 * 3
     embed_dim_temporal = embed_dim // 4
 
-    # spatial
+    # Generate spatial positional embeddings
     grid_h = np.arange(grid_size, dtype=np.float32)
     grid_w = np.arange(grid_size, dtype=np.float32)
     grid = np.meshgrid(grid_w, grid_h)
@@ -161,7 +183,7 @@ def get_3d_sincos_pos_embed(
     grid = grid.reshape([2, 1, grid_size, grid_size])
     pos_embed_spatial = get_2d_sincos_pos_embed_from_grid(embed_dim_spatial, grid)
 
-    # temporal
+    # Generate temporal positional embeddings
     grid_t = np.arange(t_size, dtype=np.float32)
     pos_embed_temporal = get_1d_sincos_pos_embed_from_grid(embed_dim_temporal, grid_t)
 
@@ -175,19 +197,24 @@ def get_3d_sincos_pos_embed(
 
     if cls_token:
         pos_embed = np.concatenate([np.zeros([1, embed_dim]), pos_embed], axis=0)
-    return pos_embed
+
+    return torch.tensor(pos_embed)
 
 
 def get_2d_sincos_pos_embed(
     embed_dim: int, grid_size: int, cls_token: bool = False
 ) -> torch.Tensor:
     """
-    Get 2D sine-cosine positional embedding.
+    Get 2D sine-cosine positional embedding for a 2D grid.
+
     Args:
-        grid_size: int of the grid height and width
-        cls_token: bool, whether to contain CLS token
+        embed_dim (int): The embedding dimension.
+        grid_size (int): The grid height and width.
+        cls_token (bool): Whether to include a CLS token.
+
     Returns:
-        (torch.Tensor): [grid_size*grid_size, embed_dim] or [1+grid_size*grid_size, embed_dim] (w/ or w/o cls_token)
+        torch.Tensor: A 2D positional embedding tensor of shape [grid_size*grid_size, embed_dim]
+        or [1+grid_size*grid_size, embed_dim] if cls_token is True.
     """
     grid_h = np.arange(grid_size, dtype=np.float32)
     grid_w = np.arange(grid_size, dtype=np.float32)
@@ -203,12 +230,15 @@ def get_2d_sincos_pos_embed(
 
 def get_2d_sincos_pos_embed_from_grid(embed_dim: int, grid: np.ndarray) -> torch.Tensor:
     """
-    Get 2D sine-cosine positional embedding from grid.
+    Get 2D sine-cosine positional embedding from a grid.
+
     Args:
-        embed_dim: embedding dimension.
-        grid: positions
+        embed_dim (int): The embedding dimension.
+        grid (np.ndarray): A 2D grid of positions.
+
     Returns:
-        (torch.Tensor): [grid_size*grid_size, embed_dim] or [1+grid_size*grid_size, embed_dim] (w/ or w/o cls_token)
+        torch.Tensor: A 2D positional embedding tensor of shape [grid_size*grid_size, embed_dim]
+        or [1+grid_size*grid_size, embed_dim] if cls_token is True.
 
     """
     assert embed_dim % 2 == 0
@@ -222,12 +252,16 @@ def get_2d_sincos_pos_embed_from_grid(embed_dim: int, grid: np.ndarray) -> torch
 
 def get_1d_sincos_pos_embed_from_grid(embed_dim: int, pos: np.ndarray) -> torch.Tensor:
     """
-    Get 1D sine-cosine positional embedding.
+    Get 1D sine-cosine positional embedding for a 1D array of positions.
+
     Args:
-        embed_dim: output dimension for each position
-        pos: a list of positions to be encoded: size (M,)
+        embed_dim (int): The output dimension for each position.
+        pos (np.ndarray): A 1D array of positions to be encoded.
+
     Returns:
-        (torch.Tensor): tensor of shape (M, D)
+        torch.Tensor: A tensor of shape (M, D), where M is the number of positions
+        and D is the embedding dimension.
+
     """
     assert embed_dim % 2 == 0
     omega = np.arange(embed_dim // 2, dtype=float)

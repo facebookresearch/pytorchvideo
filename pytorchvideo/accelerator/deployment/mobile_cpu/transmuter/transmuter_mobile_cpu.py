@@ -12,11 +12,21 @@ from pytorchvideo.layers.accelerator.mobile_cpu.convolutions import (
 
 def transmute_Conv3dPwBnAct(input_module: nn.Module):
     """
-    Given an input_module, transmutes it into a equivalent Conv3dPwBnAct. Returns None
-    if no equivalent Conv3dPwBnAct is found, else returns an instance of equivalent
-    Conv3dPwBnAct.
+    Transmutes the given `input_module` into an equivalent Conv3dPwBnAct module if applicable.
+
     Args:
-        input_module (nn.Module): input module to find an equivalent Conv3dPwBnAct
+        input_module (nn.Module): The input module to find an equivalent Conv3dPwBnAct for.
+
+    Returns:
+        Conv3dPwBnAct or None: An instance of the equivalent Conv3dPwBnAct module if found;
+        otherwise, None.
+
+    This function checks if `input_module` is an instance of nn.Conv3d and if it matches specific
+    criteria, such as kernel size, groups, stride, padding, and dilation. If the criteria are met,
+    it creates and returns an equivalent Conv3dPwBnAct module, copying the weights if necessary.
+
+    Note: Conv3dPwBnAct is a module that combines a 3D pointwise convolution with batch normalization
+    and activation functions.
     """
     if not isinstance(input_module, nn.Conv3d):
         return None
@@ -42,11 +52,22 @@ def transmute_Conv3dPwBnAct(input_module: nn.Module):
 
 def transmute_Conv3d3x3x3DwBnAct(input_module: nn.Module):
     """
-    Given an input_module, transmutes it into a equivalent Conv3d3x3x3DwBnAct. Returns
-    None if no equivalent Conv3d3x3x3DwBnAct is found, else returns an instance of
-    equivalent Conv3d3x3x3DwBnAct.
+    Transmutes the given `input_module` into an equivalent Conv3d3x3x3DwBnAct module if applicable.
+
     Args:
-        input_module (nn.Module): input module to find an equivalent Conv3d3x3x3DwBnAct
+        input_module (nn.Module): The input module to find an equivalent Conv3d3x3x3DwBnAct for.
+
+    Returns:
+        Conv3d3x3x3DwBnAct or None: An instance of the equivalent Conv3d3x3x3DwBnAct module if found;
+        otherwise, None.
+
+    This function checks if `input_module` is an instance of nn.Conv3d and if it matches specific
+    criteria, such as kernel size, in_channels, groups, stride, padding, padding_mode, and dilation.
+    If the criteria are met, it creates and returns an equivalent Conv3d3x3x3DwBnAct module, copying
+    the weights if necessary.
+
+    Note: Conv3d3x3x3DwBnAct is a module that combines a 3D 3x3x3 depthwise convolution with batch
+    normalization and activation functions.
     """
     if not isinstance(input_module, nn.Conv3d):
         return None

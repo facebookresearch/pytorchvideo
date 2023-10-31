@@ -17,14 +17,21 @@ def _add_input_tensor_size_lut_hook(
     base_name: str = "",
 ) -> None:
     """
-    This helper function recursively goes through all modules in a network, registers
-    forward hook function to each module. The hook function records the input tensor
-    size in forward in input_tensor_size_lut[base_name].
+    Recursively adds a forward hook to each module in a network, recording input tensor sizes
+    in the provided input_tensor_size_lut dictionary.
+
     Args:
-        module (nn.Module): input module to add hook recursively.
-        input_tensor_size_lut (dict): lut to record input tensor size for hook function.
-        hook_handle_list (list): a list to contain hook handles.
-        base_name (str): name for module input.
+        module (nn.Module): The input module to add hooks to, recursively.
+        input_tensor_size_lut (dict): A dictionary to record input tensor sizes for the hook function.
+        hook_handle_list (list): A list to contain hook handles.
+        base_name (str): The base name for the input module.
+
+    This helper function iterates through the input `module` and its children, registering a forward
+    hook for each module. The hook function records the input tensor size for the module in the
+    `input_tensor_size_lut` dictionary using the `base_name` as the key.
+
+    Note: Forward hooks are useful for monitoring and analyzing the input tensor sizes as they pass
+    through each module in a neural network.
     """
 
     def hook_fn(_, _in, _out):
@@ -51,21 +58,27 @@ def _convert_module(
     native_conv3d_op_qnnpack: bool = False,
 ) -> None:
     """
-    This helper function recursively goes through sub-modules in a network. If current
-    module is a efficient block (instance of EfficientBlockBase) with convert() method,
-    its convert() method will be called, and the input tensor size (needed by efficient
-    blocks for mobile cpu) will be provided by matching module name in
-    input_tensor_size_lut.
-    Otherwise if the input module is a non efficient block, this function will try to go
-    through child modules of input module to look for any efficient block in lower
-    hierarchy.
+    Recursively traverses sub-modules in a neural network and performs module conversion
+    if applicable. For efficient blocks (instances of EfficientBlockBase) with a 'convert'
+    method, it calls the 'convert' method with the input tensor size obtained from the
+    'input_tensor_size_lut'. If the module is not an efficient block, it explores child
+    modules to find efficient blocks in lower hierarchy.
+
     Args:
-        module (nn.Module): input module for convert.
-        input_tensor_size_lut (dict): input tensor size look-up table.
-        base_name (str): module name for input module.
-        convert_for_quantize (bool): whether this module is intended to be quantized.
-        native_conv3d_op_qnnpack (bool): whether the QNNPACK version has native int8
-            Conv3d.
+        module (nn.Module): The input module for conversion.
+        input_tensor_size_lut (dict): A dictionary containing input tensor sizes for reference.
+        base_name (str): The name of the module.
+        convert_for_quantize (bool): Whether this module is intended for quantization.
+        native_conv3d_op_qnnpack (bool): Whether the QNNPACK version has native int8 Conv3d.
+
+    This helper function is designed for recursively exploring a neural network and converting
+    specific modules, such as efficient blocks. If a module is an instance of EfficientBlockBase
+    and has a 'convert' method, it calls the 'convert' method with the input tensor size from
+    the 'input_tensor_size_lut'. If the module is not an efficient block, it continues to explore
+    its child modules in search of efficient blocks in lower hierarchies.
+
+    Note: Module conversion is a common step in optimizing and adapting neural networks for
+    specific hardware or use cases, such as mobile CPUs.
     """
     if isinstance(module, EfficientBlockBase):
         module.convert(
@@ -91,19 +104,31 @@ def convert_to_deployable_form(
     native_conv3d_op_qnnpack: bool = False,
 ) -> nn.Module:
     """
-    This function takes an input model, and returns a deployable model copy.
+    Converts an input model into a deployable form and returns a copy of the modified model.
+
     Args:
-        model (nn.Module): input model for conversion. The model can include a mix of
-            efficient blocks (instances of EfficientBlockBase) and non efficient blocks.
-            The efficient blocks will be converted by calling its convert() method, while
-            other blocks will stay unchanged.
-        input_tensor (torch.Tensor): input tensor for model. Note current conversion for
-            deployable form in mobile cpu only works for single input tensor size (i.e.,
-            the future input tensor to converted model should have the same size as
-            input_tensor specified here).
-        convert_for_quantize (bool): whether this module is intended to be quantized.
-        native_conv3d_op_qnnpack (bool): whether the QNNPACK version has native int8
-            Conv3d.
+        model (nn.Module): The input model for conversion. The model can consist of a mix
+            of efficient blocks (instances of EfficientBlockBase) and non-efficient blocks.
+            Efficient blocks are converted using their `convert()` method, while other
+            blocks remain unchanged.
+        input_tensor (torch.Tensor): The input tensor used for the model. The conversion for
+            deployable form on mobile CPU is designed for a single input tensor size. The
+            future input tensor to the converted model should match the size of the
+            `input_tensor` specified here.
+        convert_for_quantize (bool): Indicates whether this module is intended for quantization.
+        native_conv3d_op_qnnpack (bool): Specifies whether the QNNPACK version has native
+            int8 Conv3d support.
+
+    Returns:
+        nn.Module: A copy of the input model converted into a deployable form.
+
+    This function prepares the input model for deployment by performing the following steps:
+    1. Captures input tensor sizes during forward pass.
+    2. Executes a forward pass to record input tensor sizes.
+    3. Removes forward hooks used for input tensor size capture.
+    4. Creates a deep copy of the input model for conversion.
+    5. Converts the copied model by applying the `_convert_module` function.
+    6. Returns the converted model suitable for deployment.
     """
     input_tensor_size_lut = {}
     hook_handle_list = []

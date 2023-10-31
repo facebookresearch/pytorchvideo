@@ -21,6 +21,22 @@ class VideoPathHandler:
     def video_from_path(
         self, filepath, decode_video=True, decode_audio=False, decoder="pyav", fps=30
     ):
+        """
+        Returns a video object (either EncodedVideo or FrameVideo) based on the provided file path.
+
+        Args:
+            filepath (str): Path to the video file or directory containing frame images.
+            decode_video (bool): Whether to decode the video (only for EncodedVideo).
+            decode_audio (bool): Whether to decode the audio (only for EncodedVideo).
+            decoder (str): The video decoder to use (only for EncodedVideo).
+            fps (int): Frames per second (only for FrameVideo).
+
+        Returns:
+            Union[EncodedVideo, FrameVideo]: A video object based on the provided file path.
+        
+        Raises:
+            FileNotFoundError: If the file or directory specified by `filepath` does not exist.
+        """
         try:
             is_file = g_pathmgr.isfile(filepath)
             is_dir = g_pathmgr.isdir(filepath)
@@ -64,9 +80,13 @@ class Video(ABC):
         decode_audio: bool = True,
     ) -> None:
         """
+        Initializes the Video object with a file-like object containing the encoded video.
+
         Args:
-            file (BinaryIO): a file-like object (e.g. io.BytesIO or io.StringIO) that
+            file (BinaryIO): A file-like object (e.g. io.BytesIO or io.StringIO) that
                 contains the encoded video.
+            video_name (Optional[str]): An optional name for the video.
+            decode_audio (bool): Whether to decode audio from the video.
         """
         pass
 
@@ -74,8 +94,10 @@ class Video(ABC):
     @abstractmethod
     def duration(self) -> float:
         """
+        Returns the duration of the video in seconds.
+
         Returns:
-            duration of the video in seconds
+            float: The duration of the video in seconds.
         """
         pass
 
@@ -88,14 +110,18 @@ class Video(ABC):
         in seconds (the video always starts at 0 seconds).
 
         Args:
-            start_sec (float): the clip start time in seconds
-            end_sec (float): the clip end time in seconds
-        Returns:
-            video_data_dictonary: A dictionary mapping strings to tensor of the clip's
-                underlying data.
+            start_sec (float): The clip start time in seconds.
+            end_sec (float): The clip end time in seconds.
 
+        Returns:
+            Dict[str, Optional[torch.Tensor]]: A dictionary mapping strings to tensors
+            of the clip's underlying data. It may include video frames and audio.
         """
         pass
 
     def close(self):
+        """
+        Closes any resources associated with the Video object.
+        """
         pass
+    

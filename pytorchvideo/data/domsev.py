@@ -78,7 +78,16 @@ LABEL_TYPE_2_MAP = {
 @dataclass
 class LabelData(DataclassFieldCaster):
     """
-    Class representing a contiguous label for a video segment from the DoMSEV dataset.
+    Represents a continuous label for a video segment from the DoMSEV dataset.
+
+    Attributes:
+        video_id (str): The unique identifier of the video.
+        start_time (float): The start time of the label, in seconds.
+        stop_time (float): The stop time of the label, in seconds.
+        start_frame (int): The 0-indexed ID of the start frame (inclusive).
+        stop_frame (int): The 0-indexed ID of the stop frame (inclusive).
+        label_id (int): The unique identifier of the label.
+        label_name (str): The name of the label.
     """
 
     video_id: str
@@ -96,7 +105,7 @@ def _seconds_to_frame_index(
 ) -> int:
     """
     Converts a point in time (in seconds) within a video clip to its closest
-    frame indexed (rounding down), based on a specified frame rate.
+    frame index (rounding down), based on a specified frame rate.
 
     Args:
         time_in_seconds (float): The point in time within the video.
@@ -105,7 +114,7 @@ def _seconds_to_frame_index(
             zero-indexed (if True) or one-indexed (if False).
 
     Returns:
-        (int) The index of the nearest frame (rounding down to the nearest integer).
+        int: The index of the nearest frame (rounding down to the nearest integer).
     """
     frame_idx = math.floor(time_in_seconds * fps)
     if not zero_indexed:
@@ -119,8 +128,14 @@ def _get_overlap_for_time_range_pair(
     """
     Calculates the overlap between two time ranges, if one exists.
 
+    Args:
+        t1_start (float): The start time of the first time range.
+        t1_stop (float): The stop time of the first time range.
+        t2_start (float): The start time of the second time range.
+        t2_stop (float): The stop time of the second time range.
+
     Returns:
-        (Optional[Tuple]) A tuple of <overlap_start_time, overlap_stop_time> if
+        Optional[Tuple[float, float]]: A tuple of <overlap_start_time, overlap_stop_time> if
         an overlap is found, or None otherwise.
     """
     # Check if there is an overlap
@@ -135,11 +150,30 @@ def _get_overlap_for_time_range_pair(
 
 class DomsevFrameDataset(torch.utils.data.Dataset):
     """
-    Egocentric video classification frame-based dataset for
+    Dataset for frame-based egocentric video classification using the DoMSEV dataset.
     `DoMSEV <https://www.verlab.dcc.ufmg.br/semantic-hyperlapse/cvpr2018-dataset/>`_
 
-    This dataset handles the loading, decoding, and configurable sampling for
-    the image frames.
+    This dataset handles loading, decoding, and configurable sampling of image frames.
+
+    Args:
+        video_data_manifest_file_path (str): Path to a JSON file outlining available video data
+            for associated videos.
+        video_info_file_path (str): Path or URI to a manifest with basic metadata for each video.
+        labels_file_path (str): Path or URI to a manifest with temporal annotations for each video.
+        transform (Optional[Callable[[Dict[str, Any]], Any]]): A callable for custom preprocessing
+            and augmentations to apply to the clips. Default is None.
+        multithreaded_io (bool): Control whether IO operations are performed across multiple threads.
+            Default is False.
+
+    Attributes:
+        _labels_per_frame (Dict[str, int]): A mapping of frame IDs to their corresponding label IDs.
+        _user_transform (Optional[Callable[[Dict[str, Any]], Any]]): User-defined transform function.
+        _transform (Callable[[Dict[str, Any]], Dict[str, Any]]): Default transformation function.
+        _frames (List[ImageFrameInfo]): List of image frame information.
+
+    Methods:
+        __getitem__(self, index) -> Dict[str, Any]: Sample an image frame associated with the given index.
+        __len__(self) -> int: Get the number of frames in the dataset.
     """
 
     def __init__(
@@ -214,10 +248,11 @@ class DomsevFrameDataset(torch.utils.data.Dataset):
         video_labels: Dict[str, List[LabelData]],
     ):
         """
+        Assign labels to frames based on temporal annotations.
+
         Args:
-            frames_dict: The mapping of <frame_id, ImageFrameInfo> for all the frames
-                in the dataset.
-            video_labels: The list of temporal labels for each video
+            frames_dict (Dict[str, ImageFrameInfo]): Mapping of frame_id to ImageFrameInfo.
+            video_labels (Dict[str, List[LabelData]]): Temporal annotations for each video.
 
         Also unpacks one label per frame.
         Also converts them to class IDs and then a tensor.
@@ -237,13 +272,13 @@ class DomsevFrameDataset(torch.utils.data.Dataset):
 
     def __getitem__(self, index) -> Dict[str, Any]:
         """
-        Samples an image frame associated to the given index.
+        Get an image frame and associated information at the specified index.
 
         Args:
-            index (int): index for the image frame
+            index (int): Index for the image frame.
 
         Returns:
-            An image frame with the following format if transform is None.
+            Dict[str, Any]: Information about the image frame and its label.
 
             .. code-block:: text
 
@@ -271,21 +306,22 @@ class DomsevFrameDataset(torch.utils.data.Dataset):
 
     def __len__(self) -> int:
         """
+        Get the number of frames in the dataset.
+
         Returns:
-            The number of frames in the dataset.
+            int: The number of frames.
         """
         return len(self._frames)
 
     def _transform_frame(self, frame: Dict[str, Any]) -> Dict[str, Any]:
         """
-        Transforms a given image frame, according to some pre-defined transforms
-        and an optional user transform function (self._user_transform).
+        Apply transformations to a given image frame.
 
         Args:
-            clip (Dict[str, Any]): The clip that will be transformed.
+            frame (Dict[str, Any]): Information about the image frame.
 
         Returns:
-            (Dict[str, Any]) The transformed clip.
+            Dict[str, Any]: Transformed information about the image frame.
         """
         for key in frame:
             if frame[key] is None:
@@ -494,16 +530,18 @@ class DomsevVideoDataset(torch.utils.data.Dataset):
 
 def _load_image_from_path(image_path: str, num_retries: int = 10) -> Image:
     """
-    Loads the given image path using PathManager and decodes it as an RGB image.
+    Load an image from the given file path and decode it as an RGB image.
 
     Args:
-        image_path (str): the path to the image.
-        num_retries (int): number of times to retry image reading to handle transient error.
+        image_path (str): The path to the image file.
+        num_retries (int): The number of times to retry image reading to handle transient errors.
 
     Returns:
-        A PIL Image of the image RGB data with shape:
-        (channel, height, width). The frames are of type np.uint8 and
-        in the range [0 - 255]. Raises an exception if unable to load images.
+        Image: A PIL Image representing the loaded image in RGB format.
+            The image has the shape (channel, height, width) and pixel values in the range [0, 255].
+
+    Raises:
+        Exception: If unable to load the image after the specified number of retries.
     """
     if not _HAS_CV2:
         raise ImportError(

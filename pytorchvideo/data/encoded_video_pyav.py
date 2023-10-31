@@ -326,18 +326,20 @@ def _pyav_decode_stream(
     perform_seek: bool = True,
 ) -> Tuple[List, float]:
     """
-    Decode the video with PyAV decoder.
+    Decode video frames from a PyAV container using a specified stream.
+
     Args:
-        container (container): PyAV container.
-        start_pts (int): the starting Presentation TimeStamp to fetch the
-            video frames.
-        end_pts (int): the ending Presentation TimeStamp of the decoded frames.
-        stream (stream): PyAV stream.
-        stream_name (dict): a dictionary of streams. For example, {"video": 0}
-            means video stream at stream index 0.
+        container (av.container.input.InputContainer): PyAV container containing the video.
+        start_pts (int): The starting Presentation TimeStamp (PTS) to fetch video frames.
+        end_pts (int): The ending Presentation TimeStamp (PTS) of the decoded frames.
+        stream (av.video.stream.VideoStream): PyAV video stream to decode.
+        stream_name (dict): A dictionary of streams, e.g., {"video": 0} for the video stream at index 0.
+        buffer_size (int): Size of the frame buffer (unused in this function).
+        perform_seek (bool): Whether to perform seeking in the stream (may affect performance).
+
     Returns:
-        result (list): list of decoded frames.
-        max_pts (int): max Presentation TimeStamp of the video sequence.
+        result (List[av.video.frame.VideoFrame]): List of decoded video frames.
+        max_pts (float): The maximum Presentation TimeStamp (PTS) of the video sequence.
     """
 
     # Seeking in the stream is imprecise. Thus, seek to an earlier pts by a

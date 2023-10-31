@@ -6,25 +6,27 @@ from typing import List
 
 def set_attributes(self, params: List[object] = None) -> None:
     """
-    An utility function used in classes to set attributes from the input list of parameters.
+    Utility function used in classes to set attributes from the input dictionary of parameters.
+    
     Args:
-        params (list): list of parameters.
+        params: A List of attribute names and their corresponding values.
     """
-    if params:
-        for k, v in params.items():
-            if k != "self":
-                setattr(self, k, v)
+    for key, value in params.items():
+        setattr(self, key, value)
 
-
-def round_width(width, multiplier, min_width=8, divisor=8, ceil=False):
+def round_width(width: int, multiplier: float, min_width: int = 8, divisor: int = 8, ceil: bool = False) -> int:
     """
-    Round width of filters based on width multiplier
+    Round the width of filters based on a width multiplier.
+    
     Args:
-        width (int): the channel dimensions of the input.
-        multiplier (float): the multiplication factor.
-        min_width (int): the minimum width after multiplication.
-        divisor (int): the new width should be dividable by divisor.
-        ceil (bool): If True, use ceiling as the rounding method.
+        width (int): The channel dimensions of the input.
+        multiplier (float): The multiplication factor.
+        min_width (int, optional): The minimum width after multiplication.
+        divisor (int, optional): The new width should be divisible by divisor.
+        ceil (bool, optional): If True, use ceiling as the rounding method.
+
+    Returns:
+        int: The rounded width value.
     """
     if not multiplier:
         return width
@@ -39,10 +41,16 @@ def round_width(width, multiplier, min_width=8, divisor=8, ceil=False):
         width_out += divisor
     return int(width_out)
 
-
-def round_repeats(repeats, multiplier):
+def round_repeats(repeats: int, multiplier: float) -> int:
     """
-    Round number of layers based on depth multiplier.
+    Round the number of layers based on a depth multiplier.
+
+    Args:
+        repeats (int): The original number of layers.
+        multiplier (float): The depth multiplier.
+
+    Returns:
+        int: The rounded number of layers.
     """
     if not multiplier:
         return repeats
