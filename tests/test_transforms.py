@@ -10,8 +10,8 @@ from pytorchvideo.data.utils import thwc_to_cthw
 from pytorchvideo.transforms import (
     ApplyTransformToKey,
     AugMix,
-    create_video_transform,
     CutMix,
+    Grayscale,
     MixUp,
     MixVideo,
     Normalize,
@@ -23,6 +23,7 @@ from pytorchvideo.transforms import (
     ShortSideScale,
     UniformCropVideo,
     UniformTemporalSubsample,
+    create_video_transform,
 )
 from pytorchvideo.transforms.functional import (
     clip_boxes_to_image,
@@ -38,7 +39,7 @@ from pytorchvideo.transforms.functional import (
     uniform_temporal_subsample,
     uniform_temporal_subsample_repeated,
 )
-from torchvision.transforms import Compose
+from torchvision.transforms import Compose, Grayscale as FrameGrayscale
 from torchvision.transforms._transforms_video import (
     CenterCropVideo,
     NormalizeVideo,
@@ -934,6 +935,26 @@ class TestTransforms(unittest.TestCase):
 
         for p in list(permutations(range(0, 4))):
             self.assertTrue(video.permute(*p).equal(Permute(p)(video)))
+
+    def test_grayscale(self):
+        video = thwc_to_cthw(create_dummy_video_frames(10, 30, 40)).to(
+            dtype=torch.float32
+        )
+        transform = Grayscale()
+
+        actual = transform(video)
+        self.assertEqual(actual.shape[0], 1)
+
+        # Apply frame-wise grayscale.
+        framewise_gray = []
+        for n in range(video.shape[1]):
+            frame = video[:, n, :].squeeze(1)
+            frame_gray = FrameGrayscale()(frame)
+            framewise_gray.append(frame_gray)
+
+        framewise_gray = torch.stack(framewise_gray).transpose(0, 1)
+        self.assertEqual(actual.shape, framewise_gray.shape)
+        self.assertTrue(torch.equal(actual, framewise_gray))
 
     def test_video_transform_factory(self):
         # Test asserts/raises.
