@@ -38,6 +38,8 @@ def uniform_temporal_subsample(
     # Sample by nearest neighbor interpolation if num_samples > t.
     indices = torch.linspace(0, t - 1, num_samples)
     indices = torch.clamp(indices, 0, t - 1).long()
+    if indices.device != x.device:
+        indices = indices.to(x.device)
     return torch.index_select(x, temporal_dim, indices)
 
 
