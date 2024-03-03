@@ -84,7 +84,7 @@ class TestX3d(unittest.TestCase):
             os.path.dirname(os.path.realpath(__file__)),
             "..",
         )
-        for (input_clip_length, input_crop_size, model_name) in [
+        for input_clip_length, input_crop_size, model_name in [
             (4, 160, "x3d_xs"),
             (13, 160, "x3d_s"),
             (16, 224, "x3d_m"),

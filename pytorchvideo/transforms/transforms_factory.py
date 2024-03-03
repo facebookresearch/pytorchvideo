@@ -222,9 +222,9 @@ def create_video_transform(
                 "scale"
             ]
         if "aspect_ratio" not in random_resized_crop_paras:
-            random_resized_crop_paras[
-                "aspect_ratio"
-            ] = _RANDOM_RESIZED_CROP_DEFAULT_PARAS["aspect_ratio"]
+            random_resized_crop_paras["aspect_ratio"] = (
+                _RANDOM_RESIZED_CROP_DEFAULT_PARAS["aspect_ratio"]
+            )
 
     transform = Compose(
         (

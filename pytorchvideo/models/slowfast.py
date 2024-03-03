@@ -297,12 +297,16 @@ def create_slowfast(
                     conv_b_stride=stage_conv_b_stride,
                     conv_b_padding=(
                         stage_conv_b_kernel_sizes[pathway_idx][idx][0] // 2,
-                        stage_conv_b_dilations[pathway_idx][idx][1]
-                        if stage_conv_b_dilations[pathway_idx][idx][1] > 1
-                        else stage_conv_b_kernel_sizes[pathway_idx][idx][1] // 2,
-                        stage_conv_b_dilations[pathway_idx][idx][2]
-                        if stage_conv_b_dilations[pathway_idx][idx][2] > 1
-                        else stage_conv_b_kernel_sizes[pathway_idx][idx][2] // 2,
+                        (
+                            stage_conv_b_dilations[pathway_idx][idx][1]
+                            if stage_conv_b_dilations[pathway_idx][idx][1] > 1
+                            else stage_conv_b_kernel_sizes[pathway_idx][idx][1] // 2
+                        ),
+                        (
+                            stage_conv_b_dilations[pathway_idx][idx][2]
+                            if stage_conv_b_dilations[pathway_idx][idx][2] > 1
+                            else stage_conv_b_kernel_sizes[pathway_idx][idx][2] // 2
+                        ),
                     ),
                     conv_b_num_groups=stage_conv_b_num_groups[pathway_idx][idx],
                     conv_b_dilation=stage_conv_b_dilations[pathway_idx][idx],

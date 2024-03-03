@@ -70,7 +70,6 @@ def create_classification_model_from_ssl_checkpoint(
     mlp: Optional[nn.Module] = None,
     detach_backbone: bool = False,
 ) -> nn.Module:
-
     """
     A utlity function for extracting the bacbone from the PyTorch Lightning's
     SSL checkpoints. Used for supervided finetuning the SSL pre-trained models

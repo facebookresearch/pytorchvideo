@@ -67,7 +67,10 @@ class TestDataUtils(unittest.TestCase):
     ):
         with temp_encoded_video(
             num_frames=num_frames, fps=fps, height=height, width=width
-        ) as (video_file_name, data,), tempfile.TemporaryDirectory(
+        ) as (
+            video_file_name,
+            data,
+        ), tempfile.TemporaryDirectory(
             prefix="video_stop_gap_test"
         ) as tempdir:
             exported_video_path = os.path.join(tempdir, "video.mp4")

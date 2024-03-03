@@ -91,7 +91,7 @@ class TestSlowFast(unittest.TestCase):
         """
         Test builder `create_slowfast` with callable inputs.
         """
-        for (norm, activation) in itertools.product(
+        for norm, activation in itertools.product(
             (nn.BatchNorm3d, None), (nn.ReLU, nn.Sigmoid, None)
         ):
             input_clip_length = 32

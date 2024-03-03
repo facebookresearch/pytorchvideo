@@ -425,15 +425,17 @@ def create_res_block(
         norm_model = norm(num_features=dim_out, eps=norm_eps, momentum=norm_momentum)
 
     return ResBlock(
-        branch1_conv=conv_skip(
-            dim_in,
-            dim_out,
-            kernel_size=(1, 1, 1),
-            stride=branch1_conv_stride,
-            bias=False,
-        )
-        if (dim_in != dim_out or np.prod(branch1_conv_stride) != 1) or use_shortcut
-        else None,
+        branch1_conv=(
+            conv_skip(
+                dim_in,
+                dim_out,
+                kernel_size=(1, 1, 1),
+                stride=branch1_conv_stride,
+                bias=False,
+            )
+            if (dim_in != dim_out or np.prod(branch1_conv_stride) != 1) or use_shortcut
+            else None
+        ),
         branch1_norm=norm_model,
         branch2=bottleneck(
             dim_in=dim_in,
@@ -795,12 +797,16 @@ def create_resnet(
             conv_b_stride=stage_conv_b_stride,
             conv_b_padding=(
                 stage_conv_b_kernel_size[idx][0] // 2,
-                stage_conv_b_dilation[idx][1]
-                if stage_conv_b_dilation[idx][1] > 1
-                else stage_conv_b_kernel_size[idx][1] // 2,
-                stage_conv_b_dilation[idx][2]
-                if stage_conv_b_dilation[idx][2] > 1
-                else stage_conv_b_kernel_size[idx][2] // 2,
+                (
+                    stage_conv_b_dilation[idx][1]
+                    if stage_conv_b_dilation[idx][1] > 1
+                    else stage_conv_b_kernel_size[idx][1] // 2
+                ),
+                (
+                    stage_conv_b_dilation[idx][2]
+                    if stage_conv_b_dilation[idx][2] > 1
+                    else stage_conv_b_kernel_size[idx][2] // 2
+                ),
             ),
             conv_b_num_groups=stage_conv_b_num_groups[idx],
             conv_b_dilation=stage_conv_b_dilation[idx],

@@ -164,7 +164,7 @@ class TestResNetBasicStem(unittest.TestCase):
         """
         Test builder `create_res_basic_stem` with callable inputs.
         """
-        for (pool, activation, norm) in itertools.product(
+        for pool, activation, norm in itertools.product(
             (nn.AvgPool3d, nn.MaxPool3d, None),
             (nn.ReLU, nn.Softmax, nn.Sigmoid, None),
             (nn.BatchNorm3d, None),
@@ -187,9 +187,13 @@ class TestResNetBasicStem(unittest.TestCase):
                 ),
                 norm=None if norm is None else norm(64),
                 activation=None if activation is None else activation(),
-                pool=None
-                if pool is None
-                else pool(kernel_size=[1, 3, 3], stride=[1, 2, 2], padding=[0, 1, 1]),
+                pool=(
+                    None
+                    if pool is None
+                    else pool(
+                        kernel_size=[1, 3, 3], stride=[1, 2, 2], padding=[0, 1, 1]
+                    )
+                ),
             )
 
             model.load_state_dict(
@@ -222,7 +226,7 @@ class TestResNetBasicStem(unittest.TestCase):
         Test builder `create_acoustic_res_basic_stem` with callable
         inputs.
         """
-        for (pool, activation, norm) in itertools.product(
+        for pool, activation, norm in itertools.product(
             (nn.AvgPool3d, nn.MaxPool3d, None),
             (nn.ReLU, nn.Softmax, nn.Sigmoid, None),
             (nn.BatchNorm3d, None),
@@ -245,9 +249,13 @@ class TestResNetBasicStem(unittest.TestCase):
                 ),
                 norm=None if norm is None else norm(64),
                 activation=None if activation is None else activation(),
-                pool=None
-                if pool is None
-                else pool(kernel_size=[1, 3, 3], stride=[1, 2, 2], padding=[0, 1, 1]),
+                pool=(
+                    None
+                    if pool is None
+                    else pool(
+                        kernel_size=[1, 3, 3], stride=[1, 2, 2], padding=[0, 1, 1]
+                    )
+                ),
             )
 
             model.load_state_dict(

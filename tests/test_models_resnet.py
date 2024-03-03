@@ -323,7 +323,7 @@ class TestBottleneckBlock(unittest.TestCase):
         """
         Test builder `create_acoustic_bottleneck_block` with callable inputs.
         """
-        for (norm_model, act_model) in itertools.product(
+        for norm_model, act_model in itertools.product(
             (nn.BatchNorm3d,), (nn.ReLU, nn.Softmax, nn.Sigmoid)
         ):
             model = create_acoustic_bottleneck_block(
@@ -416,7 +416,7 @@ class TestBottleneckBlock(unittest.TestCase):
         """
         Test builder `create_bottleneck_block` with callable inputs.
         """
-        for (norm_model, act_model) in itertools.product(
+        for norm_model, act_model in itertools.product(
             (nn.BatchNorm3d,), (nn.ReLU, nn.Softmax, nn.Sigmoid)
         ):
             model = create_bottleneck_block(
@@ -532,14 +532,14 @@ class TestResBottleneckBlock(unittest.TestCase):
             (4, 8, 16), (2, 4), (4, 8, 16)
         ):
             model = ResBlock(
-                branch1_conv=nn.Conv3d(
-                    dim_in, dim_out, kernel_size=(1, 1, 1), stride=(1, 1, 1)
-                )
-                if dim_in != dim_out
-                else None,
-                branch1_norm=nn.BatchNorm3d(num_features=dim_out)
-                if dim_in != dim_out
-                else None,
+                branch1_conv=(
+                    nn.Conv3d(dim_in, dim_out, kernel_size=(1, 1, 1), stride=(1, 1, 1))
+                    if dim_in != dim_out
+                    else None
+                ),
+                branch1_norm=(
+                    nn.BatchNorm3d(num_features=dim_out) if dim_in != dim_out else None
+                ),
                 branch2=BottleneckBlock(
                     conv_a=nn.Conv3d(
                         dim_in,
@@ -606,7 +606,7 @@ class TestResBottleneckBlock(unittest.TestCase):
         """
         Test builder `create_res_block` with callable inputs.
         """
-        for (norm, activation) in itertools.product(
+        for norm, activation in itertools.product(
             (nn.BatchNorm3d, None), (nn.ReLU, nn.Softmax, nn.Sigmoid, None)
         ):
             model = create_res_block(
@@ -738,14 +738,16 @@ class TestResStageTransform(unittest.TestCase):
                 res_blocks=nn.ModuleList(
                     [
                         ResBlock(
-                            branch1_conv=nn.Conv3d(
-                                dim_in, dim_out, kernel_size=(1, 1, 1)
-                            )
-                            if dim_in != dim_out
-                            else None,
-                            branch1_norm=nn.BatchNorm3d(num_features=dim_out)
-                            if dim_in != dim_out
-                            else None,
+                            branch1_conv=(
+                                nn.Conv3d(dim_in, dim_out, kernel_size=(1, 1, 1))
+                                if dim_in != dim_out
+                                else None
+                            ),
+                            branch1_norm=(
+                                nn.BatchNorm3d(num_features=dim_out)
+                                if dim_in != dim_out
+                                else None
+                            ),
                             branch2=BottleneckBlock(
                                 conv_a=nn.Conv3d(
                                     dim_in,
@@ -853,7 +855,7 @@ class TestResStageTransform(unittest.TestCase):
         Test builder `create_res_stage` with callable inputs.
         """
         dim_in, dim_inner, dim_out = 32, 16, 64
-        for (norm, activation) in itertools.product(
+        for norm, activation in itertools.product(
             (nn.BatchNorm3d, None), (nn.ReLU, nn.Sigmoid, None)
         ):
             model = create_res_stage(
@@ -879,16 +881,22 @@ class TestResStageTransform(unittest.TestCase):
                 res_blocks=nn.ModuleList(
                     [
                         ResBlock(
-                            branch1_conv=nn.Conv3d(
-                                dim_in, dim_out, kernel_size=(1, 1, 1), bias=False
-                            )
-                            if dim_in != dim_out
-                            else None,
-                            branch1_norm=None
-                            if norm is None
-                            else norm(num_features=dim_out)
-                            if dim_in != dim_out
-                            else None,
+                            branch1_conv=(
+                                nn.Conv3d(
+                                    dim_in, dim_out, kernel_size=(1, 1, 1), bias=False
+                                )
+                                if dim_in != dim_out
+                                else None
+                            ),
+                            branch1_norm=(
+                                None
+                                if norm is None
+                                else (
+                                    norm(num_features=dim_out)
+                                    if dim_in != dim_out
+                                    else None
+                                )
+                            ),
                             branch2=BottleneckBlock(
                                 conv_a=nn.Conv3d(
                                     dim_in,
@@ -1074,20 +1082,26 @@ class TestResNet(unittest.TestCase):
                 temporal_stride = stage_temporal_stride[i] if j == 0 else 1
                 # create each Block for the Stage
                 block = ResBlock(
-                    branch1_conv=nn.Conv3d(
-                        block_dim_in,
-                        block_dim_out,
-                        kernel_size=(1, 1, 1),
-                        stride=(temporal_stride, spatial_stride, spatial_stride),
-                        bias=False,
-                    )
-                    if block_dim_in != block_dim_out
-                    else None,
-                    branch1_norm=None
-                    if norm is None
-                    else norm(block_dim_out)
-                    if block_dim_in != block_dim_out
-                    else None,
+                    branch1_conv=(
+                        nn.Conv3d(
+                            block_dim_in,
+                            block_dim_out,
+                            kernel_size=(1, 1, 1),
+                            stride=(temporal_stride, spatial_stride, spatial_stride),
+                            bias=False,
+                        )
+                        if block_dim_in != block_dim_out
+                        else None
+                    ),
+                    branch1_norm=(
+                        None
+                        if norm is None
+                        else (
+                            norm(block_dim_out)
+                            if block_dim_in != block_dim_out
+                            else None
+                        )
+                    ),
                     branch2=BottleneckBlock(
                         conv_a=nn.Conv3d(
                             block_dim_in,
@@ -1195,7 +1209,7 @@ class TestResNet(unittest.TestCase):
         """
         Test builder `create_resnet` with callable inputs.
         """
-        for (norm, activation) in itertools.product(
+        for norm, activation in itertools.product(
             (nn.BatchNorm3d, None), (nn.ReLU, nn.Sigmoid, None)
         ):
             input_channel = 3
@@ -1279,7 +1293,7 @@ class TestResNet(unittest.TestCase):
         Test builder `create_acoustic_resnet` with callable inputs.
         """
         _input_channel = 1
-        for (norm, activation) in itertools.product(
+        for norm, activation in itertools.product(
             (nn.BatchNorm3d, None), (nn.ReLU, nn.Sigmoid, None)
         ):
             model = create_acoustic_resnet(

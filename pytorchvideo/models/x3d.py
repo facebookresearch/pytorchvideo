@@ -294,15 +294,17 @@ def create_x3d_res_block(
         norm_model = norm(num_features=dim_out)
 
     return ResBlock(
-        branch1_conv=nn.Conv3d(
-            dim_in,
-            dim_out,
-            kernel_size=(1, 1, 1),
-            stride=conv_stride,
-            bias=False,
-        )
-        if (dim_in != dim_out or np.prod(conv_stride) > 1) and use_shortcut
-        else None,
+        branch1_conv=(
+            nn.Conv3d(
+                dim_in,
+                dim_out,
+                kernel_size=(1, 1, 1),
+                stride=conv_stride,
+                bias=False,
+            )
+            if (dim_in != dim_out or np.prod(conv_stride) > 1) and use_shortcut
+            else None
+        ),
         branch1_norm=norm_model if dim_in != dim_out and use_shortcut else None,
         branch2=bottleneck(
             dim_in=dim_in,

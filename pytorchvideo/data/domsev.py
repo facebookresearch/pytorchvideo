@@ -197,9 +197,9 @@ class DomsevFrameDataset(torch.utils.data.Dataset):
             labels_file_path, LabelData, "video_id", list_per_key=True
         )
         # Maps an image frame ID to the singular frame label
-        self._labels_per_frame: Dict[
-            str, int
-        ] = DomsevFrameDataset._assign_labels_to_frames(frames_dict, video_labels)
+        self._labels_per_frame: Dict[str, int] = (
+            DomsevFrameDataset._assign_labels_to_frames(frames_dict, video_labels)
+        )
 
         self._user_transform = transform
         self._transform = self._transform_frame
@@ -380,10 +380,10 @@ class DomsevVideoDataset(torch.utils.data.Dataset):
             dataset_type,
         )
 
-        self._labels_per_video: Dict[
-            str, List[LabelData]
-        ] = load_dataclass_dict_from_csv(
-            labels_file_path, LabelData, "video_id", list_per_key=True
+        self._labels_per_video: Dict[str, List[LabelData]] = (
+            load_dataclass_dict_from_csv(
+                labels_file_path, LabelData, "video_id", list_per_key=True
+            )
         )
 
         # Sample datapoints

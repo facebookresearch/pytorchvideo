@@ -19,7 +19,7 @@ class TestAVSlowFast(unittest.TestCase):
         """
         Test builder `create_audio_visual_slowfast` with callable inputs.
         """
-        for (norm, activation) in itertools.product(
+        for norm, activation in itertools.product(
             (nn.BatchNorm3d, None), (nn.ReLU, nn.Sigmoid, None)
         ):
             input_channel = 3

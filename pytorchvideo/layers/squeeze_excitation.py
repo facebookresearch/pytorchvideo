@@ -16,7 +16,6 @@ class SqueezeAndExcitationLayer2D(nn.Module):
         reduction_ratio: Optional[int] = 16,
         reduced_planes: Optional[int] = None,
     ):
-
         """
         Args:
             in_planes (int): input channel dimension.
@@ -74,7 +73,6 @@ def create_audio_2d_squeeze_excitation_block(
     # Activation configs.
     activation: Callable = nn.ReLU,
 ) -> nn.Module:
-
     """
     2-D Residual block with squeeze excitation (SE2D) for 2d. Performs a summation between an
     identity shortcut in branch1 and a main block in branch2. When the input and

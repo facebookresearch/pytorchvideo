@@ -92,7 +92,7 @@ class TestHeadHelper(unittest.TestCase):
         """
         Test builder `create_res_basic_head`.
         """
-        for (pool, activation) in itertools.product(
+        for pool, activation in itertools.product(
             (nn.AvgPool3d, nn.MaxPool3d, nn.AdaptiveAvgPool3d, None),
             (nn.ReLU, nn.Softmax, nn.Sigmoid, None),
         ):
@@ -266,7 +266,7 @@ class TestRoIHeadHelper(unittest.TestCase):
             )
 
             # Test forwarding.
-            for (input_tensor, bboxes) in TestRoIHeadHelper._get_inputs(
+            for input_tensor, bboxes in TestRoIHeadHelper._get_inputs(
                 input_dim=input_dim
             ):
                 if input_tensor.shape[1] != input_dim:
@@ -298,7 +298,7 @@ class TestRoIHeadHelper(unittest.TestCase):
             resolution, spatial_scale=spatial_scale, sampling_ratio=sampling_ratio
         )
 
-        for (pool, activation) in itertools.product(
+        for pool, activation in itertools.product(
             (nn.AvgPool3d, nn.MaxPool3d, nn.AdaptiveAvgPool3d, None),
             (nn.ReLU, nn.Softmax, nn.Sigmoid, None),
         ):
@@ -345,7 +345,7 @@ class TestRoIHeadHelper(unittest.TestCase):
             )  # explicitly use strict mode.
 
             # Test forwarding.
-            for (input_tensor, bboxes) in TestRoIHeadHelper._get_inputs(input_dim=16):
+            for input_tensor, bboxes in TestRoIHeadHelper._get_inputs(input_dim=16):
                 with torch.no_grad():
                     if (
                         input_tensor.shape[1] != 16
