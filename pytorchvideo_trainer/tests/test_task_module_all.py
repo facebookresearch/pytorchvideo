@@ -10,7 +10,11 @@ from omegaconf import OmegaConf
 from pytorch_lightning import Trainer
 from pytorchvideo_trainer.datamodule.datamodule import VideoClassificationDataModuleConf
 from pytorchvideo_trainer.train_app import VideoClassificationTrainAppConf
-from util import create_small_kinetics_dataset, run_locally, tempdir
+from vision.fair.pytorchvideo.pytorchvideo_trainer.tests.util import (
+    create_small_kinetics_dataset,
+    run_locally,
+    tempdir,
+)
 
 
 class TestMain(unittest.TestCase):

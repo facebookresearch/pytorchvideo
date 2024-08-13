@@ -2,7 +2,7 @@
 
 # pyre-strict
 from torchrecipes.core.base_train_app import BaseTrainApp
-from util import (
+from vision.fair.pytorchvideo.pytorchvideo_trainer.tests.util import (
     BaseTrainAppTestCase,
     create_small_kinetics_dataset,
     run_locally,
