@@ -64,7 +64,8 @@ class SqueezeExcitation(EfficientBlockBase):
         It changes conv in original SE into linear layer (better supported by CPU).
         """
         if self.is_3d:
-            avg_pool = nn.AdaptiveAvgPool3d(1)
+            kernel_size = input_blob_size[2:]
+            avg_pool = nn.AvgPool3d(kernel_size)
         else:
             avg_pool = nn.AdaptiveAvgPool2d(1)
         """

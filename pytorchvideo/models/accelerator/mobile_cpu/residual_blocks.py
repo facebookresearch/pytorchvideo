@@ -17,6 +17,7 @@ from pytorchvideo.layers.accelerator.mobile_cpu.convolutions import (
     Conv3dTemporalKernel1BnAct,
 )
 from pytorchvideo.layers.utils import round_width
+import math
 
 
 class X3dBottleneckBlock(EfficientBlockBase):
@@ -220,8 +221,8 @@ class X3dBottleneckBlock(EfficientBlockBase):
         )
         THW_size = (
             THW_size[0],
-            THW_size[1] // self._spatial_stride,
-            THW_size[2] // self._spatial_stride,
+            math.ceil(THW_size[1] / self._spatial_stride),
+            math.ceil(THW_size[1] / self._spatial_stride),
         )
         input_blob_size = (batch_size, self._mid_channels) + THW_size
         if hasattr(self.layers, "se"):
