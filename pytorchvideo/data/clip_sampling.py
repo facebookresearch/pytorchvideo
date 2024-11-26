@@ -227,7 +227,6 @@ class UniformClipSamplerTruncateFromStart(UniformClipSampler):
         video_duration: float,
         annotation: Dict[str, Any],
     ) -> ClipInfo:
-
         truncated_video_duration = video_duration
         if self.truncation_duration is not None:
             truncated_video_duration = min(self.truncation_duration, video_duration)
@@ -282,7 +281,6 @@ class RandomMultiClipSampler(RandomClipSampler):
         video_duration: float,
         annotation: Dict[str, Any],
     ) -> ClipInfoList:
-
         (
             clip_start_list,
             clip_end_list,
@@ -333,7 +331,6 @@ class RandomMultiClipSamplerTruncateFromStart(RandomMultiClipSampler):
         video_duration: float,
         annotation: Dict[str, Any],
     ) -> ClipInfoList:
-
         truncated_video_duration = video_duration
         if self.truncation_duration is not None:
             truncated_video_duration = min(self.truncation_duration, video_duration)

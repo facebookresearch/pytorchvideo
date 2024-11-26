@@ -121,7 +121,7 @@ class EpicKitchenRecognition(EpicKitchenDataset):
 
     @staticmethod
     def _transform_generator(
-        transform: Callable[[Dict[str, Any]], Dict[str, Any]]
+        transform: Callable[[Dict[str, Any]], Dict[str, Any]],
     ) -> Callable[[Dict[str, Any]], Dict[str, Any]]:
         """
         Args:

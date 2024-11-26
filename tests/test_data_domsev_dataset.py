@@ -25,7 +25,6 @@ from utils import (
 
 
 class TestDomsevVideoDataset(unittest.TestCase):
-
     # video_id: str
     # start_time: float  # Start time of the label, in seconds
     # stop_time: float  # Stop time of the label, in seconds

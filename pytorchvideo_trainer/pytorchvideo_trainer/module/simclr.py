@@ -182,7 +182,6 @@ class SimCLRModule(SSLBaseModule):
     def training_step(
         self, batch: Batch, batch_idx: int, *args: Any, **kwargs: Any
     ) -> None:
-
         self.cur_epoch_step += 1  # pyre-ignore[16]
 
         self.manual_zero_opt_grad()

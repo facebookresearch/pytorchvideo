@@ -25,7 +25,6 @@ class VideoPathHandler:
             is_file = g_pathmgr.isfile(filepath)
             is_dir = g_pathmgr.isdir(filepath)
         except NotImplementedError:
-
             # Not all PathManager handlers support is{file,dir} functions, when this is the
             # case, we default to assuming the path is a file.
             is_file = True

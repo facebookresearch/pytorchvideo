@@ -5,6 +5,7 @@ This file contains supported activation functions in efficient block and helper 
 All supported activation functions are child class of EfficientBlockBase, and included
 in supported_act_functions.
 """
+
 import torch
 import torch.nn as nn
 from pytorchvideo.accelerator.efficient_blocks.efficient_block_base import (

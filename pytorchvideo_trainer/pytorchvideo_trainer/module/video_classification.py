@@ -451,7 +451,6 @@ class VideoClassificationModuleConf(ModuleConf):
 
 @dataclass
 class VideoClassificationModuleConfVisionTransformer(VideoClassificationModuleConf):
-
     batch_transform: Optional[Any] = None  # pyre-ignore[4]
     clip_gradient_norm: float = 0.0
 

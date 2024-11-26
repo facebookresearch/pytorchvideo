@@ -40,7 +40,6 @@ class TestSoftTargetCrossEntropyLoss(unittest.TestCase):
 
                 # If target is normalized, output_tensor must match direct eval
                 if target_tensor.ndim == 1 or all(target_tensor.sum(dim=-1) == 1):
-
                     _target_tensor = target_tensor
                     if target_tensor.ndim == 1:
                         _target_tensor = torch.nn.functional.one_hot(

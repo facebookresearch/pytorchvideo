@@ -186,7 +186,6 @@ class MixVideoBatchWrapper:
         )
 
     def __call__(self, batch: Dict[str, Any]) -> Dict[str, Any]:
-
         batch["video"], batch["label"] = self.mix_video_transform(
             batch["video"], batch["label"]
         )
@@ -225,7 +224,6 @@ class ColorJitterVideoSSl:
         p_gaussian_blur: float = 0.5,
         gaussian_blur_sigma: List[float] = (0.1, 2.0),
     ) -> None:
-
         self.color_jitter = torchvision.transforms.Compose(
             [
                 torchvision.transforms.ToPILImage(),

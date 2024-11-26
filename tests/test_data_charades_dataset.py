@@ -13,7 +13,6 @@ from utils import temp_frame_video, temp_frame_video_dataset
 
 @contextlib.contextmanager
 def temp_charades_dataset():
-
     # Create csv containing 2 test frame videos.
     with tempfile.NamedTemporaryFile(delete=False, suffix=".csv") as f:
         f.write("original_vido_id video_id frame_id path labels\n".encode())
@@ -39,7 +38,8 @@ class TestCharadesDataset(unittest.TestCase):
     def test_single_clip_per_video_works(self):
         with temp_charades_dataset() as (filename, video_1, video_2):
             clip_sampler = make_clip_sampler(
-                "uniform", 0.1  # Total duration of 3 frames at 30fps is 0.1 seconds.
+                "uniform",
+                0.1,  # Total duration of 3 frames at 30fps is 0.1 seconds.
             )
             dataset = Charades(
                 filename, clip_sampler=clip_sampler, video_sampler=SequentialSampler
@@ -52,7 +52,8 @@ class TestCharadesDataset(unittest.TestCase):
     def test_multiple_clips_per_video_works(self):
         with temp_charades_dataset() as (filename, video_1, video_2):
             clip_sampler = make_clip_sampler(
-                "uniform", 0.033  # Expects each clip to have 1 frame each.
+                "uniform",
+                0.033,  # Expects each clip to have 1 frame each.
             )
             dataset = Charades(
                 filename, clip_sampler=clip_sampler, video_sampler=SequentialSampler

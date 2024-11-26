@@ -71,7 +71,6 @@ class PyTorchVideoDataModule(pl.LightningDataModule):
         self.datasets: dict[str, Any] = {"train": None, "val": None, "test": None}
 
     def setup(self, stage: Optional[str] = None) -> None:
-
         if stage == "fit" or stage is None:
             self.datasets["train"] = self._get_dataset(
                 phase="train", transforms=self.transforms["train"]
@@ -153,7 +152,6 @@ class PyTorchVideoDataModule(pl.LightningDataModule):
         phase: str,
         transforms: Optional[Callable[[Dict[str, Any]], Dict[str, Any]]] = None,
     ) -> pytorchvideo.data.LabeledVideoDataset:
-
         video_sampler = RandomSampler
         if torch.distributed.is_available() and torch.distributed.is_initialized():
             logging.info(
@@ -171,7 +169,6 @@ class PyTorchVideoDataModule(pl.LightningDataModule):
 
 @dataclass
 class PhaseDataLoaderConf:
-
     num_workers: int = 0
     pin_memory: bool = False
     drop_last: bool = False
@@ -197,7 +194,6 @@ class DataLoaderConf:
 
 @dataclass
 class TransformsConf:
-
     # pyre-fixme[4]: Attribute annotation cannot be `Any`.
     train: List[Any] = MISSING
 

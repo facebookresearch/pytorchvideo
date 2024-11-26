@@ -22,7 +22,6 @@ def _efficient_x3d(
     expansion: str = "XS",
     **kwargs: Any,
 ) -> nn.Module:
-
     model = create_x3d(
         expansion=expansion,
         **kwargs,

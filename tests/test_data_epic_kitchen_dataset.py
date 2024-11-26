@@ -20,7 +20,6 @@ from utils import (
 
 
 class TestEpicKitchenDataset(unittest.TestCase):
-
     ACTIONS_DATAS = {
         MOCK_VIDEO_IDS[0]: [
             ActionData(
@@ -123,7 +122,6 @@ class TestEpicKitchenDataset(unittest.TestCase):
     }
 
     def test_ActionData(self):
-
         action = ActionData(
             # This is a key-mapping as the underlying epic-kitchen
             # annotation files are of these string columns

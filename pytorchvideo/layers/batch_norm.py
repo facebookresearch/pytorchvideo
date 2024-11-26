@@ -19,7 +19,6 @@ class NaiveSyncBatchNorm1d(nn.BatchNorm1d):
     """
 
     def __init__(self, num_sync_devices=None, global_sync=True, **args):
-
         self.global_sync = global_sync
         if self.global_sync and num_sync_devices is not None:
             raise ValueError(
@@ -100,7 +99,6 @@ class NaiveSyncBatchNorm2d(nn.BatchNorm2d):
     """
 
     def __init__(self, num_sync_devices=None, global_sync=True, **args):
-
         self.global_sync = global_sync
         if self.global_sync and num_sync_devices is not None:
             raise ValueError(
@@ -170,7 +168,6 @@ class NaiveSyncBatchNorm3d(nn.BatchNorm3d):
     """
 
     def __init__(self, num_sync_devices=None, global_sync=True, **args):
-
         self.global_sync = global_sync
         if self.global_sync and num_sync_devices is not None:
             raise ValueError(

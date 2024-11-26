@@ -138,8 +138,7 @@ class GroupGather(Function):
             rank = get_local_rank()
             group_idx = rank // ctx.num_sync_devices
             grads = grads[
-                group_idx
-                * ctx.num_sync_devices : (group_idx + 1)
+                group_idx * ctx.num_sync_devices : (group_idx + 1)
                 * ctx.num_sync_devices
             ]
         grads = torch.sum(grads, dim=0)

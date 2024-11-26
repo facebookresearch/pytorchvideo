@@ -24,7 +24,6 @@ class SoftTargetCrossEntropy(nn.Module):
         self.reduction = reduction
 
     def forward(self, x: torch.Tensor, y: torch.Tensor) -> torch.Tensor:
-
         loss = torch.sum(-y * F.log_softmax(x, dim=-1), dim=-1)
         if self.reduction == "mean":
             return loss.mean()

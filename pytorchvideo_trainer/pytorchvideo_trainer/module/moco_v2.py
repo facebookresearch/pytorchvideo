@@ -291,7 +291,6 @@ class MOCOV2Module(SSLBaseModule):
     def training_step(
         self, batch: Batch, batch_idx: int, *args: Any, **kwargs: Any
     ) -> None:
-
         self.cur_epoch_step += 1  # pyre-ignore[16]
 
         if self.momentum_anneal_cosine:

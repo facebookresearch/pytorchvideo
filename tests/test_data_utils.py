@@ -70,9 +70,7 @@ class TestDataUtils(unittest.TestCase):
         ) as (
             video_file_name,
             data,
-        ), tempfile.TemporaryDirectory(
-            prefix="video_stop_gap_test"
-        ) as tempdir:
+        ), tempfile.TemporaryDirectory(prefix="video_stop_gap_test") as tempdir:
             exported_video_path = os.path.join(tempdir, "video.mp4")
             export_video_array(
                 data,

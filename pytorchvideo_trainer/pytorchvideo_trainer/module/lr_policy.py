@@ -1,6 +1,7 @@
 # Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved.
 
 """Learning rate policy."""
+
 import math
 from dataclasses import dataclass
 from typing import Callable, List

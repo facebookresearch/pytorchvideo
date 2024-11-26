@@ -158,7 +158,6 @@ class TestEpicKitchenUtils(unittest.TestCase):
     def test_build_encoded_manifest_from_nested_directory(self):
         file_names = ["P01_01.mp4", "P01_07.mp4", "P23_11.mp4", "P11_00.mp4"]
         with tempfile.TemporaryDirectory(prefix="TestEpicKitchenUtils") as tempdir:
-
             for file_name in file_names:
                 participant_path = Path(tempdir) / file_name[:3]
                 if not os.path.isdir(participant_path):

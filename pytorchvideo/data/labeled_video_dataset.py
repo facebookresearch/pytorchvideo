@@ -163,7 +163,6 @@ class LabeledVideoDataset(torch.utils.data.IterableDataset):
             ) = self._clip_sampler(self._last_clip_end_time, video.duration, info_dict)
 
             if isinstance(clip_start, list):  # multi-clip in each sample
-
                 # Only load the clips once and reuse previously stored clips if there are multiple
                 # views for augmentations to perform on the same clips.
                 if aug_index[0] == 0:
@@ -181,7 +180,6 @@ class LabeledVideoDataset(torch.utils.data.IterableDataset):
                             self._loaded_clip[key] = [x[key] for x in loaded_clip_list]
 
             else:  # single clip case
-
                 # Only load the clip once and reuse previously stored clip if there are multiple
                 # views for augmentations to perform on the same clip.
                 if aug_index == 0:

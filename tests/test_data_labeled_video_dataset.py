@@ -155,7 +155,6 @@ class TestLabeledVideoDataset(unittest.TestCase):
         import torchvision.io as io
 
         with tempfile.TemporaryDirectory() as root_dir:
-
             # Create test directory structure with two classes and a video in each.
             root_dir_name = pathlib.Path(root_dir)
             action_1 = "running"
@@ -298,7 +297,6 @@ class TestLabeledVideoDataset(unittest.TestCase):
         import torchvision.io as io
 
         with tempfile.TemporaryDirectory() as root_dir:
-
             # Create test directory structure with two classes and a video in each.
             root_dir_name = pathlib.Path(root_dir)
             test_class_1 = root_dir_name / "running"
@@ -509,7 +507,6 @@ class TestLabeledVideoDataset(unittest.TestCase):
 
     @parameterized.expand(DECODER_LIST)
     def test_sampling_with_non_divisible_processes_by_clips(self, decoder):
-
         # Make one video with 15 frames and one with 10 frames, producing 3 clips and 2
         # clips respectively.
         num_frames = 10
@@ -569,7 +566,6 @@ class TestLabeledVideoDataset(unittest.TestCase):
 
     @parameterized.expand(DECODER_LIST)
     def test_sampling_with_distributed_sampler(self, decoder):
-
         # Make one video with 15 frames and one with 10 frames, producing 3 clips and 2
         # clips respectively.
         num_frames = 10
@@ -662,7 +658,6 @@ def unordered_list_compare(
         return False
 
     for expected_x in expected:
-
         # Uses torch comparator for Tensor.
         if not any(
             actual_x[0] == expected_x[0] and actual_x[1].equal(expected_x[1])

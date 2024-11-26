@@ -24,7 +24,8 @@ class OptimizerConf:
 
 # TODO: Refactor contruct_optimer to torch.optim conf + construct_param_group
 def construct_optimizer(
-    model: torch.nn.Module, cfg: OptimizerConf  # noqa
+    model: torch.nn.Module,
+    cfg: OptimizerConf,  # noqa
 ) -> torch.optim.Optimizer:
     """
     Constructs a stochastic gradient descent or ADAM (or ADAMw) optimizer

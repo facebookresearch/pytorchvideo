@@ -150,7 +150,6 @@ def _post_attention_pool(
     tensor: torch.Tensor,
     thw_shape: List[int],
 ) -> Tuple[torch.Tensor, List[int]]:
-
     B, N, L, C, T, H, W, tensor_dim = thw_shape
     thw_shape = [tensor.shape[2], tensor.shape[3], tensor.shape[4]]
     L_pooled = tensor.shape[2] * tensor.shape[3] * tensor.shape[4]

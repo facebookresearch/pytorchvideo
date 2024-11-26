@@ -177,7 +177,6 @@ class TestTransforms(unittest.TestCase):
 
         # Test all the torchscriptable tensors.
         for transform in [UniformTemporalSubsample(10), RandomShortSideScale(10, 20)]:
-
             transform_script = torch.jit.script(transform)
             self.assertTrue(isinstance(transform_script, torch.jit.ScriptModule))
 
@@ -626,7 +625,6 @@ class TestTransforms(unittest.TestCase):
         self.assertTrue(seen_all_value2)
 
     def test_mixvideo(self):
-
         self.assertRaises(AssertionError, MixVideo, cutmix_prob=2.0)
 
         torch.manual_seed(0)

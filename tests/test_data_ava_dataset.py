@@ -49,7 +49,13 @@ def temp_ava_dataset_2_videos():
                     )
 
                 frames_file.close()
-                yield frames_file.name, data_1, data_2, original_video_id_1, original_video_id_2
+                yield (
+                    frames_file.name,
+                    data_1,
+                    data_2,
+                    original_video_id_1,
+                    original_video_id_2,
+                )
 
 
 def get_random_bbox():

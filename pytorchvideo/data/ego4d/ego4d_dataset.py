@@ -271,8 +271,8 @@ class Ego4dMomentsDataset(LabeledVideoDataset):
         self._transform_source = transform
         self.decode_audio = decode_audio
         self.audio_transform_type = audio_transform_type
-        assert (label_id_map is not None) ^ (
-            label_id_map_path is not None
+        assert (
+            (label_id_map is not None) ^ (label_id_map_path is not None)
         ), f"Either label_id_map or label_id_map_path required ({label_id_map_path} / {label_id_map})"  # noqa
 
         self.video_means = (0.45, 0.45, 0.45)

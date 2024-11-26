@@ -285,7 +285,6 @@ class RandomResizedCrop(torch.nn.Module):
         interpolation: str = "bilinear",
         num_tries: int = 10,
     ) -> None:
-
         super().__init__()
         self._target_height = target_height
         self._target_width = target_width
@@ -369,13 +368,13 @@ class OpSampler(torch.nn.Module):
         super().__init__()
         assert len(transforms_list) > 0, "Argument transforms_list cannot be empty."
         assert num_sample_op > 0, "Need to sample at least one transform."
-        assert num_sample_op <= len(
-            transforms_list
+        assert (
+            num_sample_op <= len(transforms_list)
         ), "Argument num_sample_op cannot be greater than number of available transforms."
 
         if transforms_prob is not None:
-            assert len(transforms_list) == len(
-                transforms_prob
+            assert (
+                len(transforms_list) == len(transforms_prob)
             ), "Argument transforms_prob needs to have the same length as transforms_list."
 
             assert (

@@ -254,7 +254,6 @@ class TestRoIHeadHelper(unittest.TestCase):
         )
 
         for input_dim, output_dim in itertools.product((4, 8), (4, 8, 16)):
-
             model = ResNetRoIHead(
                 proj=nn.Linear(input_dim, output_dim),
                 activation=nn.Softmax(),

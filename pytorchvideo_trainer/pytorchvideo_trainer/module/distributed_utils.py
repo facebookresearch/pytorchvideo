@@ -1,6 +1,7 @@
 # Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved.
 
 """Distributed helpers."""
+
 import functools
 import logging
 import pickle
@@ -317,7 +318,6 @@ class AllGatherWithGradient(torch.autograd.Function):
     @staticmethod
     # pyre-ignore [2,14]
     def backward(ctx: Any, grad_output: torch.Tensor) -> torch.Tensor:
-
         reduction = dist.all_reduce(grad_output, async_op=True)
         reduction.wait()
 

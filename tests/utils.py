@@ -146,7 +146,6 @@ def write_audio_video(path, video, audio, fps=30, audio_rate=48000):
     audio_array = audio.numpy().astype("<i2")
 
     with av.open(path, "w") as container:
-
         # Add lossless h264 video stream.
         video_stream = container.add_stream("libx264rgb", fps)
         video_stream.width = video_array.shape[2]
@@ -174,7 +173,6 @@ def write_audio_video(path, video, audio, fps=30, audio_rate=48000):
             encoded_audio_index < num_audio_samples
             or encoded_video_index < num_video_frames
         ):
-
             # Video frame encodings.
             if encoded_video_index < num_video_frames:
                 frame = video_array[encoded_video_index]

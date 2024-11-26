@@ -27,7 +27,6 @@ class AvaLabeledVideoFramePaths:
 
     @classmethod
     def _aggregate_bboxes_labels(cls, inp: Dict):
-
         # Needed for aggregating the bounding boxes
         labels = inp["labels"]
         extra_info = inp["extra_info"]

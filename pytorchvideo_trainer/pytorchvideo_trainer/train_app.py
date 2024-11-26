@@ -69,7 +69,6 @@ class VideoClassificationTrainApp(BaseTrainApp):
         callbacks: Optional[Any] = None,  # pyre-ignore[2]
         submitit_conf: Optional[Any] = None,  # pyre-ignore[2]
     ) -> None:
-
         self.logger_conf: DictConfig = logger
         self.callbacks_conf: DictConfig = callbacks
         self.submitit_conf: DictConfig = submitit_conf
@@ -185,7 +184,6 @@ class VideoClassificationTrainApp(BaseTrainApp):
 def run_app_in_certain_mode(
     cfg: TrainAppConf, mode: str, env: str = "oss"
 ) -> TrainOutput:
-
     os.environ["PTV_TRAINER_ENV"] = env
 
     rank_zero_info(OmegaConf.to_yaml(cfg))
@@ -258,7 +256,6 @@ cs.store(
 @hydra.main(config_path="conf", config_name=None)
 # pyre-ignore[2]
 def submitit_launcher(cfg) -> None:
-
     print("###################### Train App Config ####################")
     print(OmegaConf.to_yaml(cfg))
     print("############################################################")

@@ -242,7 +242,6 @@ class VideoDataset:
         for video_id in video_ids:
             # Remove videos we have video data for but don't have metadata
             if video_id not in video_infos:
-
                 del video_data_infos[video_id]
 
 

@@ -196,7 +196,6 @@ def _read_video_paths_and_labels(
     image_paths = defaultdict(list)
     labels = defaultdict(list)
     with g_pathmgr.open(video_path_label_file, "r") as f:
-
         # Space separated CSV with format: original_vido_id video_id frame_id path labels
         csv_reader = csv.DictReader(f, delimiter=" ")
         for row in csv_reader:

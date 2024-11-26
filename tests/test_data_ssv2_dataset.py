@@ -78,7 +78,6 @@ class TestSSv2Dataset(unittest.TestCase):
             video_1,
             video_2,
         ):
-
             # Put arbitrary duration as ssv2 always needs full video clip.
             clip_sampler = make_clip_sampler("constant_clips_per_video", 1.0, 1)
             # Expect taking 2 frames (1-th and 4-th among 7 frames).

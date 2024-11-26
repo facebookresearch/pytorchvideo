@@ -175,7 +175,6 @@ class MultiProcessSampler(torch.utils.data.Sampler):
         """
         worker_info = torch.utils.data.get_worker_info()
         if worker_info is not None and worker_info.num_workers != 0:
-
             # Split sampler indexes by worker.
             video_indexes = range(len(self._sampler))
             worker_splits = np.array_split(video_indexes, worker_info.num_workers)
@@ -193,7 +192,6 @@ class MultiProcessSampler(torch.utils.data.Sampler):
             iter_end = worker_split[-1] + 1
             worker_sampler = itertools.islice(iter(self._sampler), iter_start, iter_end)
         else:
-
             # If no worker processes found, we return the full sampler.
             worker_sampler = iter(self._sampler)
 

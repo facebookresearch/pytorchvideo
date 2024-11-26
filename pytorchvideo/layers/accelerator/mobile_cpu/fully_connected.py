@@ -22,5 +22,4 @@ class FullyConnected(NoOpConvertBlock):
         out_features: int,
         bias: bool = True,
     ):
-
         super().__init__(model=nn.Linear(in_features, out_features, bias=bias))

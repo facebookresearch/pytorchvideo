@@ -12,7 +12,6 @@ from pytorchvideo.layers.squeeze_excitation import (
 
 class Test2DSqueezeExcitationBlock(unittest.TestCase):
     def setUp(self):
-
         self.layer_args = {
             "dim_in": 32,
             "dim_out": 32,
