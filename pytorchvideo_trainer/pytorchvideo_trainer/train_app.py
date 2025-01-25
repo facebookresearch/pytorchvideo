@@ -151,7 +151,7 @@ class VideoClassificationTrainApp(BaseTrainApp):
                     with g_pathmgr.open(conf_save_path, mode="w") as f:
                         f.write(OmegaConf.to_yaml(conf_to_log))
             else:
-                from stl.lightning.io import filesystem
+                from torchtnt.utils.meta import filesystem
 
                 fs = filesystem.get_filesystem(logger.log_dir)
                 conf_to_log = self._make_reproducible_conf()
