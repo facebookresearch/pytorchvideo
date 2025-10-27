@@ -227,7 +227,7 @@ class VideoDataset:
                 continue
 
             # Remove videos we have metadata for but don't have the right number of frames
-            if type(video_data_infos[video_id]) == VideoFrameInfo:
+            if isinstance(video_data_infos[video_id], VideoFrameInfo):
                 video_frames_info = video_data_infos[video_id]
                 expected_frames = round(video_info.duration * video_info.fps)
                 num_frames = (
