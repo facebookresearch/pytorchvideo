@@ -91,14 +91,14 @@ def construct_optimizer(
     # Check all parameters will be passed into optimizer.
     assert len(list(model.parameters())) == len(non_bn_parameters) + len(
         bn_parameters
-    ) + len(zero_parameters) + len(
-        no_grad_parameters
-    ), "parameter size does not match: {} + {} + {} + {} != {}".format(
-        len(non_bn_parameters),
-        len(bn_parameters),
-        len(zero_parameters),
-        len(no_grad_parameters),
-        len(list(model.parameters())),
+    ) + len(zero_parameters) + len(no_grad_parameters), (
+        "parameter size does not match: {} + {} + {} + {} != {}".format(
+            len(non_bn_parameters),
+            len(bn_parameters),
+            len(zero_parameters),
+            len(no_grad_parameters),
+            len(list(model.parameters())),
+        )
     )
     print(
         "bn {}, non bn {}, zero {} no grad {}".format(

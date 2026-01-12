@@ -89,9 +89,9 @@ class AugMix:
                 default, it uses SAMPLING_AUGMIX_DEFAULT_HPARAS.
         """
         assert isinstance(magnitude, int), "magnitude must be an int"
-        assert (
-            magnitude >= 1 and magnitude <= _AUGMENTATION_MAX_LEVEL
-        ), f"magnitude must be between 1 and {_AUGMENTATION_MAX_LEVEL} inclusive"
+        assert magnitude >= 1 and magnitude <= _AUGMENTATION_MAX_LEVEL, (
+            f"magnitude must be between 1 and {_AUGMENTATION_MAX_LEVEL} inclusive"
+        )
         assert alpha > 0.0, "alpha must be greater than 0"
         assert width > 0, "width must be greater than 0"
 

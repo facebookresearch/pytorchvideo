@@ -351,9 +351,9 @@ def load_dataclass_dict_from_csv(
             if list_per_key:
                 output_dict[dict_key].append(datum)
             else:
-                assert (
-                    dict_key not in output_dict
-                ), f"Multiple entries for {output_dict} in {dataclass_file}"
+                assert dict_key not in output_dict, (
+                    f"Multiple entries for {output_dict} in {dataclass_file}"
+                )
                 output_dict[dict_key] = datum
     return output_dict
 

@@ -28,9 +28,9 @@ class SqueezeAndExcitationLayer2D(nn.Module):
         self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
 
         # Either reduction_ratio is defined, or out_planes is defined
-        assert bool(reduction_ratio) != bool(
-            reduced_planes
-        ), "Only of reduction_ratio or reduced_planes should be defined for SE layer"
+        assert bool(reduction_ratio) != bool(reduced_planes), (
+            "Only of reduction_ratio or reduced_planes should be defined for SE layer"
+        )
 
         reduced_planes = (
             in_planes // reduction_ratio if reduced_planes is None else reduced_planes

@@ -149,12 +149,12 @@ def create_conv_2plus1d(
     if inner_channels is None:
         inner_channels = out_channels
 
-    assert (
-        groups == 1
-    ), "Support for groups is not implemented in R2+1 convolution layer"
-    assert (
-        max(dilation) == 1 and min(dilation) == 1
-    ), "Support for dillaiton is not implemented in R2+1 convolution layer"
+    assert groups == 1, (
+        "Support for groups is not implemented in R2+1 convolution layer"
+    )
+    assert max(dilation) == 1 and min(dilation) == 1, (
+        "Support for dillaiton is not implemented in R2+1 convolution layer"
+    )
 
     conv_t_module = nn.Conv3d(
         in_channels=in_channels if not conv_xy_first else inner_channels,

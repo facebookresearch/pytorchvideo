@@ -126,9 +126,9 @@ class Hmdb51LabeledVideoPaths:
                         (file_path, {"label": action_name, "meta_tags": meta_tags})
                     )
 
-        assert (
-            len(video_paths_and_label) > 0
-        ), f"Failed to load dataset from {file_path}."
+        assert len(video_paths_and_label) > 0, (
+            f"Failed to load dataset from {file_path}."
+        )
         return cls(video_paths_and_label)
 
     def __init__(

@@ -376,9 +376,9 @@ class SSLBaseModule(VideoClassificationModule):
             self.initial_mmt: float = self.model.mmt  # pyre-ignore[8]
 
         if ensemble_method is not None:
-            assert (
-                self.knn_memory is not None
-            ), "Test-Ensembling is only supported with KNN module"
+            assert self.knn_memory is not None, (
+                "Test-Ensembling is only supported with KNN module"
+            )
 
     def on_fit_start(self) -> None:
         """

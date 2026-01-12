@@ -519,7 +519,7 @@ def create_x3d_head(
         activation_module = activation()
     else:
         raise NotImplementedError(
-            "{} is not supported as an activation" "function.".format(activation)
+            "{} is not supported as an activationfunction.".format(activation)
         )
 
     if output_with_global_average:
@@ -707,12 +707,12 @@ def create_x3d(
     total_spatial_stride = stem_conv_stride[1] * np.prod(stage_spatial_stride)
     total_temporal_stride = stem_conv_stride[0] * np.prod(stage_temporal_stride)
 
-    assert (
-        input_clip_length >= total_temporal_stride
-    ), "Clip length doesn't match temporal stride!"
-    assert (
-        input_crop_size >= total_spatial_stride
-    ), "Crop size doesn't match spatial stride!"
+    assert input_clip_length >= total_temporal_stride, (
+        "Clip length doesn't match temporal stride!"
+    )
+    assert input_crop_size >= total_spatial_stride, (
+        "Crop size doesn't match spatial stride!"
+    )
 
     head_pool_kernel_size = (
         input_clip_length // total_temporal_stride,

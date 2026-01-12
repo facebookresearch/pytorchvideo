@@ -175,9 +175,9 @@ def convert_to_one_hot(
         label_smooth (float): Label smooth value for non-target classes. Label smooth
             is disabled by default (0).
     """
-    assert (
-        torch.max(targets).item() < num_class
-    ), "Class Index must be less than number of classes"
+    assert torch.max(targets).item() < num_class, (
+        "Class Index must be less than number of classes"
+    )
     assert 0 <= label_smooth < 1.0, "Label smooth value needs to be between 0 and 1."
 
     non_target_value = label_smooth / num_class
@@ -555,12 +555,12 @@ def random_resized_crop(
     Returns:
         cropped (tensor): A cropped video tensor of shape (C, T, target_height, target_width).
     """
-    assert (
-        scale[0] > 0 and scale[1] > 0
-    ), "min and max of scale range must be greater than 0"
-    assert (
-        aspect_ratio[0] > 0 and aspect_ratio[1] > 0
-    ), "min and max of aspect_ratio range must be greater than 0"
+    assert scale[0] > 0 and scale[1] > 0, (
+        "min and max of scale range must be greater than 0"
+    )
+    assert aspect_ratio[0] > 0 and aspect_ratio[1] > 0, (
+        "min and max of aspect_ratio range must be greater than 0"
+    )
 
     channels = frames.shape[0]
     t = frames.shape[1]

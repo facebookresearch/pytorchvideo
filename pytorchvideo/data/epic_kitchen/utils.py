@@ -61,9 +61,9 @@ def build_frame_manifest_from_flat_directory(
                     f"{video_frame_info.location} and {video_path}"
                 )
                 assert video_frame_info.max_frame_number + 1 == int(path_frame_id)
-                assert (
-                    video_frame_info.file_extension == file_extension
-                ), f"Frames with two different file extensions found for video {video_id}"
+                assert video_frame_info.file_extension == file_extension, (
+                    f"Frames with two different file extensions found for video {video_id}"
+                )
                 video_frames[video_id] = VideoFrameInfo(
                     video_id=video_frame_info.video_id,
                     location=video_frame_info.location,
@@ -145,9 +145,9 @@ def build_frame_manifest_from_nested_directory(
                     f"{video_frame_info.location} and {participant_path}"
                 )
                 assert video_frame_info.max_frame_number + 1 == int(path_frame_id)
-                assert (
-                    video_frame_info.file_extension == file_extension
-                ), f"Frames with two different file extensions found for video {video_id}"
+                assert video_frame_info.file_extension == file_extension, (
+                    f"Frames with two different file extensions found for video {video_id}"
+                )
                 video_frames[video_id] = VideoFrameInfo(
                     video_id=video_frame_info.video_id,
                     location=video_frame_info.location,

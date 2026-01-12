@@ -116,9 +116,9 @@ class X3dBottleneckBlock(EfficientBlockBase):
         layers = OrderedDict()
 
         # 1x1x1 pointwise layer conv[0]
-        assert (
-            act_functions[0] in supported_act_functions
-        ), f"{act_functions[0]} is not supported."
+        assert act_functions[0] in supported_act_functions, (
+            f"{act_functions[0]} is not supported."
+        )
         layers["conv_0"] = Conv3dPwBnAct(
             in_channels,
             mid_channels,
@@ -133,9 +133,9 @@ class X3dBottleneckBlock(EfficientBlockBase):
         # 3x3x3 dw layer conv[1]
         self._spatial_stride = spatial_stride
         self._mid_channels = mid_channels
-        assert (
-            act_functions[1] in supported_act_functions
-        ), f"{act_functions[1]} is not supported."
+        assert act_functions[1] in supported_act_functions, (
+            f"{act_functions[1]} is not supported."
+        )
         layers["conv_1"] = Conv3d3x3x3DwBnAct(
             mid_channels,
             spatial_stride=self._spatial_stride,
@@ -156,9 +156,9 @@ class X3dBottleneckBlock(EfficientBlockBase):
 
         # Second 1x1x1 pointwise layer conv[2]
         self._out_channels = out_channels
-        assert (
-            act_functions[2] in supported_act_functions
-        ), f"{act_functions[2]} is not supported."
+        assert act_functions[2] in supported_act_functions, (
+            f"{act_functions[2]} is not supported."
+        )
         layers["conv_2"] = Conv3dPwBnAct(
             mid_channels,
             out_channels,
@@ -192,9 +192,9 @@ class X3dBottleneckBlock(EfficientBlockBase):
         native_conv3d_op_qnnpack=False,
         **kwargs,
     ):
-        assert (
-            self.convert_flag is False
-        ), "X3dBottleneckBlock: already converted, cannot be converted twice"
+        assert self.convert_flag is False, (
+            "X3dBottleneckBlock: already converted, cannot be converted twice"
+        )
 
         # Convert self.layers
         batch_size = input_blob_size[0]

@@ -31,9 +31,9 @@ class ScriptableSpatioTemporalClsPositionalEncoding(nn.Module):
                 input sequence.
         """
         super().__init__()
-        assert (
-            len(patch_embed_shape) == 3
-        ), "Patch_embed_shape should be in the form of (T, H, W)."
+        assert len(patch_embed_shape) == 3, (
+            "Patch_embed_shape should be in the form of (T, H, W)."
+        )
         assert not has_cls
         self.sep_pos_embed = sep_pos_embed
         self._patch_embed_shape = patch_embed_shape

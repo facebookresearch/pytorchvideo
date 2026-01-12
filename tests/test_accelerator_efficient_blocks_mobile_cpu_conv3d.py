@@ -96,9 +96,9 @@ class TestConv3dBlockEquivalency(unittest.TestCase):
             l0_1.convert(input_size)  # Input tensor size is (1,3,4,6,6)
             out1 = l0_1(input_tensor)
             # Check output size
-            assert (
-                out0.size() == out1.size()
-            ), f"Sizes of out0 {out0.size()} and out1 {out1.size()} are different."
+            assert out0.size() == out1.size(), (
+                f"Sizes of out0 {out0.size()} and out1 {out1.size()} are different."
+            )
             # Check arithmetic equivalency
             max_err = float(torch.max(torch.abs(out0 - out1)))
             rel_err = torch.abs((out0 - out1) / out0)
@@ -127,9 +127,9 @@ class TestConv3dBlockEquivalency(unittest.TestCase):
             l0_1.convert(input_size)  # Input tensor size is (1,3,4,6,6)
             out1 = l0_1(input_tensor)
             # Check output size
-            assert (
-                out0.size() == out1.size()
-            ), f"Sizes of out0 {out0.size()} and out1 {out1.size()} are different."
+            assert out0.size() == out1.size(), (
+                f"Sizes of out0 {out0.size()} and out1 {out1.size()} are different."
+            )
             # Check arithmetic equivalency
             max_err = float(torch.max(torch.abs(out0 - out1)))
             rel_err = torch.abs((out0 - out1) / out0)

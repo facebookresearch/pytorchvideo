@@ -6,7 +6,6 @@ from abc import ABC, abstractmethod
 from typing import Any, Dict, Tuple
 
 from iopath.common.file_io import g_pathmgr
-
 from pytorchvideo.data.clip_sampling import ClipInfo, ClipSampler
 from pytorchvideo.data.utils import get_logger
 
@@ -66,9 +65,9 @@ class MomentsClipSampler(ClipSampler):
         video_duration: float,
         annotation: Dict[str, Any],
     ) -> ClipInfo:
-        assert (
-            last_clip_end_time is None or last_clip_end_time <= video_duration
-        ), f"last_clip_end_time ({last_clip_end_time}) > video_duration ({video_duration})"
+        assert last_clip_end_time is None or last_clip_end_time <= video_duration, (
+            f"last_clip_end_time ({last_clip_end_time}) > video_duration ({video_duration})"
+        )
         start = annotation["label_video_start_sec"]
         end = annotation["label_video_end_sec"]
         if video_duration is not None and end > video_duration:

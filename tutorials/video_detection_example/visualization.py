@@ -143,9 +143,9 @@ class ImgVisualizer(Visualizer):
         """
         if not isinstance(box_facecolors, list):
             box_facecolors = [box_facecolors] * len(text_ls)
-        assert len(box_facecolors) == len(
-            text_ls
-        ), "Number of colors provided is not equal to the number of text labels."
+        assert len(box_facecolors) == len(text_ls), (
+            "Number of colors provided is not equal to the number of text labels."
+        )
         if not font_size:
             font_size = self._default_font_size
         text_box_width = font_size + font_size // 2
@@ -220,9 +220,9 @@ class ImgVisualizer(Visualizer):
         """
         if not isinstance(box_facecolors, list):
             box_facecolors = [box_facecolors] * len(text_ls)
-        assert len(box_facecolors) == len(
-            text_ls
-        ), "Number of colors provided is not equal to the number of text labels."
+        assert len(box_facecolors) == len(text_ls), (
+            "Number of colors provided is not equal to the number of text labels."
+        )
 
         assert y_corner in [1, 3], "Y_corner must be either 1 or 3"
         if not font_size:
@@ -273,9 +273,9 @@ class ImgVisualizer(Visualizer):
         """
         if not isinstance(box_facecolors, list):
             box_facecolors = [box_facecolors] * len(text_ls)
-        assert len(box_facecolors) == len(
-            text_ls
-        ), "Number of colors provided is not equal to the number of text labels."
+        assert len(box_facecolors) == len(text_ls), (
+            "Number of colors provided is not equal to the number of text labels."
+        )
 
         assert y_corner in [1, 3], "Y_corner must be either 1 or 3"
         if not font_size:
@@ -487,10 +487,10 @@ class VideoVisualizer:
         font_size = min(max(np.sqrt(frame.shape[0] * frame.shape[1]) // 25, 5), 9)
         top_corner = not ground_truth
         if bboxes is not None:
-            assert len(preds) == len(
-                bboxes
-            ), "Encounter {} predictions and {} bounding boxes".format(
-                len(preds), len(bboxes)
+            assert len(preds) == len(bboxes), (
+                "Encounter {} predictions and {} bounding boxes".format(
+                    len(preds), len(bboxes)
+                )
             )
             for i, box in enumerate(bboxes):
                 text = text_labels[i]
@@ -674,9 +674,9 @@ class VideoVisualizer:
             frames (list of frames): list of frames in range [0, 1].
             adjusted (bool): whether the original frames need adjusted.
         """
-        assert (
-            frames is not None and len(frames) != 0
-        ), "Frames does not contain any values"
+        assert frames is not None and len(frames) != 0, (
+            "Frames does not contain any values"
+        )
         frames = np.array(frames)
         assert np.array(frames).ndim == 4, "Frames must have 4 dimensions"
         adjusted = False

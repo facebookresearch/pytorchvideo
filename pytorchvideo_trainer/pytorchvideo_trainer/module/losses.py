@@ -55,9 +55,9 @@ class NtxentLoss(nn.Module):
             x_list (list[torch.tensor]): A list of two tensors of shape N x C.
                 Where, N is the batch size and C is the SSL model's embedding size.
         """
-        assert (
-            len(x_list) == 2
-        ), f"Invalid list input to SimCLR. Expected dimention 2 but received {len(x_list)}"
+        assert len(x_list) == 2, (
+            f"Invalid list input to SimCLR. Expected dimention 2 but received {len(x_list)}"
+        )
 
         out_1, out_2 = x_list
 

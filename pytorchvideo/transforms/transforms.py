@@ -209,9 +209,9 @@ class ConvertFloatToUint8(torch.nn.Module):
         Args:
             x (torch.Tensor): video tensor with shape (C, T, H, W).
         """
-        assert (
-            x.dtype == torch.float or x.dtype == torch.half
-        ), "image must have dtype torch.uint8"
+        assert x.dtype == torch.float or x.dtype == torch.half, (
+            "image must have dtype torch.uint8"
+        )
         return self.convert_func(x)
 
 
@@ -323,9 +323,9 @@ class Permute(torch.nn.Module):
         Args:
             dims (Tuple[int]): The desired ordering of dimensions.
         """
-        assert (
-            (d in dims) for d in range(len(dims))
-        ), "dims must contain every dimension (0, 1, 2, ...)"
+        assert ((d in dims) for d in range(len(dims))), (
+            "dims must contain every dimension (0, 1, 2, ...)"
+        )
 
         super().__init__()
         self._dims = dims
@@ -368,18 +368,18 @@ class OpSampler(torch.nn.Module):
         super().__init__()
         assert len(transforms_list) > 0, "Argument transforms_list cannot be empty."
         assert num_sample_op > 0, "Need to sample at least one transform."
-        assert (
-            num_sample_op <= len(transforms_list)
-        ), "Argument num_sample_op cannot be greater than number of available transforms."
+        assert num_sample_op <= len(transforms_list), (
+            "Argument num_sample_op cannot be greater than number of available transforms."
+        )
 
         if transforms_prob is not None:
-            assert (
-                len(transforms_list) == len(transforms_prob)
-            ), "Argument transforms_prob needs to have the same length as transforms_list."
+            assert len(transforms_list) == len(transforms_prob), (
+                "Argument transforms_prob needs to have the same length as transforms_list."
+            )
 
-            assert (
-                min(transforms_prob) > 0
-            ), "Argument transforms_prob needs to be greater than 0."
+            assert min(transforms_prob) > 0, (
+                "Argument transforms_prob needs to be greater than 0."
+            )
 
         self.transforms_list = transforms_list
         self.transforms_prob = torch.FloatTensor(

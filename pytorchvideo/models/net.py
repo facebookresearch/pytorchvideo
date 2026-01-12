@@ -105,9 +105,9 @@ class MultiPathWayWithFuse(nn.Module):
         set_attributes(self, locals())
 
     def forward(self, x: List[torch.Tensor]) -> torch.Tensor:
-        assert isinstance(
-            x, list
-        ), "input for MultiPathWayWithFuse needs to be a list of tensors"
+        assert isinstance(x, list), (
+            "input for MultiPathWayWithFuse needs to be a list of tensors"
+        )
         if self.inplace:
             x_out = x
         else:

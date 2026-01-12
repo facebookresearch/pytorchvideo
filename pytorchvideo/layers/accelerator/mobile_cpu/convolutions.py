@@ -83,9 +83,9 @@ class Conv3dPwBnAct(EfficientBlockBase):
             kernel["bn"] = nn.BatchNorm3d(
                 out_channels, eps=norm_eps, momentum=norm_momentum
             )
-        assert (
-            activation in supported_act_functions
-        ), f"Conv3dPwBnAct: {activation} is not in supported_act_functions."
+        assert activation in supported_act_functions, (
+            f"Conv3dPwBnAct: {activation} is not in supported_act_functions."
+        )
         kernel["act"] = supported_act_functions[activation]()
         self.kernel = nn.Sequential(kernel)
         self.convert_flag = False
@@ -117,9 +117,9 @@ class Conv3dPwBnAct(EfficientBlockBase):
                 Conv3d.
             kwargs (any): any extra keyword arguments from upstream unused by convert().
         """
-        assert (
-            self.convert_flag is False
-        ), "Conv3dPwBnAct: already converted, cannot be converted again"
+        assert self.convert_flag is False, (
+            "Conv3dPwBnAct: already converted, cannot be converted again"
+        )
         self.kernel.eval()
         # First fuse conv and bn if bn exists.
         if hasattr(self.kernel, "bn"):
@@ -243,9 +243,9 @@ class Conv3d3x3x3DwBnAct(EfficientBlockBase):
             kernel["bn"] = nn.BatchNorm3d(
                 in_channels, eps=norm_eps, momentum=norm_momentum
             )
-        assert (
-            activation in supported_act_functions
-        ), f"Conv3d3x3x3DwBnAct: {activation} is not in supported_act_functions."
+        assert activation in supported_act_functions, (
+            f"Conv3d3x3x3DwBnAct: {activation} is not in supported_act_functions."
+        )
         kernel["act"] = supported_act_functions[activation]()
         self.kernel = nn.Sequential(kernel)
 
@@ -273,9 +273,9 @@ class Conv3d3x3x3DwBnAct(EfficientBlockBase):
                 Conv3d.
             kwargs (any): any keyword argument (unused).
         """
-        assert (
-            self.convert_flag is False
-        ), "Conv3d3x3x3DwBnAct: already converted, cannot be converted twice."
+        assert self.convert_flag is False, (
+            "Conv3d3x3x3DwBnAct: already converted, cannot be converted twice."
+        )
         self.kernel.eval()
         # Fuse conv and bn if bn exists.
         if hasattr(self.kernel, "bn"):
@@ -372,9 +372,9 @@ class Conv3dTemporalKernel1BnAct(EfficientBlockBase):
             kernel["bn"] = nn.BatchNorm3d(
                 out_channels, eps=norm_eps, momentum=norm_momentum
             )
-        assert (
-            activation in supported_act_functions
-        ), f"Conv3dTemporalKernel1BnAct: {activation} is not in supported_act_functions."
+        assert activation in supported_act_functions, (
+            f"Conv3dTemporalKernel1BnAct: {activation} is not in supported_act_functions."
+        )
         kernel["act"] = supported_act_functions[activation]()
         self.kernel = nn.Sequential(kernel)
 
@@ -395,9 +395,9 @@ class Conv3dTemporalKernel1BnAct(EfficientBlockBase):
                 Conv3dTemporalKernel1BnAct instance during forward.
             kwargs (any): any keyword argument (unused).
         """
-        assert (
-            self.convert_flag is False
-        ), "Conv3dTemporalKernel1BnAct: already converted, cannot be converted again"
+        assert self.convert_flag is False, (
+            "Conv3dTemporalKernel1BnAct: already converted, cannot be converted again"
+        )
         self.kernel.eval()
         # First fuse conv and bn if bn exists.
         if hasattr(self.kernel, "bn"):
@@ -494,9 +494,9 @@ class Conv3d3x1x1BnAct(EfficientBlockBase):
             kernel["bn"] = nn.BatchNorm3d(
                 out_channels, eps=norm_eps, momentum=norm_momentum
             )
-        assert (
-            activation in supported_act_functions
-        ), f"Conv3d3x1x1BnAct: {activation} is not in supported_act_functions."
+        assert activation in supported_act_functions, (
+            f"Conv3d3x1x1BnAct: {activation} is not in supported_act_functions."
+        )
         kernel["act"] = supported_act_functions[activation]()
         self.kernel = nn.Sequential(kernel)
         self.convert_flag = False
@@ -510,9 +510,9 @@ class Conv3d3x1x1BnAct(EfficientBlockBase):
         Converts Conv3d into equivalent Conv2d for Pytorch Mobile deployment
 
         """
-        assert (
-            self.convert_flag is False
-        ), "Conv3d3x1x1BnAct: already converted, cannot be converted twice"
+        assert self.convert_flag is False, (
+            "Conv3d3x1x1BnAct: already converted, cannot be converted twice"
+        )
         self.kernel.eval()
         # Fuse conv and bn if bn exists.
         if hasattr(self.kernel, "bn"):
@@ -595,9 +595,9 @@ class Conv3d5x1x1BnAct(EfficientBlockBase):
             kernel["bn"] = nn.BatchNorm3d(
                 out_channels, eps=norm_eps, momentum=norm_momentum
             )
-        assert (
-            activation in supported_act_functions
-        ), f"Conv3d5x1x1BnAct: {activation} is not in supported_act_functions."
+        assert activation in supported_act_functions, (
+            f"Conv3d5x1x1BnAct: {activation} is not in supported_act_functions."
+        )
         kernel["act"] = supported_act_functions[activation]()
         self.kernel = nn.Sequential(kernel)
         self.convert_flag = False
@@ -607,9 +607,9 @@ class Conv3d5x1x1BnAct(EfficientBlockBase):
         Converts Conv3d into equivalent Conv2d for Pytorch Mobile deployment
 
         """
-        assert (
-            self.convert_flag is False
-        ), "Conv3d5x1x1BnAct: already converted, cannot be converted twice"
+        assert self.convert_flag is False, (
+            "Conv3d5x1x1BnAct: already converted, cannot be converted twice"
+        )
         self.kernel.eval()
         # Fuse conv and bn if bn exists.
         if hasattr(self.kernel, "bn"):

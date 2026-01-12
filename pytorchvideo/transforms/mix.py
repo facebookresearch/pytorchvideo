@@ -187,9 +187,9 @@ class CutMix(torch.nn.Module):
         if args.get("x_audio", None) is not None:
             x_audio = args["x_audio"]
             assert x_audio.size(0) > 1, "Cutmix cannot be applied to a single instance."
-            assert (
-                x_audio.dim() == 4 or x_audio.dim() == 5
-            ), "Please correct input shape."
+            assert x_audio.dim() == 4 or x_audio.dim() == 5, (
+                "Please correct input shape."
+            )
             x_audio, _ = self._cutmix(x_audio, cutmix_lamda)
             return x_video, x_audio, new_labels
         else:

@@ -31,9 +31,9 @@ class AdaptiveAvgPool3dOutSize1(EfficientBlockBase):
                 AdaptiveAvgPool3dOutSize1 instance during forward.
             kwargs (any): any keyword argument (unused).
         """
-        assert (
-            self.convert_flag is False
-        ), "AdaptiveAvgPool3dOutSize1: already converted, cannot be converted again"
+        assert self.convert_flag is False, (
+            "AdaptiveAvgPool3dOutSize1: already converted, cannot be converted again"
+        )
         kernel_size = input_blob_size[2:]
         self.pool = nn.AvgPool3d(kernel_size)
         self.convert_flag = True
@@ -64,9 +64,9 @@ class AdaptiveAvgPool2dOutSize1(EfficientBlockBase):
                 AdaptiveAvgPool2dOutSize1 instance during forward.
             kwargs (any): any keyword argument (unused).
         """
-        assert (
-            self.convert_flag is False
-        ), "AdaptiveAvgPool2dOutSize1: already converted, cannot be converted again"
+        assert self.convert_flag is False, (
+            "AdaptiveAvgPool2dOutSize1: already converted, cannot be converted again"
+        )
         kernel_size = input_blob_size[2:]
         self.pool = nn.AvgPool2d(kernel_size)
         self.convert_flag = True

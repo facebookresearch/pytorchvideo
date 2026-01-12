@@ -69,9 +69,9 @@ class SpatioTemporalClsPositionalEncoding(nn.Module):
                 input sequence.
         """
         super().__init__()
-        assert (
-            len(patch_embed_shape) == 3
-        ), "Patch_embed_shape should be in the form of (T, H, W)."
+        assert len(patch_embed_shape) == 3, (
+            "Patch_embed_shape should be in the form of (T, H, W)."
+        )
         self.cls_embed_on = has_cls
         self.sep_pos_embed = sep_pos_embed
         self._patch_embed_shape = tuple(patch_embed_shape)

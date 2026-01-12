@@ -9,13 +9,11 @@ from collections import defaultdict
 from typing import Any, Callable, Dict, List, Optional, Set, Tuple, Type
 
 import numpy as np
-
 import torch
 import torch.autograd.profiler as profiler
 import torch.utils.data
 import torchaudio
 from iopath.common.file_io import g_pathmgr
-
 from pytorchvideo.data import LabeledVideoDataset
 from pytorchvideo.data.clip_sampling import ClipSampler
 from pytorchvideo.data.ego4d.utils import (
@@ -271,9 +269,9 @@ class Ego4dMomentsDataset(LabeledVideoDataset):
         self._transform_source = transform
         self.decode_audio = decode_audio
         self.audio_transform_type = audio_transform_type
-        assert (
-            (label_id_map is not None) ^ (label_id_map_path is not None)
-        ), f"Either label_id_map or label_id_map_path required ({label_id_map_path} / {label_id_map})"  # noqa
+        assert (label_id_map is not None) ^ (label_id_map_path is not None), (
+            f"Either label_id_map or label_id_map_path required ({label_id_map_path} / {label_id_map})"
+        )  # noqa
 
         self.video_means = (0.45, 0.45, 0.45)
         self.video_stds = (0.225, 0.225, 0.225)
@@ -450,9 +448,9 @@ class Ego4dMomentsDataset(LabeledVideoDataset):
             assert video_uid
 
             assert sample_dict["video"] is not None
-            assert (
-                "labels_id" in sample_dict
-            ), f"Sample missing labels_id: {sample_dict}"
+            assert "labels_id" in sample_dict, (
+                f"Sample missing labels_id: {sample_dict}"
+            )
 
             video = sample_dict["video"]
 
@@ -613,9 +611,9 @@ class Ego4dMomentsDataset(LabeledVideoDataset):
 
     def convert_one_hot(self, label_list: List[str]) -> List[int]:
         labels = [x for x in label_list if x in self.label_name_id_map.keys()]
-        assert len(labels) == len(
-            label_list
-        ), f"invalid filter {len(label_list)} -> {len(labels)}: {label_list}"
+        assert len(labels) == len(label_list), (
+            f"invalid filter {len(label_list)} -> {len(labels)}: {label_list}"
+        )
         one_hot = [0 for _ in range(self.num_classes)]
         for lab in labels:
             one_hot[self.label_name_id_map[lab]] = 1

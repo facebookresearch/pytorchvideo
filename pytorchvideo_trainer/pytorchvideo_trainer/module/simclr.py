@@ -61,17 +61,17 @@ class SimCLR(nn.Module):
                 N x C x T x H x W.
         """
         if not self.training:
-            assert isinstance(
-                x_list, torch.Tensor
-            ), "Expected tensor for test/val phase in SimCLR"
+            assert isinstance(x_list, torch.Tensor), (
+                "Expected tensor for test/val phase in SimCLR"
+            )
             if self.backbone is not None:
                 x_list = self.backbone(x_list)
             x_list = F.normalize(x_list, p=2, dim=1)
             return x_list
 
-        assert (
-            isinstance(x_list, list) and len(x_list) == 2
-        ), f"Invalid list input to SimCLR. Expected len 2 but received {len(x_list)}"
+        assert isinstance(x_list, list) and len(x_list) == 2, (
+            f"Invalid list input to SimCLR. Expected len 2 but received {len(x_list)}"
+        )
 
         for i, x in enumerate(x_list):
             if self.backbone is not None:

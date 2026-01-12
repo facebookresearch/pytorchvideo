@@ -181,9 +181,9 @@ def create_slowfast(
 
     # Number of blocks for different stages given the model depth.
     _num_pathway = len(input_channels)
-    assert (
-        model_depth in _MODEL_STAGE_DEPTH.keys()
-    ), f"{model_depth} is not in {_MODEL_STAGE_DEPTH.keys()}"
+    assert model_depth in _MODEL_STAGE_DEPTH.keys(), (
+        f"{model_depth} is not in {_MODEL_STAGE_DEPTH.keys()}"
+    )
     stage_depths = _MODEL_STAGE_DEPTH[model_depth]
 
     # Fix up inputs

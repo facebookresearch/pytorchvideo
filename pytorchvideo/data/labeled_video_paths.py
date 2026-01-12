@@ -62,9 +62,9 @@ class LabeledVideoPaths:
 
                 video_paths_and_label.append((file_path, int(label)))
 
-        assert (
-            len(video_paths_and_label) > 0
-        ), f"Failed to load dataset from {file_path}."
+        assert len(video_paths_and_label) > 0, (
+            f"Failed to load dataset from {file_path}."
+        )
         return cls(video_paths_and_label)
 
     @classmethod
@@ -101,9 +101,9 @@ class LabeledVideoPaths:
         video_paths_and_label = make_dataset(
             dir_path, class_to_idx, extensions=("mp4", "avi")
         )
-        assert (
-            len(video_paths_and_label) > 0
-        ), f"Failed to load dataset from {dir_path}."
+        assert len(video_paths_and_label) > 0, (
+            f"Failed to load dataset from {dir_path}."
+        )
         return cls(video_paths_and_label)
 
     def __init__(

@@ -204,9 +204,9 @@ def create_video_transform(
     if isinstance(crop_size, int):
         assert crop_size <= min_size, "crop_size must be less than or equal to min_size"
     elif isinstance(crop_size, tuple):
-        assert (
-            max(crop_size) <= min_size
-        ), "the height and width in crop_size must be less than or equal to min_size"
+        assert max(crop_size) <= min_size, (
+            "the height and width in crop_size must be less than or equal to min_size"
+        )
     else:
         raise TypeError
     if video_key is None:

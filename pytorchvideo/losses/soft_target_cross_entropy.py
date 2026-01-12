@@ -46,9 +46,9 @@ class SoftTargetCrossEntropyLoss(nn.Module):
         """
         # Check if targets are inputted as class integers
         if target.ndim == 1:
-            assert (
-                input.shape[0] == target.shape[0]
-            ), "SoftTargetCrossEntropyLoss requires input and target to have same batch size!"
+            assert input.shape[0] == target.shape[0], (
+                "SoftTargetCrossEntropyLoss requires input and target to have same batch size!"
+            )
             target = convert_to_one_hot(target.view(-1, 1), input.shape[1])
 
         assert input.shape == target.shape, (

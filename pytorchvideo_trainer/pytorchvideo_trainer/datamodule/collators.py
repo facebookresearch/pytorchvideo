@@ -40,7 +40,7 @@ def build_collator_from_name(name: str) -> Callable:  # pyre-ignore[24]
         name (str): name of the qurried collators. The key should be present in
         `_COLLATORS` dictionary object
     """
-    assert (
-        name in _COLLATORS
-    ), f"Inavalid Collator method. Available methods are {_COLLATORS.keys()}"
+    assert name in _COLLATORS, (
+        f"Inavalid Collator method. Available methods are {_COLLATORS.keys()}"
+    )
     return _COLLATORS[name]

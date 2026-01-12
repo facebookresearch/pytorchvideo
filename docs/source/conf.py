@@ -3,7 +3,6 @@
 # flake8: noqa
 import os
 import sys
-
 import unittest.mock as mock
 
 # -- Project information -----------------------------------------------------

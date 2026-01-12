@@ -414,9 +414,9 @@ def create_syncbn_process_group(group_size: int) -> List[int]:
         group_size (int): number of GPU's to collaborate for sync bn. group_size should
             be >=2 else, no action is taken.
     """
-    assert (
-        group_size > 1
-    ), f"Invalid group size {group_size} to convert to sync batchnorm."
+    assert group_size > 1, (
+        f"Invalid group size {group_size} to convert to sync batchnorm."
+    )
 
     world_size = torch.distributed.get_world_size()
     assert world_size >= group_size

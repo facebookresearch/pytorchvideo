@@ -64,9 +64,9 @@ def transmute_model(
             EFFICIENT_BLOCK_TRANSMUTER_REGISTRY
         prefix (str): name of current hierarchy in user model
     """
-    assert (
-        target_device in EFFICIENT_BLOCK_TRANSMUTER_REGISTRY
-    ), f"{target_device} not registered in EFFICIENT_BLOCK_TRANSMUTER_REGISTRY!"
+    assert target_device in EFFICIENT_BLOCK_TRANSMUTER_REGISTRY, (
+        f"{target_device} not registered in EFFICIENT_BLOCK_TRANSMUTER_REGISTRY!"
+    )
     transmuter_list = EFFICIENT_BLOCK_TRANSMUTER_REGISTRY[target_device]
     for name, child in model.named_children():
         equivalent_module = _find_equivalent_efficient_module(

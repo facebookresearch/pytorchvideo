@@ -173,11 +173,14 @@ class TestLabeledVideoDataset(unittest.TestCase):
             test_splits = root_dir_name / "folds"
             test_splits.mkdir()
 
-            with tempfile.NamedTemporaryFile(
-                suffix="_u_nm_np1_ba_goo_19.avi", dir=test_class_1
-            ) as f_1, tempfile.NamedTemporaryFile(
-                suffix="_u_nm_np1_fr_med_1.avi", dir=test_class_2
-            ) as f_2:
+            with (
+                tempfile.NamedTemporaryFile(
+                    suffix="_u_nm_np1_ba_goo_19.avi", dir=test_class_1
+                ) as f_1,
+                tempfile.NamedTemporaryFile(
+                    suffix="_u_nm_np1_fr_med_1.avi", dir=test_class_2
+                ) as f_2,
+            ):
                 f_1.close()
                 f_2.close()
 
@@ -305,11 +308,10 @@ class TestLabeledVideoDataset(unittest.TestCase):
             test_class_2 = root_dir_name / "cleaning windows"
             test_class_2.mkdir()
             data_2 = create_dummy_video_frames(20, 15, 15)
-            with tempfile.NamedTemporaryFile(
-                suffix=".mp4", dir=test_class_1
-            ) as f_1, tempfile.NamedTemporaryFile(
-                suffix=".mp4", dir=test_class_2
-            ) as f_2:
+            with (
+                tempfile.NamedTemporaryFile(suffix=".mp4", dir=test_class_1) as f_1,
+                tempfile.NamedTemporaryFile(suffix=".mp4", dir=test_class_2) as f_2,
+            ):
                 f_1.close()
                 f_2.close()
 

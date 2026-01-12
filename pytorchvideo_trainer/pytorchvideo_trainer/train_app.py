@@ -265,9 +265,9 @@ def submitit_launcher(cfg) -> None:
     assert submitit_conf is not None, "Missing submitit config"
 
     if logger_conf is not None:
-        assert (
-            logger_conf.save_dir is not None
-        ), "set save_dir in logger conf to a valid path"
+        assert logger_conf.save_dir is not None, (
+            "set save_dir in logger conf to a valid path"
+        )
         submitit_dir = os.path.join(logger_conf.save_dir, logger_conf.name)
     else:
         assert submitit_conf.log_save_dir is not None

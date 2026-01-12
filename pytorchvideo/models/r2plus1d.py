@@ -243,9 +243,9 @@ def create_r2plus1d(
     _MODEL_STAGE_DEPTH = {50: (3, 4, 6, 3), 101: (3, 4, 23, 3), 152: (3, 8, 36, 3)}
 
     # Given a model depth, get the number of blocks for each stage.
-    assert (
-        model_depth in _MODEL_STAGE_DEPTH.keys()
-    ), f"{model_depth} is not in {_MODEL_STAGE_DEPTH.keys()}"
+    assert model_depth in _MODEL_STAGE_DEPTH.keys(), (
+        f"{model_depth} is not in {_MODEL_STAGE_DEPTH.keys()}"
+    )
     stage_depths = _MODEL_STAGE_DEPTH[model_depth]
 
     blocks = []

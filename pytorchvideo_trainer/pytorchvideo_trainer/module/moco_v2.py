@@ -414,9 +414,9 @@ class MOCOV2Module(SSLBaseModule):
         for key in keys:
             # write the current feat into queue, at pointer
             num_items = int(key.size(0))
-            assert (
-                self.k % num_items == 0
-            ), "Queue size should be a multiple of batchsize"
+            assert self.k % num_items == 0, (
+                "Queue size should be a multiple of batchsize"
+            )
             assert ptr + num_items <= self.k
             self.queue_x[ptr : ptr + num_items, :] = key
             # move pointer

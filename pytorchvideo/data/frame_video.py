@@ -66,9 +66,9 @@ class FrameVideo(Video):
         self._fps = fps
         self._multithreaded_io = multithreaded_io
 
-        assert (video_frame_to_path_fn is None) != (
-            video_frame_paths is None
-        ), "Only one of video_frame_to_path_fn or video_frame_paths can be provided"
+        assert (video_frame_to_path_fn is None) != (video_frame_paths is None), (
+            "Only one of video_frame_to_path_fn or video_frame_paths can be provided"
+        )
         self._video_frame_to_path_fn = video_frame_to_path_fn
         self._video_frame_paths = video_frame_paths
 
