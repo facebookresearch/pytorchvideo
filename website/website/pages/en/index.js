@@ -166,6 +166,29 @@ pip install pytorchvideo
       </div>
     );
 
+    const refExample = `${pre}python
+    @inproceedings{fan2021pytorchvideo, \\
+      author =       {Haoqi Fan and Tullie Murrell and Heng Wang and Kalyan Vasudev Alwala and Yanghao Li and Yilei Li and Bo Xiong and Nikhila Ravi and Meng Li and Haichuan Yang and  Jitendra Malik and Ross Girshick and Matt Feiszli and Aaron Adcock and Wan-Yen Lo and Christoph Feichtenhofer},
+      title = {{PyTorchVideo}: A Deep Learning Library for Video Understanding},
+      booktitle = {Proceedings of the 29th ACM International Conference on Multimedia},
+      year = {2021},
+      note = {\url{https://pytorchvideo.org/}},
+  }
+    `;
+    const Reference = () => (
+      <div
+        className="productShowcaseSection"
+        id="quickstart"
+        style={{textAlign: 'center'}}>
+        <h2>Get Started</h2>
+        <Container>
+          <ol>
+          <MarkdownBlock>{refExample}</MarkdownBlock>
+          </ol>
+        </Container>
+      </div>
+    );
+
     const UseCases = () => (
       <div className="productShowcaseSection" style={{textAlign: 'center'}}>
         <h1>Some use cases</h1>
@@ -261,6 +284,7 @@ pip install pytorchvideo
         <div className="landingPage mainContainer">
           <Features />
           <QuickStart />
+          <Reference />
         </div>
       </div>
     );
