@@ -16,6 +16,7 @@ from typing import Any, Callable, Dict, Iterable, List, Optional, Tuple, Union
 import av
 import numpy as np
 import torch
+from av.video.frame import PictureType
 from iopath.common.file_io import g_pathmgr
 
 
@@ -150,7 +151,7 @@ def export_video_array(
             )
             if in_format != out_format:
                 frame = frame.reformat(format=out_format)
-            frame.pict_type = "NONE"
+            frame.pict_type = PictureType.NONE
             for packet in stream.encode(frame):
                 output.mux(packet)
         for packet in stream.encode():

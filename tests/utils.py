@@ -4,12 +4,14 @@ import contextlib
 import os
 import pathlib
 import tempfile
+from fractions import Fraction
 
 import av
 import numpy as np
 import torch
 import torchvision.io as io
 import torchvision.transforms as transforms
+from av.video.frame import PictureType
 from pytorchvideo.data.dataset_manifest_utils import (
     EncodedVideoInfo,
     VideoFrameInfo,
@@ -156,7 +158,7 @@ def write_audio_video(path, video, audio, fps=30, audio_rate=48000):
         # Add lossless flac, stereo audio stream.
         audio_stream = container.add_stream("flac", rate=audio_rate, layout="stereo")
         audio_stream.codec_context.skip_frame = "NONE"
-        audio_stream.time_base = f"1/{audio_rate}"
+        audio_stream.time_base = Fraction(1, audio_rate)
         audio_stream.options = {}
 
         num_audio_samples = audio_array.shape[-1]
@@ -177,7 +179,7 @@ def write_audio_video(path, video, audio, fps=30, audio_rate=48000):
             if encoded_video_index < num_video_frames:
                 frame = video_array[encoded_video_index]
                 video_frame = av.VideoFrame.from_ndarray(frame, format="rgb24")
-                video_frame.pict_type = "NONE"
+                video_frame.pict_type = PictureType.NONE
                 encoded_video_index += 1
                 for packet in video_stream.encode(video_frame):
                     container.mux(packet)
@@ -192,7 +194,7 @@ def write_audio_video(path, video, audio, fps=30, audio_rate=48000):
                 )
                 encoded_audio_index = encode_packet_end
                 audio_frame.rate = audio_rate
-                audio_frame.time_base = f"1/{audio_rate}"
+                audio_frame.time_base = Fraction(1, audio_rate)
                 encoded_packets = audio_stream.encode(audio_frame)
                 for packet in encoded_packets:
                     container.mux(packet)
