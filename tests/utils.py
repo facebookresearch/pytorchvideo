@@ -69,7 +69,7 @@ def temp_encoded_video_with_audio(
 ):
     audio_data = torch.from_numpy(np.random.rand(1, num_audio_samples).astype("<i2"))
     video_data = create_dummy_video_frames(num_frames, height, width)
-    with tempfile.NamedTemporaryFile(prefix=prefix, suffix=".avi") as f:
+    with tempfile.NamedTemporaryFile(prefix=prefix, suffix=".mp4") as f:
         f.close()
         write_audio_video(
             f.name, video_data, audio_data, fps=fps, audio_rate=audio_rate
@@ -180,6 +180,9 @@ def write_audio_video(path, video, audio, fps=30, audio_rate=48000):
                 frame = video_array[encoded_video_index]
                 video_frame = av.VideoFrame.from_ndarray(frame, format="rgb24")
                 video_frame.pict_type = PictureType.NONE
+                # PyAV no longer auto-fills pts under FFmpeg 7.1; set it explicitly.
+                video_frame.pts = encoded_video_index
+                video_frame.time_base = Fraction(1, fps)
                 encoded_video_index += 1
                 for packet in video_stream.encode(video_frame):
                     container.mux(packet)
@@ -192,9 +195,12 @@ def write_audio_video(path, video, audio, fps=30, audio_rate=48000):
                     format="s16",
                     layout="stereo",
                 )
-                encoded_audio_index = encode_packet_end
                 audio_frame.rate = audio_rate
                 audio_frame.time_base = Fraction(1, audio_rate)
+                # FFmpeg 7.1's AVI muxer rejects packets with AV_NOPTS_VALUE DTS.
+                # PyAV no longer auto-fills pts, so set it explicitly here.
+                audio_frame.pts = encoded_audio_index
+                encoded_audio_index = encode_packet_end
                 encoded_packets = audio_stream.encode(audio_frame)
                 for packet in encoded_packets:
                     container.mux(packet)

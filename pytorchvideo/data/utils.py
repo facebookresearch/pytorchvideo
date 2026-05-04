@@ -123,7 +123,8 @@ def export_video_array(
     """
     stream = None
     with g_pathmgr.open(output_path, "wb") as oh:
-        output = av.open(oh, mode="wb", format="mp4")
+        # PyAV under FFmpeg 7.1 only accepts 'r' or 'w' for mode.
+        output = av.open(oh, mode="w", format="mp4")
         stream = output.add_stream(codec_name=video_codec, rate=rate)
         if height:
             stream.height = height
@@ -145,13 +146,18 @@ def export_video_array(
             stream.options = options
         if isinstance(video, torch.Tensor):
             video = video.numpy()
-        for np_frame in np.moveaxis(video, 0, -1):
+        # PyAV under FFmpeg 7.1 no longer auto-fills pts; set it explicitly so
+        # the muxer accepts packets with monotonic DTS.
+        rate_fraction = rate if isinstance(rate, Fraction) else Fraction(rate)
+        for frame_index, np_frame in enumerate(np.moveaxis(video, 0, -1)):
             frame = av.VideoFrame.from_ndarray(
                 np_frame.astype("uint8"), format=in_format
             )
             if in_format != out_format:
                 frame = frame.reformat(format=out_format)
             frame.pict_type = PictureType.NONE
+            frame.pts = frame_index
+            frame.time_base = 1 / rate_fraction
             for packet in stream.encode(frame):
                 output.mux(packet)
         for packet in stream.encode():

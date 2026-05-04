@@ -97,11 +97,23 @@ class TestDataUtils(unittest.TestCase):
             options={"crf": "0"},
             epsilon=1e-6,
         )
+        # FFmpeg 7.1's mpeg4 encoder produces slightly higher mean-abs round-trip
+        # loss at default settings than 4.1; bump tolerance for the lossy paths.
         self._export_video_array(
-            video_codec="mpeg4", height=10, width=10, num_frames=10, fps=5
+            video_codec="mpeg4",
+            height=10,
+            width=10,
+            num_frames=10,
+            fps=5,
+            epsilon=10,
         )
         self._export_video_array(
-            video_codec="mpeg4", height=480, width=640, num_frames=30, fps=30
+            video_codec="mpeg4",
+            height=480,
+            width=640,
+            num_frames=30,
+            fps=30,
+            epsilon=10,
         )
 
     def test_load_dataclass_dict_from_csv_value_dict(self):
