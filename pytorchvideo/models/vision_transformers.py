@@ -7,7 +7,7 @@ from typing import Callable, List, Optional, Tuple
 import torch
 import torch.nn as nn
 from pytorchvideo.layers import MultiScaleBlock, SpatioTemporalClsPositionalEncoding
-from pytorchvideo.layers.utils import round_width, set_attributes
+from pytorchvideo.layers.utils import round_width
 from pytorchvideo.models.head import create_vit_basic_head
 from pytorchvideo.models.weight_init import init_net_weights
 from torch.nn.common_types import _size_2_t, _size_3_t
