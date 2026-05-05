@@ -338,6 +338,22 @@ class Permute(torch.nn.Module):
         return x.permute(*self._dims)
 
 
+class Grayscale(torchvision.transforms.Grayscale):
+    """
+    Converts RGB frames of (CTHW) video clip to grayscale.
+    """
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        """
+        Args:
+            x (torch.Tensor): video tensor with shape (C, T, H, W).
+        """
+        vid = x.permute(1, 0, 2, 3)
+        vid = super().forward(vid)
+        vid = vid.permute(1, 0, 2, 3)
+        return vid
+
+
 class OpSampler(torch.nn.Module):
     """
     Given a list of transforms with weights, OpSampler applies weighted sampling to
