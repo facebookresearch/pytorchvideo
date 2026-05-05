@@ -12,7 +12,7 @@ transform = torchvision.transforms.Compose([
       pytorchvideo.transforms.RandomShortSideScale(min_size=256, max_size=320),
       torchvision.transforms.RandomCrop(244),
       torchvision.transforms.RandomHorizontalFlip(p=0.5),
-    )]
+    ])
   )
 ])
 dataset = pytorchvideo.data.Kinetics(
