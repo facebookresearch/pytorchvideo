@@ -92,3 +92,7 @@ If you find PyTorchVideo useful in your work, please use the following BibTeX en
     note = {\url{https://pytorchvideo.org/}},
 }
 ```
+
+---
+
+*[Mukller](https://github.com/Mukller)*
