@@ -27,12 +27,12 @@ class PyTorchVideoDataModule(pl.LightningDataModule):
     in PyTorchVideo for different phases (train, validation and testing) of
     Lightning tranining.
 
-    Supports loading any aribtrary iterable and map-style PyTorchVideo dataset
+    Supports loading any arbitrary iterable and map-style PyTorchVideo dataset
     upon following the config schema detailed below.
 
     Args:
         dataloader (DataLoaderConf):
-            An OmegaConf / Hydra Config object consisting of dataloder
+            An OmegaConf / Hydra Config object consisting of dataloader
             config for each phase i.e, train, val and test.
 
             The Hydra schema for this config is as defined in
@@ -48,7 +48,7 @@ class PyTorchVideoDataModule(pl.LightningDataModule):
             The Hydra schema for this config is as defined in
             `pytorchvideo_trainer.datamodule.datamodule.TransformsConf`
 
-            One such example config used for Resnet50 video model traning can be found at
+            One such example config used for Resnet50 video model training can be found at
             `pytorchvideo_trainer/conf/datamodule/transforms/kinetics_classification_slow.yaml`
     """
 
@@ -129,7 +129,7 @@ class PyTorchVideoDataModule(pl.LightningDataModule):
             sampler = None
             if torch.distributed.is_available() and torch.distributed.is_initialized():
                 logging.info(
-                    "Distributed Environmnet detected, using DistributedSampler for dataloader."
+                    "Distributed Environment detected, using DistributedSampler for dataloader."
                 )
                 sampler = DistributedSampler(self.datasets[phase])
 
@@ -155,7 +155,7 @@ class PyTorchVideoDataModule(pl.LightningDataModule):
         video_sampler = RandomSampler
         if torch.distributed.is_available() and torch.distributed.is_initialized():
             logging.info(
-                "Distributed Environmnet detected, using DistributedSampler for dataset."
+                "Distributed Environment detected, using DistributedSampler for dataset."
             )
             video_sampler = DistributedSampler
 

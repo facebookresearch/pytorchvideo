@@ -83,7 +83,7 @@ class EpicKitchenDataset(torch.utils.data.Dataset):
 
             actions_file_path (str):
                 Path or URI to manifest with action annotations for each video.
-                File must ber a csv (w/header) with columns:
+                File must be a csv (w/header) with columns:
                 {[f.name for f in dataclass_fields(ActionData)]}
 
             clip_sampler (Callable[[Dict[str, Video]], List[VideoClipInfo]]):
@@ -102,7 +102,7 @@ class EpicKitchenDataset(torch.utils.data.Dataset):
                 functions in Module: pytorchvideo.data.epic_kitchen.utils
 
             dataset_type (VideoDatasetType): The dataformat in which dataset
-                video data is store (e.g. video frames, encoded video etc).
+                video data is stored (e.g. video frames, encoded video etc).
 
             transform (Optional[Callable[[Dict[str, Any]], Any]]):
                 This callable is evaluated on the clip output before the clip is returned.
