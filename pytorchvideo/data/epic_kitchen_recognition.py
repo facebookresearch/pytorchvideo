@@ -50,7 +50,7 @@ class EpicKitchenRecognition(EpicKitchenDataset):
 
             actions_file_path (str):
                 Path or URI to manifest with action annotations for each video.
-                File must ber a csv (w/header) with columns:
+                File must be a csv (w/header) with columns:
                 {[f.name for f in dataclass_fields(ActionData)]}
 
             video_data_manifest_file_path (str):
@@ -67,10 +67,10 @@ class EpicKitchenRecognition(EpicKitchenDataset):
                 functions in Module: pytorchvideo.data.epic_kitchen.utils
 
             clip_sampling (ClipSampling):
-                The type of sampling to perform to perform on the videos of the dataset.
+                The type of sampling to perform on the videos of the dataset.
 
             dataset_type (VideoDatasetType): The dataformat in which dataset
-                video data is store (e.g. video frames, encoded video etc).
+                video data is stored (e.g. video frames, encoded video etc).
 
             seconds_per_clip (float): The length of each sampled clip in seconds.
 
@@ -93,7 +93,7 @@ class EpicKitchenRecognition(EpicKitchenDataset):
                     returned unmodified.
 
             multithreaded_io (bool):
-                Boolean to control whether parllelizable io operations are performed across
+                Boolean to control whether parallelizable io operations are performed across
                 multiple threads.
         """
         define_clip_structure_fn = (
@@ -163,7 +163,7 @@ class EpicKitchenRecognition(EpicKitchenDataset):
             frames_per_clip (int): The number of frames per clip to sample.
 
         Returns:
-            A function that takes in a list of frame indicies and outputs a subsampled list.
+            A function that takes in a list of frame indices and outputs a subsampled list.
         """
 
         def frame_filer(frame_indices: List[int]) -> List[int]:
@@ -182,7 +182,7 @@ class EpicKitchenRecognition(EpicKitchenDataset):
         Args:
             seconds_per_clip (float): The length of each sampled clip in seconds.
             clip_sampling (ClipSampling):
-                The type of sampling to perform to perform on the videos of the dataset.
+                The type of sampling to perform on the videos of the dataset.
 
         Returns:
             A function that takes a dictionary of videos and a dictionary of the actions

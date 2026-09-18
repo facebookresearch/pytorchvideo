@@ -3,7 +3,7 @@
 """
 This implementation is based on
 https://github.com/rwightman/pytorch-image-models/blob/master/timm/data/random_erasing.py
-pulished under an Apache License 2.0.
+published under an Apache License 2.0.
 COMMENT FROM ORIGINAL:
 Originally inspired by impl at https://github.com/zhunzhong07/Random-Erasing, Apache 2.0
 Copyright Zhun Zhong & Liang Zheng

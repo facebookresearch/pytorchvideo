@@ -167,7 +167,7 @@ class EfficientX3d(nn.Module):
             if hasattr(self, "dropout"):
                 x = self.dropout(x)
             x = self.projection(x)
-            # Performs fully convlutional inference.
+            # Performs fully convolutional inference.
             if not self.training:
                 x = self.act(x)
                 x = x.mean([1, 2, 3])
