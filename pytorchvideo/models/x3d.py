@@ -555,17 +555,17 @@ def create_x3d(
     activation: Callable = nn.ReLU,
     # Stem configs.
     stem_dim_in: int = 12,
-    stem_conv_kernel_size: Tuple[int] = (5, 3, 3),
-    stem_conv_stride: Tuple[int] = (1, 2, 2),
+    stem_conv_kernel_size: Tuple[int, ...] = (5, 3, 3),
+    stem_conv_stride: Tuple[int, ...] = (1, 2, 2),
     # Stage configs.
-    stage_conv_kernel_size: Tuple[Tuple[int]] = (
+    stage_conv_kernel_size: Tuple[Tuple[int, ...], ...] = (
         (3, 3, 3),
         (3, 3, 3),
         (3, 3, 3),
         (3, 3, 3),
     ),
-    stage_spatial_stride: Tuple[int] = (2, 2, 2, 2),
-    stage_temporal_stride: Tuple[int] = (1, 1, 1, 1),
+    stage_spatial_stride: Tuple[int, ...] = (2, 2, 2, 2),
+    stage_temporal_stride: Tuple[int, ...] = (1, 1, 1, 1),
     bottleneck: Callable = create_x3d_bottleneck_block,
     bottleneck_factor: float = 2.25,
     se_ratio: float = 0.0625,
