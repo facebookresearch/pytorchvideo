@@ -10,6 +10,12 @@ class Swish(nn.Module):
     """
 
     def forward(self, x):
+        if not self.training:
+            """
+            SwishFunction is not traceable by torchscript due to use of torch.autograd
+            Apply model.eval() before tracing using torch.jit.trace
+            """
+            return x * torch.sigmoid(x)
         return SwishFunction.apply(x)
 
 
