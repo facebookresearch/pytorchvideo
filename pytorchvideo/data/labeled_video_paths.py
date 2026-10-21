@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import os
 import pathlib
-from typing import List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple
 
 from iopath.common.file_io import g_pathmgr
 from torchvision.datasets.folder import make_dataset
@@ -23,13 +23,13 @@ class LabeledVideoPaths:
         - If it is a directory path it uses the LabeledVideoPaths.from_directory function.
         - If it's a file it uses the LabeledVideoPaths.from_csv file.
         Args:
-            file_path (str): The path to the file to be read.
+            data_path (str): The path to the file to be read.
         """
 
         if g_pathmgr.isfile(data_path):
-            return LabeledVideoPaths.from_csv(data_path)
+            return cls.from_csv(data_path)
         elif g_pathmgr.isdir(data_path):
-            return LabeledVideoPaths.from_directory(data_path)
+            return cls.from_directory(data_path)
         else:
             raise FileNotFoundError(f"{data_path} not found.")
 
@@ -107,7 +107,7 @@ class LabeledVideoPaths:
         return cls(video_paths_and_label)
 
     def __init__(
-        self, paths_and_labels: List[Tuple[str, Optional[int]]], path_prefix=""
+        self, paths_and_labels: List[Tuple[str, Optional[int]]], path_prefix: str = ""
     ) -> None:
         """
         Args:
@@ -117,12 +117,12 @@ class LabeledVideoPaths:
         self._paths_and_labels = paths_and_labels
         self._path_prefix = path_prefix
 
-    def path_prefix(self, prefix):
+    def path_prefix(self, prefix: str) -> None:
         self._path_prefix = prefix
 
     path_prefix = property(None, path_prefix)
 
-    def __getitem__(self, index: int) -> Tuple[str, int]:
+    def __getitem__(self, index: int) -> Tuple[str, Dict[str, int]]:
         """
         Args:
             index (int): the path and label index.
