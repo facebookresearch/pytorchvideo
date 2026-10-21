@@ -17,3 +17,4 @@ from .slowfast import create_slowfast
 from .stem import create_conv_patch_embed, create_res_basic_stem, ResNetBasicStem
 from .vision_transformers import create_multiscale_vision_transformers
 from .weight_init import init_net_weights
+from .mot.tracker import jde_tracker
